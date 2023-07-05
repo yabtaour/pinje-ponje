@@ -1,0 +1,15 @@
+# source: pinj-ponje
+#--------------------
+# .env and Credentials files
+# /.env
+# backend/.env
+# frontend/.env
+
+# Node Modules and Build files
+/dist
+/node_modules
+
+
+# IDE files and folders
+.DS_Store
+
