@@ -1,0 +1,14 @@
+# this is the docker-compose.yml file for the backend service
+services:
+  db:
+    container_name: ppdatabase
+    image: postgres:latest
+    env_file: .env
+    ports:
+      - '5432:5432'
+  adminer:
+    container_name: adminer
+    image: adminer
+    ports:
+      - '8080:8080'
+# end of backend service.
