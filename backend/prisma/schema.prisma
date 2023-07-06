@@ -1,0 +1,105 @@
+// Pinjponj is a game where you can play with your friends and have fun
+// this is the schema of the database
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int     @id @unique @default(autoincrement())
+  intraid         Int     @unique
+  Hashpassword    String
+  email           String  @unique
+  twofactor       Boolean @default(false)
+  twoFactorSecret String?
+  GameOfP1        Game[]  @relation("P1")
+  GameOfP2        Game[]  @relation("P2")
+  profile         Profile @relation(fields: [id], references: [userid])
+}
+
+model Profile {
+  id             Int       @id @unique @default(autoincrement())
+  username       String    @unique
+  login          String    @unique
+  // campus      String // # at the creation the campus came from intra
+  avatar         String?
+  phonenumber    String?
+  status         Status    @default(ONLINE) // # enum [in game, online, offline]
+  CurrentMap     String
+  UnlockedMap    String[]
+  Rank           Rank      @default(UNRANKED) // # enum [bronze, silver, gold, platinum, diamond, master, grandmaster, challenger]
+  level          Int       @default(0)
+  followedBy     Profile[] @relation("UserFriendship")
+  following      Profile[] @relation("UserFriendship")
+  blockedBy      Profile[] @relation("UserBlocked")
+  blocking       Profile[] @relation("UserBlocked")
+  pendingRequest Profile[] @relation("UserPending")
+  sentRequest    Profile[] @relation("UserPending")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  user           User?
+  userid         Int       @unique
+}
+
+model Game {
+  id        Int        @id @unique @default(autoincrement())
+  Player1   User       @relation("P1", fields: [player1id], references: [id])
+  Player2   User       @relation("P2", fields: [player2id], references: [id])
+  player1id Int        @unique
+  player2id Int        @unique
+  p1Score   Int        @default(0)
+  p2Score   Int        @default(0)
+  p1Result  gameResult @default(DRAW)
+  p2Result  gameResult @default(DRAW)
+  status    gameStatus @default(PENDING)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+enum gameResult {
+  WIN
+  LOSE
+  DRAW
+}
+
+// # enum [in game, online, offline]
+enum Status {
+  INGAME
+  ONLINE
+  OFFLINE
+}
+
+enum gameStatus {
+  PENDING
+  IN_PROGRESS
+  FINISHED
+}
+
+// # enum [bronze, silver, gold, platinum, diamond, master, grandmaster, challenger]
+enum Rank {
+  UNRANKED
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+  DIAMOND
+  MASTER
+  GRANDMASTER
+  CHALLENGER
+}
+
+// # thinking about Self Reations Disvanteges
+// # https://www.prisma.io/docs/concepts/components/prisma-schema/relations#self-relations
+// # thinking about the best practice to send the data to the client
+// # thinking about the best structure to store the data
+// # thinking about the best way to query the data
+// # thinking about the best way to update the data
+// # thinking about the best way to delete the data
+// # thinking about the best way to create the data
+// # thinking about the best way to handle the data
+// # thinking about the best way to split the user and the profile
