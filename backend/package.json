@@ -24,6 +24,7 @@
     "@nestjs/core": "^10.0.0",
     "@nestjs/jwt": "^10.1.0",
     "@nestjs/platform-express": "^10.0.0",
+    "@prisma/client": "^4.16.2",
     "passport-42": "^1.2.6",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1"
