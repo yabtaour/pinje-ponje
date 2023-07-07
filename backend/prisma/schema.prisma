@@ -30,8 +30,8 @@ model Profile {
   avatar         String?
   phonenumber    String?
   status         Status    @default(ONLINE) // # enum [in game, online, offline]
-  CurrentMap     String
-  UnlockedMap    String[]
+  // CurrentMap     String
+  // UnlockedMap    String[]
   Rank           Rank      @default(UNRANKED) // # enum [bronze, silver, gold, platinum, diamond, master, grandmaster, challenger]
   level          Int       @default(0)
   followedBy     Profile[] @relation("UserFriendship")
@@ -41,7 +41,7 @@ model Profile {
   pendingRequest Profile[] @relation("UserPending")
   sentRequest    Profile[] @relation("UserPending")
   createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  updatedAt      DateTime  @updatedAt @default(now())
   user           User?
   userid         Int       @unique
 }
@@ -58,7 +58,7 @@ model Game {
   p2Result  gameResult @default(DRAW)
   status    gameStatus @default(PENDING)
   createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  updatedAt DateTime   @updatedAt @default(now())
 }
 
 enum gameResult {

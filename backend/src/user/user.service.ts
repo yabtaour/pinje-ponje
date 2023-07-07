@@ -60,12 +60,12 @@ export class UserService {
   //   return user;
   // }
 
-  // findOne(id: number) {
-  //   const user = this.prisma.profile.findUnique({
-  //     where: { id: id },
-  //   }); 
-  //   return user;
-  // }
+  FindUserByID(id: number) {
+    const user = this.prisma.profile.findUnique({
+      where: { id: id },
+    }); 
+    return user;
+  }
 
   // update(id: number, updateUserDto: UpdateUserDto) {
   //   return `This action updates a #${id} user`;
