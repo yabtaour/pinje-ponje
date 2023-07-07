@@ -34,8 +34,7 @@ model Profile {
   // UnlockedMap    String[]
   Rank           Rank      @default(UNRANKED) // # enum [bronze, silver, gold, platinum, diamond, master, grandmaster, challenger]
   level          Int       @default(0)
-  following      Profile[] @relation("UserFriendship")
-  Friends        Profile[] @relation("UserFriendship")
+  Friends        Int[]
   blockedBy      Profile[] @relation("UserBlocked")
   blocking       Profile[] @relation("UserBlocked")
   pendingRequest Profile[] @relation("UserPending")

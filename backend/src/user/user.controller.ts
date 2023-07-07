@@ -6,7 +6,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post('/create')
+  @Post()
   create(@Body() data: any) {
     return this.userService.CraeteUser(data);
   }
@@ -15,14 +15,30 @@ export class UserController {
   FindAllUsers() {
     return this.userService.FindAllUsers();
   }
-  @Get('Profiles')
+  @Get('all/Profiles')
   FindAllProfiles() {
     return this.userService.FindAllProfiles();
+  }
+
+  @Get('all/Friends/:id')
+  FindAllFriends(@Param('id') id: string) {
+    return this.userService.FindAllFriends(+id);
   }
 
   @Get(':id')
   FindUserByID(@Param('id') id: string) {
     return this.userService.FindUserByID(+id);
+  }
+
+
+  @Post('profile/SentFriendsInvitation/')
+  SentFriendsInvitation(@Body() data: any ) {
+    return this.userService.SentFriendsInvitation(data);
+  }
+
+  @Post('profile/AccepteFriendRequest/')
+  AccepteFriendRequest(@Body() data: any ) {
+    return this.userService.AccepteFriendRequest(data);
   }
 
   // @Patch(':id')
