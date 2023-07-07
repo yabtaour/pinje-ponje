@@ -19,7 +19,7 @@ model User {
   twoFactorSecret String?
   GameOfP1        Game[]  @relation("P1")
   GameOfP2        Game[]  @relation("P2")
-  profile         Profile @relation(fields: [id], references: [userid])
+  profile         Profile?
 }
 
 model Profile {
@@ -34,15 +34,15 @@ model Profile {
   // UnlockedMap    String[]
   Rank           Rank      @default(UNRANKED) // # enum [bronze, silver, gold, platinum, diamond, master, grandmaster, challenger]
   level          Int       @default(0)
-  followedBy     Profile[] @relation("UserFriendship")
   following      Profile[] @relation("UserFriendship")
+  Friends        Profile[] @relation("UserFriendship")
   blockedBy      Profile[] @relation("UserBlocked")
   blocking       Profile[] @relation("UserBlocked")
   pendingRequest Profile[] @relation("UserPending")
   sentRequest    Profile[] @relation("UserPending")
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt @default(now())
-  user           User?
+  user           User     @relation(fields: [userid], references: [id])
   userid         Int       @unique
 }
 

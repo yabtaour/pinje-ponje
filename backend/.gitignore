@@ -21,6 +21,8 @@ prisma/migrations
 /coverage
 /.nyc_output
 
+backend/prisma/migrations/*
+
 # IDEs and editors
 /.idea
 .project
