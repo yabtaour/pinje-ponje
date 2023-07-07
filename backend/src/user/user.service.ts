@@ -21,21 +21,21 @@ export class UserService {
   constructor(readonly prisma: PrismaService) {}
   // prsima = new PrismaService();
   async CraeteUser(dataa: any) {
-    const user = await this.prisma.user.create({
-      data: {
-          id : Guser.id,
-          intraid: Guser.intraid,
-          Hashpassword: Guser.Hashpassword,
-          email: Guser.email,
-          profile: {
-            create: {
-              id: Guser.id,
-              username: Gprofile.username,
-              login: Gprofile.login,
-            },
-        }
-      }
-   })
+  //   const user = await this.prisma.user.create({
+  //     data: {
+  //         id : Guser.id,
+  //         intraid: Guser.intraid,
+  //         Hashpassword: Guser.Hashpassword,
+  //         email: Guser.email,
+  //         profile: {
+  //           create: {
+  //             id: Guser.id,
+  //             username: Gprofile.username,
+  //             login: Gprofile.login,
+  //           },
+  //       }
+  //     }
+  //  })
     return dataa;
   }
 
