@@ -18,6 +18,8 @@ lerna-debug.log*
 /coverage
 /.nyc_output
 
+backend/prisma/migrations/*
+
 # IDEs and editors
 /.idea
 .project
