@@ -16,14 +16,7 @@ export class AuthController {
     @UseGuards(AuthGuard('42'))
     async handle42Auth(@Req() request: Request, @Res() response: Response) {
         console.log("returned here");
-        // return ("user redirected");
+        console.log(request.user);
         response.redirect('200');
-        // return request.user;
     }
-
-    // @UseGuards(AuthGuard('local'))
-    // @Post('login')
-    // async login(@Request() req) {
-    //     return (req.user);
-    // }
 }

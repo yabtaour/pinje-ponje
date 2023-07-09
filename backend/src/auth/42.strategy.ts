@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy } from "passport-42";
 import { config } from 'dotenv';
+import { JwtAuthService } from './jwt.service';
 
 config(); // This loads the .env file
 
@@ -10,7 +11,7 @@ const sid = process.env.SECRET;
 
 @Injectable()
 export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
-    constructor() {
+    constructor(private readonly jwtAuthService: JwtAuthService, private readonly userService: UserService) {
         super({
             clientID: uid,
             clientSecret: sid,
@@ -19,14 +20,12 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
     }
 
     async validate(accessToken: string, refreshToken: string, profile: any, done: (error: any, user?: any) => void): Promise<void> {
-        try {
-          const user = {
-            id: profile.id,
-            username: profile.username,
-          };
-          done(null, user);
-        } catch (error) {
-          done(error);
-        }
+      try {
+        let user = null;
+        
+
+      } catch (error){
+        done(error)
       }
+    }
 }
