@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Request, UseGuards, Res, Req } from '@nestjs/common';
+import { Controller, Get, Post, UseGuards, Res, Req, Redirect } from '@nestjs/common';
 // import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
-import { response } from 'express';
+import { Response, Request } from 'express';
 import { get } from 'http';
 
 @Controller('auth')
@@ -10,12 +10,15 @@ export class AuthController {
 
     @Get('42')
     @UseGuards(AuthGuard('42'))
-    async redirectTo42Auth() {}
+    async redirectTo42Auth() {console.log("redirected");}
 
     @Get('42/callback')
     @UseGuards(AuthGuard('42'))
-    async handle42Auth(@Req() request, @Res() response) {
-        return request.user;
+    async handle42Auth(@Req() request: Request, @Res() response: Response) {
+        console.log("returned here");
+        // return ("user redirected");
+        response.redirect('200');
+        // return request.user;
     }
 
     // @UseGuards(AuthGuard('local'))

@@ -18,7 +18,15 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
         });
     }
 
-    async validate(accessToken: string, refreshToken: string, profile: any): Promise<any> {
-        return profile;
-    }
+    async validate(accessToken: string, refreshToken: string, profile: any, done: (error: any, user?: any) => void): Promise<void> {
+        try {
+          const user = {
+            id: profile.id,
+            username: profile.username,
+          };
+          done(null, user);
+        } catch (error) {
+          done(error);
+        }
+      }
 }
