@@ -8,15 +8,22 @@ import { get } from 'http';
 export class AuthController {
     // constructor(private readonly authService: AuthService) {}
 
+    @Get('42/200')
+    async getProfile() {
+        return ("jesus loves u <3");
+    }
+
     @Get('42')
     @UseGuards(AuthGuard('42'))
     async redirectTo42Auth() {console.log("redirected");}
 
     @Get('42/callback')
     @UseGuards(AuthGuard('42'))
-    async handle42Auth(@Req() request: Request, @Res() response: Response) {
+    async handle42Auth(@Req() request: any, @Res() response: Response) {
         console.log("returned here");
-        console.log(request.user);
+        // const user = request.user;
+        console.log(request.user.token);
+        response.setHeader("Authorisation", request.user.token);
         response.redirect('200');
     }
 }
