@@ -6,18 +6,15 @@ import { UserService } from './user/user.service';
 import { AuthController } from './auth/auth.controller';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
+import { PrismaService } from './prisma/prisma.service';
 
 @Module({
   imports: [
-    JwtModule.register({
-      secret: 'your-secret-key', // Replace with your own secret key
-      signOptions: { expiresIn: '1h' }, // Token expiration time
-    }),
     AuthModule, 
     UserModule,
-    PassportModule
+    // PassportModule
   ],
     controllers: [AuthController],
-    providers: [AuthService, UsersService],
+    providers: [PrismaService, UserService],
 })
 export class AppModule {}

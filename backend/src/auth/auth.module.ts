@@ -1,20 +1,17 @@
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
-// import { LocalStrategy } from './local.strategy';
 import { FortyTwoStrategy } from './42.strategy';
-// import passport from 'passport';
-// import { AuthService } from './auth.service';
-// import { UserModule } from 'src/user/user.module';
+import { UserModule } from 'src/user/user.module';
+import { UserService } from 'src/user/user.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: '42'}),
-    // UserModule,
-    PassportModule,
+    UserModule,
   ],
   controllers: [AuthController],
-  providers: [/*AuthService, LocalStrategy*/ FortyTwoStrategy],
-  exports: [/*AuthService*/],
+  providers: [PrismaService ,FortyTwoStrategy, UserService],
 })
 export class AuthModule {}
