@@ -28,21 +28,21 @@ export class UserService {
 
 
   async CraeteUser(reqData: any) {
-    const userFind = await this.prisma.user.findUnique({
-      where: { id: reqData.id },
-    });
-    if (userFind) {
-      return "User already exist";
-    }
+    // const userFind = await this.prisma.user.findUnique({
+    //   where: { id: reqData.id },
+    // });
+    // if (userFind) {
+    //   return "User already exist";
+    // }
     const user = await this.prisma.user.create({
       data: {
-          id : reqData.id,
+          // id : reqData.id,
           intraid: reqData.intraid,
           Hashpassword: reqData.Hashpassword,
           email: reqData.email,
           profile: {
             create: {
-              id: reqData.profile.id,
+              // id: reqData.profile.id,
               username: reqData.profile.username,
               avatar: reqData.profile.avatar,
               login: reqData.profile.login,
@@ -158,6 +158,13 @@ export class UserService {
     const user = await this.prisma.profile.findUnique({
       where: { id: id },
     }); 
+    return user;
+  }
+
+  async FindUserByIntraId(id: number) {
+    const user = await this.prisma.user.findUnique({
+      where: {intraid: id},
+    });
     return user;
   }
 
