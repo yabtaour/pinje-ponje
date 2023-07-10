@@ -8,13 +8,18 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthService } from './auth.service';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { JwtAuthService } from './jwt.service';
+import { config } from 'dotenv';
+
+config()
+
+const secret = process.env.JWT_SECRET;
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: '42'}),
     UserModule,
     JwtModule.register({
-      secret: 'secret',
+      secret: secret,
       signOptions: {expiresIn: '60s'},
     }),
   ],
