@@ -20,3 +20,4 @@ export class AuthController {
         response.redirect('200');
     }
 }
+
