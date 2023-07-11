@@ -8,7 +8,7 @@ export class UserController {
 
   @Post()
   create(@Body() data: any) {
-    return this.userService.CraeteUser(data);
+    return this.userService.CreateUser(data);
   }
 
   @Get('/all')
@@ -30,6 +30,10 @@ export class UserController {
     return this.userService.FindUserByID(+id);
   }
 
+  @Get('/profiles/:id')
+  findProfileById(@Param() id) {
+    return this.userService.FindProfileById(Number(id));
+  }
 
   @Post('profile/SentFriendsInvitation/')
   SentFriendsInvitation(@Body() data: any ) {
