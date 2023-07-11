@@ -4,6 +4,7 @@ import { Strategy } from "passport-42";
 import { config } from 'dotenv';
 import { UserService } from "src/user/user.service";
 import { AuthService } from "./auth.service";
+import { JwtAuthService } from "./jwt.service";
 
 config(); // This loads the .env file
 
@@ -13,6 +14,7 @@ const sid = process.env.SECRET;
 @Injectable()
 export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
     constructor(
+      private readonly jwtService: JwtAuthService,
       private readonly userService: UserService,
       private readonly authService: AuthService,
     ){
@@ -35,7 +37,8 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
           }
         };
         const user = await this.authService.userCreateOrNot(newUser);
-        done(null, user);
+        const token = await this.jwtService.generateToken(String(profile.id));
+        done(null, { user, token });
       } catch (error){
         done(error)
       }
