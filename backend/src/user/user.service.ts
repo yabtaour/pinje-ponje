@@ -27,7 +27,7 @@ export class UserService {
 
 
 
-  async CraeteUser(reqData: any) {
+  async CreateUser(reqData: any) {
     // const userFind = await this.prisma.user.findUnique({
     //   where: { id: reqData.id },
     // });
@@ -53,6 +53,13 @@ export class UserService {
     return user;
   }
 
+  async FindProfileById(id: number) {
+    const profile = await this.prisma.profile.findUnique({
+      where: { id : id} ,
+    });
+    return profile;
+  }
+
   async FindAllProfiles() {
     const user = await this.prisma.profile.findMany({
       include: {
@@ -62,6 +69,7 @@ export class UserService {
     });
     return user;
   }
+
   async FindAllUsers() {
     const user = await this.prisma.user.findMany({
       include: {
@@ -155,7 +163,7 @@ export class UserService {
 
 
   async FindUserByID(id: number) {
-    const user = await this.prisma.profile.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id: id },
     }); 
     return user;
