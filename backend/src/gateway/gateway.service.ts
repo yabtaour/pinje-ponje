@@ -23,4 +23,8 @@ export class GatewayService {
   remove(id: number) {
     return `This action removes a #${id} gateway`;
   }
+
+  status(id: number) {
+    return `This action status a #${id} gateway`;
+  }
 }
