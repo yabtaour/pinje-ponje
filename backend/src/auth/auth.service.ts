@@ -14,7 +14,7 @@ export class AuthService {
             return checkUser;
         }
         else {
-            const userCreated = await this.userService.CraeteUser(user);
+            const userCreated = await this.userService.CreateUser(user);
             console.log("new user created");
             return userCreated;
         }
