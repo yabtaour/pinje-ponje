@@ -27,9 +27,9 @@ export class AuthController {
     @Get('42/callback')
     @UseGuards(AuthGuard('42'))
     async handle42Auth(@Req() request: any, @Res() response: Response) {
-        console.log("returned here");
+        // console.log("returned here");
         const user = request.user;
-        console.log(request.user);
+        // console.log(request.user);
         response.setHeader("Authorisation", request.user.token);
         response.redirect(`200/${String(request.user.user.id)}`);
     }
