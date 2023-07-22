@@ -1,6 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { JwtGuard } from 'src/auth/guards/jwt.guard';
+// import { AuthGuard } from '@nestjs/passport';
+// import { FortyTwoStrategy } from 'src/auth/42.strategy';
 
 @Controller()
 export class UserController {
@@ -66,9 +69,15 @@ export class UserController {
   //   return this.userService.UnBlockFriend(data);
   // }
 
+
   @Delete('users/:id')
+  @UseGuards(JwtGuard)
   remove(@Param('id') id: string) {
-    return this.userService.RemoveUsers(+id);
+    try {
+      return this.userService.RemoveUsers(Number(id));
+    } catch (error) {
+      console.log(error);
+    }
   }
   // @Delete('users/:id/friends')
   // removeFriend(@Body() data: any) {

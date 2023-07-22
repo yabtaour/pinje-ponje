@@ -9,7 +9,7 @@ import { AuthService } from './auth.service';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { JwtAuthService } from './jwt.service';
 import { config } from 'dotenv';
-import { profile } from 'console';
+// import { profile } from 'console';
 import { ProfilesService } from 'src/profiles/profiles.service';
 
 config()
@@ -27,5 +27,6 @@ const secret = process.env.JWT_SECRET;
   ],
   controllers: [AuthController],
   providers: [JwtAuthService ,PrismaService ,FortyTwoStrategy, UserService, AuthService, ProfilesService],
+  exports: [FortyTwoStrategy]
 })
 export class AuthModule {}

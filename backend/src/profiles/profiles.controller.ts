@@ -1,9 +1,13 @@
+import { UserService } from 'src/user/user.service';
 import { ProfilesService } from './profiles.service';
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 
 @Controller('profiles')
 export class ProfilesController {
-  constructor(private readonly profilesService: ProfilesService) {}
+  constructor(
+    private readonly profilesService: ProfilesService,
+    private readonly userServices: UserService
+  ) {}
 
   @Get()
   FindAllProfiles() {
@@ -53,5 +57,10 @@ export class ProfilesController {
   @Delete(':id/friends')
   removeFriend(@Body() data: any) {
     return this.profilesService.RemoveFriend(data);
+  }
+
+  @Delete(':id')
+  removeProfile(@Body() data: any, @Param('id') id: number) {
+    return this.profilesService.RemoveProfiles(Number(id));
   }
 }
