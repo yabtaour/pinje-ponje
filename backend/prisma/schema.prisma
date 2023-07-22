@@ -60,6 +60,39 @@ model Game {
   updatedAt DateTime   @updatedAt @default(now())
 }
 
+model ChatRoom {
+  id      Int          @id @unique @default(autoincrement())
+  members RoomMember[]
+  message Messages?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt @default(now())
+}
+
+model RoomMember {
+  id        Int          @id @unique @default(autoincrement())
+  chatRoom  ChatRoom[]
+  role      ChatRole
+  message   Messages?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt @default(now())
+}
+
+model Messages {
+  id          Int          @id @unique @default(autoincrement())
+  sender      RoomMember   @relation(fields: [senderId], references: [id])
+  senderId    Int          @unique
+  receiver    ChatRoom     @relation(fields: [receiverId], references: [id])
+  receiverId  Int          @unique
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt @default(now())
+}
+
+enum ChatRole {
+  MEMBER
+  ADMIN
+  OWNER
+}
+
 enum gameResult {
   WIN
   LOSE
