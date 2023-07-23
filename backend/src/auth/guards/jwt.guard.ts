@@ -18,17 +18,15 @@ export class JWTGuard implements CanActivate {
             return false;
         }
 
-        try {
-            const decodedToken = this.jwtService.verifyToken(token);
-            console.log(decodedToken);
-            // console.log(deco);
-            return(true);
-        } catch (err) {
-            // console.log(err);
-            return false
+        const isValideToken = this.jwtService.verifyToken(token);
+        if (isValideToken) {
+            return true;
         }
-        // console.log(headers);
-        // console.log(headers.authorization);
-        return true;
+        else {
+            return false;
+        }
+        // // console.log(headers);
+        // // console.log(headers.authorization);
+        // return true;
     }
 }

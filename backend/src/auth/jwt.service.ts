@@ -12,12 +12,12 @@ export class JwtAuthService {
 
   async verifyToken(token: string): Promise<any> {
     try {
-      return this.jwtService.verify(token, {
-        secret: 'secretString'});
-  } catch (err) {
-   throw new UnauthorizedException();
-
-    // console.log("Error decoding the Token");
+      await this.jwtService.verifyAsync(token, {
+        secret: 'backend/.env',
+      });
+      return true;
+    } catch (err) {
+      return false;
+    }
   }
-}
 }
