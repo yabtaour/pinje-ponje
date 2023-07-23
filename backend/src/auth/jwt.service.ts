@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
@@ -11,6 +11,13 @@ export class JwtAuthService {
   }
 
   async verifyToken(token: string): Promise<any> {
-    return this.jwtService.verifyAsync(token);
+    try {
+      return this.jwtService.verify(token, {
+        secret: 'secretString'});
+  } catch (err) {
+   throw new UnauthorizedException();
+
+    // console.log("Error decoding the Token");
   }
+}
 }

@@ -10,7 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [PrismaModule, ProfilesModule],
-  providers: [UserService, PrismaService, ProfilesService, JwtService],
+  providers: [UserService, PrismaService, ProfilesService, JwtService, JwtAuthService],
   controllers: [UserController],
 })
 export class UserModule {}
