@@ -12,12 +12,17 @@ export class JwtAuthService {
 
   async verifyToken(token: string): Promise<any> {
     try {
-      await this.jwtService.verifyAsync(token, {
-        secret: 'backend/.env',
+      const decodedToken = await this.jwtService.verifyAsync(token, {
+        secret: 'secret-string',
       });
-      return true;
+      return decodedToken;
     } catch (err) {
-      return false;
+      if (err.name === 'TokenExpiredError') {
+				console.log('Token has been expired');
+			} else {
+				console.error('Token verification failed:', err.message);
+			}
+			return null;
     }
   }
 }

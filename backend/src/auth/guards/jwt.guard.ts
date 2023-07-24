@@ -15,16 +15,23 @@ export class JWTGuard implements CanActivate {
         const token = headers.authorization;
 
         if (!token) {
+						console.log("No token detected");
             return false;
         }
 
-        const isValideToken = this.jwtService.verifyToken(token);
-        if (isValideToken) {
-            return true;
-        }
-        else {
-            return false;
-        }
+				this.jwtService.verifyToken(token)
+				.then((verifiedToken) => {
+					if (verifiedToken) {
+						console.log('Token is valid:', verifiedToken);
+						return true;
+					} else {
+						console.log('Couldnt verify token');
+						return false;
+					}
+				})
+				// .catch ((error) => {
+				// 	console.log(error.message);
+				// })
         // // console.log(headers);
         // // console.log(headers.authorization);
         // return true;
