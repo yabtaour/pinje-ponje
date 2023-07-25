@@ -4,6 +4,7 @@ import { CanActivate } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { Observable } from "rxjs";
 import { JwtAuthService } from "../jwt.service";
+import { decode } from "punycode";
 
 @Injectable()
 export class JWTGuard implements CanActivate {
@@ -18,7 +19,12 @@ export class JWTGuard implements CanActivate {
             return Promise.resolve(false);
         }
 				try {
-					return await this.jwtService.verifyToken(token);
+					const decodedToken = await this.jwtService.verifyToken(token);
+					// decodedToken.then
+					context.switchToHttp().getRequest().new_user = decodedToken;
+
+					return decodedToken;
+					// return await this.jwtService.verifyToken(token);
 				} catch (error) {
 					return false;
 				}

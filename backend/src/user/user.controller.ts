@@ -15,7 +15,9 @@ export class UserController {
   @Get('users')
   @UseGuards(JWTGuard)
   FindAllUsers(@Req() request: any) {
-		console.log(request.user);
+		console.log(request);
+		console.log(request.new_user);
+	
     return this.userService.FindAllUsers();
   }
   // @Get('profiles')
