@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Req, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { JWTGuard } from 'src/auth/guards/jwt.guard';
@@ -12,9 +12,10 @@ export class UserController {
     return this.userService.CreateUser(data);
   }
 
-  @UseGuards(JWTGuard)
   @Get('users')
-  FindAllUsers() {
+  @UseGuards(JWTGuard)
+  FindAllUsers(@Req() request: any) {
+		console.log(request.user);
     return this.userService.FindAllUsers();
   }
   // @Get('profiles')
