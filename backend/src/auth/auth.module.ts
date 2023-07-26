@@ -22,7 +22,7 @@ const secret = process.env.JWT_SECRET;
     UserModule,
     JwtModule.register({
       secret: secret,
-      signOptions: {expiresIn: '120s'},
+      signOptions: {expiresIn: '60s'},
     }),
   ],
   controllers: [AuthController],
