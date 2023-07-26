@@ -14,10 +14,10 @@ export class AuthController {
 
     @Get('42/200/:id')
     async getProfile(@Param() id) {
-        console.log(id.id);
+        // console.log(id.id);
         const profile = this.userService.FindUserByID(Number(id.id));
         return profile;
-        return ("jesus loves u <3");
+        // return ("jesus loves u <3");
     }
 
     @Get('42')

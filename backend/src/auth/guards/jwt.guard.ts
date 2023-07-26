@@ -15,11 +15,11 @@ export class JWTGuard implements CanActivate {
         const headers = request.headers;
         const token = headers.authorization;
         if (!token) {
-						console.log("No token detected");
+			console.log("No token detected");
             return Promise.resolve(false);
         }
 				try {
-					const decodedToken = await this.jwtService.verifyToken(token);
+					const decodedToken = await this.jwtService.verifyToken(token, context);
 					// decodedToken.then
 					context.switchToHttp().getRequest().new_user = decodedToken;
 

@@ -72,6 +72,7 @@ model RoomMember {
   id        Int          @id @unique @default(autoincrement())
   chatRoom  ChatRoom[]
   role      ChatRole
+  STATE     MemberState
   message   Messages?
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt @default(now())
@@ -85,6 +86,11 @@ model Messages {
   receiverId  Int          @unique
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt @default(now())
+}
+
+enum MemberState {
+  ACTIVE
+  MUTED
 }
 
 enum ChatRole {

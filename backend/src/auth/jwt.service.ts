@@ -1,5 +1,12 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ExecException } from 'child_process';
+import { config } from 'dotenv';
+
+config()
+
+const secret = process.env.JWT_SECRET;
+
 
 @Injectable()
 export class JwtAuthService {
@@ -10,10 +17,10 @@ export class JwtAuthService {
     return this.jwtService.signAsync(payload);
   }
 
-  async verifyToken(token: string): Promise<any> {
+  async verifyToken(token: string, context: ExecutionContext): Promise<any> {
     try {
       const decodedToken = await this.jwtService.verifyAsync(token, {
-        secret: 'secret-string',
+        secret: 'secretString',
       });
       return decodedToken;
     } catch (err) {
@@ -22,7 +29,9 @@ export class JwtAuthService {
 			} else {
 				console.error('Token verification failed:', err.message);
 			}
-			return null;
+      const response = context.switchToHttp().getResponse();
+      response.redirect("http://localhost:3000/auth/42");
+			// return null;
     }
   }
 }
