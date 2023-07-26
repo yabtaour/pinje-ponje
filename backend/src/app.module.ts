@@ -11,6 +11,7 @@ import { PrismaService } from './prisma/prisma.service';
 import { ProfilesModule } from './profiles/profiles.module';
 import { ProfilesService } from './profiles/profiles.service';
 import { PrismaModule } from './prisma/prisma.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { PrismaModule } from './prisma/prisma.module';
     GatewayModule,
     ProfilesModule,
     PrismaModule,
+    ChatModule,
     // PassportModule
   ],
     controllers: [AuthController],
