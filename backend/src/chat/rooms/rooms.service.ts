@@ -11,8 +11,8 @@ export class roomsService {
 
     async getChatRooms(id: number) {
         try {
-            const user = this.userService.FindUserByIntraId(id);
-            const chatMember = this.prismaService.roomMember.findMany({
+            const user = await this.userService.FindUserByIntraId(id);
+            const chatMember = await this.prismaService.roomMember.findMany({
                 where: {
                     userid: Number(user.id),
                 },
@@ -25,5 +25,15 @@ export class roomsService {
             console.log(error);
             return (null);
         }
-    } 
+    }
+
+    async createChatRoom(name: string) {
+        try {
+            return this.prismaService.chatRoom.create({
+                data: {
+                    
+                }
+            })
+        }
+    }
 }
