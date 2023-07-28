@@ -1,12 +1,26 @@
-import { SubscribeMessage, WebSocketGateway, MessageBody, WebSocketServer } from "@nestjs/websockets";
+import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway(3001)
+@WebSocketGateway()
 export class ChatGateway {
-    @WebSocketServer()
-    server;
+  @WebSocketServer() server: Server;
 
-    @SubscribeMessage('message')
-    handleMessage(@MessageBody() message: string): void{
-        this.server.emit('message', message);
-    }
+  @SubscribeMessage('joinRoom')
+  handleJoinRoom(client: Socket, roomName: string) {
+    client.join(roomName);
+  }
+
+  @SubscribeMessage('message')
+  handleMessage(client: Socket, payload: any) {
+    const { roomName, message } = payload;
+    // Save the message to the database (you can do this here or in a separate service)
+
+    // Emit the message to the members of the specific chat room
+    this.server.to(roomName).emit('newMessage', message);
+  }
+
+  @SubscribeMessage('leaveRoom')
+  handleLeaveRoom(client: Socket, roomName: string) {
+    client.leave(roomName);
+  }
 }
