@@ -20,7 +20,7 @@ export class JwtAuthService {
   async verifyToken(token: string, context: ExecutionContext): Promise<any> {
     try {
       const decodedToken = await this.jwtService.verifyAsync(token, {
-        secret: 'secretString',
+        secret: secret,
       });
       return decodedToken;
     } catch (err) {
