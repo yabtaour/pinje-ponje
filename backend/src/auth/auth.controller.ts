@@ -14,10 +14,10 @@ export class AuthController {
 
     @Get('42/200/:id')
     async getProfile(@Param() id) {
-        console.log(id.id);
+        // console.log(id.id);
         const profile = this.userService.FindUserByID(Number(id.id));
         return profile;
-        return ("jesus loves u <3");
+        // return ("jesus loves u <3");
     }
 
     @Get('42')
@@ -27,9 +27,9 @@ export class AuthController {
     @Get('42/callback')
     @UseGuards(AuthGuard('42'))
     async handle42Auth(@Req() request: any, @Res() response: Response) {
-        console.log("returned here");
+        // console.log("returned here");
         const user = request.user;
-        console.log(request.user);
+        // console.log(request.user);
         response.setHeader("Authorisation", request.user.token);
         response.redirect(`200/${String(request.user.user.id)}`);
     }
