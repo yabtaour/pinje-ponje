@@ -1,6 +1,8 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import Link from 'next/link'
+import SignUp from './(auth)/sign-up/page';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -16,7 +18,23 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
-    </html>
+
+      <body className={inter.className} style={{ padding: '0' }}>
+        {/* <nav className="flex justify-between items-center px-4 py-2 bg-transparent">
+          <div className="flex items-center">
+            <h1 className="text-white font-bold text-xl">Ponge</h1>
+          </div>
+          <div className="flex items-center">
+            <Link href="auth/sign-in">
+              <h1 className="bg-4A40BF text-white font-bold text-xl mx-4 px-3 py-2 rounded">Login</h1>
+            </Link>
+            <Link href="auth/sign-up">
+              <h1 className="bg-transparent border border-white text-white font-bold text-xl px-3 py-2 rounded">Sign Up</h1>
+            </Link>
+          </div>
+        </nav> */}
+        {children}</body>
+    </html >
   )
 }
+
