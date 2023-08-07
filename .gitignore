@@ -11,3 +11,5 @@ frontend/.env
 
 ## IDE files and folders
 .DS_Store
+
+backend/prisma/migrations/*
