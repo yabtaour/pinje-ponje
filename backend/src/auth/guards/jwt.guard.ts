@@ -4,11 +4,12 @@ import { CanActivate } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { Observable } from "rxjs";
 import { JwtAuthService } from "../jwt.service";
+import { PrismaService } from "src/prisma/prisma.service";
 import { decode } from "punycode";
 
 @Injectable()
 export class JWTGuard implements CanActivate {
-    constructor (private readonly jwtService: JwtAuthService) {}
+    constructor (private readonly jwtService: JwtAuthService, private readonly prisma: PrismaService) {}
 
     async canActivate(context: ExecutionContext) {
         const request = context.switchToHttp().getRequest();
@@ -18,15 +19,20 @@ export class JWTGuard implements CanActivate {
 			console.log("No token detected");
             return Promise.resolve(false);
         }
-				try {
-					const decodedToken = await this.jwtService.verifyToken(token, context);
-					// decodedToken.then
-					context.switchToHttp().getRequest().new_user = decodedToken;
-
-					return decodedToken;
-					// return await this.jwtService.verifyToken(token);
-				} catch (error) {
-					return false;
-				}
+		console.log("token: ", token);
+		try {
+			const decodedToken = await this.jwtService.verifyToken(token, context);
+			// decodedToken.then
+			console.log("decodedToken: ", decodedToken.sub);
+			if (!decodedToken || !decodedToken.sub) {
+				console.log("No decodedToken");
+				return false;
+			}
+			context.switchToHttp().getRequest().user = decodedToken;
+			return decodedToken;
+			// return await this.jwtService.verifyToken(token);
+		} catch (error) {
+			return false;
 		}
+	}
 }
