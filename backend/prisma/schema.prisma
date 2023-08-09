@@ -11,19 +11,20 @@ datasource db {
 }
 
 model User {
-  id              Int     @id @unique @default(autoincrement())
-  intraid         Int     @unique
+  id              Int      @id @unique @default(autoincrement())
   Hashpassword    String?
-  email           String  @unique
-  twofactor       Boolean @default(false)
+  email           String   @unique
+  intraid         Int      @unique
+  twofactor       Boolean  @default(false)
   twoFactorSecret String?
-  GameOfP1        Game[]  @relation("P1")
-  GameOfP2        Game[]  @relation("P2")
+  GameOfP1        Game[]   @relation("P1")
+  GameOfP2        Game[]   @relation("P2")
   profile         Profile?
 }
 
 model Profile {
   id             Int       @id @unique @default(autoincrement())
+  intraid        Int       @unique
   username       String    @unique
   login          String    @unique
   // campus      String // # at the creation the campus came from intra
@@ -40,9 +41,9 @@ model Profile {
   pendingRequest Profile[] @relation("UserPending")
   sentRequest    Profile[] @relation("UserPending")
   createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt @default(now())
-  user           User     @relation(fields: [userid], references: [id])
-  userid         Int      @unique
+  updatedAt      DateTime  @default(now()) @updatedAt
+  user           User      @relation(fields: [userid], references: [id])
+  userid         Int       @unique
 }
 
 model Game {
@@ -57,35 +58,35 @@ model Game {
   p2Result  gameResult @default(DRAW)
   status    gameStatus @default(PENDING)
   createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt @default(now())
+  updatedAt DateTime   @default(now()) @updatedAt
 }
 
 model ChatRoom {
-  id      Int          @id @unique @default(autoincrement())
-  members RoomMember[]
-  message Messages?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt @default(now())
+  id        Int          @id @unique @default(autoincrement())
+  members   RoomMember[]
+  message   Messages?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @default(now()) @updatedAt
 }
 
 model RoomMember {
-  id        Int          @id @unique @default(autoincrement())
+  id        Int         @id @unique @default(autoincrement())
   chatRoom  ChatRoom[]
   role      ChatRole
   STATE     MemberState
   message   Messages?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt @default(now())
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @default(now()) @updatedAt
 }
 
 model Messages {
-  id          Int          @id @unique @default(autoincrement())
-  sender      RoomMember   @relation(fields: [senderId], references: [id])
-  senderId    Int          @unique
-  receiver    ChatRoom     @relation(fields: [receiverId], references: [id])
-  receiverId  Int          @unique
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt @default(now())
+  id         Int        @id @unique @default(autoincrement())
+  sender     RoomMember @relation(fields: [senderId], references: [id])
+  senderId   Int        @unique
+  receiver   ChatRoom   @relation(fields: [receiverId], references: [id])
+  receiverId Int        @unique
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @default(now()) @updatedAt
 }
 
 enum MemberState {

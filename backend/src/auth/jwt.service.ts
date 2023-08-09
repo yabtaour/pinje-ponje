@@ -12,8 +12,9 @@ const secret = process.env.JWT_SECRET;
 export class JwtAuthService {
   constructor(private readonly jwtService: JwtService) {}
 
-  async generateToken(intraId: string): Promise<string> {
-    const payload = { sub: intraId };
+  async generateToken(id: string): Promise<string> {
+    const payload = { sub: id };
+    console.log(payload);
     return this.jwtService.signAsync(payload);
   }
 
@@ -22,6 +23,7 @@ export class JwtAuthService {
       const decodedToken = await this.jwtService.verifyAsync(token, {
         secret: secret,
       });
+
       return decodedToken;
     } catch (err) {
       if (err.name === 'TokenExpiredError') {

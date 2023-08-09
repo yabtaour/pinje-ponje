@@ -1,0 +1,183 @@
+<!-- 
+<!DOCTYPE html>
+<html>
+<head>
+  <title>User Status</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    .user-list {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .user-list-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 5px;
+    }
+
+    .online {
+      background-color: green;
+    }
+
+    .offline {
+      background-color: red;
+    }
+  </style>
+  <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"
+    integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
+    crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <h1>User Status</h1>
+  <ul id="userList" class="user-list">
+    <li class="user-list-item">
+      <span class="dot"></span>
+    </li>
+  </ul>
+
+  <script>
+    const users = [];
+    // Establish a socket connection
+    const socket = io('http://localhost:3000/gateway');
+    const userListElement = document.getElementById('userList');
+
+    socket.emit('online', (data) => {
+        // generete random user id
+        const userId = Math.floor(Math.random() * 1000);
+        console.log("main online");
+        const {status } = data;
+        console.log(userId);
+        // generete push user id to the list
+        const ids = users.find((user) => user === userId);
+        if (ids != userId) {
+          addUserToList('online', userId);
+        }
+        console.log(users);
+      });
+
+
+
+    // Listen for the 'status' event from the backend
+
+    // add event listener to the button
+    // const button = document.getElementById('button');
+    // button.addEventListener('click', () => {
+    //   socket.emit('online', (data) => {
+    //     console.log(data);
+    //     const { userId, status } = data;
+    //     addUserToList(status, userId);
+    //   });
+    // });
+    // add event listener for new socket connection
+
+    function addUserToList(status, userId) {
+      users.push(userId);
+      const listItem = document.createElement('li');
+      listItem.className = 'user-list-item';
+
+      const dotElement = document.createElement('span');
+      dotElement.className = 'dot';
+      dotElement.classList.add(status);
+
+      const userIdElement = document.createElement('span');
+      userIdElement.className = 'user-id';
+      userIdElement.innerText = userId + ' is ' + status;
+
+      listItem.appendChild(dotElement);
+      listItem.appendChild(userIdElement);
+      userListElement.appendChild(listItem);
+    }
+  </script>
+</body>
+
+</html> -->
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>User Status</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    .status {
+      display: inline-block;
+      color: #777;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: green;
+      margin-right: 5px;
+    }
+  </style>
+  <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"
+    integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
+</head>
+<body>
+  <h1>User Status</h1>
+  <p id="statusGateway"><span class="dot"></span><span class="status">Loading...</span></p>
+
+  <script>
+    // Establish a socket connection
+    const socket = io('http://localhost:3000/gateway');
+    socket.emit('online', (data) => {
+      const statusElement = document.getElementById('statusGateway');
+      const dotElement = statusElement.querySelector('.dot');
+      const statusTextElement = statusElement.querySelector('.status');
+      dotElement.style.backgroundColor = 'green';
+      statusTextElement.innerText = "online";
+      console.log(data);
+      console.log('Connected to the gateway');
+      socket.on('disconnect', () => {
+        dotElement.style.backgroundColor = 'red';
+        statusTextElement.innerText = "offline";
+        console.log('Disconnected from the gateway');
+      });
+    });
+    // // Listen for the 'status' event from the backend
+    socket.on('statusGateway', (data) => {
+      // Update the UI based on the status received
+      const statusElement = document.getElementById('statusGateway');
+      const dotElement = statusElement.querySelector('.dot');
+      const statusTextElement = statusElement.querySelector('.status');
+      if (data.status === 'online') {
+        dotElement.style.backgroundColor = 'green';
+      } else {
+        dotElement.style.backgroundColor = 'red';
+      }
+      statusTextElement.innerText = data.status;
+    });
+  </script>
+</body>
+</html>

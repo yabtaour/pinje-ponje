@@ -35,7 +35,7 @@ export class chatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.Logger.log(`Client disconnected: ${client.id}`);
   }
   
-  @SubscribeMessage('chatToServer')
+  @SubscribeMessage('chatToServer') 
   handleMessage(client: Socket, messages: {sender: string, message: string }): void {
     console.log('chatToServer');
     // this.alertGateway().sendToAll(); 
