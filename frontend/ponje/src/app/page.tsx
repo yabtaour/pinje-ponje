@@ -1,32 +1,18 @@
-import Image from 'next/image'
+import Image from 'next/image';
 import Link from 'next/link';
+import Head from 'next/head';
 
 export default function Home() {
   return (
-    <main className="flex flex-col items-center justify-between h-screen p-0">
-      <nav
-        className="flex justify-between items-center w-full px-4 py-2 bg-transparent"
-        style={{
-          backgroundImage: `url('/background.png')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <div className="flex items-center">
-          <h1 className="text-white font-bold text-xl">Ponge</h1>
-        </div>
-        <div className="flex items-center">
-          <Link href="/sign-in">
-            <h1 className="bg-logincColor text-white font-bold text-xl mx-4 px-3 py-2 rounded">Login</h1>
-          </Link>
-          <Link href="/sign-up">
-            <h1 className="bg-transparent border border-white text-white font-bold text-xl px-3 py-2 rounded">Sign Up</h1>
-          </Link>
-        </div>
-      </nav>
+    <div>
+      <Head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap"
+          rel="stylesheet"
+        />
+      </Head>
 
-      <div className="flex flex-col items-center justify-center h-screen w-screen relative p-0">
-
+      <main className="relative h-screen">
         <Image
           src="/background.png"
           alt="Background Image"
@@ -36,16 +22,64 @@ export default function Home() {
         />
 
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center text-white">
-          <h1 className="text-mainText text-4xl font-bold mb-4">
-            Revive the Classic,<br></br> Conquer the Pong World!
+          <h1
+            className="text-mainText text-4xl font-bold mb-4"
+            style={{
+              fontFamily: 'Montserrat, sans-serif',
+              fontSize: '3.5rem',
+              lineHeight: '1.3',
+            }}
+          >
+            Revive the Classic,Conquer <br /> the{' '}
+            <span
+              style={{
+                background: 'linear-gradient(90deg, #8B5CF6, #84CCE3 60%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                fontFamily: 'Montserrat, sans-serif',
+              }}
+            >
+              Pong
+            </span>{' '}
+            World!
           </h1>
+
           <p className="text-mainp text-lg mb-4">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.          </p>
-          <Link href="auth/sign-in">
-            <h1 className="bg-logincColor text-white font-bold text-xl px-4 py-2 rounded">Login</h1>
+            Discover the world of Pong, where classic meets modern. Engage in thrilling matches, compete with players worldwide, and experience the excitement of the game that started it all.
+          </p>
+          <Link href="/sign-in">
+            <h1 className="bg-logincColor text-white font-semibold text-base px-4 py-2 rounded inline-block">
+              Get Started
+            </h1>
+          </Link>
+          {/* 3D objects */}
+
+
+
+        </div>
+        <div className="absolute top-4 left-4">
+          <Image
+            src="/Logo.png"
+            alt="PONG Logo"
+            width={90}
+            height={90}
+          />
+        </div>
+        <div className="absolute top-4 right-4 flex space-x-2">
+          <Link href="/sign-in">
+            <h1 className="bg-logincColor text-white font-semibold text-base px-4 py-2 rounded">
+              <span className="text-sm">Login</span>
+            </h1>
+          </Link>
+          <Link href="/sign-up">
+            <h1 className="bg-transparent border border-white text-white font-light text-base px-4 py-2 rounded">
+              <span className="text-sm">Sign Up</span>
+            </h1>
           </Link>
         </div>
-      </div>
-    </main>
+
+
+      </main>
+    </div>
   );
 }
