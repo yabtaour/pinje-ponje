@@ -12,25 +12,35 @@ export class ProfilesService {
 
 
   // for less lines i can use the id directly without looking for profile
-  async FindAllProfiles(_id: number) {
+  async FindAllProfiles(_id: number, search: string) {
     if (!_id) {
       return "Profile id is undefined";
     }
     const userProfiles = await this.prisma.profile.findUnique({
-      where: { id: _id },
+      where: { userid: _id },
     });
     if (!userProfiles) {
       return "No profile with this id.";
     }
     const profiles = await this.prisma.profile.findMany({
       where : {
-        NOT : {
-          OR : [
-            { blockedBy : { some : { id : userProfiles.id } } },
-            { blocking : { some : { id : userProfiles.id } } }
-          ]
-        }
+        AND : [
+          {
+            NOT : {
+              OR : [
+                { blockedBy : { some : { id : userProfiles.id } } },
+                { blocking : { some : { id : userProfiles.id } } }
+              ]
+            }
+          }, {
+            OR : search ? [
+              !isNaN(+search) ? { userid : +search } : {},
+              { login : { contains : search  , mode : 'insensitive'} },
+            ] : {}
+          }
+        ]
       },
+
       include: {
         pendingRequest: true,
         sentRequest: true,
@@ -49,37 +59,7 @@ export class ProfilesService {
     console.log("_reqid: ", _reqid);
 
     const profile = await this.prisma.profile.findUnique({
-      where: { id: id },
-      include: {
-        pendingRequest: true,
-        sentRequest: true,
-        blockedBy: true,
-        blocking: true,
-      },
-    });
-
-    if (!profile) {
-      return "No profile with this id.";
-    }
-
-    const isBlocked = profile.blockedBy.find((element) => element.id === _reqid);
-    const isBlocking = profile.blocking.find((element) => element.id === _reqid);
-    if (isBlocked || isBlocking) {
-      return "You are blocked by this user.";
-    }
-    return profile;
-  }
-
-
-  async FindProfileByLogin(_reqid: number , _login: string) {
-    if (!_reqid || !_login) {
-      return "Profile Login is undefined";
-    }
-    console.log("login: ", _login);
-    console.log("_reqid: ", _reqid);
-
-    const profile = await this.prisma.profile.findUnique({
-      where: { login: _login },
+      where: { userid: id },
       include: {
         pendingRequest: true,
         sentRequest: true,
@@ -128,7 +108,7 @@ export class ProfilesService {
     }
 
     const newFriendProfile = await this.prisma.profile.findUnique({
-      where: { id: data.id },
+      where: { userid: data.id },
     });
     
     if (!newFriendProfile) {
@@ -379,6 +359,7 @@ export class ProfilesService {
     if (!_id) {
       return "Profile id is undefined";
     }
+    _id = 62;
     const user = await this.prisma.profile.update({
       where: { id: _id },
       data: {

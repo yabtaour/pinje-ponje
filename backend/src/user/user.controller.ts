@@ -13,6 +13,11 @@ export class UserController {
     return this.userService.CreateUser(data);
   }
 
+  @Get('fake/:number')
+  createFake(@Body ('number') number: string) {
+    return this.userService.CreateUsersFake(+number);
+  }
+
   @Get()
   FindAllUsers(@Req() request: any) {
     return this.userService.FindAllUsers();
