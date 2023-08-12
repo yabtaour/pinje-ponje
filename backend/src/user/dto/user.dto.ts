@@ -3,11 +3,15 @@ import {
     IsNotEmpty,
     IsInt,
     IsString,
-    IsOptional
+    IsOptional,
+    IsIn
 } from 'class-validator';
 
-export class CreateUserDto {
+export class UserDto {
     
+    @IsInt()
+    sub : number;
+
     @IsNotEmpty()
     @IsInt()
     intraid: number;
