@@ -1,9 +1,11 @@
 {
   "dependencies": {
-    "@nestjs/cli": "^10.1.5"
+    "@nestjs/cli": "^10.1.5",
+    "next": "^13.4.13"
   },
   "devDependencies": {
     "@prisma/client": "^4.16.2",
+    "@types/react": "^18.2.20",
     "prisma": "^4.16.2"
   }
 }
