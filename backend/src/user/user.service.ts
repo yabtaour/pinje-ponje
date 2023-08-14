@@ -89,19 +89,16 @@ export class UserService {
     }
   }
 
-  async CreateUser(reqData: any) {
+  async CreateUser(reqData: data) {
     try {
 
       const user = await this.prisma.user.create({
         data: {
-          // id : reqData.id,
           intraid: reqData.intraid,
           Hashpassword: reqData.Hashpassword,
           email: reqData.email,
           profile: {
             create: {
-              // id: reqData.profile.id,
-              // intraid: reqData.profile.intraid,
               username: reqData.profile.username,
               avatar: reqData.profile.avatar,
               login: reqData.profile.login,
@@ -150,7 +147,7 @@ export class UserService {
 
   async RemoveUsers(id: number) {
     const profile = await this.prisma.profile.delete({
-      where: { id: id },
+      where: { userid: id },
     });
     const user = await this.prisma.user.delete({
       where: { id: id },

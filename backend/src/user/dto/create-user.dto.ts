@@ -16,6 +16,10 @@ export class CreateUserDto {
     @IsString()
     login: string;
 
+
+    Hashpassword: string;
+
     @IsEmail()
     email: string;
+    
 }
