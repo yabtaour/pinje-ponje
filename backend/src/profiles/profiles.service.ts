@@ -80,7 +80,7 @@ export class ProfilesService {
     return profile;
   }
 
-  async FindAllFriends(_id: number) {
+  async FindAllFriends(_id: number) {0
     const userFriends = await this.prisma.profile.findUnique({
       where: { userid: _id },
           select: {
