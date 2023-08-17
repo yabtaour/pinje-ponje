@@ -13,6 +13,8 @@ import { ProfilesService } from './profiles/profiles.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { ChatModule } from './chat/chat.module';
 import { JwtAuthService } from './auth/jwt.service';
+import { APP_FILTER } from '@nestjs/core';
+import { GlobalExceptionFilter } from './global-exception.filter';
 
 @Module({
   imports: [
@@ -26,6 +28,10 @@ import { JwtAuthService } from './auth/jwt.service';
   ],
     controllers: [AuthController],
     providers: [
+      {
+        provide: APP_FILTER,
+        useClass: GlobalExceptionFilter,
+      },
       UserService, JwtAuthService, JwtService,
       ProfilesService, PrismaService],
 })
