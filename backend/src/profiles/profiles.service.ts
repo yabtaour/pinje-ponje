@@ -1,10 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { log } from 'console';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-
-
 @Injectable()
 export class ProfilesService {
   constructor(readonly prisma: PrismaService ) {}
@@ -327,9 +325,6 @@ export class ProfilesService {
   }
 
   async uploadAvatar(_id: number, file: any) {
-    if (!file || !file.path) {
-      return "No file uploaded";
-    }
     if (!_id) {
       return "Profile id is undefined";
     }
