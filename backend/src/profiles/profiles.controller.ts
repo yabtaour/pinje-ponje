@@ -39,6 +39,10 @@ export class ProfilesController {
 
 
 
+  @Get('/friends/')
+  FindAllFriends(@GetUser() user: UserDto) {
+    return this.profilesService.FindAllFriends(+user.sub);
+  }
 
   @Get()
   FindAllProfiles(@GetUser() user: UserDto, @Query ('search') search: string) {
@@ -55,10 +59,6 @@ export class ProfilesController {
 
 
 
-  @Get('/friends')
-  FindAllFriends(@GetUser() user: UserDto) {
-    return this.profilesService.FindAllFriends(+user.sub);
-  }
 
   @Post('add')
   SentFriendsRequest(@GetUser() user: UserDto ,@Body() data: any ) {

@@ -80,9 +80,9 @@ export class ProfilesService {
     return profile;
   }
 
-  async FindAllFriends(_id: number) {
+  async FindAllFriends(_id: number) {0
     const userFriends = await this.prisma.profile.findUnique({
-      where: { id: _id },
+      where: { userid: _id },
           select: {
             Friends: true,
           },
@@ -115,7 +115,7 @@ export class ProfilesService {
       return "No profile with this id";
     }
     const sender = await this.prisma.profile.update({
-      where: { id: _id },
+      where: { userid: _id },
       data: {
         sentRequest: {
           connect: { id: data.id }
@@ -131,7 +131,7 @@ export class ProfilesService {
       return "Profile id is undefined";
     }
     const otheruserFind = await this.prisma.profile.findUnique({
-      where: { id: data.id },
+      where: { userid: data.id },
       include: { sentRequest: true },
     });
     if (otheruserFind){
@@ -141,7 +141,7 @@ export class ProfilesService {
       }
 
       const otheruser = await this.prisma.profile.update({
-        where: { id: data.id },
+        where: { userid: data.id },
         data: {
           sentRequest: {
             disconnect: { id: _id }
@@ -156,7 +156,7 @@ export class ProfilesService {
       });
       if (buttonclicker) {
         const updateclickerProfile = await this.prisma.profile.update({
-          where: { id: _id },
+          where: { userid: _id },
           data: {
             Friends: {
               push : data.id
@@ -170,7 +170,7 @@ export class ProfilesService {
 
   async DeclineFriendRequest(_id: number, data: any) {
     const inviter = await this.prisma.profile.findUnique({
-      where: { id: data.id },
+      where: { userid: data.id },
       include: { sentRequest: true },
     });
     if (!inviter) {
@@ -182,7 +182,7 @@ export class ProfilesService {
       return "No request with this id";
     }
     const req_sender = await this.prisma.profile.update({
-      where: { id: _id },
+      where: { userid: _id },
       data: {
         pendingRequest: {
           disconnect: { id: data.id } 
@@ -194,7 +194,7 @@ export class ProfilesService {
 
   async CancelFriendRequest(_id: number, data: any) {
     const receiver = await this.prisma.profile.findUnique({
-      where: { id: data.id },
+      where: { userid: data.id },
       include: { pendingRequest: true },
     });
     if (!receiver) {
@@ -206,7 +206,7 @@ export class ProfilesService {
       return "No request with this id";
     }
     const req_receiver = await this.prisma.profile.update({
-      where: { id: _id },
+      where: { userid: _id },
       data: {
         sentRequest: {
           disconnect: { id: data.id }
@@ -219,14 +219,14 @@ export class ProfilesService {
 
   async removeFromFriendList(profileId: number, friendId: number): Promise<void> {
     const profile = await this.prisma.profile.findUnique({
-      where: { id: profileId },
+      where: { userid: profileId },
     });
 
     if (profile) {
       const updatedFriends = profile.Friends.filter((friend) => friend !== friendId);
 
       await this.prisma.profile.update({
-        where: { id: profileId },
+        where: { userid: profileId },
         data: {
           Friends: {
             set: updatedFriends,
@@ -238,7 +238,7 @@ export class ProfilesService {
 
   async RemoveFriend(profileId: number, data: any): Promise<any> {
     const friendProfile = await this.prisma.profile.findUnique({
-      where: { id: data.id },
+      where: { userid: data.id },
     });
 
     if (!friendProfile) {
@@ -253,7 +253,7 @@ export class ProfilesService {
 
   async FindAllBlockedUsers(_id: number) {
     const user = await this.prisma.profile.findUnique({
-      where: { id: _id },
+      where: { userid: _id },
       select: {
         blocking: true,
       },
@@ -269,12 +269,12 @@ export class ProfilesService {
     if (!data.id)
       return "id is undefined"
     const blockedUser = await this.prisma.profile.findUnique({
-        where : { id: data.id},
+        where : { userid: data.id},
     });
     if (!blockedUser)
       return "User Not Found"
     const userProfile = await this.prisma.profile.update({
-      where: { id: _id},
+      where: { userid: _id},
       data: {
         blocking: {
           connect: { id: data.id }
@@ -288,12 +288,12 @@ export class ProfilesService {
     if (!data.id)
       return "id is undefined"
     const blockedUser = await this.prisma.profile.findUnique({
-      where : { id: data.id}
+      where : { userid: data.id}
     })
     if (!blockedUser)
       return "User Not Found"
     const userProfile = await this.prisma.profile.update({
-      where: { id: _id},
+      where: { userid: _id},
       data: {
         blocking: {
           disconnect: { id: data.id }
@@ -305,7 +305,7 @@ export class ProfilesService {
 
   async RemoveProfiles(id: number) {
     const user = await this.prisma.profile.delete({
-      where: { id: id },
+      where: { userid: id },
     });
     return user;
   }
@@ -318,7 +318,7 @@ export class ProfilesService {
       return "Profile id is undefined";
     }
     const user = await this.prisma.profile.findUnique({
-      where: { id: _id },
+      where: { userid: _id },
       select: {
         avatar: true,
       },
@@ -334,7 +334,7 @@ export class ProfilesService {
       return "Profile id is undefined";
     }
     const user = await this.prisma.profile.update({
-      where: { id: _id },
+      where: { userid: _id },
       data: {
         avatar: file.path,
       },
@@ -347,7 +347,7 @@ export class ProfilesService {
       return "Profile id is undefined";
     }
     const user = await this.prisma.profile.update({
-      where: { id: _id },
+      where: { userid: _id },
       data: {
         avatar: null,
       },
@@ -361,7 +361,7 @@ export class ProfilesService {
     }
     _id = 62;
     const user = await this.prisma.profile.update({
-      where: { id: _id },
+      where: { userid: _id },
       data: {
         ...data,
       },
