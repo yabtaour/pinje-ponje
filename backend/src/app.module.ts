@@ -13,8 +13,13 @@ import { ProfilesService } from './profiles/profiles.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { ChatModule } from './chat/chat.module';
 import { JwtAuthService } from './auth/jwt.service';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { GlobalExceptionFilter } from './global-exception.filter';
+import { Throttle, ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+
+
+
+
 
 @Module({
   imports: [
@@ -24,6 +29,10 @@ import { GlobalExceptionFilter } from './global-exception.filter';
     ProfilesModule,
     PrismaModule,
     ChatModule,
+    ThrottlerModule.forRoot({
+      ttl: 1, // seconds
+      limit: 10, // requests
+    }),
     // PassportModule
   ],
     controllers: [AuthController],
@@ -31,6 +40,10 @@ import { GlobalExceptionFilter } from './global-exception.filter';
       {
         provide: APP_FILTER,
         useClass: GlobalExceptionFilter,
+      },
+      {
+        provide: APP_GUARD,
+        useClass: ThrottlerGuard,
       },
       UserService, JwtAuthService, JwtService,
       ProfilesService, PrismaService],
