@@ -9,17 +9,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-class CreateUserProfileDto {
-    @IsString()
-    username: string;
-
-    @IsString()
-    avatar: string;
-
-    @IsNotEmpty()
-    @IsString()
-    login: string;
-}
+import { CreateUserProfileDto } from '../../profiles/dto/create-profile.dto';
 
 export class CreateUserDto {
     @IsNotEmpty()

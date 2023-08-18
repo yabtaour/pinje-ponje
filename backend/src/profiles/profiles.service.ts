@@ -1,10 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { log } from 'console';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-
-
 @Injectable()
 export class ProfilesService {
   constructor(readonly prisma: PrismaService ) {}
@@ -22,6 +20,7 @@ export class ProfilesService {
     if (!userProfiles) {
       return "No profile with this id.";
     }
+
     const profiles = await this.prisma.profile.findMany({
       where : {
         AND : [
@@ -38,7 +37,7 @@ export class ProfilesService {
               { login : { contains : search  , mode : 'insensitive'} },
             ] : {}
           }
-        ]
+        ],
       },
 
       include: {
@@ -48,6 +47,19 @@ export class ProfilesService {
         blocking: true,
       },
     });
+
+    // if (isNaN(+search)) {
+    //   if (search && profiles.length === 1) {
+    //     if (search != profiles[0].login || +search != profiles[0].userid) {
+    //       _id = profiles[0].userid;
+    //       console.log("search: ", search);
+    //       console.log("_id: ", _id);
+    //     const OneProfile = await this.FindProfileById(_id, +search);
+    //     // profiles.Frineds = OneProfile;
+    //   return OneProfile;
+    //   // console.log("FrinedObj: ", FrinedObj);
+    //   }
+    // }
     return profiles;
   }
 
@@ -55,8 +67,6 @@ export class ProfilesService {
     if (!_reqid || !id) {
       return "Profile id is undefined.";
     }
-    console.log("id: ", id);
-    console.log("_reqid: ", _reqid);
 
     const profile = await this.prisma.profile.findUnique({
       where: { userid: id },
@@ -327,9 +337,6 @@ export class ProfilesService {
   }
 
   async uploadAvatar(_id: number, file: any) {
-    if (!file || !file.path) {
-      return "No file uploaded";
-    }
     if (!_id) {
       return "Profile id is undefined";
     }
