@@ -1,16 +1,13 @@
 import { ProfilesService } from './profiles.service';
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, UseInterceptors, UploadedFile, Query, BadRequestException, InternalServerErrorException} from '@nestjs/common';
-import { User } from '@prisma/client';
-import { request } from 'http';
+import {  Controller, Get, Post, Body, Patch, Param, Delete,
+          UseGuards, Req, UseInterceptors, 
+          UploadedFile, Query, BadRequestException, 
+          InternalServerErrorException} from '@nestjs/common';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { JWTGuard } from 'src/auth/guards/jwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from  'multer';
-import { extname } from  'path';
-import { clearConfigCache } from 'prettier';
 import { UserDto } from 'src/user/dto/user.dto';
 import { storageConfig } from 'src/microservices/storage.config';
-import { HttpException, HttpStatus } from '@nestjs/common';
 
 @Controller('profiles')
 @UseGuards(JWTGuard)
@@ -27,7 +24,14 @@ export class ProfilesController {
   }
 
   @Get()
-  FindAllProfiles(@GetUser() user: UserDto, @Query ('search') search: string) {
+  FindAllProfiles(
+    @GetUser() user: UserDto, 
+    @Query ('search') search: string,
+    @Query ('page') page: number,
+    @Query ('limit') limit: number,
+    @Query ('sort') sort: string,
+    @Query ('frineds') order: string,
+    ) {
     return this.profilesService.FindAllProfiles(+user.sub, search);
   }
   @Get(':id')

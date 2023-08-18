@@ -53,7 +53,7 @@ export class UserService {
     // });
     try {
       // console.log("CreateUsersFake");
-      for (let i = 0; i < 1000; i++) {
+      for (let i = 0; i < 2; i++) {
 
         // init fake data
         const FakeUser =  new data();

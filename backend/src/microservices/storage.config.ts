@@ -42,3 +42,4 @@ export const storageConfig = {
     fileSize: 2 * 1024 * 1024, // 2MB Max file(s) size
   },
 };
+
