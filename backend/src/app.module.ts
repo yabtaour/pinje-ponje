@@ -23,7 +23,7 @@ import { Throttle, ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     ChatModule,
     ThrottlerModule.forRoot({
       ttl: 1, // seconds
-      limit: 100, // requests
+      limit: 1000, // requests
     }),
     // PassportModule
   ],
