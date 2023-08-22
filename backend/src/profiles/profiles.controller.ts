@@ -22,21 +22,18 @@ export class ProfilesController {
   FindAllFriends(@GetUser() user: UserDto) {
     return this.profilesService.FindAllFriends(+user.sub);
   }
+  
+  @Get(':id')
+  findProfileById(@GetUser() user: UserDto, @Param('id') id: string) {
+    return this.profilesService.FindProfileById(+user.sub, +id);
+  }
 
   @Get()
   FindAllProfiles(
     @GetUser() user: UserDto, 
     @Query ('search') search: string,
-    @Query ('page') page: number,
-    @Query ('limit') limit: number,
-    @Query ('sort') sort: string,
-    @Query ('frineds') order: string,
     ) {
     return this.profilesService.FindAllProfiles(+user.sub, search);
-  }
-  @Get(':id')
-  findProfileById(@GetUser() user: UserDto, @Param('id') id: string) {
-    return this.profilesService.FindProfileById(+user.sub, +id);
   }
 
 

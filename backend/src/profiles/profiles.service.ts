@@ -3,24 +3,19 @@ import { log } from 'console';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { de, th } from '@faker-js/faker';
 @Injectable()
 export class ProfilesService {
   constructor(readonly prisma: PrismaService ) {}
-
-
-
-  // for less lines i can use the id directly without looking for profile
+  
   async FindAllProfiles(_id: number, search: string) {
-    if (!_id) {
-      return "Profile id is undefined";
-    }
+    if (!_id)
+      throw new BadRequestException("Profile id is undefined");
     const userProfiles = await this.prisma.profile.findUnique({
       where: { userid: _id },
     });
-    if (!userProfiles) {
-      return "No profile with this id.";
-    }
-
+    if (!userProfiles)
+      throw new HttpException('No profile with this id', HttpStatus.NOT_FOUND);
     const profiles = await this.prisma.profile.findMany({
       where : {
         AND : [
@@ -47,27 +42,20 @@ export class ProfilesService {
         blocking: true,
       },
     });
-
-    // if (isNaN(+search)) {
-    //   if (search && profiles.length === 1) {
-    //     if (search != profiles[0].login || +search != profiles[0].userid) {
-    //       _id = profiles[0].userid;
-    //       console.log("search: ", search);
-    //       console.log("_id: ", _id);
-    //     const OneProfile = await this.FindProfileById(_id, +search);
-    //     // profiles.Frineds = OneProfile;
-    //   return OneProfile;
-    //   // console.log("FrinedObj: ", FrinedObj);
-    //   }
-    // }
+    profiles.forEach((profile) => {
+      const isBlocked = profile.blockedBy.find((element) => element.id === _id);
+      if (isBlocked)
+        profile.blockedBy = undefined;
+    });
     return profiles;
   }
 
   async FindProfileById(_reqid: number , id: number) {
-    if (!_reqid || !id) {
-      return "Profile id is undefined.";
-    }
-
+    if (!_reqid || !id)
+    throw new BadRequestException("Profile id is undefined");
+    const isHeBlockingUS = await this.isBlocking(id, _reqid);
+    if (isHeBlockingUS)
+      throw new HttpException('Profile not found', HttpStatus.NOT_FOUND);
     const profile = await this.prisma.profile.findUnique({
       where: { userid: id },
       include: {
@@ -77,16 +65,10 @@ export class ProfilesService {
         blocking: true,
       },
     });
-
-    if (!profile) {
-      return "No profile with this id.";
-    }
-
+    if (!profile)
+      throw new HttpException('Profile not found', HttpStatus.NOT_FOUND);
     const isBlocked = profile.blockedBy.find((element) => element.id === _reqid);
-    const isBlocking = profile.blocking.find((element) => element.id === _reqid);
-    if (isBlocked || isBlocking) {
-      return "You are blocked by this user.";
-    }
+    profile.blockedBy = undefined;
     return profile;
   }
 
@@ -105,25 +87,21 @@ export class ProfilesService {
         },
       },
     });
-    if (!userFriends || !allFriends) {
-      return "No profile with this id";
-    }
+    if (!userFriends || !allFriends)
+      throw new HttpException('No profile with this id', HttpStatus.NOT_FOUND);
     return allFriends;
   }
 
   async SentFriendsRequest(_id: number, data: any) {
     
-    if (!_id || !data.id) {
-      return "Profile id is undefined";
-    }
-
+    if (!_id || !data.id)
+      throw new BadRequestException("Profile id is undefined");
     const newFriendProfile = await this.prisma.profile.findUnique({
       where: { userid: data.id },
     });
     
-    if (!newFriendProfile) {
-      return "No profile with this id";
-    }
+    if (!newFriendProfile)
+      throw new HttpException('No profile with this id', HttpStatus.NOT_FOUND);
     const sender = await this.prisma.profile.update({
       where: { userid: _id },
       data: {
@@ -378,6 +356,37 @@ export class ProfilesService {
     }
     return user;
   }
+
+  async isBlocking(blokcerID: number, blockedID: number) {
+    const user = await this.prisma.profile.findUnique({
+      where: { userid: blokcerID },
+      select: {
+        blocking: true,
+      },
+    });
+    if (!user) {
+      return "No profile with this id.";
+    }
+    const blocked = user.blocking.find((element) => element.id === blockedID);
+    if (blocked)
+      return true;
+    return false;
+  }
+
+  async isBlockby(_id: number, id: number) {
+    const user = await this.prisma.profile.findUnique({
+      where: { userid: _id },
+      select: {
+        blockedBy: true,
+      },
+    });
+    if (!user) {
+      return "No profile with this id.";
+    }
+    const blocking = user.blockedBy.find((element) => element.id === id);
+    if (blocking)
+      return true;
+    return false;
+  }
+
 }
-
-
