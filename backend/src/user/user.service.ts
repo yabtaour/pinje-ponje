@@ -53,7 +53,7 @@ export class UserService {
     // });
     try {
       // console.log("CreateUsersFake");
-      for (let i = 0; i < 1000; i++) {
+      for (let i = 0; i < 2; i++) {
 
         // init fake data
         const FakeUser =  new data();
@@ -89,22 +89,19 @@ export class UserService {
     }
   }
 
-  async CreateUser(reqData: any) {
+  async CreateUser(newUser: CreateUserDto) {
     try {
 
       const user = await this.prisma.user.create({
         data: {
-          // id : reqData.id,
-          intraid: reqData.intraid,
-          Hashpassword: reqData.Hashpassword,
-          email: reqData.email,
+          intraid: newUser.intraid,
+          Hashpassword: newUser.Hashpassword,
+          email: newUser.email,
           profile: {
             create: {
-              // id: reqData.profile.id,
-              // intraid: reqData.profile.intraid,
-              username: reqData.profile.username,
-              avatar: reqData.profile.avatar,
-              login: reqData.profile.login,
+              username: newUser.profile.login,
+              avatar: this.giveRandomAvatar(),
+              login: newUser.profile.login,
             },
           }
         }
@@ -114,6 +111,15 @@ export class UserService {
       console.log(error);
       return "Error: User Already Exist";
     }
+  }
+
+  giveRandomAvatar() {
+    const avatar = [
+      "path://shinra.png",
+      "path://stewie.png",
+      "path://escanor.png",
+    ];
+    return avatar[Math.floor(Math.random() * avatar.length)];
   }
 
   async FindAllUsers() {
@@ -150,7 +156,7 @@ export class UserService {
 
   async RemoveUsers(id: number) {
     const profile = await this.prisma.profile.delete({
-      where: { id: id },
+      where: { userid: id },
     });
     const user = await this.prisma.user.delete({
       where: { id: id },

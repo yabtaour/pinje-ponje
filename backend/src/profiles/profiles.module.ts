@@ -15,5 +15,6 @@ import { JwtService } from '@nestjs/jwt';
     JwtAuthService, JwtService,
   ],
   controllers: [ProfilesController],
+  exports: [ProfilesService]
 })
 export class ProfilesModule {}
