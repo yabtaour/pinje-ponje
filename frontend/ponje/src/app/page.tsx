@@ -47,7 +47,7 @@ export default function Home() {
               height={200}
             />
             <h1
-              className="text-mainText text-4xl font-bold mb-4"
+              className="text-mainText text-cyan-200		text-4xl font-bold mb-4"
               style={{
                 fontFamily: 'Montserrat, sans-serif',
                 fontSize: '3.5rem',
@@ -72,7 +72,7 @@ export default function Home() {
             </p>
           </div>
           <Link href="/sign-in" className="relative">
-            <h1 className="bg-logincColor text-white font-semibold text-base px-4 py-2 rounded inline-block">
+            <h1 className="bg-indigo-600	 text-white font-semibold text-base px-4 py-2 rounded inline-block">
               Get Started
             </h1>
             <svg
@@ -107,7 +107,7 @@ export default function Home() {
         </div>
         <div className="absolute top-4 right-4 flex space-x-2">
           <Link href="/sign-in">
-            <h1 className="bg-logincColor text-white font-semibold text-base px-4 py-2 rounded">
+            <h1 className="bg-indigo-600	 text-white font-semibold text-base px-4 py-2 rounded">
               <span className="text-sm">Login</span>
             </h1>
           </Link>

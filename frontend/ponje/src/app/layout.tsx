@@ -19,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en">
 
-      <body className={inter.className} style={{ padding: '0' }}>
+      <body className={inter.className} style={{ padding: '0'}}>
         {/* <nav className="flex justify-between items-center px-4 py-2 bg-transparent">
           <div className="flex items-center">
             <h1 className="text-white font-bold text-xl">Ponge</h1>

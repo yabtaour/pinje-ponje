@@ -24,7 +24,6 @@ model User {
 
 model Profile {
   id             Int       @id @unique @default(autoincrement())
-  // intraid        Int       @unique
   username       String    @unique
   login          String    @unique
   // campus      String // # at the creation the campus came from intra

@@ -53,7 +53,7 @@ export class UserService {
     // });
     try {
       // console.log("CreateUsersFake");
-      for (let i = 0; i < 1000; i++) {
+      for (let i = 0; i < 2; i++) {
 
         // init fake data
         const FakeUser =  new data();
@@ -114,6 +114,15 @@ export class UserService {
     // }
   }
 
+  giveRandomAvatar() {
+    const avatar = [
+      "path://shinra.png",
+      "path://stewie.png",
+      "path://escanor.png",
+    ];
+    return avatar[Math.floor(Math.random() * avatar.length)];
+  }
+
   async FindAllUsers() {
     const users = await this.prisma.user.findMany({
       include: {
@@ -155,7 +164,7 @@ export class UserService {
 
   async RemoveUsers(id: number) {
     const profile = await this.prisma.profile.delete({
-      where: { id: id },
+      where: { userid: id },
     });
     const user = await this.prisma.user.delete({
       where: { id: id },
