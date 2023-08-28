@@ -4,7 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { GatewayModule } from './gateway/gateway.module';
 import { UserService } from './user/user.service';
-import { AuthController } from './auth/auth.controller';
+import { AuthController, SignUpController } from './auth/auth.controller';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PrismaService } from './prisma/prisma.service';
@@ -13,6 +13,7 @@ import { ProfilesService } from './profiles/profiles.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { ChatModule } from './chat/chat.module';
 import { JwtAuthService } from './auth/jwt.service';
+import { AuthService } from './auth/auth.service';
 
 @Module({
   imports: [
@@ -22,11 +23,11 @@ import { JwtAuthService } from './auth/jwt.service';
     ProfilesModule,
     PrismaModule,
     ChatModule,
-    // PassportModule
+    PassportModule
   ],
-    controllers: [AuthController],
+    controllers: [AuthController, SignUpController],
     providers: [
       UserService, JwtAuthService, JwtService,
-      ProfilesService, PrismaService],
+      ProfilesService, PrismaService, AuthService],
 })
 export class AppModule {}

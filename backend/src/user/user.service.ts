@@ -94,14 +94,11 @@ export class UserService {
 
       const user = await this.prisma.user.create({
         data: {
-          // id : reqData.id,
           intraid: reqData.intraid,
           Hashpassword: reqData.Hashpassword,
           email: reqData.email,
           profile: {
             create: {
-              // id: reqData.profile.id,
-              // intraid: reqData.profile.intraid,
               username: reqData.profile.username,
               avatar: reqData.profile.avatar,
               login: reqData.profile.login,

@@ -7,7 +7,6 @@ config()
 
 const secret = process.env.JWT_SECRET;
 
-
 @Injectable()
 export class JwtAuthService {
   constructor(private readonly jwtService: JwtService) {}
