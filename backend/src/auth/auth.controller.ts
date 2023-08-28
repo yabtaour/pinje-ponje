@@ -51,18 +51,23 @@ export class SignUpController {
 
 		@Post()
 		async signUp(@Req() request: any, @Res() response: Response) {
-			console.log(request.body);
-			const user = {
-				intraid: 4444,
-				Hashpassword:request.body.Hashpassword,
-				email:request.body.email,
-				profile: {
-					username:request.body.username,
-					avatar:request.body.avatar,
-					login:request.body.username,
-				}
+			try {
+				console.log(request.body);
+				const user = {
+					intraid: 4444,
+					Hashpassword: request.body.Hashpassword,
+					email: request.body.email,
+					profile: {
+						username: request.body.username,
+						avatar: request.body.avatar,
+						login: request.body.username,
+					},
+				};
+				const userCreated = await this.userService.CreateUser(user);
+				console.log(user);
+			} catch(error) {
+				// console.log(error);
+				return "Error: User Already Exist";
 			}
-			const userCreated = await this.userService.CreateUser(request.body);
-			console.log(user);
 		}
 }

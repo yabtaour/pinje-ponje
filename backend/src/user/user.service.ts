@@ -90,8 +90,8 @@ export class UserService {
   }
 
   async CreateUser(reqData: any) {
-    try {
-
+    // try {
+			console.log(reqData);
       const user = await this.prisma.user.create({
         data: {
           intraid: reqData.intraid,
@@ -107,10 +107,11 @@ export class UserService {
         }
       })
       return user;
-    } catch (error) {
-      console.log(error);
-      return "Error: User Already Exist";
-    }
+    // } catch (error) {
+		// 	console.log("User already exist");
+    //   // console.log(error);
+    //   // return "Error: User Already Exist";
+    // }
   }
 
   async FindAllUsers() {
