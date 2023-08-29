@@ -89,28 +89,29 @@ export class UserService {
     }
   }
 
-  async CreateUser(newUser: CreateUserDto) {
-    try {
-
+  async CreateUser(reqData: any) {
+    // try {
+			console.log(reqData);
       const user = await this.prisma.user.create({
         data: {
-          intraid: newUser.intraid,
-          Hashpassword: newUser.Hashpassword,
-          email: newUser.email,
+          intraid: reqData.intraid,
+          Hashpassword: reqData.Hashpassword,
+          email: reqData.email,
           profile: {
             create: {
-              username: newUser.profile.login,
-              avatar: this.giveRandomAvatar(),
-              login: newUser.profile.login,
+              username: reqData.profile.username,
+              avatar: reqData.profile.avatar,
+              login: reqData.profile.login,
             },
           }
         }
       })
       return user;
-    } catch (error) {
-      console.log(error);
-      return "Error: User Already Exist";
-    }
+    // } catch (error) {
+		// 	console.log("User already exist");
+    //   // console.log(error);
+    //   // return "Error: User Already Exist";
+    // }
   }
 
   giveRandomAvatar() {
@@ -153,6 +154,13 @@ export class UserService {
     });
     return user;
   }
+
+	async FindUserByEmail(email: string) {
+		const user = await this.prisma.user.findUnique({
+			where: { email: email },
+		});
+		return user;
+	}
 
   async RemoveUsers(id: number) {
     const profile = await this.prisma.profile.delete({
