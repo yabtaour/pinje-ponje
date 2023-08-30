@@ -9,30 +9,30 @@ import { decode } from "punycode";
 
 @Injectable()
 export class JWTGuard implements CanActivate {
-    constructor (private readonly jwtService: JwtAuthService, private readonly prisma: PrismaService) {}
+    constructor (
+			private readonly jwtService: JwtAuthService,
+			private readonly prisma: PrismaService
+		) {}
 
-    async canActivate(context: ExecutionContext) {
-        const request = context.switchToHttp().getRequest();
-        const headers = request.headers;
-        const token = headers.authorization;
-        if (!token) {
-			console.log("No token detected");
-            return Promise.resolve(false);
-        }
-		console.log("token: ", token);
-		try {
-			const decodedToken = await this.jwtService.verifyToken(token, context);
-			// decodedToken.then
-			console.log("decodedToken: ", decodedToken.sub);
-			if (!decodedToken || !decodedToken.sub) {
-				console.log("No decodedToken");
-				return false;
-			}
+		async canActivate(context: ExecutionContext) {
+      const request = context.switchToHttp().getRequest();
+      const headers = request.headers;
+      const token = headers.authorization;
+      if (!token) {
+				console.log("No token detected");
+          return Promise.resolve(false);
+      	}
+			try {
+				const decodedToken = await this.jwtService.verifyToken(token, context);
+				console.log("decodedToken: ", decodedToken.sub);
+				if (!decodedToken || !decodedToken.sub) {
+					console.log("No decodedToken");
+					return false;
+				}
 			context.switchToHttp().getRequest().user = decodedToken;
 			return decodedToken;
-			// return await this.jwtService.verifyToken(token);
-		} catch (error) {
-			return false;
+			} catch (error) {
+				return false;
+			}
 		}
-	}
 }

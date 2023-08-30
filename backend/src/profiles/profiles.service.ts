@@ -7,23 +7,16 @@ import { de, th } from '@faker-js/faker';
 @Injectable()
 export class ProfilesService {
   constructor(readonly prisma: PrismaService ) {}
-  
+
   async FindAllProfiles(_id: number, search: string) {
-    if (!_id)
-      throw new BadRequestException("Profile id is undefined");
-    const userProfiles = await this.prisma.profile.findUnique({
-      where: { userid: _id },
-    });
-    if (!userProfiles)
-      throw new HttpException('No profile with this id', HttpStatus.NOT_FOUND);
     const profiles = await this.prisma.profile.findMany({
       where : {
         AND : [
           {
             NOT : {
               OR : [
-                { blockedBy : { some : { id : userProfiles.id } } },
-                { blocking : { some : { id : userProfiles.id } } }
+                { blockedBy : { some : { id : _id } } },
+                { blocking : { some : { id : _id } } }
               ]
             }
           }, {
@@ -34,28 +27,16 @@ export class ProfilesService {
           }
         ],
       },
-
       include: {
         pendingRequest: true,
         sentRequest: true,
-        blockedBy: true,
         blocking: true,
       },
-    });
-    profiles.forEach((profile) => {
-      const isBlocked = profile.blockedBy.find((element) => element.id === _id);
-      if (isBlocked)
-        profile.blockedBy = undefined;
     });
     return profiles;
   }
 
   async FindProfileById(_reqid: number , id: number) {
-    if (!_reqid || !id)
-    throw new BadRequestException("Profile id is undefined");
-    const isHeBlockingUS = await this.isBlocking(id, _reqid);
-    if (isHeBlockingUS)
-      throw new HttpException('Profile not found', HttpStatus.NOT_FOUND);
     const profile = await this.prisma.profile.findUnique({
       where: { userid: id },
       include: {
@@ -79,7 +60,6 @@ export class ProfilesService {
             Friends: true,
           },
     });
-
     const allFriends = await this.prisma.profile.findMany({
       where: {
         id: {

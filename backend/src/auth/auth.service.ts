@@ -9,16 +9,24 @@ export class AuthService {
     ) {}
 
     async userCreateOrNot(user: any) {
-        const checkUser = await this.userService.FindUserByIntraId(user.intraid);
-        if (checkUser) {
-            console.log("user already exists");
-            return checkUser;
-        }
-        else {
-            const userCreated = await this.userService.CreateUser(user);
-            const findUser = await this.userService.FindUserByIntraId(user.intraid);
-            console.log("new user created");
-            return findUser;
-        }
+      const checkUser = await this.userService.FindUserByIntraId(user.intraid);
+      if (checkUser) {
+        console.log("user already exists");
+          return checkUser;
+    	}
+      else {
+      	const userCreated = await this.userService.CreateUser(user);
+        const findUser = await this.userService.FindUserByIntraId(user.intraid);
+      	console.log("new user created");
+        return findUser;
+      }
     }
+
+		async validateUser(email: string, Hashpassword: string): Promise<any> {
+			const findUser = await this.userService.FindUserByEmail(email);
+			if (findUser && findUser.Hashpassword === Hashpassword) {
+				return findUser;
+			}
+			return null;
+		}
 }

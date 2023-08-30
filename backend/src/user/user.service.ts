@@ -45,24 +45,38 @@ async createFakeUsers(number: number) {
   }
 }
 
+<<<<<<< HEAD
 
   async CreateUser(newUser: CreateUserDto) {
+=======
+  async CreateUser(reqData: any) {
+    // try {
+			console.log(reqData);
+>>>>>>> dev
       const user = await this.prisma.user.create({
         data: {
-          intraid: newUser.intraid,
-          Hashpassword: newUser.Hashpassword,
-          email: newUser.email,
+          intraid: reqData.intraid,
+          Hashpassword: reqData.Hashpassword,
+          email: reqData.email,
           profile: {
             create: {
-              username: newUser.profile.login,
-              avatar: this.giveRandomAvatar(),
-              login: newUser.profile.login,
+              username: reqData.profile.username,
+              avatar: reqData.profile.avatar,
+              login: reqData.profile.login,
             },
           }
         }
       })
       if (!user) throw new HttpException("User Creation Failed", 500);
       return user;
+<<<<<<< HEAD
+=======
+    // } catch (error) {
+		// 	console.log("User already exist");
+    //   // console.log(error);
+    //   // return "Error: User Already Exist";
+    // }
+>>>>>>> dev
   }
 
   giveRandomAvatar() {
@@ -105,6 +119,13 @@ async createFakeUsers(number: number) {
     });
     return user;
   }
+
+	async FindUserByEmail(email: string) {
+		const user = await this.prisma.user.findUnique({
+			where: { email: email },
+		});
+		return user;
+	}
 
   async RemoveUsers(id: number) {
     const user = await this.prisma.user.delete({

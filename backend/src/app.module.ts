@@ -1,18 +1,21 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
-// import { AuthService } from './auth/auth.service';
 import { UserModule } from './user/user.module';
 import { GatewayModule } from './gateway/gateway.module';
-import { AuthController } from './auth/auth.controller';
+import { UserService } from './user/user.service';
+import { AuthController, SignUpController } from './auth/auth.controller';
+import { PassportModule } from '@nestjs/passport';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ProfilesModule } from './profiles/profiles.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ChatModule } from './chat/chat.module';
 import { JwtAuthService } from './auth/jwt.service';
+import { AuthService } from './auth/auth.service';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { GlobalExceptionFilter } from './global-exception.filter';
 import { Throttle, ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-
+import { ProfilesService } from './profiles/profiles.service';
+import { PrismaService } from './prisma/prisma.service';
 @Module({
   imports: [
     AuthModule, 
@@ -21,18 +24,20 @@ import { Throttle, ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     ProfilesModule,
     PrismaModule,
     ChatModule,
+    PassportModule,
     ThrottlerModule.forRoot({
       ttl: 1, // seconds
       limit: 1000, // requests
     }),
-    // PassportModule
   ],
-    controllers: [AuthController],
+    controllers: [AuthController, SignUpController],
     providers: [
-      {
-        provide: APP_FILTER,
-        useClass: GlobalExceptionFilter,
-      },
+      UserService, JwtAuthService, JwtService,
+      ProfilesService, PrismaService, AuthService,
+      // {
+      //   provide: APP_FILTER,
+      //   useClass: GlobalExceptionFilter,
+      // },
       {
         provide: APP_GUARD,
         useClass: ThrottlerGuard,
