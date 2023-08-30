@@ -7,28 +7,15 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class ProfilesService {
   constructor(readonly prisma: PrismaService ) {}
 
-
-
-  // for less lines i can use the id directly without looking for profile
   async FindAllProfiles(_id: number, search: string) {
-    if (!_id) {
-      return "Profile id is undefined";
-    }
-    const userProfiles = await this.prisma.profile.findUnique({
-      where: { userid: _id },
-    });
-    if (!userProfiles) {
-      return "No profile with this id.";
-    }
-
     const profiles = await this.prisma.profile.findMany({
       where : {
         AND : [
           {
             NOT : {
               OR : [
-                { blockedBy : { some : { id : userProfiles.id } } },
-                { blocking : { some : { id : userProfiles.id } } }
+                { blockedBy : { some : { id : _id } } },
+                { blocking : { some : { id : _id } } }
               ]
             }
           }, {
@@ -39,35 +26,16 @@ export class ProfilesService {
           }
         ],
       },
-
       include: {
         pendingRequest: true,
         sentRequest: true,
-        blockedBy: true,
         blocking: true,
       },
     });
-
-    // if (isNaN(+search)) {
-    //   if (search && profiles.length === 1) {
-    //     if (search != profiles[0].login || +search != profiles[0].userid) {
-    //       _id = profiles[0].userid;
-    //       console.log("search: ", search);
-    //       console.log("_id: ", _id);
-    //     const OneProfile = await this.FindProfileById(_id, +search);
-    //     // profiles.Frineds = OneProfile;
-    //   return OneProfile;
-    //   // console.log("FrinedObj: ", FrinedObj);
-    //   }
-    // }
     return profiles;
   }
 
   async FindProfileById(_reqid: number , id: number) {
-    if (!_reqid || !id) {
-      return "Profile id is undefined.";
-    }
-
     const profile = await this.prisma.profile.findUnique({
       where: { userid: id },
       include: {
@@ -77,11 +45,9 @@ export class ProfilesService {
         blocking: true,
       },
     });
-
     if (!profile) {
       return "No profile with this id.";
     }
-
     const isBlocked = profile.blockedBy.find((element) => element.id === _reqid);
     const isBlocking = profile.blocking.find((element) => element.id === _reqid);
     if (isBlocked || isBlocking) {
@@ -97,7 +63,6 @@ export class ProfilesService {
             Friends: true,
           },
     });
-
     const allFriends = await this.prisma.profile.findMany({
       where: {
         id: {

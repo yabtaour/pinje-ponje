@@ -34,10 +34,10 @@ import { PrismaService } from './prisma/prisma.service';
     providers: [
       UserService, JwtAuthService, JwtService,
       ProfilesService, PrismaService, AuthService,
-      {
-        provide: APP_FILTER,
-        useClass: GlobalExceptionFilter,
-      },
+      // {
+      //   provide: APP_FILTER,
+      //   useClass: GlobalExceptionFilter,
+      // },
       {
         provide: APP_GUARD,
         useClass: ThrottlerGuard,

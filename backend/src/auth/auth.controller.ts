@@ -30,7 +30,7 @@ export class AuthController {
     async handle42Auth(@Req() request: any, @Res() response: Response) {
         const user = request.user;
         console.log("Copy This Token: ", request.user.token);
-        response.setHeader("Authorisation", request.user.token);
+        // response.setHeader("Authorisation", request.user.token);
         response.redirect(`200/${String(request.user.user.id)}`);
     }
 
