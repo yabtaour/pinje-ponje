@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-import { Injectable } from "@nestjs/common";
-
-// const socket = io("http://localhost:3001")
-
-=======
 import { Injectable } from '@nestjs/common';
 // import { CreateChatDto } from './dto/create-chat.dto';
 // import { UpdateChatDto } from './dto/update-chat.dto';
@@ -30,4 +24,3 @@ export class ChatService {
   //   return `This action removes a #${id} chat`;
   // }
 }
->>>>>>> dev
