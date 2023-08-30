@@ -9,7 +9,6 @@ import { LocalAuthGuard } from './guards/local.guard';
 @Controller('auth')
 export class AuthController {
     constructor(
-        // private readonly authService: AuthService,
         private readonly userService: UserService
     ) {}
 
@@ -37,9 +36,11 @@ export class AuthController {
 		@Post('login')
 		@UseGuards(LocalAuthGuard)
 		async handleLogin(@Req() request: any, @Res() response: Response) {
-			// console.log(request);
 			console.log("we got in the controller");
 			console.log("user loged in needs redirection to profile");
+			const user = request.user;
+			response.setHeader("Authorisation", request.user.token);
+			response.redirect(`200/${String(request.user.user.id)}`);
 		}
 }
 
@@ -66,7 +67,8 @@ export class SignUpController {
 				const userCreated = await this.userService.CreateUser(user);
 				console.log(user);
 			} catch(error) {
-				// console.log(error);
+				//				throw new HttpException({message:"Error"}, HttpStatus.BAD_REQUEST);
+				console.log(error);
 				return "Error: User Already Exist";
 			}
 		}
