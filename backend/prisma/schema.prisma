@@ -20,6 +20,7 @@ model User {
   GameOfP1        Game[]   @relation("P1")
   GameOfP2        Game[]   @relation("P2")
   profile         Profile?
+	roomMember			RoomMember?
 }
 
 model Profile {
@@ -74,6 +75,8 @@ model RoomMember {
   role      ChatRole
   STATE     MemberState
   message   Messages?
+	user      User        @relation(fields: [userId], references: [id])
+	userId    Int         @unique
   createdAt DateTime    @default(now())
   updatedAt DateTime    @default(now()) @updatedAt
 }

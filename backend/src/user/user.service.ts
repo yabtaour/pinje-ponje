@@ -163,20 +163,9 @@ export class UserService {
 	}
 
   async RemoveUsers(id: number) {
-<<<<<<< HEAD
-    const userFetch = await this.prisma.user.findUnique({
-      where: {id: id},
-    });
-    if (!userFetch)
-      throw ("No user found");
-    const profile = this.profile.RemoveProfiles(id);
-    if (!profile)
-      throw ("Couldn't delete profile");
-=======
     const profile = await this.prisma.profile.delete({
       where: { userid: id },
     });
->>>>>>> dev
     const user = await this.prisma.user.delete({
       where: { id: id },
     });

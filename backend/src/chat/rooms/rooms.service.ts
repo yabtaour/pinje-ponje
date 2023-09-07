@@ -11,29 +11,28 @@ export class roomsService {
 
     async getChatRooms(id: number) {
         try {
-            const user = await this.userService.FindUserByIntraId(id);
-            const chatMember = await this.prismaService.roomMember.findMany({
-                where: {
-                    userid: Number(user.id),
-                },
-                include: {
-                    chatRoom: true,
-                },
-            });
-            return chatMember.map((chatMem) => chatMem.chatRoom);
+          const member = await this.prismaService.roomMember.findMany({
+              where: {
+                  userId: Number(id),
+              },
+              include: {
+                  chatRoom: true,
+              },
+          });
+          return member.map((roomMEmber) => roomMEmber.chatRoom);
         } catch (error) {
             console.log(error);
             return (null);
         }
     }
 
-    async createChatRoom(name: string) {
-        try {
-            return this.prismaService.chatRoom.create({
-                data: {
+    // async createChatRoom(name: string) {
+    //     try {
+    //         return this.prismaService.chatRoom.create({
+    //             data: {
                     
-                }
-            })
-        }
-    }
+    //             }
+    //         })
+    //     }
+    // }
 }
