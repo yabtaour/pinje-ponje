@@ -3,7 +3,7 @@ import { Injectable } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
 
 @Injectable()
-export class roomsService {
+export class RoomService {
     constructor (
         private readonly prismaService: PrismaService,
         private readonly userService: UserService
@@ -11,6 +11,7 @@ export class roomsService {
 
     async getChatRooms(id: number) {
         try {
+					console.log(id);
           const member = await this.prismaService.roomMember.findMany({
               where: {
                   userId: Number(id),
@@ -19,7 +20,7 @@ export class roomsService {
                   chatRoom: true,
               },
           });
-          return member.map((roomMEmber) => roomMEmber.chatRoom);
+					return member.map((roomMEmber) => roomMEmber.chatRoom);
         } catch (error) {
             console.log(error);
             return (null);
