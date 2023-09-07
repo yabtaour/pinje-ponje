@@ -63,6 +63,11 @@ model Game {
 
 model ChatRoom {
   id        Int          @id @unique @default(autoincrement())
+	name      String?
+	avatar		String?
+	type			roomType
+	password	String?
+	//probably should add invite too
   members   RoomMember[]
   message   Messages?
   createdAt DateTime     @default(now())
@@ -89,6 +94,13 @@ model Messages {
   receiverId Int        @unique
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @default(now()) @updatedAt
+}
+
+enum	roomType {
+	PUBLIC
+	PROTECTED
+	PRIVATE
+	DM
 }
 
 enum MemberState {
