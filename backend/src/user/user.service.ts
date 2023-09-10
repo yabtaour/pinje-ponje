@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ProfilesService } from 'src/profiles/profiles.service';
@@ -44,15 +44,8 @@ async createFakeUsers(number: number) {
     return "Error: User Already Exists";
   }
 }
-
-<<<<<<< HEAD
-
-  async CreateUser(newUser: CreateUserDto) {
-=======
   async CreateUser(reqData: any) {
     // try {
-			console.log(reqData);
->>>>>>> dev
       const user = await this.prisma.user.create({
         data: {
           intraid: reqData.intraid,
@@ -69,14 +62,6 @@ async createFakeUsers(number: number) {
       })
       if (!user) throw new HttpException("User Creation Failed", 500);
       return user;
-<<<<<<< HEAD
-=======
-    // } catch (error) {
-		// 	console.log("User already exist");
-    //   // console.log(error);
-    //   // return "Error: User Already Exist";
-    // }
->>>>>>> dev
   }
 
   giveRandomAvatar() {
@@ -131,6 +116,8 @@ async createFakeUsers(number: number) {
     const user = await this.prisma.user.delete({
       where: { id: id },
     });
+    if (!user)
+      throw ("Couldn't delete user");
     return user;
   }
 }

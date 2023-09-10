@@ -30,7 +30,11 @@ export class UserController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.userService.RemoveUsers(+id);
+    try {
+      return this.userService.RemoveUsers(Number(id));
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
   

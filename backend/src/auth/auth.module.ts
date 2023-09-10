@@ -10,7 +10,7 @@ import { AuthService } from './auth.service';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { JwtAuthService } from './jwt.service';
 import { config } from 'dotenv';
-import { profile } from 'console';
+// import { profile } from 'console';
 import { ProfilesService } from 'src/profiles/profiles.service';
 import { SignUpController } from './auth.controller';
 

@@ -16,6 +16,8 @@ import { GlobalExceptionFilter } from './global-exception.filter';
 import { Throttle, ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ProfilesService } from './profiles/profiles.service';
 import { PrismaService } from './prisma/prisma.service';
+import { RoomsModule } from './chat/rooms/rooms.module';
+import { RoomService } from './chat/rooms/rooms.service';
 @Module({
   imports: [
     AuthModule, 
@@ -25,6 +27,7 @@ import { PrismaService } from './prisma/prisma.service';
     PrismaModule,
     ChatModule,
     PassportModule,
+		RoomsModule,
     ThrottlerModule.forRoot({
       ttl: 1, // seconds
       limit: 1000, // requests
@@ -38,6 +41,11 @@ import { PrismaService } from './prisma/prisma.service';
       //   provide: APP_FILTER,
       //   useClass: GlobalExceptionFilter,
       // },
+			RoomService,
+      {
+        provide: APP_FILTER,
+        useClass: GlobalExceptionFilter,
+      },
       {
         provide: APP_GUARD,
         useClass: ThrottlerGuard,

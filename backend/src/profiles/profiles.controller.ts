@@ -1,3 +1,4 @@
+import { UserService } from 'src/user/user.service';
 import { ProfilesService } from './profiles.service';
 import {  Controller, Get, Post, Body, Patch, Param, Delete,
           UseGuards, Req, UseInterceptors, 
@@ -12,7 +13,10 @@ import { storageConfig } from 'src/microservices/storage.config';
 @Controller('profiles')
 @UseGuards(JWTGuard)
 export class ProfilesController {
-  constructor(private readonly profilesService: ProfilesService) {}
+  constructor(
+    private readonly profilesService: ProfilesService,
+    private readonly userServices: UserService
+  ) {}
 
   /* ************************************ */
 
@@ -112,5 +116,10 @@ export class ProfilesController {
   @Patch('/update')
   updateProfile(@GetUser() user: UserDto, @Body() data: any) {
     return this.profilesService.updateProfile(+user.sub, data);
+  }
+
+  @Delete(':id')
+  removeProfile(@Body() data: any, @Param('id') id: number) {
+    return this.profilesService.RemoveProfiles(Number(id));
   }
 }
