@@ -14,7 +14,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       status = exception.getStatus();
       message = exception.message;
     }
-    // console.error('Unhandled error:', exception);
     response.status(status).json({
       statusCode: status,
       message: message,

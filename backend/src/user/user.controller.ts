@@ -14,12 +14,12 @@ export class UserController {
   }
 
   @Get('fake/:number')
-  createFake(@Body ('number') number: string) {
-    return this.userService.CreateUsersFake(+number);
+  createFake(@Param ('number') number: string) {
+    return this.userService.createFakeUsers(+number);
   }
 
   @Get()
-  FindAllUsers(@Req() request: any) {
+  FindAllUsers() {
     return this.userService.FindAllUsers();
   }
 
@@ -37,3 +37,4 @@ export class UserController {
     }
   }
 }
+  

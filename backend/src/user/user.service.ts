@@ -1,97 +1,51 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ProfilesService } from 'src/profiles/profiles.service';
-import { Faker, de, faker } from '@faker-js/faker';
+import { Faker, de, faker, fi } from '@faker-js/faker';
 
-    // need Protection for this route
-    // need to check if the user is already exist
-    // need to check if the profile is already exist
-    // need to check if the email is already exist
-    // friendshipes need to be protected from blocked and pending users
-
-class data {
-  intraid: number;
-  Hashpassword: string;
-  email: string;
-  profile: {
-    username: string;
-    avatar: string;
-    login: string;
-  }
-}
-    // to do:
-    // ulpoading avatar's
-    // guards and middlewares
 @Injectable()
 export class UserService {
   constructor(readonly prisma: PrismaService, readonly profile: ProfilesService) {}
-    
-  async CreateUsersFake(number: number) {
-    // const user = await this.prisma.profile.deleteMany({
-    //   where: {
-    //     NOT: {
-    //       OR: [
-    //         { id: 1 },
-    //         { id: 2 },
-    //         { id: 7 }
-    //       ]
-    //     }
-    //   }
-    // });
-    // console.log("user: ", user);
-    // await this.prisma.user.deleteMany({
-    //   where: {
-    //     NOT: {
-    //       OR: [
-    //         { id: 1 },
-    //         { id: 2 },
-    //         { id: 7 }
-    //       ]
-    //     }
-    //   }
-    // });
-    try {
-      // console.log("CreateUsersFake");
-      for (let i = 0; i < 2; i++) {
 
-        // init fake data
-        const FakeUser =  new data();
-        let firstName = faker.person.firstName();
-        let lastName = faker.person.lastName();
-        FakeUser.intraid = faker.number.int(500000);
-        FakeUser.Hashpassword = faker.number.int(600) + "password";
-        FakeUser.email = firstName + lastName + (i*i) + "@gmail.com";
+async createFakeUsers(number: number) {
+  const excludedIds = [1, 2, 7];
 
-        console.log("FakeUser: ", FakeUser);
-        console.log("FirstName: ", firstName);
-        console.log("LastName: ", lastName);
+  try {
+    for (let i = 0; i < number; i++) {
+      const fakeUser = {
+        firstName: faker.person.firstName(),
+        lastName : faker.person.lastName()  + "Fake",
+        intraid: faker.number.int(500000) * (i+i),
+        Hashpassword: faker.number.int(600) + "password",
+      };
 
-        await this.prisma.user.create({
-          data: {
-            intraid: FakeUser.intraid,
-            Hashpassword: FakeUser.Hashpassword,
-            email: FakeUser.email,
-            profile: {
-              create: {
-                username: firstName + lastName,
-                avatar: "./path/to/avatar/" + lastName + faker.number.int(9000),
-                login: firstName + faker.number.int(11),
-              },
-            }
-          }
-        })
-      }
-      return "Fake Users Creatig Success";
-    } catch (error) {
-      console.log(error);
-      return "Error: User Already Exist";
+      console.log("FakeUser:", fakeUser);
+
+      const createdUser = await this.prisma.user.create({
+        data: {
+          intraid: fakeUser.intraid,
+          Hashpassword: fakeUser.Hashpassword,
+          email: fakeUser.lastName + fakeUser.firstName + (i*i) + "@gmail.com",
+          profile: {
+            create: {
+              username: `${fakeUser.firstName}${fakeUser.lastName}`,
+              avatar: this.giveRandomAvatar(),
+              login: fakeUser.lastName.slice(0, 3) + fakeUser.firstName + faker.number.int(666),
+            },
+          },
+        },
+      });
+      console.log("Created User:", createdUser);
     }
+    return "Fake Users Creation Success";
+  } catch (error) {
+    console.error(error);
+    return "Error: User Already Exists";
   }
-
+}
   async CreateUser(reqData: any) {
     // try {
-			console.log(reqData);
       const user = await this.prisma.user.create({
         data: {
           intraid: reqData.intraid,
@@ -106,12 +60,8 @@ export class UserService {
           }
         }
       })
+      if (!user) throw new HttpException("User Creation Failed", 500);
       return user;
-    // } catch (error) {
-		// 	console.log("User already exist");
-    //   // console.log(error);
-    //   // return "Error: User Already Exist";
-    // }
   }
 
   giveRandomAvatar() {
@@ -163,9 +113,6 @@ export class UserService {
 	}
 
   async RemoveUsers(id: number) {
-    const profile = await this.prisma.profile.delete({
-      where: { userid: id },
-    });
     const user = await this.prisma.user.delete({
       where: { id: id },
     });
