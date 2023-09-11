@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ProfilesService } from 'src/profiles/profiles.service';
@@ -27,30 +27,7 @@ class data {
 export class UserService {
   constructor(readonly prisma: PrismaService, readonly profile: ProfilesService) {}
     
-  async CreateUsersFake(number: number) {
-    // const user = await this.prisma.profile.deleteMany({
-    //   where: {
-    //     NOT: {
-    //       OR: [
-    //         { id: 1 },
-    //         { id: 2 },
-    //         { id: 7 }
-    //       ]
-    //     }
-    //   }
-    // });
-    // console.log("user: ", user);
-    // await this.prisma.user.deleteMany({
-    //   where: {
-    //     NOT: {
-    //       OR: [
-    //         { id: 1 },
-    //         { id: 2 },
-    //         { id: 7 }
-    //       ]
-    //     }
-    //   }
-    // });
+  async CreateUsersFake() {
     try {
       // console.log("CreateUsersFake");
       for (let i = 0; i < 2; i++) {
@@ -89,9 +66,7 @@ export class UserService {
     }
   }
 
-  async CreateUser(reqData: any) {
-    // try {
-			console.log(reqData);
+  async CreateUser(reqData: CreateUserDto) {
       const user = await this.prisma.user.create({
         data: {
           intraid: reqData.intraid,
@@ -106,12 +81,9 @@ export class UserService {
           }
         }
       })
+      if (!user)
+      throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
       return user;
-    // } catch (error) {
-		// 	console.log("User already exist");
-    //   // console.log(error);
-    //   // return "Error: User Already Exist";
-    // }
   }
 
   giveRandomAvatar() {
@@ -132,21 +104,37 @@ export class UserService {
     return users;
   }
 
-  async FindUserByID(id: number) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: id },
-      include: {
-        profile: {
-          include: {
-            sentRequest: true,
-            pendingRequest: true,
-            blocking: true,
-          },
-        }
+async FindUserByID(id: number) {
+  const user = await this.prisma.user.findUnique({
+    where: { id: id },
+    select: {
+      id: true,
+      email: true,
+      twofactor: true,
+      profile: {
+        select: {
+          id : true,
+          username: true,
+          avatar: true,
+          login: true,
+          Rank: true,
+          level: true,
+          sentRequest: true,
+          pendingRequest: true,
+          blocking: true,
+          createdAt: true,
+        },
       },
-    }); 
-    return user;
+    },
+  });
+
+  if (!user) {
+    throw new HttpException("User not found", HttpStatus.NOT_FOUND);
   }
+
+  return user;
+}
+
 
   async FindUserByIntraId(id: number) {
     const user = await this.prisma.user.findUnique({
@@ -170,7 +158,7 @@ export class UserService {
       where: { id: id },
     });
     if (!user)
-      throw ("Couldn't delete user");
+      throw new HttpException("User not found", HttpStatus.NOT_FOUND);
     return user;
   }
 }
