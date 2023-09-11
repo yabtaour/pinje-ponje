@@ -18,6 +18,7 @@ import { ProfilesService } from './profiles/profiles.service';
 import { PrismaService } from './prisma/prisma.service';
 import { RoomsModule } from './chat/rooms/rooms.module';
 import { RoomService } from './chat/rooms/rooms.service';
+
 @Module({
   imports: [
     AuthModule, 
@@ -42,10 +43,10 @@ import { RoomService } from './chat/rooms/rooms.service';
       //   useClass: GlobalExceptionFilter,
       // },
 			RoomService,
-      {
-        provide: APP_FILTER,
-        useClass: GlobalExceptionFilter,
-      },
+      // {
+      //   provide: APP_FILTER,
+      //   useClass: GlobalExceptionFilter,
+      // },
       {
         provide: APP_GUARD,
         useClass: ThrottlerGuard,
