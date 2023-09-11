@@ -4,12 +4,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ProfilesService } from 'src/profiles/profiles.service';
 import { Faker, de, faker } from '@faker-js/faker';
 
-    // need Protection for this route
-    // need to check if the user is already exist
-    // need to check if the profile is already exist
-    // need to check if the email is already exist
-    // friendshipes need to be protected from blocked and pending users
-
 class data {
   intraid: number;
   Hashpassword: string;
@@ -29,10 +23,7 @@ export class UserService {
     
   async CreateUsersFake() {
     try {
-      // console.log("CreateUsersFake");
       for (let i = 0; i < 2; i++) {
-
-        // init fake data
         const FakeUser =  new data();
         let firstName = faker.person.firstName();
         let lastName = faker.person.lastName();
@@ -82,7 +73,7 @@ export class UserService {
         }
       })
       if (!user)
-      throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
+        throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
       return user;
   }
 
