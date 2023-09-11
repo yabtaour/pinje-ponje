@@ -4,6 +4,7 @@
     "@nestjs/throttler": "^4.2.1"
   },
   "devDependencies": {
+    "@next/font": "^13.4.19",
     "@prisma/client": "^4.16.2",
     "@types/react": "^18.2.20",
     "next": "^13.4.19",

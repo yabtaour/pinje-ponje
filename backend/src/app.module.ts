@@ -31,13 +31,17 @@ import { RoomService } from './chat/rooms/rooms.service';
 		RoomsModule,
     ThrottlerModule.forRoot({
       ttl: 1, // seconds
-      limit: 100, // requests
+      limit: 1000, // requests
     }),
   ],
     controllers: [AuthController, SignUpController],
     providers: [
       UserService, JwtAuthService, JwtService,
       ProfilesService, PrismaService, AuthService,
+      // {
+      //   provide: APP_FILTER,
+      //   useClass: GlobalExceptionFilter,
+      // },
 			RoomService,
       // {
       //   provide: APP_FILTER,

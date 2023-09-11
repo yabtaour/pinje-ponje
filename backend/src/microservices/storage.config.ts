@@ -19,7 +19,6 @@ export const storageConfig = {
       return cb(new HttpException('Unsupported Media Type', HttpStatus.UNSUPPORTED_MEDIA_TYPE), false);
     }
     cb(null, true);
-
   },
   storage: diskStorage({
     destination: './uploads/Avatars',
