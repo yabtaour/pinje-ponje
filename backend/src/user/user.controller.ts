@@ -1,4 +1,4 @@
-import { Controller, Req, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpException } from '@nestjs/common';
+import { Controller, Req, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpException, Put } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { JWTGuard } from 'src/auth/guards/jwt.guard';
@@ -7,6 +7,7 @@ import { UserDto } from './dto/user.dto';
 import { 
   ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiBody,
 } from '@nestjs/swagger';
+import { updateUserDto } from './dto/update-user.dto';
 
 
 
@@ -32,10 +33,21 @@ export class UserController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete a user by ID' })
   remove(@Param('id') id: number) {
     if (Number.isNaN(+id))
       throw new HttpException('Bad request', 400);
     return this.userService.RemoveUsers(+id);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update a user by ID' })
+  @ApiParam({ name: 'id', type: 'number' })
+  @ApiBody({ type: CreateUserDto })
+  UpdateUser(@Param('id') id: string, @Body() data: updateUserDto) {
+    if (Number.isNaN(+id))
+      throw new HttpException('Bad request', 400);
+    return this.userService.UpdateUser(+id, data);
   }
 
   @Get(':id')
@@ -48,11 +60,13 @@ export class UserController {
   }
 
   @Get('fake')
+  @ApiOperation({ summary: 'Create fake users' })
   createFake() {
     return this.userService.CreateUsersFake();
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get all users' })
   FindAllUsers(@Req() request: any) {
     return this.userService.FindAllUsers();
   }
