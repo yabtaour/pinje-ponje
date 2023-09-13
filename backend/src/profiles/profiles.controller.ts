@@ -9,9 +9,16 @@ import { JWTGuard } from 'src/auth/guards/jwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UserDto } from 'src/user/dto/user.dto';
 import { storageConfig } from 'src/microservices/storage.config';
+import {  ApiTags, ApiBearerAuth, 
+          ApiOperation, ApiParam, 
+          ApiBody } from '@nestjs/swagger';
+import { updateUserDto } from 'src/user/dto/update-user.dto';
+import { UpdateUserProfileDto } from './dto/update-profile.dto';
 
 @Controller('profiles')
+@ApiTags('Profiles')
 @UseGuards(JWTGuard)
+@ApiBearerAuth()
 export class ProfilesController {
   constructor(
     private readonly profilesService: ProfilesService,
@@ -20,17 +27,28 @@ export class ProfilesController {
 
   /* ************************************ */
 
+  // update profile
+  @Patch()
+  @ApiOperation({ summary: 'Update Profile', description: 'Update Profile Data' })
+  // @ApiParam({ name: 'id', description: 'Profile ID' })
+  @ApiBody({ type: updateUserDto })
+  updateProfile(@GetUser() user: UserDto, @Body() data: UpdateUserProfileDto) {
+    return this.profilesService.updateProfile(user, data);
+  }
 
+  // Get Profile By ID
+  @ApiOperation({ summary: 'Get Profile By ID', description: 'Get Profile By ID' })
+  @ApiParam({ name: 'id', description: 'Profile ID' })
+  @Get(':id')
+  findProfileById(@GetUser() user: UserDto, @Param('id') id: string) {
+    return this.profilesService.FindProfileById(+user.sub, +id);
+  }
 
   @Get('/friends/')
   FindAllFriends(@GetUser() user: UserDto) {
     return this.profilesService.FindAllFriends(+user.sub);
   }
   
-  @Get(':id')
-  findProfileById(@GetUser() user: UserDto, @Param('id') id: string) {
-    return this.profilesService.FindProfileById(+user.sub, +id);
-  }
 
   @Get()
   FindAllProfiles(
@@ -112,14 +130,4 @@ export class ProfilesController {
     return this.profilesService.deleteAvatar(+user.sub);
   }
 
-  // update profile
-  @Patch('/update')
-  updateProfile(@GetUser() user: UserDto, @Body() data: any) {
-    return this.profilesService.updateProfile(+user.sub, data);
-  }
-
-  @Delete(':id')
-  removeProfile(@Body() data: any, @Param('id') id: number) {
-    return this.profilesService.RemoveProfiles(Number(id));
-  }
 }

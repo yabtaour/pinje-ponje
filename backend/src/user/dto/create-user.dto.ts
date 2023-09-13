@@ -24,6 +24,8 @@ export class CreateUserDto {
     @ApiProperty()
     email: string;
 
+    // @IsOptional()
+    // twofactor: boolean;
     @IsNotEmpty()
     @IsObject()
     @ValidateNested()
