@@ -18,9 +18,6 @@ export class CreateUserProfileDto {
     @IsString()
     @ApiProperty()
     avatar: string;
-    email?: string;
-    Hashpassword?: string;
-    twofactor?: boolean;
     @IsNotEmpty()
     @IsString()
     @ApiProperty()

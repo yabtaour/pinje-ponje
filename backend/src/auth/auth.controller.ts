@@ -58,6 +58,7 @@ export class SignUpController {
 					intraid: 4444,
 					Hashpassword: request.body.Hashpassword,
 					email: request.body.email,
+					twofacto: false,
 					profile: {
 						username: request.body.username,
 						avatar: request.body.avatar,

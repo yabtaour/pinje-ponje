@@ -84,8 +84,7 @@ export class UserService {
       data: {
         email: data.email,
         Hashpassword: data.Hashpassword,
-        twofactor: data.twofactor,
-        email: data.email,
+        // twofactor: data.twofactor,
         profile: {
           update: {
             username: data.profile.username,

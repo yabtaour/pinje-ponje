@@ -4,6 +4,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { de, th } from '@faker-js/faker';
+import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import { UserDto } from 'src/user/dto/user.dto';
 @Injectable()
 export class ProfilesService {
   constructor(readonly prisma: PrismaService ) {}
@@ -320,13 +322,11 @@ export class ProfilesService {
     return user;
   }
 
-  async updateProfile(_id: number, data: any) {
-    if (!_id) {
-      return "Profile id is undefined";
-    }
-    _id = 62;
+
+  async updateProfile(_currentUser: UserDto, data: any) {
+    console.log("data: ", data);
     const user = await this.prisma.profile.update({
-      where: { userid: _id },
+      where: { userid: _currentUser.sub },
       data: {
         ...data,
       },
@@ -336,6 +336,7 @@ export class ProfilesService {
     }
     return user;
   }
+
 
   async isBlocking(blokcerID: number, blockedID: number) {
     const user = await this.prisma.profile.findUnique({
