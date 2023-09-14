@@ -29,8 +29,8 @@ export class JWTGuard implements CanActivate {
 					console.log("No decodedToken");
 					return false;
 				}
-			context.switchToHttp().getRequest().user = decodedToken;
-			return decodedToken;
+				context.switchToHttp().getRequest().user = decodedToken;
+				return decodedToken;
 			} catch (error) {
 				return false;
 			}

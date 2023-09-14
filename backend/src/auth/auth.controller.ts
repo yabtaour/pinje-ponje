@@ -1,11 +1,14 @@
-import { Controller, Get, Post, UseGuards, Res, Req, Redirect, Param } from '@nestjs/common';
+import { Controller, Get, Post, UseGuards, Res, Req, Redirect, Param, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { Response, Request, response } from 'express';
 import { get, request } from 'http';
 import { UserService } from 'src/user/user.service';
 import { LocalAuthGuard } from './guards/local.guard';
+import { CreateUserDtoLocal } from 'src/user/dto/create-user.dto';
 
+
+//talk to anas about new routes
 @Controller('auth')
 export class AuthController {
     constructor(
@@ -20,57 +23,36 @@ export class AuthController {
 
     @Get('42')
     @UseGuards(AuthGuard('42'))
-    async redirectTo42Auth() {
-			console.log("redirected");
-		}
+    async redirectTo42Auth() {}
 
     @Get('42/callback')
     @UseGuards(AuthGuard('42'))
     async handle42Auth(@Req() request: any, @Res() response: Response) {
         const user = request.user;
         console.log("Copy This Token: ", request.user.token);
-        // response.setHeader("Authorisation", request.user.token);
         response.redirect(`200/${String(request.user.user.id)}`);
     }
 
-		@Post('login')
-		@UseGuards(LocalAuthGuard)
-		async handleLogin(@Req() request: any, @Res() response: Response) {
-			console.log("we got in the controller");
-			console.log("user loged in needs redirection to profile");
-			const user = request.user;
-			response.setHeader("Authorisation", request.user.token);
-			response.redirect(`200/${String(request.user.user.id)}`);
-		}
+	@Post('login')
+	@UseGuards(LocalAuthGuard)
+	async handleLogin(@Req() request: any, @Res() response: Response) {
+		const user = request.user;
+		response.setHeader("Authorisation", request.user.token);
+		response.redirect(`200/${String(request.user.user.id)}`);
+	}
 }
 
 @Controller('signUp')
 export class SignUpController {
 		constructor(
-				private readonly userService: UserService
+				private readonly userService: UserService,
+				private readonly authService: AuthService
 		) {}
 
 		@Post()
-		async signUp(@Req() request: any, @Res() response: Response) {
-			try {
-				console.log(request.body);
-				const user = {
-					intraid: 4444,
-					Hashpassword: request.body.Hashpassword,
-					email: request.body.email,
-					twofacto: false,
-					profile: {
-						username: request.body.username,
-						avatar: request.body.avatar,
-						login: request.body.username,
-					},
-				};
-				const userCreated = await this.userService.CreateUser(user);
-				console.log(user);
-			} catch(error) {
-				//				throw new HttpException({message:"Error"}, HttpStatus.BAD_REQUEST);
-				console.log(error);
-				return "Error: User Already Exist";
-			}
+		async signUp(@Body() request: CreateUserDtoLocal, @Res() response: Response) {
+			// return this.authService.signUp(request);
+			const user = this.authService.signUp(request);
+			response.redirect('http://localhost:3000/auth/login');
 		}
 }
