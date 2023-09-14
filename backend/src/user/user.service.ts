@@ -1,9 +1,9 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDtoLocal, CreateUserDtoIntra,  } from './dto/create-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ProfilesService } from 'src/profiles/profiles.service';
 import { Faker, de, faker } from '@faker-js/faker';
-import { updateUserDto } from './dto/update-user.dto';
+// import { updateUserDto } from './dto/update-user.dto';
 
 class data {
   intraid: number;
@@ -58,11 +58,27 @@ export class UserService {
     }
   }
 
-  async CreateUser(reqData: CreateUserDto) {
+  async CreateUser(reqData: CreateUserDtoIntra | CreateUserDtoLocal) {
+    const user = await this.prisma.user.create({
+      data: {
+        ...reqData,
+        profile: {
+          create: {
+            ...reqData.profile
+          },
+        }
+      }
+    })
+    if (!user)
+      throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
+    return user;
+}
+
+  async CreateUserIntra(reqData: CreateUserDtoIntra) {
       const user = await this.prisma.user.create({
         data: {
           intraid: reqData.intraid,
-          Hashpassword: reqData.Hashpassword,
+          // Hashpassword: reqData.Hashpassword,
           email: reqData.email,
           profile: {
             create: {
@@ -78,26 +94,46 @@ export class UserService {
       return user;
   }
 
-  async UpdateUser(id: number, data: updateUserDto) {
-    const user = await this.prisma.user.update({
-      where: { id: id },
+  async CreateUserLocal(reqData: CreateUserDtoLocal) {
+    const user = await this.prisma.user.create({
       data: {
-        email: data.email,
-        Hashpassword: data.Hashpassword,
-        // twofactor: data.twofactor,
+        // intraid: reqData.intraid,
+        Hashpassword: reqData.Hashpassword,
+        email: reqData.email,
         profile: {
-          update: {
-            username: data.profile.username,
-            avatar: data.profile.avatar,
-            login: data.profile.login,
+          create: {
+            username: reqData.profile.username,
+            avatar: reqData.profile.avatar,
+            login: reqData.profile.login,
           },
         }
       }
     })
     if (!user)
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
     return user;
-  }
+}
+
+  // async UpdateUser(id: number, data: updateUserDto) {
+  //   const user = await this.prisma.user.update({
+  //     where: { id: id },
+  //     data: {
+  //       email: data.email,
+  //       Hashpassword: data.Hashpassword,
+  //       // twofactor: data.twofactor,
+  //       profile: {
+  //         update: {
+  //           username: data.profile.username,
+  //           avatar: data.profile.avatar,
+  //           login: data.profile.login,
+  //         },
+  //       }
+  //     }
+  //   })
+  //   if (!user)
+  //     throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+  //   return user;
+  // }
 
   giveRandomAvatar() {
     const avatar = [

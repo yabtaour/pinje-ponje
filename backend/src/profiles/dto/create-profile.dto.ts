@@ -18,6 +18,7 @@ export class CreateUserProfileDto {
     @IsString()
     @ApiProperty()
     avatar: string;
+
     @IsNotEmpty()
     @IsString()
     @ApiProperty()

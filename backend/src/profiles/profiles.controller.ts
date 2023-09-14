@@ -12,7 +12,7 @@ import { storageConfig } from 'src/microservices/storage.config';
 import {  ApiTags, ApiBearerAuth, 
           ApiOperation, ApiParam, 
           ApiBody } from '@nestjs/swagger';
-import { updateUserDto } from 'src/user/dto/update-user.dto';
+// import { updateUserDto } from 'src/user/dto/update-user.dto';
 import { UpdateUserProfileDto } from './dto/update-profile.dto';
 
 @Controller('profiles')
@@ -28,13 +28,13 @@ export class ProfilesController {
   /* ************************************ */
 
   // update profile
-  @Patch()
-  @ApiOperation({ summary: 'Update Profile', description: 'Update Profile Data' })
-  // @ApiParam({ name: 'id', description: 'Profile ID' })
-  @ApiBody({ type: updateUserDto })
-  updateProfile(@GetUser() user: UserDto, @Body() data: UpdateUserProfileDto) {
-    return this.profilesService.updateProfile(user, data);
-  }
+  // @Patch()
+  // @ApiOperation({ summary: 'Update Profile', description: 'Update Profile Data' })
+  // // @ApiParam({ name: 'id', description: 'Profile ID' })
+  // @ApiBody({ type: updateUserDto })
+  // updateProfile(@GetUser() user: UserDto, @Body() data: UpdateUserProfileDto) {
+  //   return this.profilesService.updateProfile(user, data);
+  // }
 
   // Get Profile By ID
   @ApiOperation({ summary: 'Get Profile By ID', description: 'Get Profile By ID' })

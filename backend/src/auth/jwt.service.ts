@@ -22,7 +22,6 @@ export class JwtAuthService {
       const decodedToken = await this.jwtService.verifyAsync(token, {
         secret: secret,
       });
-
       return decodedToken;
     } catch (err) {
       if (err.name === 'TokenExpiredError') {

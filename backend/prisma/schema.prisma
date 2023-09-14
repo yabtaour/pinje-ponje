@@ -14,11 +14,11 @@ model User {
   id              Int      @id @unique @default(autoincrement())
   Hashpassword    String?
   email           String   @unique
-  intraid         Int      @unique
+  intraid         Int?     @unique 
   twofactor       Boolean  @default(false)
   twoFactorSecret String?
-  GameOfP1        Game[]   @relation("P1")
-  GameOfP2        Game[]   @relation("P2")
+  // GameOfP1        Game[]   @relation("P1")
+  // GameOfP2        Game[]   @relation("P2")
   profile         Profile?
 	roomMember			RoomMember?
 }
@@ -29,8 +29,8 @@ model Profile {
   login          String    @unique
   // campus      String // # at the creation the campus came from intra
   avatar         String?
-  phonenumber    String?
-  status         Status    @default(ONLINE) // # enum [in game, online, offline]
+  // phonenumber    String?
+  // status         Status    @default(ONLINE) // # enum [in game, online, offline]
   // CurrentMap     String
   // UnlockedMap    String[]
   Rank           Rank      @default(UNRANKED) // # enum [bronze, silver, gold, platinum, diamond, master, grandmaster, challenger]
@@ -46,20 +46,20 @@ model Profile {
   userid         Int       @unique
 }
 
-model Game {
-  id        Int        @id @unique @default(autoincrement())
-  Player1   User       @relation("P1", fields: [player1id], references: [id], onDelete: Cascade)
-  Player2   User       @relation("P2", fields: [player2id], references: [id])
-  player1id Int        @unique
-  player2id Int        @unique
-  p1Score   Int        @default(0)
-  p2Score   Int        @default(0)
-  p1Result  gameResult @default(DRAW)
-  p2Result  gameResult @default(DRAW)
-  status    gameStatus @default(PENDING)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @default(now()) @updatedAt
-}
+// model Game {
+//   id        Int        @id @unique @default(autoincrement())
+//   Player1   User       @relation("P1", fields: [player1id], references: [id], onDelete: Cascade)
+//   Player2   User       @relation("P2", fields: [player2id], references: [id])
+//   player1id Int        @unique
+//   player2id Int        @unique
+//   p1Score   Int        @default(0)
+//   p2Score   Int        @default(0)
+//   p1Result  gameResult @default(DRAW)
+//   p2Result  gameResult @default(DRAW)
+//   status    gameStatus @default(PENDING)
+//   createdAt DateTime   @default(now())
+//   updatedAt DateTime   @default(now()) @updatedAt
+// }
 
 model ChatRoom {
   id        Int          @id @unique @default(autoincrement())

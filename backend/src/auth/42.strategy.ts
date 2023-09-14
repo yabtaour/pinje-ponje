@@ -36,7 +36,7 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
             login: profile.username,
           }
         };
-        console.log(newUser);
+        // console.log(newUser);
         const user = await this.authService.userCreateOrNot(newUser);
         const token = await this.jwtService.generateToken(String(user.id));
         done(null, { user, token });
@@ -45,3 +45,5 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
       }
     }
 }
+
+//  INTRAID: id / _json.email / username
