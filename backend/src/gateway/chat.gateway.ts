@@ -8,12 +8,13 @@ import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { alertGateway } from './alert.gateway';
 import { readonly } from 'vue';
+import { ApiExcludeController } from '@nestjs/swagger';
 interface User {
   socket: string;
   status: string;
 }
 
-
+@ApiExcludeController()
 @WebSocketGateway({ namespace: 'chat', cors: { credentials: true, origin: '*' } })
 export class chatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   // export class GatewayGateway {
