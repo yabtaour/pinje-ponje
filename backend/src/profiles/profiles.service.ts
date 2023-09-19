@@ -3,42 +3,48 @@ import { log } from 'console';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { de, th } from '@faker-js/faker';
+import { de, fi, th } from '@faker-js/faker';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { UserDto } from 'src/user/dto/user.dto';
+import { promises } from 'dns';
 @Injectable()
 export class ProfilesService {
   constructor(readonly prisma: PrismaService ) {}
 
-  async FindAllProfiles(_id: number, search: string) {
-    const profiles = await this.prisma.profile.findMany({
-      where : {
-        AND : [
-          {
-            NOT : {
-              OR : [
-                { blockedBy : { some : { id : _id } } },
-                { blocking : { some : { id : _id } } }
-              ]
-            }
-          }, {
-            OR : search ? [
-              !isNaN(+search) ? { userid : +search } : {},
-              { login : { contains : search  , mode : 'insensitive'} },
-            ] : {}
-          }
-        ],
-      },
-      include: {
-        pendingRequest: true,
-        sentRequest: true,
-        blocking: true,
-      },
-    });
-    return profiles;
-  }
+  // async FindAllProfiles(_id: number, search: string) {
+  //   console.log("FindAllProfiles: ", search);
+  //   const profiles = await this.prisma.profile.findMany({
+  //     where : {
+  //       AND : [
+  //         {
+  //           NOT : {
+  //             OR : [
+  //               { blockedBy : { some : { id : _id } } },
+  //               { blocking : { some : { id : _id } } }
+  //             ]
+  //           }
+  //         }, {
+  //           OR : search ? [
+  //             !isNaN(+search) ? { userid : +search } : {},
+  //             { login : { contains : search  , mode : 'insensitive'} },
+  //           ] : {}
+  //         }
+  //       ],
+  //     },
+  //     include: {
+  //       pendingRequest: true,
+  //       sentRequest: true,
+  //       blocking: true,
+  //     },
+  //   });
+  //   return profiles;
+  // }
 
   async FindProfileById(_reqid: number , id: number) {
+    const isBlocked = await this.isBlockby(_reqid, id);
+    const isBlockedby = await this.isBlockby(id, _reqid);
+    if (isBlocked || isBlockedby)
+      throw new HttpException('Profile not found', HttpStatus.NOT_FOUND);
     const profile = await this.prisma.profile.findUnique({
       where: { userid: id },
       include: {
@@ -50,12 +56,22 @@ export class ProfilesService {
     });
     if (!profile)
       throw new HttpException('Profile not found', HttpStatus.NOT_FOUND);
-    const isBlocked = profile.blockedBy.find((element) => element.id === _reqid);
     profile.blockedBy = undefined;
-    return profile;
+    profile.blocking = undefined;
+    profile.Friends = undefined;
+    const Object = {
+      ...profile,
+      FriendsList: await this.FindAllFriends(_reqid, id),
+    }
+    return Object;
   }
 
-  async FindAllFriends(_id: number) {0
+
+  async FindAllFriends(_currentUser: number, _id: number) {
+    const isBlocked = await this.isBlockby(_currentUser, _id);
+    const isBlockedby = await this.isBlockby(_id, _currentUser);
+    if (isBlocked || isBlockedby)
+      return [];
     const userFriends = await this.prisma.profile.findUnique({
       where: { userid: _id },
           select: {
@@ -68,13 +84,21 @@ export class ProfilesService {
           in: userFriends.Friends,
         },
       },
+      select: {
+        id: true,
+        avatar: true,
+        login: true,
+        username: true,
+      },
     });
     if (!userFriends || !allFriends)
       throw new HttpException('No profile with this id', HttpStatus.NOT_FOUND);
-    return allFriends;
+    const filterdFriends =  await this.filterFriendsByBlockingStatus(allFriends, _currentUser);
+    return filterdFriends;
   }
 
   async SentFriendsRequest(_id: number, data: any) {
+    console.log("SentFriendsRequest: ", data);
     
     if (!_id || !data.id)
       throw new BadRequestException("Profile id is undefined");
@@ -96,7 +120,7 @@ export class ProfilesService {
   }
 
   async AccepteFriendRequest(_id: number, data: any) {
-
+    console.log("AccepteFriendRequest: ", data);
     if (!_id || !data.id) {
       return "Profile id is undefined";
     }
@@ -139,6 +163,7 @@ export class ProfilesService {
 
 
   async DeclineFriendRequest(_id: number, data: any) {
+    console.log("DeclineFriendRequest: ", data);
     const inviter = await this.prisma.profile.findUnique({
       where: { userid: data.id },
       include: { sentRequest: true },
@@ -163,6 +188,7 @@ export class ProfilesService {
   }
 
   async CancelFriendRequest(_id: number, data: any) {
+    console.log("CancelFriendRequest: ", data);
     const receiver = await this.prisma.profile.findUnique({
       where: { userid: data.id },
       include: { pendingRequest: true },
@@ -188,6 +214,7 @@ export class ProfilesService {
   }
 
   async removeFromFriendList(profileId: number, friendId: number): Promise<void> {
+    console.log("removeFromFriendList: ", profileId, friendId);
     const profile = await this.prisma.profile.findUnique({
       where: { userid: profileId },
     });
@@ -207,6 +234,7 @@ export class ProfilesService {
   }
 
   async RemoveFriend(profileId: number, data: any): Promise<any> {
+    console.log("RemoveFriend: ", data);
     const friendProfile = await this.prisma.profile.findUnique({
       where: { userid: data.id },
     });
@@ -222,6 +250,7 @@ export class ProfilesService {
   }
 
   async FindAllBlockedUsers(_id: number) {
+    console.log("FindAllBlockedUsers: ", _id);
     const user = await this.prisma.profile.findUnique({
       where: { userid: _id },
       select: {
@@ -236,6 +265,7 @@ export class ProfilesService {
 
 
   async BlockFriend(_id: number, data: any) {
+    console.log("BlockFriend: ", data);
     if (!data.id)
       return "id is undefined"
     const blockedUser = await this.prisma.profile.findUnique({
@@ -255,6 +285,7 @@ export class ProfilesService {
   }
 
   async UnBlockFriend(_id: number, data: any) {
+    console.log("UnBlockFriend: ", data);
     if (!data.id)
       return "id is undefined"
     const blockedUser = await this.prisma.profile.findUnique({
@@ -274,16 +305,15 @@ export class ProfilesService {
   }
 
   async RemoveProfiles(id: number) {
+    console.log("RemoveProfiles: ", id);
     const user = await this.prisma.profile.delete({
       where: { userid: id },
     });
     return user;
   }
 
-
-  // this section for update profile
-
   async getAvatar(_id: number) {
+    console.log("getAvatar: ", _id);
     if (!_id) {
       return "Profile id is undefined";
     }
@@ -297,8 +327,12 @@ export class ProfilesService {
   }
 
   async uploadAvatar(_id: number, file: any) {
+    console.log("file: ", file);
     if (!_id) {
       return "Profile id is undefined";
+    }
+    if (!file || !file.path || !file.filename) {
+            return "File is undefined";
     }
     const user = await this.prisma.profile.update({
       where: { userid: _id },
@@ -310,6 +344,7 @@ export class ProfilesService {
   }
 
   async deleteAvatar(_id: number) {
+    console.log("deleteAvatar: ", _id);
     if (!_id) {
       return "Profile id is undefined";
     }
@@ -322,11 +357,11 @@ export class ProfilesService {
     return user;
   }
 
-
   async updateProfile(_currentUser: UserDto, data: any) {
+    console.log("updateProfile: ", data);
     console.log("data: ", data);
     const user = await this.prisma.profile.update({
-      where: { userid: _currentUser.sub },
+      where: { userid: +_currentUser.sub },
       data: {
         ...data,
       },
@@ -337,24 +372,7 @@ export class ProfilesService {
     return user;
   }
 
-
-  async isBlocking(blokcerID: number, blockedID: number) {
-    const user = await this.prisma.profile.findUnique({
-      where: { userid: blokcerID },
-      select: {
-        blocking: true,
-      },
-    });
-    if (!user) {
-      return "No profile with this id.";
-    }
-    const blocked = user.blocking.find((element) => element.id === blockedID);
-    if (blocked)
-      return true;
-    return false;
-  }
-
-  async isBlockby(_id: number, id: number) {
+  async isBlockby(_id: number, id: number) : Promise<boolean>{
     const user = await this.prisma.profile.findUnique({
       where: { userid: _id },
       select: {
@@ -362,12 +380,28 @@ export class ProfilesService {
       },
     });
     if (!user) {
-      return "No profile with this id.";
+      throw new HttpException('No profile with this id', HttpStatus.NOT_FOUND);
     }
     const blocking = user.blockedBy.find((element) => element.id === id);
     if (blocking)
       return true;
     return false;
   }
-
+  async filterFriendsByBlockingStatus(
+    friends: any[],
+    currentUser: number
+  ): Promise<any> {
+    const nonBlockedFriends = await Promise.all(
+      friends.map(async (friend) => {
+        const isBlockedByFriend = await this.isBlockby(friend.id, currentUser);
+        const isBlockedByCurrentUserFriend = await this.isBlockby(currentUser, friend.id);
+        if (!isBlockedByFriend && !isBlockedByCurrentUserFriend) {
+          return friend;
+        }
+        return null;
+      })
+    );
+    const filteredFriends = nonBlockedFriends.filter((friend) => friend !== null);
+    return filteredFriends;
+  }
 }

@@ -10,7 +10,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-import { CreateUserProfileDto } from '../../profiles/dto/create-profile.dto';
+import { CreateProfileDto } from '../../profiles/dto/create-profile.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDtoIntra {
@@ -29,8 +29,8 @@ export class CreateUserDtoIntra {
     @IsObject()
     @ValidateNested()
     @ApiProperty()
-    @Type(() => CreateUserProfileDto)
-    profile: CreateUserProfileDto;
+    @Type(() => CreateProfileDto)
+    profile: CreateProfileDto;
 }
 
 export class CreateUserDtoLocal {
@@ -48,6 +48,6 @@ export class CreateUserDtoLocal {
     @IsObject()
     @ValidateNested()
     @ApiProperty()
-    @Type(() => CreateUserProfileDto)
-    profile: CreateUserProfileDto;
+    @Type(() => CreateProfileDto)
+    profile: CreateProfileDto;
 }

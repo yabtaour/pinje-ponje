@@ -30,6 +30,7 @@ export const storageConfig = {
       const onlyName = file.originalname.split('.')[0];
       const funnyAdjective = funnyAdjectives[Math.floor(Math.random() * funnyAdjectives.length)];
       const imgName = funnyAdjective + "-" + onlyName + "-" + randomName + extname(file.originalname);
+      console.log("imgName: ", imgName);
       cb(null, imgName);
     },
     onError: (err, next) => {
