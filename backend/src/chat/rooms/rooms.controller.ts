@@ -2,6 +2,9 @@ import { Controller, Get, Post, UseGuards, Delete, Req, Res } from "@nestjs/comm
 import { JWTGuard } from "src/auth/guards/jwt.guard";
 import { RoomService } from "./rooms.service";
 import { Response, Request } from "express"; 
+import { ApiExcludeController } from "@nestjs/swagger";
+
+@ApiExcludeController()
 @Controller('profile/chatRooms')
 export class RoomController {
 		constructor (private readonly roomService: RoomService) {}

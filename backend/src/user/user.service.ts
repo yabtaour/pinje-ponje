@@ -3,7 +3,7 @@ import { CreateUserDtoLocal, CreateUserDtoIntra,  } from './dto/create-user.dto'
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ProfilesService } from 'src/profiles/profiles.service';
 import { Faker, de, faker } from '@faker-js/faker';
-// import { updateUserDto } from './dto/update-user.dto';
+import { updateUserDto } from './dto/update-user.dto';
 
 class data {
   intraid: number;
@@ -15,9 +15,7 @@ class data {
     login: string;
   }
 }
-    // to do:
-    // ulpoading avatar's
-    // guards and middlewares
+
 @Injectable()
 export class UserService {
   constructor(readonly prisma: PrismaService, readonly profile: ProfilesService) {}
@@ -57,22 +55,6 @@ export class UserService {
       return "Error: User Already Exist";
     }
   }
-
-  async CreateUser(reqData: CreateUserDtoIntra | CreateUserDtoLocal) {
-    const user = await this.prisma.user.create({
-      data: {
-        ...reqData,
-        profile: {
-          create: {
-            ...reqData.profile
-          },
-        }
-      }
-    })
-    if (!user)
-      throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
-    return user;
-}
 
   async CreateUserIntra(reqData: CreateUserDtoIntra) {
       const user = await this.prisma.user.create({
@@ -114,26 +96,21 @@ export class UserService {
     return user;
 }
 
-  // async UpdateUser(id: number, data: updateUserDto) {
-  //   const user = await this.prisma.user.update({
-  //     where: { id: id },
-  //     data: {
-  //       email: data.email,
-  //       Hashpassword: data.Hashpassword,
-  //       // twofactor: data.twofactor,
-  //       profile: {
-  //         update: {
-  //           username: data.profile.username,
-  //           avatar: data.profile.avatar,
-  //           login: data.profile.login,
-  //         },
-  //       }
-  //     }
-  //   })
-  //   if (!user)
-  //     throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-  //   return user;
-  // }
+// this only update User Level : Email : Hashpassword : twofactor
+  async UpdateUser(id: number, data: updateUserDto) {
+    const user = await this.prisma.user.update({
+      where: { id: id },
+      data: {
+        ...data,
+        profile: {
+        }
+      }
+    })
+    if (!user)
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    return user;
+  }
+
 
   giveRandomAvatar() {
     const avatar = [

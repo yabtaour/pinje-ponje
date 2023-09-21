@@ -34,6 +34,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "dotenv": "^16.3.1",
+    "nest": "^0.1.6",
     "nestjs-rate-limiter": "^3.1.0",
     "passport": "^0.6.0",
     "passport-42": "^1.2.6",

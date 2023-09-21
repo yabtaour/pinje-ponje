@@ -10,7 +10,7 @@ import {
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class CreateUserProfileDto {
+export class CreateProfileDto {
     @IsString()
     @ApiProperty()
     username: string;

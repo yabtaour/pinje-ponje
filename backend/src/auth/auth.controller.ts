@@ -6,26 +6,32 @@ import { get, request } from 'http';
 import { UserService } from 'src/user/user.service';
 import { LocalAuthGuard } from './guards/local.guard';
 import { CreateUserDtoLocal } from 'src/user/dto/create-user.dto';
+import { ApiExcludeController, ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 
 
 //talk to anas about new routes
+// @ApiExcludeController()
 @Controller('auth')
+@ApiTags('Auth')
 export class AuthController {
     constructor(
         private readonly userService: UserService
     ) {}
 
     @Get('42/200/:id')
+    @ApiExcludeEndpoint()
     async getProfile(@Param() id) {
         const profile = this.userService.FindUserByID(Number(id.id));
         return profile;
     }
 
     @Get('42')
+    @ApiExcludeEndpoint()
     @UseGuards(AuthGuard('42'))
     async redirectTo42Auth() {}
 
     @Get('42/callback')
+    @ApiExcludeEndpoint()
     @UseGuards(AuthGuard('42'))
     async handle42Auth(@Req() request: any, @Res() response: Response) {
         const user = request.user;
@@ -43,6 +49,7 @@ export class AuthController {
 }
 
 @Controller('signUp')
+@ApiTags('Auth')
 export class SignUpController {
 		constructor(
 				private readonly userService: UserService,
