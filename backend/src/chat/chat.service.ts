@@ -80,7 +80,7 @@ export class ChatService {
     patchedRoom.password = undefined;
     return patchedRoom;
   }
-
+  
   // async leaveRoom(socket: any, payload: RoomDto){
   //   const userID = 3;
   //   const room = await this.prisma.chatRoom.update({

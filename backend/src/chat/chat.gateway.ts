@@ -64,7 +64,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     console.log("user id : ", client.id);
     const room = await this.chatService.createDmRoom(client, payload);
     client.join(room.name);
-    this.server.to(room.name).emit('newRoom', room);
+    this.server.to(room.name).emit('roomCreated', room);
   }
 
 // data { roomName : string, roomType : string }
@@ -78,7 +78,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         where: client.handshake.query.where ? JSON.parse(client.handshake.query.where) : undefined,
       }
     );
-    this.server.emit('rooms', rooms);
+    this.server.emit('listOfRooms', rooms);
   }
 
 // data { roomName : string, roomType : string }
@@ -86,7 +86,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleGetRoom(client: any, payload: any) {
     const room = await this.chatService.getRoomByNames(payload.roomName, payload.roomType);
     console.log("room : ", room);
-    this.server.emit('room', room);
+    this.server.emit('roomDetails', room);
   }
 
 // data { roomName : string, password? : string } 
@@ -94,9 +94,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleJoinRoom(client: any, payload: any) {
     const room = await this.chatService.joinRoom(client, payload);
     client.join(payload.roomName);
-    this.server.emit('joined', room);
+    this.server.emit('roomJoined', room);
     const message = "New User " + client.id + " Joined Room " + payload.roomName;
-    this.server.to(payload.roomName).emit('room', message);
+    this.server.to(payload.roomName).emit('roomBroadcast', message);
   }
 
 
@@ -110,13 +110,25 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       where: client.handshake.query.where ? JSON.parse(client.handshake.query.where) : undefined,
     }
      );
-    this.server.emit('roomUsers', users);
+    this.server.emit('listOfRoomMembers', users);
   }
 
   @SubscribeMessage('kick')
   async handleKick(client: any, payload: any) {
     const room = await this.chatService.kickUserFromRoom(client, payload);
-    this.server.emit('kicked', "User Kicked");
+    this.server.emit('roomBroadcast', "User Kicked");
+  }
+
+  @SubscribeMessage('mute')
+  async handleMute(client: any, payload: any) {
+    const room = await this.chatService.MuteUserFromRoom(client, payload);
+    this.server.emit('roomBroadcast', "User Muted");
+  }
+
+  @SubscribeMessage('ban')
+  async handleBan(client: any, payload: any) {
+    const room = await this.chatService.BanUserFromRoom(client, payload);
+    this.server.emit('roomBroadcast', "User Banned");
   }
 
   @SubscribeMessage('message')
@@ -126,4 +138,20 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 }
 
+
+// Events       : [ listen      ] desc.
+// ------------------------------------------------------------ [ server side ]
+// creatRoom    : [ server side ] to create a room.
+// getRooms     : [ server side ] to get all the rooms
+// getRoom      : [ server side ] to get x room details
+// joinRoom     : [ server side ] to join a room
+// getRoomUsers : [ server side ] to get all the memebers of a room
+// kick         : [ server side ] to kick a user from a room
+// ------------------------------------------------------------ [ client side ]
+// roomCreated  : [ client side ] retrive the new Room Details.
+// listOfRooms  : [ client side ] retrive All the rooms for the user
+// roomDetails  : [ client side ] retrive All the x room details
+// roomJoined   : [ client side ] details about new room user joind
+// listOfRoomMembers  : [ client side ] retrive All members of a room
+// roomBroadcast: brodcast for room that user has joind or kicked or banned etc..
 
