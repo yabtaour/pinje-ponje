@@ -11,16 +11,19 @@ datasource db {
 }
 
 model User {
-  id              Int      @id @unique @default(autoincrement())
+  id              Int     @id @unique @default(autoincrement())
   Hashpassword    String?
-  email           String   @unique
-  intraid         Int?     @unique 
-  twofactor       Boolean  @default(false)
+  email           String  @unique
+  intraid         Int?    @unique
+  twofactor       Boolean @default(false)
   twoFactorSecret String?
   // GameOfP1        Game[]   @relation("P1")
   // GameOfP2        Game[]   @relation("P2")
-  profile         Profile?
-	roomMember			RoomMember?
+
+  Rooms    RoomMembership[]
+  messages ChatMessage[]
+  profile  Profile?
+  // roomMember			RoomMember?
 }
 
 model Profile {
@@ -46,6 +49,38 @@ model Profile {
   userid         Int       @unique
 }
 
+model RoomMembership {
+  id       Int      @id @default(autoincrement())
+  role     ChatRole
+  state    MemberState @default(ACTIVE)
+  unmuteTime DateTime?
+  user     User     @relation(fields: [userId], references: [id])
+  userId   Int
+  room     ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId   Int
+}
+
+model ChatMessage {
+  id        Int      @id @default(autoincrement())
+  content   String
+  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  createdAt DateTime @default(now())
+}
+
+model ChatRoom {
+  id          Int              @id @default(autoincrement())
+  name        String           @unique
+  password    String?
+  roomType    RoomType         @default(DM)
+  members     RoomMembership[]
+  messages    ChatMessage[]
+  updatedAt   DateTime         @updatedAt
+  createdAt   DateTime         @default(now())
+}
+
 // model Game {
 //   id        Int        @id @unique @default(autoincrement())
 //   Player1   User       @relation("P1", fields: [player1id], references: [id], onDelete: Cascade)
@@ -61,51 +96,53 @@ model Profile {
 //   updatedAt DateTime   @default(now()) @updatedAt
 // }
 
-model ChatRoom {
-  id        Int          @id @unique @default(autoincrement())
-	name      String?
-	avatar		String?
-	type			roomType
-	password	String?
-	//probably should add invite too
-  members   RoomMember[]
-  message   Messages?
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @default(now()) @updatedAt
-}
+// model ChatRoom {
+//   id        Int          @id @unique @default(autoincrement())
+// 	name      String?
+// 	avatar		String?
+// 	type			roomType
+// 	password	String?
+// 	// //probably should add invite too
+//   // members   RoomMember[]
+//   // message   Messages?
+//   createdAt DateTime     @default(now())
+//   updatedAt DateTime     @default(now()) @updatedAt
+// }
 
-model RoomMember {
-  id        Int         @id @unique @default(autoincrement())
-  chatRoom  ChatRoom[]
-  role      ChatRole
-  STATE     MemberState
-  message   Messages?
-	user      User        @relation(fields: [userId], references: [id])
-	userId    Int         @unique
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @default(now()) @updatedAt
-}
+// model RoomMember {
+//   id        Int         @id @unique @default(autoincrement())
+//   chatRoom  ChatRoom[]
+//   role      ChatRole
+//   STATE     MemberState
+//   // message   Messages?
+// 	user      User        @relation(fields: [userId], references: [id])
+// 	userId    Int         @unique
+//   createdAt DateTime    @default(now())
+//   updatedAt DateTime    @default(now()) @updatedAt
+// }
 
-model Messages {
-  id         Int        @id @unique @default(autoincrement())
-  sender     RoomMember @relation(fields: [senderId], references: [id])
-  senderId   Int        @unique
-  receiver   ChatRoom   @relation(fields: [receiverId], references: [id])
-  receiverId Int        @unique
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @default(now()) @updatedAt
-}
+// model Messages {
+//   id         Int        @id @unique @default(autoincrement())
+//   content    String
+//   sender     RoomMember @relation(fields: [senderId], references: [id])
+//   senderId   Int        @unique
+//   receiver   ChatRoom   @relation(fields: [receiverId], references: [id])
+//   receiverId Int        @unique
+//   createdAt  DateTime   @default(now())
+//   updatedAt  DateTime   @default(now()) @updatedAt
+// }
 
-enum	roomType {
-	PUBLIC
-	PROTECTED
-	PRIVATE
-	DM
+enum RoomType {
+  PUBLIC
+  PROTECTED
+  PRIVATE
+  DM
 }
 
 enum MemberState {
   ACTIVE
   MUTED
+  BANNED
 }
 
 enum ChatRole {
@@ -114,7 +151,7 @@ enum ChatRole {
   OWNER
 }
 
-enum gameResult {
+enum GameResult {
   WIN
   LOSE
   DRAW
@@ -127,7 +164,7 @@ enum Status {
   OFFLINE
 }
 
-enum gameStatus {
+enum GameStatus {
   PENDING
   IN_PROGRESS
   FINISHED
