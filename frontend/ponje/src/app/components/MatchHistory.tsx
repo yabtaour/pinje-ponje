@@ -3,6 +3,7 @@ import React from 'react'
 export const MatchHistory = () => {
     return (
         <div className="overflow-x-auto">
+            <h2 className="text-2xl font-light text-[#4E40F4] mb-6">Match history</h2>
             <table className="table">
                 {/* head */}
                 <thead>
