@@ -65,6 +65,16 @@ export class UserController {
     return this.userService.UpdateUser(+request.sub, data);
   }
 
+  
+  @Get('fake')
+  @ApiOperation({ summary: 'Create fake users', 
+  description: 'Create fake users and return the users created'
+  })
+  createFake() {
+  console.log("CreateFakeUsers");
+  return this.userService.CreateUsersFake();
+  }
+
   @Get(':id')
   @ApiOperation({summary: 'Get a user by ID',
     description: 'Get a user by ID and return the user'
@@ -75,15 +85,6 @@ export class UserController {
     if (Number.isNaN(+id))
       throw new HttpException('Bad request', 400);
     return this.userService.FindUserByID(+id);
-  }
-
-  @Get('fake')
-  @ApiOperation({ summary: 'Create fake users', 
-    description: 'Create fake users and return the users created'
-  })
-  createFake() {
-    console.log("CreateFakeUsers");
-    return this.userService.CreateUsersFake();
   }
 
   @Get()

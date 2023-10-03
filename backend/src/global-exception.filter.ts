@@ -1,4 +1,5 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
+import { WsException } from '@nestjs/websockets';
 import { Request, Response } from 'express';
 
 @Catch()
@@ -14,6 +15,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       status = exception.getStatus();
       message = exception.message;
     }
+
+    if (exception instanceof WsException) {
+      status = HttpStatus.INTERNAL_SERVER_ERROR;
+      message = exception.message;
+    }
+    
     response.status(status).json({
       statusCode: status,
       message: message,
