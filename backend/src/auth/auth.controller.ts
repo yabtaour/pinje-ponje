@@ -2,11 +2,11 @@ import { Controller, Get, Post, UseGuards, Res, Req, Redirect, Param, Body } fro
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { Response, Request, response } from 'express';
-import { get, request } from 'http';
 import { UserService } from 'src/user/user.service';
 import { LocalAuthGuard } from './guards/local.guard';
-import { CreateUserDtoLocal } from 'src/user/dto/create-user.dto';
-import { ApiExcludeController, ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
+// import { CreateUserDtoLocal } from 'src/user/dto/create-user.dto';
+import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
+import { ApiExcludeController } from '@nestjs/swagger/dist/decorators/api-exclude-controller.decorator';
 
 
 //talk to anas about new routes
@@ -18,20 +18,20 @@ export class AuthController {
         private readonly userService: UserService
     ) {}
 
-    @Get('42/200/:id')
-    @ApiExcludeEndpoint()
+    @Get('/200/:id')
+    // @ApiExcludeEndpoint()
     async getProfile(@Param() id) {
         const profile = this.userService.FindUserByID(Number(id.id));
         return profile;
     }
 
     @Get('42')
-    @ApiExcludeEndpoint()
+    // @ApiExcludeEndpoint()
     @UseGuards(AuthGuard('42'))
     async redirectTo42Auth() {}
 
-    @Get('42/callback')
-    @ApiExcludeEndpoint()
+    @Get('api')
+    // @ApiExcludeEndpoint()
     @UseGuards(AuthGuard('42'))
     async handle42Auth(@Req() request: any, @Res() response: Response) {
         const user = request.user;
@@ -40,9 +40,10 @@ export class AuthController {
     }
 
 	@Post('login')
-	@UseGuards(LocalAuthGuard)
-	async handleLogin(@Req() request: any, @Res() response: Response) {
+    @UseGuards(LocalAuthGuard)
+	async handleLogin(@Body() body: {email, Hashpassword}, @Req() request: any, @Res() response: Response) {
 		const user = request.user;
+        console.log("Copy This Token: ", request.user.token);
 		response.setHeader("Authorisation", request.user.token);
 		response.redirect(`200/${String(request.user.user.id)}`);
 	}
@@ -57,9 +58,16 @@ export class SignUpController {
 		) {}
 
 		@Post()
-		async signUp(@Body() request: CreateUserDtoLocal, @Res() response: Response) {
+		async signUp(@Body() request: any, @Res() response: Response) {
+            try {
 			// return this.authService.signUp(request);
 			const user = this.authService.signUp(request);
-			response.redirect('http://localhost:3000/auth/login');
-		}
+            console.log("user: ", user);
+            response.send(user);
+            return "user created";
+        } catch (error) {
+            console.log("chi haja trat");
+            return "cannot create user";
+        }	// response.redirect('http://localhost:3000/auth/login');
+	}
 }

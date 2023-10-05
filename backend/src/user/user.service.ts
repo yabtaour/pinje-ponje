@@ -4,6 +4,11 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ProfilesService } from 'src/profiles/profiles.service';
 import { Faker, de, faker } from '@faker-js/faker';
 import { updateUserDto } from './dto/update-user.dto';
+import { config } from 'dotenv';
+import * as bcrypt from 'bcrypt';
+import { env } from 'process';
+
+config()
 
 class data {
   intraid: number;
@@ -76,24 +81,40 @@ export class UserService {
       return user;
   }
 
-  async CreateUserLocal(reqData: CreateUserDtoLocal) {
-    const user = await this.prisma.user.create({
-      data: {
-        // intraid: reqData.intraid,
-        Hashpassword: reqData.Hashpassword,
-        email: reqData.email,
-        profile: {
-          create: {
-            username: reqData.profile.username,
-            avatar: reqData.profile.avatar,
-            login: reqData.profile.login,
-          },
+  async CreateUserLocal(reqData: any) {
+    try {
+      console.log("reqData: ", reqData);
+      const rounds = parseInt(process.env.BCRYPT_ROUNDS);
+      console.log("rounds: ", rounds);
+      const HashedPassword = await bcrypt.hashSync(reqData.Hashpassword, rounds);
+    // const HashedPassword = await this.profile.hashPassword(reqData.Hashpassword);
+      console.log("HashedPassword: ", HashedPassword);
+      const user = await this.prisma.user.create({
+        data: {
+          intraid: 33,
+          Hashpassword: HashedPassword,
+          email: reqData.email,
+          profile: { 
+            create: {
+              username: "youness2",
+              avatar: "tswerti",
+              login: "youness2",
+            },
+          }
         }
+      })
+      console.log("user: ", user);
+      if (!user) {
+        console.log("user not created");
+        throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
+        
       }
-    })
-    if (!user)
+      return user;
+    } catch (error) {
+      // console.log(error);
+      // console.log(error);
       throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
-    return user;
+    }
 }
 
 // this only update User Level : Email : Hashpassword : twofactor

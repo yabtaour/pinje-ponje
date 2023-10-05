@@ -3,6 +3,7 @@ import { find } from 'rxjs';
 import { UserService } from 'src/user/user.service';
 import { Req } from '@nestjs/common';
 import { CreateUserDtoLocal } from 'src/user/dto/create-user.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -22,28 +23,34 @@ export class AuthService {
       }
     }
 
-		async validateUser(email: string, Hashpassword: string): Promise<any> {
+		async validateUser(email: string, Hashpassword: string){
+      console.log("validateUser");
 			const findUser = await this.userService.FindUserByEmail(email);
-			if (findUser && findUser.Hashpassword === Hashpassword) {
+			if (findUser && bcrypt.compareSync(Hashpassword, findUser.Hashpassword)) {
 				return findUser;
 			}
 			return null;
 		}
 
-    async signUp(body: CreateUserDtoLocal) {
+    async signUp(body: any) {
       try {
+        // console.log(body);
+        // const user = {
+				//   ...body,
+				//   // profile: {
+			  //   //   ...body.profile
+				//   // },
+				// };
+        console.log("we got here");
         console.log(body);
-        const user = {
-				  ...body,
-				  profile: {
-			      ...body.profile
-				  },
-				};
-        const userCreated = await this.userService.CreateUserLocal(user);
-        console.log(user);
+        const user = await this.userService.CreateUserLocal(body);
         return user;
+        // return userCreated;
+        // console.log(body);
+        // return body;
       } catch (error) {
-        throw new Error("Couldn't create user");
+        console.log("error");
+        return "Couldn't Create User"
       }
     }
 }

@@ -24,11 +24,11 @@ import { ChatGateway } from './chat/chat.gateway';
     ProfilesModule,
     PrismaModule,
     PassportModule,
-    ThrottlerModule.forRoot({
-      ttl: 1, // seconds
-      limit: 1000, // requests
-    }),
-    ChatModule,
+    // ThrottlerModule.forRoot({
+    //   ttl: 1, // seconds
+    //   limit: 1000, // requests
+    // }),
+    // ChatModule,
   ],
     controllers: [AuthController, SignUpController],
     providers: [
@@ -42,11 +42,10 @@ import { ChatGateway } from './chat/chat.gateway';
       //   provide: APP_FILTER,
       //   useClass: GlobalExceptionFilter,
       // },
-      {
-        provide: APP_GUARD,
-        useClass: ThrottlerGuard,
-      },
-      JwtAuthService, JwtService,
+      // {
+      //   provide: APP_GUARD,
+      //   useClass: ThrottlerGuard,
+      // },
     ],
 })
 export class AppModule {}
