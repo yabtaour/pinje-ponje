@@ -14,7 +14,7 @@ async function bootstrap() {
   // this section for socket.io configuration
   // const HttpAdapter = app.getHttpAdapter();
   // app.useWebSocketAdapter(new IoAdapter(HttpAdapter));
-  
+  app.useGlobalFilters(new GlobalExceptionFilter());
   app.enableCors({
     // credentials: true,
     origin: '*', 

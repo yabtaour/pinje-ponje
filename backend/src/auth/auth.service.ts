@@ -4,12 +4,29 @@ import { UserService } from 'src/user/user.service';
 import { Req } from '@nestjs/common';
 import { CreateUserDtoLocal } from 'src/user/dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
+import { authenticator } from 'otplib';
 
 @Injectable()
 export class AuthService {
     constructor(
         private userService: UserService,
     ) {}
+
+
+    async isTwiFactorCodeValid(user: any, code: string): Promise<boolean> {
+      return authenticator.verify({ token: code, secret: user.twoFactorSecret });
+    }
+
+    async userTwoFaChecker(user: any, code: string) {
+      const validCode = await this.isTwiFactorCodeValid(user, code);
+      if (validCode) {
+        console.log("valid code");
+        return true;
+      } else {
+        console.log("invalid code");
+        return false;
+      }
+    }
 
     async userCreateOrNot(user: any) {
       const checkUser = await this.userService.FindUserByIntraId(user.intraid);

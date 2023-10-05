@@ -7,6 +7,7 @@ import {
     IsObject,
     ValidateNested,
     IsEmpty,
+    IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -23,14 +24,21 @@ export class CreateUserDtoIntra {
     @ApiProperty()
     email: string;
 
-    // @IsOptional()
-    // twofactor: boolean;
     @IsNotEmpty()
     @IsObject()
     @ValidateNested()
     @ApiProperty()
     @Type(() => CreateProfileDto)
     profile: CreateProfileDto;
+
+    @IsOptional()
+    @IsBoolean()
+    twofactor: boolean;
+
+    @IsOptional()
+    @IsString()
+    twoFactorSecret: string;
+    
 }
 
 export class CreateUserDtoLocal {
@@ -50,4 +58,11 @@ export class CreateUserDtoLocal {
     @ApiProperty()
     @Type(() => CreateProfileDto)
     profile: CreateProfileDto;
+
+    @IsOptional()
+    twofactor: boolean;
+
+    @IsOptional()
+    @IsString()
+    twoFactorSecret: string;
 }

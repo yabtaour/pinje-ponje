@@ -7,6 +7,8 @@ import { updateUserDto } from './dto/update-user.dto';
 import { config } from 'dotenv';
 import * as bcrypt from 'bcrypt';
 import { env } from 'process';
+import { authenticator } from 'otplib';
+import { toDataURL } from 'qrcode';
 
 config()
 
@@ -119,17 +121,29 @@ export class UserService {
 
 // this only update User Level : Email : Hashpassword : twofactor
   async UpdateUser(id: number, data: updateUserDto) {
+    console.log(data);
     const user = await this.prisma.user.update({
       where: { id: id },
       data: {
         ...data,
         profile: {
-        }
+          update: {
+            ...data.profile,
+          },
+        },
       }
     })
     if (!user)
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    return user;
+    if (data.twofactor == true) {
+      const secret = authenticator.generateSecret();
+      const otpauth = authenticator.keyuri(data.email, "pinje-ponge", secret);
+      data.twoFactorSecret = secret;
+      const generatedQR = await toDataURL(otpauth);
+      console.log("generatedQR: ", generatedQR);
+      return {user, generatedQR};
+    }
+    return {user};
   }
 
 
@@ -158,6 +172,7 @@ async FindUserByID(id: number) {
       id: true,
       email: true,
       twofactor: true,
+      twoFactorSecret: true,
       profile: {
         select: {
           id : true,
