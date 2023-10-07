@@ -8,7 +8,7 @@ import { UserService } from 'src/user/user.service';
 // import { getMaxListeners } from 'process';
 
 @Injectable()
-export class LocalStrategy extends PassportStrategy(Strategy) {
+export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
   constructor(
 		private readonly jwtService: JwtAuthService,
 		private readonly userService: UserService,

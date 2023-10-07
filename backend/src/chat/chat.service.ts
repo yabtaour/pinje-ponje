@@ -14,22 +14,24 @@ export class ChatService {
 
   constructor(private readonly prisma: PrismaService) {}
 
+
+
   async createDmRoom(socket: any, payload: CreateChatDmRoomDto) {
     const roomId = await this.generateUniqueRoomId();
     const role = (payload.role !== 'MEMBER') ? 'OWNER' : 'MEMBER';
 
-    if (payload.roomType === 'PROTECTED' && payload.password === undefined) {
+    if (payload.type === 'PROTECTED' && payload.password === undefined) {
       throw new Error(`Password is required for protected room`);
     }
     
     // here the token should be the user id after the verification
     console.log("socket id", socket.id);
     const userID = +socket.id;
-    console.log("roomType : ", payload.roomType);
+    console.log("roomType : ", payload.type);
     const room = await this.prisma.chatRoom.create({
       data: {
         name: roomId,
-        roomType: payload.roomType as RoomType,
+        roomType: payload.type as RoomType,
         password: payload.password,
         members: {
           create: [{
@@ -100,7 +102,7 @@ export class ChatService {
 
 
   // switch to unique name
-  async getRoomByNames(roomName: string, roomType: RoomType): Promise<ChatRoom> {
+  async getRoomByNames(roomName: string): Promise<ChatRoom> {
     return this.prisma.chatRoom.findUnique({
       where: {
         name: roomName,
@@ -198,7 +200,7 @@ export class ChatService {
 
 
   // idea : insetead of delete the user from the room we can just change the state to kicked  
-  async kickUserFromRoom(client: string, payload: any): Promise<void> {
+  async kickUserFromRoom(client: any, payload: any): Promise<void> {
 
       console.log("name : ", payload.name);
       const room = await this.prisma.chatRoom.findUnique({
@@ -222,7 +224,7 @@ export class ChatService {
   }
   
 
-  async MuteUserFromRoom(client: string, payload: any): Promise<void> {
+  async MuteUserFromRoom(client: any, payload: any): Promise<void> {
     const room = await this.prisma.chatRoom.findUnique({
       where: {
         name : payload.name,
@@ -252,7 +254,7 @@ export class ChatService {
     // i need a middleware to check if the user is muted or not to update the state
   }
   
-  async BanUserFromRoom(client: string, payload: any): Promise<void> {
+  async BanUserFromRoom(client: any, payload: any): Promise<void> {
     const room = await this.prisma.chatRoom.findUnique({
       where: {
         name : payload.name,
@@ -265,7 +267,6 @@ export class ChatService {
         }
       }
     });
-
     await this.prisma.roomMembership.update({
       where: {
         id : room.members[0].id,
@@ -274,6 +275,108 @@ export class ChatService {
         state: 'BANNED',
       }
     })
+  }
+
+  async createMessage(client: any, payload: any) {
+    const room = await this.prisma.chatRoom.findUnique({
+      where: {
+        name : payload.name,
+      },
+      select: {
+        id: true,
+        members: {
+          where: {
+            userId: +client.id,
+          }
+        }
+      }
+    });
+    if (!room || !room.members[0]) {
+      // change the event name to ErrorEvent
+      client.emit('ErrorEvent', "You are not a member of this room or the room doesn't exist");
+      return;
+    }
+    if (room.members[0].state === 'MUTED') {
+      client.emit('roomBroadcast', "You are muted");
+      return;
+    }
+
+    const message = await this.prisma.chatMessage.create({
+      data: {
+        content: payload.message,
+        room: {
+          connect: {
+            id: room.id,
+          }
+        },
+        user: {
+          connect: {
+            id: +client.id,
+          },
+        }
+      }
+    })
+    const messageWithUser = {
+      ...message,
+      user: {
+        id: +client.id,
+        username: client.username,
+        avatar: client.avatar,
+      }
+    }
+    console.log("messageWithUser : ", messageWithUser);
+    console.log("message : ", message);
+    return messageWithUser;
+  
+    // await this.prisma.roomMembership.update({
+    //   where: {
+    //     id : room.members[0].id,
+    //   },
+    //   data: {
+    //     state: 'BANNED',
+    //   }
+    // })
+  }
+
+  async getMessages(client: any, payload: any) {
+    const room = await this.prisma.chatRoom.findUnique({
+      where: {
+        name : payload.name,
+      },
+      select: {
+        id: true,
+        members: {
+          where: {
+            userId: +client.id,
+          }
+        }
+      }
+    });
+    if (!room || !room.members[0]) {
+      // change the event name to ErrorEvent
+      client.emit('ErrorEvent', "You are not a member of this room or the room doesn't exist");
+      return;
+    }
+    const messages = await this.prisma.chatMessage.findMany({
+      where: {
+        roomId: room.id,
+      },
+      select: {
+        content: true,
+        createdAt: true,
+        user: {
+          select: {
+            profile: {
+              select: {
+                username: true,
+                avatar: true,
+              }
+            }
+          }
+        }
+      }
+    })
+    return messages;
   }
 
   // leave here and move it later to extr file
