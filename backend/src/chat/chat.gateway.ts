@@ -85,7 +85,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('createRoom')
   async handleCreateRoom(client: AuthWithWs, payload: CreateChatDmRoomDto) {
     console.log("user id : ", client.id);
-    const room = await this.chatService.createDmRoom(client, payload);
+    const room = await this.chatService.createRoom(client, payload);
     client.join(room.name);
     this.server.to(room.name).emit('roomCreated', room);
   }
@@ -159,7 +159,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('getRoomUsers')
   async handleGetRoomUsers(client: any, payload: any) {
-    const users = await this.chatService.getRoomUsers(payload.name,  {
+    const users = await this.chatService.getRoomUsers(client, payload.name,  {
       skip: client.handshake.query.skip ? +client.handshake.query.skip : 0,
       take: client.handshake.query.take ? +client.handshake.query.take : 10,
       cursor: client.handshake.query.cursor ? { id: +client.handshake.query.cursor } : undefined,
@@ -215,7 +215,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.server.to(payload.name).emit('roomBroadcast', "User Banned");
   }
 
-
+  @SubscribeMessage('unban')
+  async handleUnban(client: AuthWithWs, payload: any) {
+    const room = await this.chatService.UnBanUserFromRoom(client, payload);
+    this.server.to(payload.name).emit('roomBroadcast', "User Unbanned");
+  }
 
   /**
    * Sends a message to a room.
@@ -275,6 +279,17 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
  * 
  * kick         : [ server side ] to kick a user from a room
  * 
+ * mute         : [ server side ] to mute a user from a room
+ * 
+ * ban          : [ server side ] to ban a user from a room
+ * 
+ * unban        : [ server side ] to unban a user from a room
+ * 
+ * sendMessage  : [ server side ] to send a message to a room
+ * 
+ * getMessages  : [ server side ] to get all the messages of a room
+ * 
+ * 
  * ------------------------------------------------------------ [ client side ]
  * 
  * roomCreated  : [ client side ] retrive the new Room Details.
@@ -290,6 +305,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
  * roomBroadcast: brodcast for room that user has joind or kicked or banned etc..
  * 
  * ErrorEvent   : [ client side ] retrive the error message
+ * 
+ * message      : [ client side ] retrive the message
+ * 
+ * listOfMessages: [ client side ] retrive All messages of a room
+ * 
+ * 
  * 
  */
 

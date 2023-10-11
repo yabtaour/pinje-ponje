@@ -12,6 +12,12 @@ export class AllExceptionsFilter extends BaseWsExceptionFilter {
       // Handle WebSocket-specific exceptions
       logger.error(exception);
       super.catch(exception, host);
+
+      // console.log(exception);
+      client.emit('ErrorEvent', {
+        message: exception.message,
+      });
+
     } else if (exception instanceof BadRequestException) {
       logger.error(exception);
       // Handle bad request (DTO validation) errors
