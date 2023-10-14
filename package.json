@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@compodoc/compodoc": "^1.1.21",
     "@nestjs/cli": "^10.1.5",
     "@nestjs/throttler": "^4.2.1"
   },

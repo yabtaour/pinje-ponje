@@ -24,6 +24,7 @@ type Auth = {
     id : string,
     username : string,
     Authorization?: string,
+    avatar? : string,
 }
 
 export type AuthWithWs = Socket & Auth;

@@ -3,10 +3,6 @@ import { IsNotEmpty, IsOptional, IsString } from "class-validator";
 export class CreateChatDmRoomDto {
 
     @IsNotEmpty()
-    @IsString()
-    token: string;
-
-    @IsNotEmpty()
     name: string;
 
     @IsString()
@@ -15,7 +11,7 @@ export class CreateChatDmRoomDto {
 
     @IsNotEmpty()
     @IsString()
-    roomType: string;
+    type: string;
 
     @IsNotEmpty()
     @IsString()

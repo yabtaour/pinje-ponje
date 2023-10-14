@@ -8,61 +8,62 @@ import { JwtService } from '@nestjs/jwt';
 import { ro } from '@faker-js/faker';
 import { RoomDto } from './dto/room-dto';
 import { get } from 'http';
+import { Socket } from 'socket.io';
+import { WsException } from '@nestjs/websockets';
+import { AuthWithWs } from './dto/user-ws-dto';
 
 @Injectable()
 export class ChatService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async createDmRoom(socket: any, payload: CreateChatDmRoomDto) {
-    const roomId = await this.generateUniqueRoomId();
-    const role = (payload.role !== 'MEMBER') ? 'OWNER' : 'MEMBER';
 
-    if (payload.roomType === 'PROTECTED' && payload.password === undefined) {
-      throw new Error(`Password is required for protected room`);
+
+  async createRoom(socket: any, payload: CreateChatDmRoomDto) {
+    const roomId = await this.generateUniqueRoomId();
+    const role = (payload.type !== 'DM') ? 'OWNER' : 'MEMBER';
+
+    if (payload.type === 'PROTECTED' && payload.password === undefined) {
+      throw new WsException(`Room password is required`);
     }
-    
-    // here the token should be the user id after the verification
-    console.log("socket id", socket.id);
-    const userID = +socket.id;
-    console.log("roomType : ", payload.roomType);
+
     const room = await this.prisma.chatRoom.create({
       data: {
         name: roomId,
-        roomType: payload.roomType as RoomType,
+        roomType: payload.type as RoomType,
         password: payload.password,
         members: {
           create: [{
-            user : { connect : { id : userID } },
+            user : { connect : { id : +socket.id } },
             role: role as ChatRole,
           }]
         }
       }
     })
-
     room.password = undefined;
     return room;
   }
 
   async joinRoom(socket: any, payload: any){
+
     const room = await this.prisma.chatRoom.findUnique({
       where: {
         name : payload.name,
       },
       select: {
+        id: true,
         password: true,
         roomType: true,
       }
     });
-    if (!room) {
-      Logger.error(`Room with name ${payload.name} not found`);
-      throw new Error(`Room with name ${payload.name} not found`);
-    }
-    console.log("room : ", room);
-    if (room.roomType === 'PROTECTED' && room.password !== payload.password) {
-      Logger.error(`Password is incorrect`);
-      throw new Error(`Password is incorrect`);
-    }
+    if (!room)
+      throw new WsException(`Room with name ${payload.name} not found`);
+
+    if (room.roomType === 'PROTECTED' && room.password !== payload.password)
+      throw new WsException(`Wrong password`);
+
+    if (await this.isUserInRoom(+room.id, +socket.id) === true)
+      throw new WsException(`You are already a member of this room`);
 
     const patchedRoom = await this.prisma.chatRoom.update({
       where: {
@@ -97,15 +98,31 @@ export class ChatService {
   //   })
   //   return room;
   // }
-
-
   // switch to unique name
-  async getRoomByNames(roomName: string, roomType: RoomType): Promise<ChatRoom> {
-    return this.prisma.chatRoom.findUnique({
+  async getRoomByNames(roomName: string): Promise<ChatRoom> {
+    const room = await this.prisma.chatRoom.findUnique({
       where: {
         name: roomName,
+      },
+      select: {
+        id: true,
+        name: true,
+        password: true,
+        roomType: true,
+        updatedAt: true,
+        createdAt: true,
       }
     })
+
+    if  (!room) {
+      throw new WsException(`Room with name ${roomName} not found`);
+    }
+
+    if (room.roomType === 'PRIVATE' || room.roomType === 'DM')
+      throw new WsException(`Room With name ${roomName} doesn't exist or Not Public`);
+    
+
+    return room;
     // hna khas ncheck protect to del and privet to check passorwd
   }
 
@@ -151,7 +168,7 @@ export class ChatService {
   }
 
   
-  async getRoomUsers(roonName: string, params: { // params : { skip?: number; take?: number; cursor?: Prisma.ChatRoomWhereUniqueInput; where?: Prisma.ChatRoomWhereInput; orderBy?: Prisma.ChatRoomOrderByWithRelationInput; }
+  async getRoomUsers(client : AuthWithWs, roonName: string, params: { // params : { skip?: number; take?: number; cursor?: Prisma.ChatRoomWhereUniqueInput; where?: Prisma.ChatRoomWhereInput; orderBy?: Prisma.ChatRoomOrderByWithRelationInput; }
     skip?: number;
     take?: number;
     cursor?: Prisma.ChatRoomWhereUniqueInput;
@@ -162,11 +179,17 @@ export class ChatService {
     const roomId = await this.prisma.chatRoom.findUnique({
       where: {
         name: roonName,
-      }
+      },
     });
     if (!roomId) {
-      throw new Error(`Room with name ${roonName} not found`);
+      throw new WsException(`Room with name ${roonName} not found`);
     }
+
+    if (await this.isUserInRoom(+roomId.id, +client.id) === false) {
+      throw new WsException(`You are not a member of this room`);
+    }
+
+
     const { cursor, orderBy, skip, take} = params;
     const users =  this.prisma.roomMembership.findMany({
       where: {
@@ -198,9 +221,8 @@ export class ChatService {
 
 
   // idea : insetead of delete the user from the room we can just change the state to kicked  
-  async kickUserFromRoom(client: string, payload: any): Promise<void> {
+  async kickUserFromRoom(client: any, payload: any) {
 
-      console.log("name : ", payload.name);
       const room = await this.prisma.chatRoom.findUnique({
         where: {
           name : payload.name,
@@ -214,15 +236,46 @@ export class ChatService {
         }
       });
 
-      await this.prisma.roomMembership.delete({
+      if (await this.isUserAdminInRoom(room.members[0].roomId, +client.id) === false) {
+        throw new WsException(`Not Allowed`);
+      }
+
+      const user = await this.prisma.roomMembership.delete({
         where: {
           id : room.members[0].id,
+        },
+        include: {
+          user: {
+            select: {
+              profile: {
+                select: {
+                  username: true,
+                }
+              }
+            }
+          }
         }
       })
+
+      console.log('user name', user.user.profile.username);
+
+      const kickeduser = await this.prisma.user.findUnique({
+        where: {
+          id: payload.userId,
+        },
+        select: {
+          profile: {
+            select: {
+              username: true,
+            }
+          }
+        }
+      })
+      return kickeduser;
   }
   
 
-  async MuteUserFromRoom(client: string, payload: any): Promise<void> {
+  async MuteUserFromRoom(client: any, payload: any): Promise<void> {
     const room = await this.prisma.chatRoom.findUnique({
       where: {
         name : payload.name,
@@ -252,7 +305,7 @@ export class ChatService {
     // i need a middleware to check if the user is muted or not to update the state
   }
   
-  async BanUserFromRoom(client: string, payload: any): Promise<void> {
+  async BanUserFromRoom(client: any, payload: any): Promise<void> {
     const room = await this.prisma.chatRoom.findUnique({
       where: {
         name : payload.name,
@@ -266,6 +319,10 @@ export class ChatService {
       }
     });
 
+    if (await this.isUserAdminInRoom(room.members[0].roomId, +client.id) === false) {
+      throw new WsException(`Not Allowed`);
+    }
+
     await this.prisma.roomMembership.update({
       where: {
         id : room.members[0].id,
@@ -276,6 +333,135 @@ export class ChatService {
     })
   }
 
+  async UnBanUserFromRoom(client: any, payload: any): Promise<void> {
+    const room = await this.prisma.chatRoom.findUnique({
+      where: {
+        name : payload.name,
+      },
+      select: {
+        members: {
+          where: {
+            userId: payload.userId,
+          }
+        }
+      }
+    });
+
+    if (await this.isUserAdminInRoom(room.members[0].roomId, +client.id) === false) {
+      throw new WsException(`Not Allowed`);
+    }
+
+    await this.prisma.roomMembership.update({
+      where: {
+        id : room.members[0].id,
+      },
+      data: {
+        state: 'ACTIVE',
+      }
+    })
+  }
+
+  async createMessage(client: any, payload: any) {
+    const room = await this.prisma.chatRoom.findUnique({
+      where: {
+        name : payload.name,
+      },
+      select: {
+        id: true,
+        members: {
+          where: {
+            userId: +client.id,
+          }
+        }
+      }
+    });
+    if (!room || !room.members[0]) {
+      // change the event name to ErrorEvent
+      client.emit('ErrorEvent', "You are not a member of this room or the room doesn't exist");
+      return;
+    }
+    if (room.members[0].state === 'MUTED') {
+      client.emit('roomBroadcast', "You are muted");
+      return;
+    }
+
+    if (room.members[0].state === 'BANNED') {
+      client.emit('roomBroadcast', "You are banned");
+      return;
+    }
+
+    const message = await this.prisma.chatMessage.create({
+      data: {
+        content: payload.message,
+        room: {
+          connect: {
+            id: room.id,
+          }
+        },
+        user: {
+          connect: {
+            id: +client.id,
+          },
+        }
+      }
+    })
+    const messageWithUser = {
+      ...message,
+      user: {
+        id: +client.id,
+        username: client.username,
+        avatar: client.avatar,
+      }
+    }
+    return messageWithUser;
+  }
+
+  async getMessages(client: any, payload: any) {
+    const room = await this.prisma.chatRoom.findUnique({
+      where: {
+        name : payload.name,
+      },
+      select: {
+        id: true,
+        members: {
+          where: {
+            userId: +client.id,
+          }
+        }
+      }
+    });
+    if (!room || !room.members[0]) {
+      // change the event name to ErrorEvent
+      client.emit('ErrorEvent', "You are not a member of this room or the room doesn't exist");
+      return;
+    }
+    const messages = await this.prisma.chatMessage.findMany({
+      where: {
+        roomId: room.id,
+      },
+      select: {
+        content: true,
+        createdAt: true,
+        user: {
+          select: {
+            profile: {
+              select: {
+                username: true,
+                avatar: true,
+              }
+            }
+          }
+        }
+      }
+    })
+    return messages;
+  }
+
+  /**
+  // Small function to help in other functions
+  **/
+
+
   // leave here and move it later to extr file
   async generateUniqueRoomId(length: number = 50){
       const prefix = 'RASY';
@@ -285,6 +471,27 @@ export class ChatService {
       return roomId;
   };
   
+  async isUserInRoom(roomId: number, userId: number): Promise<boolean> {
+    const roomMembership = await this.prisma.roomMembership.findFirst({
+      where: {
+        userId: userId,
+        roomId: roomId,
+      }
+    });
+    console.log('roomMembership : ', !!roomMembership);
+    return !!roomMembership;
+  }
+
+  async isUserAdminInRoom(roomId: number, userId: number): Promise<boolean> {
+    const roomMembership = await this.prisma.roomMembership.findFirst({
+      where: {
+        userId: userId,
+        roomId: roomId,
+        role: 'OWNER' || 'ADMIN',
+      }
+    });
+    return !!roomMembership;
+  }
   // Class END.
   }
 

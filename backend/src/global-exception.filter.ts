@@ -1,10 +1,11 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
 import { Request, Response } from 'express';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
   catch(exception: any, host: ArgumentsHost) {
+    Logger.error(exception);
     const response = host.switchToHttp().getResponse<Response>();
     const request = host.switchToHttp().getRequest<Request>();
 
@@ -21,6 +22,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       message = exception.message;
     }
     
+    Logger.error(`Error ${status} ${message}`);
     response.status(status).json({
       statusCode: status,
       message: message,

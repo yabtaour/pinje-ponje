@@ -17,7 +17,7 @@ export class SocketIOAdapter extends IoAdapter {
     const cors = {
       origin: '*',
     };
-
+    
     this.logger.log('Configuring SocketIO server with custom CORS options', {
       cors,
     });
@@ -27,6 +27,7 @@ export class SocketIOAdapter extends IoAdapter {
       cors,
     };
 
+  
     const jwtService = this.app.get(JwtService);
     const prisma = this.app.get(PrismaService);
     const server: Server = super.createIOServer(port, optionsWithCORS);
