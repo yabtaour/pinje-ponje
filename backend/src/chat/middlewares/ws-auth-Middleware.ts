@@ -21,6 +21,7 @@ export const createTokenMiddleware =
               profile : {
                     select : {
                         username : true,
+                        avatar : true,
                     }
               }
           },
@@ -32,6 +33,7 @@ export const createTokenMiddleware =
         logger.debug(`Client connected: ` +user.profile.username);
         socket.id = payload.sub;
         socket.username = user.profile.username;
+        socket.avatar = user.profile.avatar;
         next();
     } catch {
         logger.error(`-- Invalid token --`);

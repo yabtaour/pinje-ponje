@@ -26,6 +26,8 @@ model User {
   // roomMember			RoomMember?
 }
 
+// add level and rank and xp fake data and store achievements in the database and rankes 
+
 model Profile {
   id             Int       @id @unique @default(autoincrement())
   username       String    @unique
@@ -48,6 +50,7 @@ model Profile {
   user           User      @relation(fields: [userid], references: [id], onDelete: Cascade)
   userid         Int       @unique
 }
+
 
 model RoomMembership {
   id       Int      @id @default(autoincrement())

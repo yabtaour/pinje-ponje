@@ -28,7 +28,7 @@ async function bootstrap() {
       whitelist: true,
     }),
   );
-    
+
   app.useWebSocketAdapter(new SocketIOAdapter(app));
 
     // this section for swagger configuration
@@ -36,6 +36,7 @@ async function bootstrap() {
   .setTitle('PingPong API')
   .setDescription('bestNoobiBackendEver')
   .setVersion('1.0')
+  .addBearerAuth()
   .build();
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('api', app, document);
