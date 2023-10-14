@@ -1,10 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { find } from 'rxjs';
-import { UserService } from 'src/user/user.service';
-import { Req } from '@nestjs/common';
-import { CreateUserDtoLocal } from 'src/user/dto/create-user.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { authenticator } from 'otplib';
+import { UserService } from 'src/user/user.service';
+import { SignUpDto } from './dto/signUp.dto';
 
 @Injectable()
 export class AuthService {
@@ -12,18 +10,18 @@ export class AuthService {
         private userService: UserService,
     ) {}
 
-
-    async isTwiFactorCodeValid(user: any, code: string): Promise<boolean> {
-      return authenticator.verify({ token: code, secret: user.twoFactorSecret });
+    async isTwiFactorCodeValid(user: any, twofactorcode: string){
+      return authenticator.verify({
+				token: twofactorcode,
+				secret: user.twoFactorSecret
+			});
     }
 
-    async userTwoFaChecker(user: any, code: string) {
-      const validCode = await this.isTwiFactorCodeValid(user, code);
+    async userTwoFaChecker(user: any, body: { twofactorcode: string }) {
+      const validCode = await this.isTwiFactorCodeValid(user, body.twofactorcode);
       if (validCode) {
-        console.log("valid code");
         return true;
       } else {
-        console.log("invalid code");
         return false;
       }
     }
@@ -40,33 +38,27 @@ export class AuthService {
       }
     }
 
-		async validateUser(email: string, Hashpassword: string){
-      console.log("validateUser");
-			const findUser = await this.userService.FindUserByEmail(email);
-			if (findUser && bcrypt.compareSync(Hashpassword, findUser.Hashpassword)) {
-				return findUser;
+		async validateUser(email: string, password: string){
+			try {
+				const user = await this.userService.FindUserByEmail(email);
+				if (!user) {
+					throw new NotFoundException("User not found");
+				}
+				if (bcrypt.compareSync(password, user.Hashpassword)) {
+					return user;
+				} else {
+					throw new NotFoundException("Wrong password");
+				}
+			} catch (error) {
+				throw new NotFoundException(error);
 			}
-			return null;
 		}
 
-    async signUp(body: any) {
+    async signUp(data: SignUpDto) {
       try {
-        // console.log(body);
-        // const user = {
-				//   ...body,
-				//   // profile: {
-			  //   //   ...body.profile
-				//   // },
-				// };
-        console.log("we got here");
-        console.log(body);
-        const user = await this.userService.CreateUserLocal(body);
+        const user = await this.userService.CreateUserLocal(data);
         return user;
-        // return userCreated;
-        // console.log(body);
-        // return body;
       } catch (error) {
-        console.log("error");
         return "Couldn't Create User"
       }
     }

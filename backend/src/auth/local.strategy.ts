@@ -41,7 +41,7 @@
 
 import { Strategy } from 'passport-local';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthService } from './jwt.service';
 
@@ -53,26 +53,19 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
 	) {
     	super({
         usernameField: 'email',
-        passwordField: 'Hashpassword',
+        passwordField: 'password',
       });
   	}
 
-  async validate(email: string, Hashpassword: string, done: (error: any, user?: any) => void): Promise<any> {
-	  
-    console.log("trying to validate user");
+  async validate(email: string, password: string, done: (error: any, user?: any) => void) {
     try {
-      console.log("email: ", email);
-      console.log("Hashpassword: ", Hashpassword);
-      const user = await this.authService.validateUser(email, Hashpassword);
+      const user = await this.authService.validateUser(email, password);
       if (!user) {
-        console.log("no user");
-        throw new UnauthorizedException;
+        throw new NotFoundException('User not found');
       }
       const token = await this.jwtService.generateToken(String(user.id));
-      console.log("user found");
       done(null, { user, token });
     } catch (error) {
-      console.log("error");
       done(error);
     }
   }

@@ -8,6 +8,7 @@ import { LocalAuthGuard } from './guards/local.guard';
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { ApiExcludeController } from '@nestjs/swagger/dist/decorators/api-exclude-controller.decorator';
 import { JWTGuard } from './guards/jwt.guard';
+import { SignInDto, SignUpDto } from './dto/signUp.dto';
 
 
 //talk to anas about new routes
@@ -39,10 +40,10 @@ export class AuthController {
     }
 
 	@Post('login')
-    @UseGuards(LocalAuthGuard)
-	async handleLogin(@Body() body: {email, Hashpassword}, @Req() request: any, @Res() response: Response) {
+  @UseGuards(LocalAuthGuard)
+	async handleLogin(@Body() data: SignInDto, @Req() request: any, @Res() response: Response) {
 		const user = request.user;
-        console.log("Copy This Token: ", request.user.token);
+  	console.log("Copy This Token: ", request.user.token);
 		response.setHeader("authorization", request.user.token);
 		response.redirect(`200/${String(request.user.user.id)}`);
 	}
@@ -50,21 +51,16 @@ export class AuthController {
     @Post('2fa')
     @UseGuards(JWTGuard)
     async handle2fa(@Body() body: {twofactorcode: string}, @Req() request: any, @Res() response: Response) {
-        // console.log("body: ", body);
-        // console.log("user", request.user);
-        // console.log("user", request.user.user);
         const user = await this.userService.FindUserByID(Number(request.user.sub));
+				if (!user)
+					return response.redirect(`http://localhost:3000/auth/login`);
         console.log("user: ", user);
-        const isValid = this.authService.userTwoFaChecker(user, body.twofactorcode);
-        if (isValid) {
-            response.setHeader("authorization", request.user.token);
-            response.redirect(`200/${String(request.user.user.id)}`);
-        } else {
-            response.redirect(`http://localhost:3000/auth/login`);
-        }
-        console.log("Copy This Token: ", request.user.token);
-        response.setHeader("authorization", request.user.token);
+        const isValid = await this.authService.userTwoFaChecker(user, body);
+				console.log("isValid: ", isValid);
+				if (!isValid)
+					return response.redirect(`http://localhost:3000/auth/login`);
         response.redirect(`200/${String(request.user.user.id)}`);
+
     }
 }
 
@@ -72,21 +68,17 @@ export class AuthController {
 @ApiTags('Auth')
 export class SignUpController {
 		constructor(
-				private readonly userService: UserService,
 				private readonly authService: AuthService
 		) {}
 
 		@Post()
-		async signUp(@Body() request: any, @Res() response: Response) {
-            try {
-			// return this.authService.signUp(request);
-			const user = this.authService.signUp(request);
-            console.log("user: ", user);
-            response.send(user);
-            return "user created";
-        } catch (error) {
-            console.log("chi haja trat");
-            return "cannot create user";
-        }	// response.redirect('http://localhost:3000/auth/login');
+		async signUp(@Body() data: SignUpDto, @Res() response: Response) {
+      try {
+				const user = await this.authService.signUp(data);
+				console.log("user created");
+      	response.send(user);
+      } catch (error) {
+        return "cannot create user";
+      }
 	}
 }

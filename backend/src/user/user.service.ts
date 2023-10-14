@@ -1,14 +1,13 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateUserDtoLocal, CreateUserDtoIntra,  } from './dto/create-user.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { ProfilesService } from 'src/profiles/profiles.service';
-import { Faker, de, faker } from '@faker-js/faker';
-import { updateUserDto } from './dto/update-user.dto';
-import { config } from 'dotenv';
+import { faker } from '@faker-js/faker';
+import { HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { env } from 'process';
+import { config } from 'dotenv';
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { ProfilesService } from 'src/profiles/profiles.service';
+import { CreateUserDtoIntra } from './dto/create-user.dto';
+import { updateUserDto } from './dto/update-user.dto';
 
 config()
 
@@ -67,7 +66,6 @@ export class UserService {
       const user = await this.prisma.user.create({
         data: {
           intraid: reqData.intraid,
-          // Hashpassword: reqData.Hashpassword,
           email: reqData.email,
           profile: {
             create: {
@@ -83,67 +81,68 @@ export class UserService {
       return user;
   }
 
-  async CreateUserLocal(reqData: any) {
+  async CreateUserLocal(data: any) {
     try {
-      console.log("reqData: ", reqData);
-      const rounds = parseInt(process.env.BCRYPT_ROUNDS);
-      console.log("rounds: ", rounds);
-      const HashedPassword = await bcrypt.hashSync(reqData.Hashpassword, rounds);
-    // const HashedPassword = await this.profile.hashPassword(reqData.Hashpassword);
-      console.log("HashedPassword: ", HashedPassword);
+      const rounds = await parseInt(process.env.BCRYPT_ROUNDS);
+      const HashedPassword = await bcrypt.hashSync(data.password, rounds);
       const user = await this.prisma.user.create({
         data: {
           intraid: 33,
           Hashpassword: HashedPassword,
-          email: reqData.email,
+          email: data.email,
           profile: { 
             create: {
-              username: "youness2",
-              avatar: "tswerti",
-              login: "youness2",
+              username: data.username,
+              avatar: "data.profile.avatar",
+              login: data.username,
             },
           }
         }
       })
-      console.log("user: ", user);
       if (!user) {
-        console.log("user not created");
         throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
         
       }
       return user;
     } catch (error) {
-      // console.log(error);
-      // console.log(error);
       throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
     }
 }
 
 // this only update User Level : Email : Hashpassword : twofactor
   async UpdateUser(id: number, data: updateUserDto) {
-    console.log(data);
-    const user = await this.prisma.user.update({
-      where: { id: id },
-      data: {
-        ...data,
-        profile: {
-          update: {
-            ...data.profile,
-          },
-        },
-      }
-    })
-    if (!user)
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    if (data.twofactor == true) {
-      const secret = authenticator.generateSecret();
-      const otpauth = authenticator.keyuri(data.email, "pinje-ponge", secret);
-      data.twoFactorSecret = secret;
-      const generatedQR = await toDataURL(otpauth);
-      console.log("generatedQR: ", generatedQR);
-      return {user, generatedQR};
-    }
-    return {user};
+		try {
+			const user = await this.prisma.user.findUnique({
+				where : {
+					id: id,
+				},
+			});
+			if (!user)
+				throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+			// let generatedQR = null;
+			// if (data.twofactor == true && user.twofactor == false) {
+				// const secret = authenticator.generateSecret();
+				// const otpauth = authenticator.keyuri(data.email, "pinje-ponge", secret);
+				// data.twoFactorSecret = secret;
+				// generatedQR = await toDataURL(otpauth);
+			// }
+    	const updatedUser = await this.prisma.user.update({
+      	where: {
+					id: id,
+				},
+      	data: {
+        	...data,
+        	profile: {
+          	update: {
+           		...data.profile,
+          	},
+        	},
+      	}
+    	})
+    	return {updatedUser};
+		} catch (error) {
+			throw new InternalServerErrorException(error);
+		}
   }
 
 
@@ -206,10 +205,16 @@ async FindUserByID(id: number) {
   }
 
 	async FindUserByEmail(email: string) {
-		const user = await this.prisma.user.findUnique({
-			where: { email: email },
-		});
-		return user;
+		try {
+			const user = await this.prisma.user.findUnique({
+				where: {
+					email: email,
+				}
+			});
+			return user;
+		} catch (error) {
+			throw new NotFoundException(error);
+		}
 	}
 
   async RemoveUsers(id: number) {
