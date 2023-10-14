@@ -1,9 +1,15 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateUserDtoLocal, CreateUserDtoIntra,  } from './dto/create-user.dto';
+import { faker } from '@faker-js/faker';
+import { HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import { config } from 'dotenv';
+import { authenticator } from 'otplib';
+import { toDataURL } from 'qrcode';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ProfilesService } from 'src/profiles/profiles.service';
-import { Faker, de, faker } from '@faker-js/faker';
+import { CreateUserDtoIntra } from './dto/create-user.dto';
 import { updateUserDto } from './dto/update-user.dto';
+
+config()
 
 class data {
   intraid: number;
@@ -60,7 +66,6 @@ export class UserService {
       const user = await this.prisma.user.create({
         data: {
           intraid: reqData.intraid,
-          // Hashpassword: reqData.Hashpassword,
           email: reqData.email,
           profile: {
             create: {
@@ -76,39 +81,68 @@ export class UserService {
       return user;
   }
 
-  async CreateUserLocal(reqData: CreateUserDtoLocal) {
-    const user = await this.prisma.user.create({
-      data: {
-        // intraid: reqData.intraid,
-        Hashpassword: reqData.Hashpassword,
-        email: reqData.email,
-        profile: {
-          create: {
-            username: reqData.profile.username,
-            avatar: reqData.profile.avatar,
-            login: reqData.profile.login,
-          },
+  async CreateUserLocal(data: any) {
+    try {
+      const rounds = await parseInt(process.env.BCRYPT_ROUNDS);
+      const HashedPassword = await bcrypt.hashSync(data.password, rounds);
+      const user = await this.prisma.user.create({
+        data: {
+          intraid: 33,
+          Hashpassword: HashedPassword,
+          email: data.email,
+          profile: { 
+            create: {
+              username: data.username,
+              avatar: "data.profile.avatar",
+              login: data.username,
+            },
+          }
         }
+      })
+      if (!user) {
+        throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
+        
       }
-    })
-    if (!user)
+      return user;
+    } catch (error) {
       throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
-    return user;
+    }
 }
 
 // this only update User Level : Email : Hashpassword : twofactor
   async UpdateUser(id: number, data: updateUserDto) {
-    const user = await this.prisma.user.update({
-      where: { id: id },
-      data: {
-        ...data,
-        profile: {
-        }
-      }
-    })
-    if (!user)
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    return user;
+		try {
+			const user = await this.prisma.user.findUnique({
+				where : {
+					id: id,
+				},
+			});
+			if (!user)
+				throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+			// let generatedQR = null;
+			// if (data.twofactor == true && user.twofactor == false) {
+				// const secret = authenticator.generateSecret();
+				// const otpauth = authenticator.keyuri(data.email, "pinje-ponge", secret);
+				// data.twoFactorSecret = secret;
+				// generatedQR = await toDataURL(otpauth);
+			// }
+    	const updatedUser = await this.prisma.user.update({
+      	where: {
+					id: id,
+				},
+      	data: {
+        	...data,
+        	profile: {
+          	update: {
+           		...data.profile,
+          	},
+        	},
+      	}
+    	})
+    	return {updatedUser};
+		} catch (error) {
+			throw new InternalServerErrorException(error);
+		}
   }
 
 
@@ -137,6 +171,7 @@ async FindUserByID(id: number) {
       id: true,
       email: true,
       twofactor: true,
+      twoFactorSecret: true,
       profile: {
         select: {
           id : true,
@@ -170,10 +205,16 @@ async FindUserByID(id: number) {
   }
 
 	async FindUserByEmail(email: string) {
-		const user = await this.prisma.user.findUnique({
-			where: { email: email },
-		});
-		return user;
+		try {
+			const user = await this.prisma.user.findUnique({
+				where: {
+					email: email,
+				}
+			});
+			return user;
+		} catch (error) {
+			throw new NotFoundException(error);
+		}
 	}
 
   async RemoveUsers(id: number) {

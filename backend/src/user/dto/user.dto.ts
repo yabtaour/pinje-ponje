@@ -22,4 +22,12 @@ export class UserDto {
 
     @IsEmail()
     email: string;
+
+    @IsOptional()
+    @IsString()
+    Hashpassword: string;
+
+    @IsOptional()
+    @IsString()
+    twofactorsecret: string;
 }

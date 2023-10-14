@@ -14,7 +14,7 @@ async function bootstrap() {
   // this section for socket.io configuration
   // const HttpAdapter = app.getHttpAdapter();
   // app.useWebSocketAdapter(new IoAdapter(HttpAdapter));
-  
+  app.useGlobalFilters(new GlobalExceptionFilter());
   app.enableCors({
     // credentials: true,
     origin: '*', 
@@ -42,6 +42,7 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
   
   // this section for cors configuration
-  await app.listen(3000, '127.0.0.1');
+  await app.listen(3000, '10.0.2.15');
+	// await app.listen(3000, '127.0.0.1');
 }
 bootstrap();

@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy } from "passport-42";
 import { config } from 'dotenv';
@@ -21,12 +21,13 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
         super({
             clientID: uid,
             clientSecret: sid,
-            callbackURL: "http://localhost:3000/auth/42/callback",
+            callbackURL: "http://localhost:3000/auth/api",
         });
     }
 
     async validate(accessToken: string, refreshToken: string, profile: any, done: (error: any, user?: any) => void): Promise<void> {
-      try {
+			try {
+        console.log("trying to validate user");
         const newUser = {
           intraid: Number(profile.id),
           email: profile._json.email,
@@ -39,8 +40,9 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
         // console.log(newUser);
         const user = await this.authService.userCreateOrNot(newUser);
         const token = await this.jwtService.generateToken(String(user.id));
-        done(null, { user, token });
+        return done(null, {user, token});
       } catch (error){
+        console.log("error");
         done(error)
       }
     }

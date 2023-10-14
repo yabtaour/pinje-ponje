@@ -22,7 +22,6 @@ const secret = process.env.JWT_SECRET;
   imports: [
 		UserModule,
 		PassportModule,
-    // JwtModule.register({ defaultStrategy: '42'}),
     JwtModule.register({
       secret: secret,
       signOptions: {expiresIn: '30d'},
@@ -34,3 +33,4 @@ const secret = process.env.JWT_SECRET;
 							ProfilesService],
 })
 export class AuthModule {}
+

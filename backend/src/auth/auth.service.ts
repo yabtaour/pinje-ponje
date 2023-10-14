@@ -1,14 +1,30 @@
-import { Injectable } from '@nestjs/common';
-import { find } from 'rxjs';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import { authenticator } from 'otplib';
 import { UserService } from 'src/user/user.service';
-import { Req } from '@nestjs/common';
-import { CreateUserDtoLocal } from 'src/user/dto/create-user.dto';
+import { SignUpDto } from './dto/signUp.dto';
 
 @Injectable()
 export class AuthService {
     constructor(
         private userService: UserService,
     ) {}
+
+    async isTwiFactorCodeValid(user: any, twofactorcode: string){
+      return authenticator.verify({
+				token: twofactorcode,
+				secret: user.twoFactorSecret
+			});
+    }
+
+    async userTwoFaChecker(user: any, body: { twofactorcode: string }) {
+      const validCode = await this.isTwiFactorCodeValid(user, body.twofactorcode);
+      if (validCode) {
+        return true;
+      } else {
+        return false;
+      }
+    }
 
     async userCreateOrNot(user: any) {
       const checkUser = await this.userService.FindUserByIntraId(user.intraid);
@@ -22,28 +38,28 @@ export class AuthService {
       }
     }
 
-		async validateUser(email: string, Hashpassword: string): Promise<any> {
-			const findUser = await this.userService.FindUserByEmail(email);
-			if (findUser && findUser.Hashpassword === Hashpassword) {
-				return findUser;
+		async validateUser(email: string, password: string){
+			try {
+				const user = await this.userService.FindUserByEmail(email);
+				if (!user) {
+					throw new NotFoundException("User not found");
+				}
+				if (bcrypt.compareSync(password, user.Hashpassword)) {
+					return user;
+				} else {
+					throw new NotFoundException("Wrong password");
+				}
+			} catch (error) {
+				throw new NotFoundException(error);
 			}
-			return null;
 		}
 
-    async signUp(body: CreateUserDtoLocal) {
+    async signUp(data: SignUpDto) {
       try {
-        console.log(body);
-        const user = {
-				  ...body,
-				  profile: {
-			      ...body.profile
-				  },
-				};
-        const userCreated = await this.userService.CreateUserLocal(user);
-        console.log(user);
+        const user = await this.userService.CreateUserLocal(data);
         return user;
       } catch (error) {
-        throw new Error("Couldn't create user");
+        return "Couldn't Create User"
       }
     }
 }
