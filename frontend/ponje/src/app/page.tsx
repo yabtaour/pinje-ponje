@@ -11,7 +11,7 @@ export default function Home() {
           rel="stylesheet"
         />
       </Head>
-      <main className="relative h-screen">
+      <main className="h-screen">
         <Image
           src="/edited_background.png"
           alt="Background Image"
@@ -39,11 +39,11 @@ export default function Home() {
               height={200}
             />
             <Image
-              src="/3dobject3.png" 
+              src="/3dobject3.png"
               alt="Foreground Image"
               className="absolute top-1/2 left-1/2 transform translate-x-[-250%] translate-y-[-63%]"
               style={{ zIndex: -1 }}
-              width={200} 
+              width={200}
               height={200}
             />
             <h1
