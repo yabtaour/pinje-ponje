@@ -8,11 +8,11 @@ export const ProgressBar = () => {
             <img src="/rank_icon.svg" alt="hero" className="w-24 h-24 rounded-full" />
             <div className="divider lg:divider-horizontal before:bg-[#464671] after:bg-[#464671]"></div> 
             <div className='pl-4'>
-                <p className='text-[#77DFF8] text-sm'>LEVEL</p>
+                <p className='text-[#77DFF8] text-xs'>LEVEL</p>
                 <div className="flex flex-col w-full lg:flex-row">
-                    <p className='text-[#77DFF8] text-2xl'>12</p>
+                    <p className='text-[#77DFF8] text-3xl'>12</p>
                     <div className="divider lg:divider-horizontal before:bg-secondary after:bg-secondary"></div>
-                    <p className='text-[#77DFF8] text-2xl'>10020 XP</p>
+                    <p className='text-[#77DFF8] text-3xl'>10020 XP</p>
                 </div>
                 <progress className="progress progress-primary w-60" value="40" max="100"></progress>
                 <p className='text-[#baecf9] text-xs'>80 XP to level 13</p>

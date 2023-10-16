@@ -7,12 +7,12 @@ export const MatchHistory = () => {
             <table className="table">
                 {/* head */}
                 <thead>
-                    <tr className='bg-[#333153]	'>
-                        <th className='text-[#8C87E1]'>TYPE</th>
-                        <th className='text-[#8C87E1]'>RESULT</th>
-                        <th className='text-[#8C87E1]'>XP</th>
-                        <th className='text-[#8C87E1]'>OPPONENT</th>
-                        <th className='text-[#8C87E1]'>DATE</th>
+                    <tr className='bg-[#333153] text-[#8C87E1]	'>
+                        <th>TYPE</th>
+                        <th>RESULT</th>
+                        <th>XP</th>
+                        <th>OPPONENT</th>
+                        <th>DATE</th>
                     </tr>
                 </thead>
                 <tbody>
