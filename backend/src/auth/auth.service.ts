@@ -3,11 +3,13 @@ import * as bcrypt from 'bcrypt';
 import { authenticator } from 'otplib';
 import { UserService } from 'src/user/user.service';
 import { SignUpDto } from './dto/signUp.dto';
+import { JwtAuthService } from './jwt.service';
 
 @Injectable()
 export class AuthService {
     constructor(
-        private userService: UserService,
+        private readonly userService: UserService,
+				private readonly jwtService: JwtAuthService
     ) {}
 
     async isTwiFactorCodeValid(user: any, twofactorcode: string){
@@ -50,6 +52,7 @@ export class AuthService {
 
     async signUp(data: SignUpDto) {
       const user = await this.userService.CreateUserLocal(data);
-      return user;
+			const token = await this.jwtService.generateToken(String(user.id));
+      return { user, token };
     }
 }

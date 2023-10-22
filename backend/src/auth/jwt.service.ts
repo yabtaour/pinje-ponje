@@ -12,7 +12,8 @@ export class JwtAuthService {
 
   async generateToken(id: string){
     const payload = { sub: id };
-    return this.jwtService.signAsync(payload);
+		const token = await this.jwtService.signAsync(payload, {secret});
+  	return token;
   }
 
   async verifyToken(token: string, context: ExecutionContext) {

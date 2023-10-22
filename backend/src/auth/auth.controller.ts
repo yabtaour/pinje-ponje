@@ -18,7 +18,7 @@ import { JwtAuthService } from './jwt.service';
 export class AuthController {
     constructor(
         private readonly userService: UserService,
-				private readonly jwtAuthService: JwtAuthService,
+				// private readonly jwtAuthService: JwtAuthService,
         private readonly authService: AuthService
     ) {}
 
@@ -54,9 +54,7 @@ export class AuthController {
 		@Post('signUp')
 		async signUp(@Body() data: SignUpDto, @Req() request: any, @Res() response: Response) {
 			const user = await this.authService.signUp(data);
-			const token = await this.jwtAuthService.generateToken(String(user.id));
-			console.log("Copy This Token: ", token);
-			response.cookie("token", token, {httpOnly: true});
+			response.cookie("token", user.token, {httpOnly: true});
 			response.send(user);
 	}
 }
