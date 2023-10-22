@@ -213,7 +213,7 @@ async FindUserByID(id: number) {
 
   async FindUserByIntraId(id: number) {
 		// try {
-    	const user = await this.prisma.user.findUnique({
+    	const user = await this.prisma.user.findFirst({
       	where: {intraid: id},
     });
     return user;
@@ -285,6 +285,9 @@ async FindUserByID(id: number) {
 			const user = await this.prisma.user.findUnique({
 				where: {
 					id: parseInt(request.user.sub),
+				},
+				include: {
+					profile: true,
 				},
 			});
 			if (!user)
