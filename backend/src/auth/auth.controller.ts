@@ -1,14 +1,14 @@
-import { Controller, Get, Post, UseGuards, Res, Req, Redirect, Param, Body } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { Body, Controller, Get, HttpException, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { Response, Request, response } from 'express';
+import { Response } from 'express';
 import { UserService } from 'src/user/user.service';
+import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local.guard';
 // import { CreateUserDtoLocal } from 'src/user/dto/create-user.dto';
-import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
-import { ApiExcludeController } from '@nestjs/swagger/dist/decorators/api-exclude-controller.decorator';
-import { JWTGuard } from './guards/jwt.guard';
+import { ApiTags } from '@nestjs/swagger';
 import { SignInDto, SignUpDto } from './dto/signUp.dto';
+import { JWTGuard } from './guards/jwt.guard';
+import { JwtAuthService } from './jwt.service';
 
 
 //talk to anas about new routes
@@ -18,25 +18,17 @@ import { SignInDto, SignUpDto } from './dto/signUp.dto';
 export class AuthController {
     constructor(
         private readonly userService: UserService,
+				private readonly jwtAuthService: JwtAuthService,
         private readonly authService: AuthService
     ) {}
-
-    @Get('/200/:id')
-    async getProfile(@Param() id) {
-        const profile = this.userService.FindUserByID(Number(id.id));
-        return profile;
-    }
-
-    // @Get('42')
-    // @UseGuards(AuthGuard('42'))
-    // async redirectTo42Auth() {}
 
     @Get('api')
     @UseGuards(AuthGuard('42'))
     async handle42Auth(@Req() request: any, @Res() response: Response) {
         const user = request.user;
         console.log("Copy This Token: ", request.user.token);
-        response.redirect(`200/${String(request.user.user.id)}`);
+				response.cookie("token", request.user.token, {httpOnly: true});
+				response.send(user);
     }
 
 	@Post('login')
@@ -44,41 +36,27 @@ export class AuthController {
 	async handleLogin(@Body() data: SignInDto, @Req() request: any, @Res() response: Response) {
 		const user = request.user;
   	console.log("Copy This Token: ", request.user.token);
-		response.setHeader("authorization", request.user.token);
-		response.redirect(`200/${String(request.user.user.id)}`);
+		response.cookie("token", request.user.token, {httpOnly: true});
+		response.send(user);
 	}
 
     @Post('2fa')
     @UseGuards(JWTGuard)
-    async handle2fa(@Body() body: {twofactorcode: string}, @Req() request: any, @Res() response: Response) {
+    async handle2fa(@Body() body: {twofactorcode: string}, @Req() request: any) {
         const user = await this.userService.FindUserByID(Number(request.user.sub));
 				if (!user)
-					return response.redirect(`http://localhost:3000/auth/login`);
-        console.log("user: ", user);
+					throw new HttpException("user not found", HttpStatus.NOT_FOUND);
         const isValid = await this.authService.userTwoFaChecker(user, body);
-				console.log("isValid: ", isValid);
 				if (!isValid)
-					return response.redirect(`http://localhost:3000/auth/login`);
-        response.redirect(`200/${String(request.user.user.id)}`);
-
+					throw new HttpException("invalid code", HttpStatus.BAD_REQUEST);
     }
-}
 
-@Controller('signUp')
-@ApiTags('Auth')
-export class SignUpController {
-		constructor(
-				private readonly authService: AuthService
-		) {}
-
-		@Post()
-		async signUp(@Body() data: SignUpDto, @Res() response: Response) {
-      try {
-				const user = await this.authService.signUp(data);
-				console.log("user created");
-      	response.send(user);
-      } catch (error) {
-        return "cannot create user";
-      }
+		@Post('signUp')
+		async signUp(@Body() data: SignUpDto, @Req() request: any, @Res() response: Response) {
+			const user = await this.authService.signUp(data);
+			const token = await this.jwtAuthService.generateToken(String(user.id));
+			console.log("Copy This Token: ", token);
+			response.cookie("token", token, {httpOnly: true});
+			response.send(user);
 	}
 }

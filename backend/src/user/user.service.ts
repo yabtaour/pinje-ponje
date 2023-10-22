@@ -60,7 +60,7 @@ export class UserService {
   }
 
   async CreateUserIntra(reqData: CreateUserDtoIntra) {
-		try {
+		// try {
 			const userExist = await this.prisma.user.findUnique({
 				where: {
 					email: reqData.email,
@@ -84,13 +84,13 @@ export class UserService {
       if (!user)
         throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
       return user;
-		} catch (error) {
-			throw new InternalServerErrorException(error);
-		}
+		// } catch (error) {
+		// 	throw new InternalServerErrorException(error);
+		// }
   }
 
   async CreateUserLocal(data: any) {
-    try {
+    // try {
 			const userExist = await this.prisma.user.findUnique({
 				where: {
 					email: data.email,
@@ -118,14 +118,14 @@ export class UserService {
         throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
       }
       return user;
-    } catch (error) {
-      throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
-    }
+    // } catch (error) {
+    //   throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
+    // }
 }
 
 // this only update User Level : Email : Hashpassword : twofactor
   async UpdateUser(id: number, data: updateUserDto) {
-		try {
+		// try {
 			const user = await this.prisma.user.findUnique({
 				where : {
 					id: id,
@@ -147,9 +147,9 @@ export class UserService {
       	}
     	})
     	return updatedUser;
-		} catch (error) {
-			throw new InternalServerErrorException(error);
-		}
+		// } catch (error) {
+		// 	throw new InternalServerErrorException(error);
+		// }
   }
 
 
@@ -163,7 +163,7 @@ export class UserService {
   }
 
   async FindAllUsers() {
-		try {
+		// try {
     	const users = await this.prisma.user.findMany({
       	include: {
        		profile: true,
@@ -172,59 +172,58 @@ export class UserService {
 			if (!users)
 				throw new HttpException('Users not found', HttpStatus.NOT_FOUND);
     	return users;
-		} catch (error) {
-			throw new InternalServerErrorException(error);
-		}
+		// } catch (error) {
+		// 	throw new InternalServerErrorException(error);
+		// }
   }
 
 async FindUserByID(id: number) {
-	try {
+	// try {
   	const user = await this.prisma.user.findUnique({
     	where: { id: id },
-    	select: {
-      	id: true,
-      	email: true,
-      	twofactor: true,
-      	twoFactorSecret: true,
-      	profile: {
-      	  select: {
-      	    id : true,
-      	    username: true,
-      	    avatar: true,
-      	    login: true,
-      	    Rank: true,
-      	    level: true,
-      	    sentRequest: true,
-      	    pendingRequest: true,
-      	    blocking: true,
-      	    createdAt: true,
-      	  },
-      	},
-    	},
+    	// select: {
+      // 	id: true,
+      // 	email: true,
+      // 	twofactor: true,
+      // 	twoFactorSecret: true,
+      // 	profile: {
+      // 	  select: {
+      // 	    id : true,
+      // 	    username: true,
+      // 	    avatar: true,
+      // 	    login: true,
+      // 	    Rank: true,
+      // 	    level: true,
+      // 	    sentRequest: true,
+      // 	    pendingRequest: true,
+      // 	    blocking: true,
+      // 	    createdAt: true,
+      // 	  },
+      // 	},
+    	// },
   	});
   	if (!user) {
     	throw new HttpException("User not found", HttpStatus.NOT_FOUND);
   	}
   	return user;
-	} catch (error) {
-		throw new InternalServerErrorException(error);
-	}
+	// } catch (error) {
+	// 	throw new InternalServerErrorException(error);
+	// }
 }
 
-
   async FindUserByIntraId(id: number) {
-		try {
+		// try {
     	const user = await this.prisma.user.findUnique({
       	where: {intraid: id},
     });
     return user;
-		} catch (error) {
-			throw new InternalServerErrorException(error);
-		}
+		// } catch (error) {
+		// 	throw new InternalServerErrorException(error);
+		// }
 	}
 
 	async FindUserByEmail(email: string) {
-		try {
+		// try {
 			const user = await this.prisma.user.findUnique({
 				where: {
 					email: email,
@@ -233,13 +232,13 @@ async FindUserByID(id: number) {
 			if (!user)
 				throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 			return user;
-		} catch (error) {
-			throw new NotFoundException(error);
-		}
+		// } catch (error) {
+		// 	throw new NotFoundException(error);
+		// }
 	}
 
   async RemoveUsers(id: number) {
-		try {
+		// try {
 			const userExist = await this.prisma.user.findUnique({
 				where: {
 					id: id,
@@ -256,13 +255,13 @@ async FindUserByID(id: number) {
     	if (!user)
       	throw new HttpException("User not found", HttpStatus.NOT_FOUND);
     	return user;
-		} catch (error) {
-			throw new InternalServerErrorException(error);
-		}
+		// } catch (error) {
+		// 	throw new InternalServerErrorException(error);
+		// }
 	}
 
 	async getQRCode(id: number) {
-		try {
+		// try {
 			const user = await this.prisma.user.findUnique({
 				where: {
 					id: id,
@@ -276,13 +275,13 @@ async FindUserByID(id: number) {
 			const otpauth = authenticator.keyuri(user.email, "pinje-ponge", secret);
 			const generatedQR = await toDataURL(otpauth);
 			return generatedQR;
-		} catch (error) {
-			throw new InternalServerErrorException(error);
-		}
+		// } catch (error) {
+		// 	throw new InternalServerErrorException(error);
+		// }
 	}
 
 	async getCurrentUser(request: any) {
-		try {
+		// try {
 			const user = await this.prisma.user.findUnique({
 				where: {
 					id: parseInt(request.user.sub),
@@ -291,9 +290,9 @@ async FindUserByID(id: number) {
 			if (!user)
 				throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 			return user;
-		} catch (error) {
-			throw new InternalServerErrorException(error);
-		}
+		// } catch (error) {
+		// 	throw new InternalServerErrorException(error);
+		// }
 	}
 
 }

@@ -26,8 +26,6 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
     }
 
     async validate(accessToken: string, refreshToken: string, profile: any, done: (error: any, user?: any) => void): Promise<void> {
-			try {
-        console.log("trying to validate user");
         const newUser = {
           intraid: Number(profile.id),
           email: profile._json.email,
@@ -40,10 +38,6 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
         const user = await this.authService.userCreateOrNot(newUser);
         const token = await this.jwtService.generateToken(String(user.id));
         return done(null, {user, token});
-      } catch (error){
-        console.log("error");
-        done(error)
-      }
     }
 }
 

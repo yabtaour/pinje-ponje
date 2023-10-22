@@ -1,21 +1,16 @@
 import { Module } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { AuthController } from './auth/auth.controller';
 import { AuthModule } from './auth/auth.module';
+import { AuthService } from './auth/auth.service';
+import { JwtAuthService } from './auth/jwt.service';
+import { PrismaModule } from './prisma/prisma.module';
+import { PrismaService } from './prisma/prisma.service';
+import { ProfilesModule } from './profiles/profiles.module';
+import { ProfilesService } from './profiles/profiles.service';
 import { UserModule } from './user/user.module';
 import { UserService } from './user/user.service';
-import { AuthController, SignUpController } from './auth/auth.controller';
-import { PassportModule } from '@nestjs/passport';
-import { JwtModule, JwtService } from '@nestjs/jwt';
-import { ProfilesModule } from './profiles/profiles.module';
-import { PrismaModule } from './prisma/prisma.module';
-import { JwtAuthService } from './auth/jwt.service';
-import { AuthService } from './auth/auth.service';
-import { APP_FILTER, APP_GUARD } from '@nestjs/core';
-import { GlobalExceptionFilter } from './global-exception.filter';
-import { Throttle, ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { ProfilesService } from './profiles/profiles.service';
-import { PrismaService } from './prisma/prisma.service';
-import { ChatModule } from './chat/chat.module';
-import { ChatGateway } from './chat/chat.gateway';
 
 @Module({
   imports: [
@@ -30,7 +25,7 @@ import { ChatGateway } from './chat/chat.gateway';
     // }),
     // ChatModule,
   ],
-    controllers: [AuthController, SignUpController],
+    controllers: [AuthController],
     providers: [
       UserService, JwtAuthService, JwtService,
       ProfilesService, PrismaService, AuthService,

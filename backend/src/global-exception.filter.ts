@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
-  catch(exception: any, host: ArgumentsHost) {
+  catch(exception: HttpException | WsException, host: ArgumentsHost) {
     Logger.error(exception);
     const response = host.switchToHttp().getResponse<Response>();
     const request = host.switchToHttp().getRequest<Request>();
