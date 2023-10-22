@@ -1,15 +1,14 @@
-import { Controller, Req, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpException, Put } from '@nestjs/common';
-import { UserService } from './user.service';
-import { CreateUserDtoIntra, CreateUserDtoLocal } from './dto/create-user.dto';
-import { JWTGuard } from 'src/auth/guards/jwt.guard';
-import { GetUser } from 'src/auth/decorators/get-user.decorator';
-import { UserDto } from './dto/user.dto';
-import { 
-  ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiBody,
+import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import {
+	ApiBearerAuth,
+	ApiBody,
+	ApiOperation, ApiParam,
+	ApiTags,
 } from '@nestjs/swagger';
+import { JWTGuard } from 'src/auth/guards/jwt.guard';
+import { CreateUserDtoLocal } from './dto/create-user.dto';
 import { updateUserDto } from './dto/update-user.dto';
-// import { updateUserDto } from './dto/update-user.dto';
-
+import { UserService } from './user.service';
 
 
 @Controller('users')
@@ -25,7 +24,7 @@ export class UserController {
     description: 'Create a new user and return the user created',
   })
   @ApiBody({ type: CreateUserDtoLocal })
-  create(@Body() data: CreateUserDtoLocal) {
+  async create(@Body() data: CreateUserDtoLocal) {
     return this.userService.CreateUserLocal(data);
   }
 
@@ -34,22 +33,18 @@ export class UserController {
     summary: 'Get the current user',
     description: 'Get the current user by token',
   })
-  FindUserByToken(@GetUser() request: UserDto) {
-    console.log("FindUserByToken: ", request);
-    console.log(request.sub);
-    return this.userService.FindUserByID(+request.sub);
+  async FindUserByToken(@Req() request: any) {
+		return this.userService.getCurrentUser(request);
   }
 
-  @Delete(':id')
+  @Delete('delete')
   @ApiOperation({
     summary: 'Delete a user by ID',
     description: 'Delete a user by ID and return the user deleted',
   })
-  remove(@Param('id') id: number) {
-    console.log("RemoveUser: ", id);
-    if (Number.isNaN(+id))
-      throw new HttpException('Bad request', 400);
-    return this.userService.RemoveUsers(+id);
+  async remove(@Req() request: any) {
+		const user = await this.userService.getCurrentUser(request);
+    return this.userService.RemoveUsers(user.id);
   }
 
   @Put()
@@ -58,11 +53,9 @@ export class UserController {
     description: 'Update a user by ID and return the user updated',
   })
   @ApiBody({ type: updateUserDto })
-  UpdateUser(@GetUser() request: UserDto, @Body() data: updateUserDto) {
-    console.log("UpdateUser: ", data);
-    if (Number.isNaN(+request.sub))
-      throw new HttpException('Bad request', 400);
-    return this.userService.UpdateUser(+request.sub, data);
+  async UpdateUser(@Req() request: any, @Body() data: updateUserDto) {
+		const user = await this.userService.getCurrentUser(request);
+    return this.userService.UpdateUser(user.id, data);
   }
 
   
@@ -70,9 +63,8 @@ export class UserController {
   @ApiOperation({ summary: 'Create fake users', 
   description: 'Create fake users and return the users created'
   })
-  createFake() {
-  console.log("CreateFakeUsers");
-  return this.userService.CreateUsersFake();
+  async createFake() {
+  	return this.userService.CreateUsersFake();
   }
 
   @Get(':id')
@@ -80,19 +72,24 @@ export class UserController {
     description: 'Get a user by ID and return the user'
   })
   @ApiParam({ name: 'id', type: 'number' })
-  FindUserByID(@Param('id') id: string) {
-    console.log("FindUserByID: ", id);
-    if (Number.isNaN(+id))
-      throw new HttpException('Bad request', 400);
-    return this.userService.FindUserByID(+id);
+  async FindUserByID(@Param('id') id: number) {
+    return this.userService.FindUserByID(id);
   }
 
   @Get()
   @ApiOperation({ summary: 'Get all users', 
     description: 'Get all users and return the users',
   })
-  FindAllUsers(@Req() request: any) {
-    console.log("FindAllUsers: ", request);
+  async FindAllUsers(@Req() request: any) {
     return this.userService.FindAllUsers();
   }
+
+	@Get('QRCode')
+	@ApiOperation({ summary: 'Get QRCode', 
+		description: 'Get QRCode and return the QRCode',
+	})
+	async getQRCode(@Req() request: any) {
+		const user = await this.userService.getCurrentUser(request);
+		return this.userService.getQRCode(user.id);
+	}
 }

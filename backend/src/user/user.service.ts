@@ -24,7 +24,10 @@ class data {
 
 @Injectable()
 export class UserService {
-  constructor(readonly prisma: PrismaService, readonly profile: ProfilesService) {}
+  constructor(
+		private readonly prisma: PrismaService,
+		private readonly profile: ProfilesService
+	) {}
     
   async CreateUsersFake() {
     try {
@@ -35,11 +38,6 @@ export class UserService {
         FakeUser.intraid = faker.number.int(500000);
         FakeUser.Hashpassword = faker.number.int(600) + "password";
         FakeUser.email = firstName + lastName + (i*i) + "@gmail.com";
-
-        console.log("FakeUser: ", FakeUser);
-        console.log("FirstName: ", firstName);
-        console.log("LastName: ", lastName);
-
         await this.prisma.user.create({
           data: {
             intraid: FakeUser.intraid,
@@ -57,12 +55,19 @@ export class UserService {
       }
       return "Fake Users Creatig Success";
     } catch (error) {
-      console.log(error);
       return "Error: User Already Exist";
     }
   }
 
   async CreateUserIntra(reqData: CreateUserDtoIntra) {
+		try {
+			const userExist = await this.prisma.user.findUnique({
+				where: {
+					email: reqData.email,
+				},
+			});
+			if (userExist)
+				throw new HttpException('User already exist', HttpStatus.CONFLICT);
       const user = await this.prisma.user.create({
         data: {
           intraid: reqData.intraid,
@@ -79,10 +84,20 @@ export class UserService {
       if (!user)
         throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
       return user;
+		} catch (error) {
+			throw new InternalServerErrorException(error);
+		}
   }
 
   async CreateUserLocal(data: any) {
     try {
+			const userExist = await this.prisma.user.findUnique({
+				where: {
+					email: data.email,
+				},
+			});
+			if (userExist)
+				throw new HttpException('User already exist', HttpStatus.CONFLICT);
       const rounds = await parseInt(process.env.BCRYPT_ROUNDS);
       const HashedPassword = await bcrypt.hashSync(data.password, rounds);
       const user = await this.prisma.user.create({
@@ -101,7 +116,6 @@ export class UserService {
       })
       if (!user) {
         throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
-        
       }
       return user;
     } catch (error) {
@@ -119,13 +133,6 @@ export class UserService {
 			});
 			if (!user)
 				throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-			// let generatedQR = null;
-			// if (data.twofactor == true && user.twofactor == false) {
-				// const secret = authenticator.generateSecret();
-				// const otpauth = authenticator.keyuri(data.email, "pinje-ponge", secret);
-				// data.twoFactorSecret = secret;
-				// generatedQR = await toDataURL(otpauth);
-			// }
     	const updatedUser = await this.prisma.user.update({
       	where: {
 					id: id,
@@ -139,7 +146,7 @@ export class UserService {
         	},
       	}
     	})
-    	return {updatedUser};
+    	return updatedUser;
 		} catch (error) {
 			throw new InternalServerErrorException(error);
 		}
@@ -156,53 +163,65 @@ export class UserService {
   }
 
   async FindAllUsers() {
-    const users = await this.prisma.user.findMany({
-      include: {
-        profile: true,
-      },
-    });
-    return users;
+		try {
+    	const users = await this.prisma.user.findMany({
+      	include: {
+       		profile: true,
+      	},
+    	});
+			if (!users)
+				throw new HttpException('Users not found', HttpStatus.NOT_FOUND);
+    	return users;
+		} catch (error) {
+			throw new InternalServerErrorException(error);
+		}
   }
 
 async FindUserByID(id: number) {
-  const user = await this.prisma.user.findUnique({
-    where: { id: id },
-    select: {
-      id: true,
-      email: true,
-      twofactor: true,
-      twoFactorSecret: true,
-      profile: {
-        select: {
-          id : true,
-          username: true,
-          avatar: true,
-          login: true,
-          Rank: true,
-          level: true,
-          sentRequest: true,
-          pendingRequest: true,
-          blocking: true,
-          createdAt: true,
-        },
-      },
-    },
-  });
-
-  if (!user) {
-    throw new HttpException("User not found", HttpStatus.NOT_FOUND);
-  }
-
-  return user;
+	try {
+  	const user = await this.prisma.user.findUnique({
+    	where: { id: id },
+    	select: {
+      	id: true,
+      	email: true,
+      	twofactor: true,
+      	twoFactorSecret: true,
+      	profile: {
+      	  select: {
+      	    id : true,
+      	    username: true,
+      	    avatar: true,
+      	    login: true,
+      	    Rank: true,
+      	    level: true,
+      	    sentRequest: true,
+      	    pendingRequest: true,
+      	    blocking: true,
+      	    createdAt: true,
+      	  },
+      	},
+    	},
+  	});
+  	if (!user) {
+    	throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+  	}
+  	return user;
+	} catch (error) {
+		throw new InternalServerErrorException(error);
+	}
 }
 
 
   async FindUserByIntraId(id: number) {
-    const user = await this.prisma.user.findUnique({
-      where: {intraid: id},
+		try {
+    	const user = await this.prisma.user.findUnique({
+      	where: {intraid: id},
     });
     return user;
-  }
+		} catch (error) {
+			throw new InternalServerErrorException(error);
+		}
+	}
 
 	async FindUserByEmail(email: string) {
 		try {
@@ -211,6 +230,8 @@ async FindUserByID(id: number) {
 					email: email,
 				}
 			});
+			if (!user)
+				throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 			return user;
 		} catch (error) {
 			throw new NotFoundException(error);
@@ -218,14 +239,63 @@ async FindUserByID(id: number) {
 	}
 
   async RemoveUsers(id: number) {
-    const profile = await this.prisma.profile.delete({
-      where: { userid: id },
-    });
-    const user = await this.prisma.user.delete({
-      where: { id: id },
-    });
-    if (!user)
-      throw new HttpException("User not found", HttpStatus.NOT_FOUND);
-    return user;
-  }
+		try {
+			const userExist = await this.prisma.user.findUnique({
+				where: {
+					id: id,
+				},
+			});
+			if (!userExist)
+				throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    	const profile = await this.prisma.profile.delete({
+      	where: { userid: id },
+    	});
+    	const user = await this.prisma.user.delete({
+      	where: { id: id },
+    	});
+    	if (!user)
+      	throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+    	return user;
+		} catch (error) {
+			throw new InternalServerErrorException(error);
+		}
+	}
+
+	async getQRCode(id: number) {
+		try {
+			const user = await this.prisma.user.findUnique({
+				where: {
+					id: id,
+				},
+			});
+			if (!user)
+				throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+			if (user.twofactor == false)
+				throw new HttpException('Two factor is not enabled', HttpStatus.NOT_FOUND);
+			const secret = user.twoFactorSecret;
+			const otpauth = authenticator.keyuri(user.email, "pinje-ponge", secret);
+			const generatedQR = await toDataURL(otpauth);
+			return generatedQR;
+		} catch (error) {
+			throw new InternalServerErrorException(error);
+		}
+	}
+
+	async getCurrentUser(request: any) {
+		try {
+			const user = await this.prisma.user.findUnique({
+				where: {
+					id: parseInt(request.user.sub),
+				},
+			});
+			if (!user)
+				throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+			return user;
+		} catch (error) {
+			throw new InternalServerErrorException(error);
+		}
+	}
+
 }
+
+
