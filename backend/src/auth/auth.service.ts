@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { authenticator } from 'otplib';
 import { UserService } from 'src/user/user.service';
@@ -29,7 +29,6 @@ export class AuthService {
     async userCreateOrNot(user: any) {
       const checkUser = await this.userService.FindUserByIntraId(user.intraid);
       if (checkUser) {
-          console.log("user already exists");
           return checkUser;
     	}
       else {
@@ -39,27 +38,18 @@ export class AuthService {
     }
 
 		async validateUser(email: string, password: string){
-			try {
 				const user = await this.userService.FindUserByEmail(email);
-				if (!user) {
-					throw new NotFoundException("User not found");
-				}
+				if (!user) 
+					throw new HttpException("User not found", HttpStatus.NOT_FOUND);
 				if (bcrypt.compareSync(password, user.Hashpassword)) {
 					return user;
 				} else {
-					throw new NotFoundException("Wrong password");
+					throw new HttpException("Wrong password", HttpStatus.BAD_REQUEST);
 				}
-			} catch (error) {
-				throw new NotFoundException(error);
-			}
 		}
 
     async signUp(data: SignUpDto) {
-      try {
-        const user = await this.userService.CreateUserLocal(data);
-        return user;
-      } catch (error) {
-        return "Couldn't Create User"
-      }
+      const user = await this.userService.CreateUserLocal(data);
+      return user;
     }
 }

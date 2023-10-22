@@ -1,10 +1,9 @@
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './global-exception.filter';
-import { ValidationPipe } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 // import { IoAdapter } from '@nestjs/platform-socket.io'; 
-import { IoAdapter } from '@nestjs/platform-socket.io/adapters/io-adapter';
 import { SocketIOAdapter } from './chat/SocketIoAdapter';
 
 
@@ -18,8 +17,8 @@ async function bootstrap() {
   app.enableCors({
     // credentials: true,
     origin: '*', 
-    });
-  app.useGlobalFilters()
+  });
+  // app.useGlobalFilters()
   
   // this section for global filter
   app.useGlobalPipes(
