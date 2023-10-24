@@ -32,9 +32,8 @@ model Profile {
   id             Int       @id @unique @default(autoincrement())
   username       String    @unique
   login          String    @unique
-  // campus      String // # at the creation the campus came from intra
+  bio            String?   @default("I am a new player") @db.VarChar(255)
   avatar         String?
-  // phonenumber    String?
   // status         Status    @default(ONLINE) // # enum [in game, online, offline]
   // CurrentMap     String
   // UnlockedMap    String[]
