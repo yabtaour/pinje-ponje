@@ -8,7 +8,6 @@ import { LocalAuthGuard } from './guards/local.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { SignInDto, SignUpDto } from './dto/signUp.dto';
 import { JWTGuard } from './guards/jwt.guard';
-import { JwtAuthService } from './jwt.service';
 
 
 //talk to anas about new routes
@@ -27,12 +26,15 @@ export class AuthController {
     async handle42Auth(@Req() request: any, @Res() response: Response) {
         const user = request.user;
         console.log("Copy This Token: ", request.user.token);
-				response.cookie("token", request.user.token, {httpOnly: true});
-				response.send(user);
-    }
+		response.cookie("token", request.user.token, {httpOnly: true});
+		if (user.twoFactorAuth === true)
+			response.redirect('http://localhost:3001/verification');
+		else
+			response.redirect('http://localhost:3001/dashboard');
+	}
 
 	@Post('login')
-  @UseGuards(LocalAuthGuard)
+  	@UseGuards(LocalAuthGuard)
 	async handleLogin(@Body() data: SignInDto, @Req() request: any, @Res() response: Response) {
 		const user = request.user;
   	console.log("Copy This Token: ", request.user.token);
@@ -42,19 +44,22 @@ export class AuthController {
 
     @Post('2fa')
     @UseGuards(JWTGuard)
-    async handle2fa(@Body() body: {twofactorcode: string}, @Req() request: any) {
-        const user = await this.userService.FindUserByID(Number(request.user.sub));
-				if (!user)
-					throw new HttpException("user not found", HttpStatus.NOT_FOUND);
+    async handle2fa(
+		@Body() body: {twofactorcode: string},
+		@Req() request: any
+	) {
+		const user = await this.userService.getCurrentUser(request);
         const isValid = await this.authService.userTwoFaChecker(user, body);
-				if (!isValid)
-					throw new HttpException("invalid code", HttpStatus.BAD_REQUEST);
+		if (!isValid)
+			throw new HttpException("invalid code", HttpStatus.BAD_REQUEST);
     }
 
-		@Post('signUp')
-		async signUp(@Body() data: SignUpDto, @Req() request: any, @Res() response: Response) {
-			const user = await this.authService.signUp(data);
-			response.cookie("token", user.token, {httpOnly: true});
-			response.send(user);
+	@Post('signUp')
+	async signUp(@Body() data: SignUpDto, @Req() request: any, @Res() response: Response) {
+		const user = await this.authService.signUp(data);
+		response.cookie("token", user.token, {httpOnly: true});
+		response.send(user);
 	}
 }
+
+
