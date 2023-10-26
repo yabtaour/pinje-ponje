@@ -89,6 +89,32 @@ export class UserService {
 		// }
   }
 
+  async CreateUserGoogle(data: any) {
+	const userExist = await this.prisma.user.findUnique({
+		where: {
+			email: data.email,
+		},
+	});
+	if (userExist)
+		throw new HttpException('User already exist', HttpStatus.CONFLICT);
+	const user = await this.prisma.user.create({
+	  data: {
+		googleId: data.googleId,
+		email: data.email,
+		profile: {
+		  create: {
+			username: data.profile.username,
+			avatar: data.profile.avatar,
+			login: data.profile.login,
+		  },
+		}
+	  }
+	})
+	if (!user)
+	  throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
+	return user;
+  }
+
   async CreateUserLocal(data: any) {
     // try {
 			const userExist = await this.prisma.user.findUnique({
@@ -220,6 +246,13 @@ async FindUserByID(id: number) {
 		// } catch (error) {
 		// 	throw new InternalServerErrorException(error);
 		// }
+	}
+
+	async FindUserByGoogleId(id: string) {
+		const user = await this.prisma.user.findFirst({
+			where: {googleId: id},
+		});
+		return user;
 	}
 
 	async FindUserByEmail(email: string) {

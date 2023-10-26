@@ -5,6 +5,7 @@ import { config } from 'dotenv';
 import { UserService } from "src/user/user.service";
 import { AuthService } from "./auth.service";
 import { JwtAuthService } from "./jwt.service";
+import { VerifiedCallback } from "passport-jwt";
 
 config(); // This loads the .env file
 
@@ -25,19 +26,24 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
         });
     }
 
-    async validate(accessToken: string, refreshToken: string, profile: any, done: (error: any, user?: any) => void): Promise<void> {
-        const newUser = {
-          intraid: Number(profile.id),
-          email: profile._json.email,
-          Hashpassword: null,
-          profile: {
-            username: profile.username,
-            login: profile.username,
-          }
-        };
-        const user = await this.authService.userCreateOrNot(newUser);
-        const token = await this.jwtService.generateToken(String(user.id));
-        return done(null, {user, token});
+    async validate(
+        accessToken: string,
+        refreshToken: string,
+        profile: any, 
+        done: VerifiedCallback
+    ): Promise<void> {
+      const newUser = {
+        intraid: Number(profile.id),
+        email: profile._json.email,
+        Hashpassword: null,
+        profile: {
+          username: profile.username,
+          login: profile.username,
+        }
+      };
+      const user = await this.authService.userCreateOrNot(newUser, "42");
+      const token = await this.jwtService.generateToken(String(user.id));
+      return done(null, {user, token});
     }
 }
 

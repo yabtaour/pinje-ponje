@@ -42,6 +42,17 @@ export class AuthController {
 		response.send(user);
 	}
 
+	@Get('google')
+	@UseGuards(AuthGuard('google'))
+	async handleGoogleAuth(@Req() request: any, @Res() response: Response) {
+		const user = request.user;
+		console.log("Copy This Token: ", request.user.token);
+		response.cookie("token", request.user.token, {httpOnly: true});
+		if (user.twoFactorAuth === true)
+			response.redirect('http://localhost:3001/verification');
+		else
+			response.redirect('http://localhost:3001/dashboard');
+	}
     @Post('2fa')
     @UseGuards(JWTGuard)
     async handle2fa(

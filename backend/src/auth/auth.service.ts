@@ -28,16 +28,26 @@ export class AuthService {
       }
     }
 
-    async userCreateOrNot(user: any) {
-      const checkUser = await this.userService.FindUserByIntraId(user.intraid);
-      if (checkUser) {
+    async userCreateOrNot(user: any, type: string) {
+      let checkUser = null;
+      if (type === "google") {
+        checkUser = await this.userService.FindUserByGoogleId(user.googleId);
+        if (checkUser) {
           return checkUser;
-    	}
-      else {
-      	const userCreated = await this.userService.CreateUserIntra(user);
-        return userCreated;
+    	  } else {
+          const userCreated = await this.userService.CreateUserGoogle(user);
+          return userCreated;
+        }
+      } else if (type === "42") {
+        checkUser = await this.userService.FindUserByIntraId(user.intraid);
+        if (checkUser) {
+            return checkUser;
+        } else {
+          const userCreated = await this.userService.CreateUserIntra(user);
+          return userCreated;
       }
     }
+  }
 
 		async validateUser(email: string, password: string){
 				const user = await this.userService.FindUserByEmail(email);

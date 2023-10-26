@@ -11,6 +11,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtAuthService } from './jwt.service';
 import { LocalStrategy } from './local.strategy';
+import { GoogleStrategy } from './google.strategy';
 
 config()
 
@@ -27,7 +28,7 @@ const secret = process.env.JWT_SECRET;
   ],
   controllers: [AuthController],
   providers: [JwtAuthService, AuthService, PrismaService,
-							FortyTwoStrategy, LocalStrategy, UserService,
+							FortyTwoStrategy, LocalStrategy, GoogleStrategy, UserService,
 							ProfilesService],
 })
 export class AuthModule {}
