@@ -15,6 +15,7 @@ model User {
   Hashpassword    String?
   email           String  @unique
   intraid         Int?
+  googleId        String?
   twofactor       Boolean @default(false)
   twoFactorSecret String?
   // GameOfP1        Game[]   @relation("P1")
