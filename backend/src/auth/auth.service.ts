@@ -53,7 +53,7 @@ export class AuthService {
 				const user = await this.userService.FindUserByEmail(email);
 				if (!user) 
 					throw new HttpException("User not found", HttpStatus.NOT_FOUND);
-				if (bcrypt.compareSync(password, user.Hashpassword)) {
+				if (bcrypt.compareSync(password, user.password)) {
 					return user;
 				} else {
 					throw new HttpException("Wrong password", HttpStatus.BAD_REQUEST);

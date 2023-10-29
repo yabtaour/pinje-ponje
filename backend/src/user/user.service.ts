@@ -41,13 +41,12 @@ export class UserService {
         await this.prisma.user.create({
           data: {
             intraid: FakeUser.intraid,
-            Hashpassword: FakeUser.Hashpassword,
+            password: FakeUser.Hashpassword,
             email: FakeUser.email,
             profile: {
               create: {
                 username: firstName + lastName,
                 avatar: "./path/to/avatar/" + lastName + faker.number.int(9000),
-                login: firstName + faker.number.int(11),
               },
             }
           }
@@ -76,7 +75,6 @@ export class UserService {
             create: {
               username: reqData.profile.username,
               avatar: reqData.profile.avatar,
-              login: reqData.profile.login,
             },
           }
         }
@@ -105,7 +103,6 @@ export class UserService {
 		  create: {
 			username: data.profile.username,
 			avatar: data.profile.avatar,
-			login: data.profile.login,
 		  },
 		}
 	  }
@@ -129,13 +126,12 @@ export class UserService {
       const user = await this.prisma.user.create({
         data: {
           intraid: 33,
-          Hashpassword: HashedPassword,
+          password: HashedPassword,
           email: data.email,
           profile: { 
             create: {
               username: data.username,
               avatar: "data.profile.avatar",
-              login: data.username,
             },
           }
         }
@@ -302,7 +298,7 @@ async FindUserByID(id: number) {
 			});
 			if (!user)
 				throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-			if (user.twofactor == false)
+			if (user.twoFactor == false)
 				throw new HttpException('Two factor is not enabled', HttpStatus.NOT_FOUND);
 			const secret = user.twoFactorSecret;
 			const otpauth = authenticator.keyuri(user.email, "pinje-ponge", secret);

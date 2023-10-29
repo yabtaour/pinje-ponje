@@ -87,7 +87,6 @@ export class ProfilesService {
       select: {
         id: true,
         avatar: true,
-        login: true,
         username: true,
       },
     });

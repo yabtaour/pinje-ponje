@@ -12,44 +12,65 @@ datasource db {
 
 model User {
   id              Int     @id @unique @default(autoincrement())
-  Hashpassword    String?
+  password    		String?
   email           String  @unique
   intraid         Int?
   googleId        String?
-  twofactor       Boolean @default(false)
+  twoFactor       Boolean @default(false)
   twoFactorSecret String?
-  // GameOfP1        Game[]   @relation("P1")
-  // GameOfP2        Game[]   @relation("P2")
-
-  Rooms    RoomMembership[]
-  messages ChatMessage[]
-  profile  Profile?
-  // roomMember			RoomMember?
+	status          Status  @default(ONLINE)
+	games					 	Game[] 	@relation("players")
+	scores					Score[] @relation("score")
+  Rooms    				RoomMembership[]
+  messages 				ChatMessage[]
+  profile  				Profile?
+	createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @default(now()) @updatedAt
 }
-
-// add level and rank and xp fake data and store achievements in the database and rankes 
 
 model Profile {
   id             Int       @id @unique @default(autoincrement())
   username       String    @unique
-  login          String    @unique
   bio            String?   @default("I am a new player") @db.VarChar(255)
   avatar         String?
-  // status         Status    @default(ONLINE) // # enum [in game, online, offline]
-  // CurrentMap     String
-  // UnlockedMap    String[]
-  Rank           Rank      @default(UNRANKED) // # enum [bronze, silver, gold, platinum, diamond, master, grandmaster, challenger]
-  level          Int       @default(0)
   Friends        Int[]
   blockedBy      Profile[] @relation("UserBlocked")
   blocking       Profile[] @relation("UserBlocked")
   pendingRequest Profile[] @relation("UserPending")
   sentRequest    Profile[] @relation("UserPending")
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @default(now()) @updatedAt
   user           User      @relation(fields: [userid], references: [id], onDelete: Cascade)
   userid         Int       @unique
+	experience		 Int			 @default(0)
+	gamePoints		 Int			 @default(0)
+	rank					 Rank			 @default(UNRANKED)
+	level					 Int			 @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @default(now()) @updatedAt
 }
+
+model Score {
+	id				Int       	@id @unique @default(autoincrement())
+	player		User      	@relation("score", fields: [playerid], references: [id], onDelete: Cascade)
+	playerid	Int					@unique
+	game			Game				@relation("score", fields: [gameid], references: [id], onDelete: Cascade)
+	gameid		Int					@unique
+	score			Int
+	result		GameResult
+	createdAt	DateTime		@default(now())
+}
+
+model Game {
+	id					Int       	@id @unique @default(autoincrement())
+	players			User     		@relation("players", fields: [playerid], references: [id], onDelete: Cascade)
+	playerid		Int					@unique
+	winnerId		Int
+	score				Score[]			@relation("score")
+	mode				GameMode
+	createdAt		DateTime		@default(now())
+}
+
+
+// add level and rank and xp fake data and store achievements in the database and rankes 
 
 
 model RoomMembership {
@@ -84,56 +105,6 @@ model ChatRoom {
   createdAt   DateTime         @default(now())
 }
 
-// model Game {
-//   id        Int        @id @unique @default(autoincrement())
-//   Player1   User       @relation("P1", fields: [player1id], references: [id], onDelete: Cascade)
-//   Player2   User       @relation("P2", fields: [player2id], references: [id])
-//   player1id Int        @unique
-//   player2id Int        @unique
-//   p1Score   Int        @default(0)
-//   p2Score   Int        @default(0)
-//   p1Result  gameResult @default(DRAW)
-//   p2Result  gameResult @default(DRAW)
-//   status    gameStatus @default(PENDING)
-//   createdAt DateTime   @default(now())
-//   updatedAt DateTime   @default(now()) @updatedAt
-// }
-
-// model ChatRoom {
-//   id        Int          @id @unique @default(autoincrement())
-// 	name      String?
-// 	avatar		String?
-// 	type			roomType
-// 	password	String?
-// 	// //probably should add invite too
-//   // members   RoomMember[]
-//   // message   Messages?
-//   createdAt DateTime     @default(now())
-//   updatedAt DateTime     @default(now()) @updatedAt
-// }
-
-// model RoomMember {
-//   id        Int         @id @unique @default(autoincrement())
-//   chatRoom  ChatRoom[]
-//   role      ChatRole
-//   STATE     MemberState
-//   // message   Messages?
-// 	user      User        @relation(fields: [userId], references: [id])
-// 	userId    Int         @unique
-//   createdAt DateTime    @default(now())
-//   updatedAt DateTime    @default(now()) @updatedAt
-// }
-
-// model Messages {
-//   id         Int        @id @unique @default(autoincrement())
-//   content    String
-//   sender     RoomMember @relation(fields: [senderId], references: [id])
-//   senderId   Int        @unique
-//   receiver   ChatRoom   @relation(fields: [receiverId], references: [id])
-//   receiverId Int        @unique
-//   createdAt  DateTime   @default(now())
-//   updatedAt  DateTime   @default(now()) @updatedAt
-// }
 
 enum RoomType {
   PUBLIC
@@ -165,6 +136,13 @@ enum Status {
   INGAME
   ONLINE
   OFFLINE
+	SPECTATING
+}
+
+enum GameMode {
+	VSONE
+	VSBOT
+	VSALL
 }
 
 enum GameStatus {
@@ -185,14 +163,3 @@ enum Rank {
   GRANDMASTER
   CHALLENGER
 }
-
-// # thinking about Self Reations Disvanteges
-// # https://www.prisma.io/docs/concepts/components/prisma-schema/relations#self-relations
-// # thinking about the best practice to send the data to the client
-// # thinking about the best structure to store the data
-// # thinking about the best way to query the data
-// # thinking about the best way to update the data
-// # thinking about the best way to delete the data
-// # thinking about the best way to create the data
-// # thinking about the best way to handle the data
-// # thinking about the best way to split the user and the profile
