@@ -11,6 +11,9 @@ import { ProfilesModule } from './profiles/profiles.module';
 import { ProfilesService } from './profiles/profiles.service';
 import { UserModule } from './user/user.module';
 import { UserService } from './user/user.service';
+import { GameService } from './game/game.service';
+import { GameController } from './game/game.controller';
+import { GameModule } from './game/game.module';
 
 @Module({
   imports: [
@@ -19,16 +22,18 @@ import { UserService } from './user/user.service';
     ProfilesModule,
     PrismaModule,
     PassportModule,
+		GameModule,
     // ThrottlerModule.forRoot({
     //   ttl: 1, // seconds
     //   limit: 1000, // requests
     // }),
     // ChatModule,
   ],
-    controllers: [AuthController],
+    controllers: [AuthController, GameController],
     providers: [
       UserService, JwtAuthService, JwtService,
       ProfilesService, PrismaService, AuthService,
+			GameService,
       // {
       //   provide: APP_FILTER,
       //   useClass: GlobalExceptionFilter,
