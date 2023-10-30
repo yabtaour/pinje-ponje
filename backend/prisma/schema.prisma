@@ -19,7 +19,7 @@ model User {
   twoFactor       Boolean @default(false)
   twoFactorSecret String?
 	status          Status  @default(ONLINE)
-	games					 	Game[] 	@relation("players")
+	games					 	Game[]
 	scores					Score[] @relation("score")
   Rooms    				RoomMembership[]
   messages 				ChatMessage[]
@@ -61,8 +61,7 @@ model Score {
 
 model Game {
 	id					Int       	@id @unique @default(autoincrement())
-	players			User     		@relation("players", fields: [playerid], references: [id], onDelete: Cascade)
-	playerid		Int					@unique
+	players			User[]
 	winnerId		Int
 	score				Score[]			@relation("score")
 	mode				GameMode
