@@ -19,7 +19,7 @@ model User {
   twoFactor       Boolean @default(false)
   twoFactorSecret String?
 	status          Status  @default(ONLINE)
-	games					 	Game[]
+	games					 	Game[] 	@relation("players")
 	scores					Score[] @relation("score")
   Rooms    				RoomMembership[]
   messages 				ChatMessage[]
@@ -61,7 +61,7 @@ model Score {
 
 model Game {
 	id					Int       	@id @unique @default(autoincrement())
-	players			User[]
+	players			User[]      @relation("players")
 	winnerId		Int
 	score				Score[]			@relation("score")
 	mode				GameMode

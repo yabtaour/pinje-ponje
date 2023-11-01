@@ -1,22 +1,34 @@
-import { UserService } from 'src/user/user.service';
-import { ProfilesService } from './profiles.service';
-import {  Controller, Get, Post, Body, Patch, Param, Delete,
-          UseGuards, Req, UseInterceptors, 
-          UploadedFile, Query, BadRequestException, 
-          InternalServerErrorException} from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation, ApiParam,
+  ApiProperty,
+  ApiTags
+} from '@nestjs/swagger';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { JWTGuard } from 'src/auth/guards/jwt.guard';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { UserDto } from 'src/user/dto/user.dto';
 import { storageConfig } from 'src/microservices/storage.config';
-import {  ApiTags, ApiBearerAuth, 
-          ApiOperation, ApiParam, 
-          ApiBody, 
-          ApiProperty,
-          ApiConsumes} from '@nestjs/swagger';
+import { UserDto } from 'src/user/dto/user.dto';
+import { UserService } from 'src/user/user.service';
+import { ProfilesService } from './profiles.service';
 // import { updateUserDto } from 'src/user/dto/update-user.dto';
 import { updateProfileDto } from './dto/update-profile.dto';
-import { fr } from '@faker-js/faker';
 
 export class PostObject {
   @ApiProperty()
@@ -182,3 +194,5 @@ export class ProfilesController {
   }
 
 }
+
+
