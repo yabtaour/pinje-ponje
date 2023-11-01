@@ -4,21 +4,21 @@ import { useAppSelector } from "../globalRedux/store";
 import axios from "axios";
 import { login, logout } from "../globalRedux/features/authSlice";
 
-function getCookie(name: string) {
-  const cookies = document.cookie.split(";");
-  for (const cookie of cookies) {
-    const [cookieName, cookieValue] = cookie.trim().split("=");
-    if (cookieName === name) {
-      return decodeURIComponent(cookieValue);
-    }
-  }
-  return null;
-}
+// function getCookie(name: string) {
+//   const cookies = document.cookie.split(";");
+//   for (const cookie of cookies) {
+//     const [cookieName, cookieValue] = cookie.trim().split("=");
+//     if (cookieName === name) {
+//       return decodeURIComponent(cookieValue);
+//     }
+//   }
+//   return null;
+// }
 
 export const useAuth = () => {
-  const authState = useAppSelector((state) => state.authReducer.value);
+  // const authState = useAppSelector((state) => state.authReducer.value);
 
-  return { authState };
+  // return { authState };
 
   // const [isLoading, setIsLoading] = useState(true);
 
