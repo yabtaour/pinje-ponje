@@ -1,9 +1,12 @@
 'use client'
-import { styled } from '@mui/material';
-import { Card, CardFooter, Button } from '@nextui-org/react';
+import { useAppSelector } from '@/app/globalRedux/store';
+import { Card } from '@nextui-org/react';
 import Image from 'next/image';
 
 export default function Dashboard() {
+
+    const AuthState = useAppSelector((state) => state.authReducer.value)
+
     return (
         <div className="bg-[#151424] h-screen w-screen " style={{
             paddingTop: '5rem',

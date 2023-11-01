@@ -1,14 +1,11 @@
 /** @type {import('next').NextConfig} */
-// const nextConfig = {}
+const dotenv = require("dotenv");
 
-// module.exports = nextConfig
-
-module.exports = {
-  // reactStrictMode: true,
-  // images: {
-    // domains: ["pbs.twimg.com"],
-  // },
-  experimental: {
-    appDir: true,
+const nextConfig = {
+  reactStrictMode: true,
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
   },
 };
+
+module.exports = nextConfig;

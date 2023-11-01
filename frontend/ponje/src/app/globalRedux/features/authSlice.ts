@@ -6,10 +6,33 @@ type InitialState = {
   value: AuthState;
 };
 
+type User = {
+  id: number;
+  intraid: number;
+  Hashpassword: string | null;
+  email: string;
+  twofactor: boolean;
+  twoFactorSecret: string | null;
+  profile: {
+    id: number;
+    username: string;
+    login: string;
+    avatar: string | null;
+    phonenumber: string | null;
+    status: string;
+    Rank: string;
+    level: number;
+    Friends: [];
+    createdAt: string;
+    updatedAt: string;
+    userid: number;
+  };
+};
+
 type AuthState = {
   isAuthenticated: boolean;
   token: string | null;
-  user: any;
+  user: User | null;
 };
 
 const initialState = {
@@ -25,11 +48,17 @@ export const auth = createSlice({
   initialState,
   reducers: {
     login: (state, action) => {
-      state.value = {
-        isAuthenticated: true,
-        token: null,
-        user: action.payload,
-      };
+      if (action.payload.user && action.payload.user.id) {
+        state.value = {
+          isAuthenticated: true,
+          token: action.payload.token,
+          user: action.payload.user,
+        };
+        localStorage.setItem("auth", JSON.stringify(state.value));
+        return state;
+      } else {
+        console.error("Invalid payload structure for login");
+      }
 
       return state;
     },
@@ -41,26 +70,3 @@ export const auth = createSlice({
 
 export const { login, logout } = auth.actions;
 export default auth.reducer;
-
-// {
-//   "id": 1,
-//   "intraid": 93968,
-//   "Hashpassword": null,
-//   "email": "yabtaour@student.1337.ma",
-//   "twofactor": false,
-//   "twoFactorSecret": null,
-//   "profile": {
-//       "id": 1,
-//       "username": "yabtaour",
-//       "login": "yabtaour",
-//       "avatar": null,
-//       "phonenumber": null,
-//       "status": "ONLINE",
-//       "Rank": "UNRANKED",
-//       "level": 0,
-//       "Friends": [],
-//       "createdAt": "2023-08-17T13:26:41.568Z",
-//       "updatedAt": "2023-08-17T13:26:41.568Z",
-//       "userid": 1
-//   }
-// },
