@@ -2,7 +2,8 @@
   "dependencies": {
     "@compodoc/compodoc": "^1.1.21",
     "@nestjs/cli": "^10.1.5",
-    "@nestjs/throttler": "^4.2.1"
+    "@nestjs/throttler": "^4.2.1",
+    "react-cookie": "^6.1.1"
   },
   "devDependencies": {
     "@next/font": "^13.4.19",
