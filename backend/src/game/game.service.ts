@@ -1,149 +1,75 @@
 import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateGameDto } from './dto/create.dto';
+import { QueueService } from 'src/queue/queue.service';
 
 @Injectable()
 export class GameService {
-	constructor(private readonly prisma: PrismaService) {}
+	constructor(
+		private readonly prisma: PrismaService,
+		private readonly queueService: QueueService
+	) {}
 
-	async createGame(data: any) {
-		console.log(data);
-		const game = this.prisma.game.create({
+	async createGame(data: CreateGameDto) {
+		const { mode, players } = data;
+		let playersObjects = [];
+		if (players.length != 4 && players.length != 2) {
+			throw new HttpException(
+				'Number of players must be 2 or 4',
+				HttpStatus.BAD_REQUEST,
+			);
+		}
+		players.forEach(async (id) => {
+
+			const user = await this.prisma.user.findUnique({ where: { id: id } });
+			if (!user) {
+				throw new HttpException(
+					`User with id ${id} does not exist`,
+					HttpStatus.BAD_REQUEST,
+				);
+			}
+			playersObjects.push(user);
+		});
+
+		const game = await this.prisma.game.create({
 			data: {
-				...data,
-				players:{
-					connect: data.players.map((player) => ({ id: player })),
-				}
+				mode: mode,
+				players: {
+					connect: playersObjects.map((id) => ({ id })),
+				},
 			},
 		});
-		if (!game)
-			throw new HttpException('Game not created', HttpStatus.NOT_FOUND);
+
+		players.forEach(async (id) => {
+			const player = await this.prisma.player.create({
+				data: {
+					status: 'LOSER',
+					game: {
+						connect: {
+							id: game.id,
+						},
+					},
+					user: {
+						connect: {
+							id: id,
+						},
+					},
+				},
+			});
+		});
 		return game;
 	}
 
-	async getAllGames() {
-		const games = this.prisma.game.findMany();
-		if (!games)
-			throw new HttpException('No games found', HttpStatus.NOT_FOUND);
-		return games;
-	}
+	async findGame(data: any) {
+		const {Rank, wr} = data;
 
-	async getGameById(id: number) {
-		const game = this.prisma.game.findUnique({
-			where: {
-				id: id,
-			},
-		});
-		if (!game)
-			throw new HttpException('Game not found', HttpStatus.NOT_FOUND);
-		return game;
-	}
+		const user = await this.prisma.user.findUnique({where: {id: data.id}});
+		if (!user)
+			throw new HttpException("User not found", HttpStatus.BAD_REQUEST);
 
-	async updateGame(id: number, data) {
-		const findGame = this.prisma.game.findUnique({
-			where: {
-				id: id,
-			},
-		});
-		if (!findGame)
-			throw new HttpException('Game not found', HttpStatus.NOT_FOUND);
-		const game = this.prisma.game.update({
-			where: {
-				id: id,
-			},
-			data: {
-				...data,
-			},
-		});
+		const opponent = await this.queueService.getopponent(Rank, wr);
+		if (!opponent)
+			throw new HttpException("No opponent found", HttpStatus.BAD_REQUEST);
+		
 	}
-
-	async deleteGame(id: number) {
-		const findGame = this.prisma.game.findUnique({
-			where: {
-				id: id,
-			},
-		});
-		if (!findGame)
-			throw new HttpException('Game not found', HttpStatus.NOT_FOUND);
-		const game = this.prisma.game.delete({
-			where: {
-				id: id,
-			},
-		});
-	}
-
-	async createScore(data: any) {
-		const score = this.prisma.score.create({
-			data: {
-				...data,
-			},
-		});
-		if (!score)
-			throw new HttpException('Score not created', HttpStatus.NOT_FOUND);
-		return score;
-	}
-
-	async getAllScores() {
-		const scores = this.prisma.score.findMany();
-		if (!scores)
-			throw new HttpException('No scores found', HttpStatus.NOT_FOUND);
-		return scores;
-	}
-
-	async getScoreById(id: number) {
-		const score = this.prisma.score.findUnique({
-			where: {
-				id: id,
-			},
-		});
-		if (!score)
-			throw new HttpException('Score not found', HttpStatus.NOT_FOUND);
-		return score;
-	}
-
-	async getScoresByUserId(id: number) {
-		const scores = this.prisma.score.findMany({
-			where: {
-				playerid: id,
-			},
-		});
-		if (!scores)
-			throw new HttpException('No scores found', HttpStatus.NOT_FOUND);
-		return scores;
-	}
-
-	async updateScore(id: number, data) {
-		const findScore = this.prisma.score.findUnique({
-			where: {
-				id: id,
-			},
-		});
-		if (!findScore)
-			throw new HttpException('Score not found', HttpStatus.NOT_FOUND);
-		const score = this.prisma.score.update({
-			where: {
-				id: id,
-			},
-			data: {
-				...data,
-			},
-		});
-		return score;
-	}
-
-	async deleteScore(id: number) {
-		const findScore = this.prisma.score.findUnique({
-			where: {
-				id: id,
-			},
-		});
-		if (!findScore)
-			throw new HttpException('Score not found', HttpStatus.NOT_FOUND);
-		const score = this.prisma.score.delete({
-			where: {
-				id: id,
-			},
-		});
-		return score;
-	}
-
 }

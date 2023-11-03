@@ -1,14 +1,11 @@
+import { GameMode } from "@prisma/client";
 import { IsNotEmpty, IsString } from "class-validator";
 
 export class CreateGameDto {
     @IsNotEmpty()
     @IsString()
-    mode: string;
+    mode: GameMode;
 
     @IsNotEmpty()
-    players: any[];
-}
-
-export class ScoreCreateDto {
-    
+    players: number[];
 }

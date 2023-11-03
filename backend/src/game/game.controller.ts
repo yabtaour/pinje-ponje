@@ -1,3 +1,4 @@
+import { CreateGameDto } from "./dto/create.dto";
 import { GameService } from "./game.service";
 import { Controller, Get, Post, Patch, Body } from "@nestjs/common";
 
@@ -11,8 +12,13 @@ export class GameController {
 	// }
 
 	@Post()
-	createGame(@Body() data: any) {
+	async createGame(@Body() data: CreateGameDto) {
 		return this.gameService.createGame(data);
+	}
+
+	@Post("queue")
+	async findGame(@Body() data: any) {
+		return this.gameService.findGame(data);
 	}
 
 	// @Patch()

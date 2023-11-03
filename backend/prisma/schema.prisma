@@ -19,13 +19,16 @@ model User {
   twoFactor       Boolean @default(false)
   twoFactorSecret String?
 	status          Status  @default(ONLINE)
-	games					 	Game[] 	@relation("players")
-	scores					Score[] @relation("score")
   Rooms    				RoomMembership[]
   messages 				ChatMessage[]
   profile  				Profile?
-	createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @default(now()) @updatedAt
+  players 				Player[]
+  winRate         Float			@default(0)
+  accuracy        Float     @default(0)
+  consitency      Float     @default(0)
+  reflex          Float     @default(0)
+	createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @default(now()) @updatedAt
 }
 
 model Profile {
@@ -48,29 +51,27 @@ model Profile {
   updatedAt      DateTime  @default(now()) @updatedAt
 }
 
-model Score {
-	id				Int       	@id @unique @default(autoincrement())
-	player		User      	@relation("score", fields: [playerid], references: [id], onDelete: Cascade)
-	playerid	Int					@unique
-	game			Game				@relation("score", fields: [gameid], references: [id], onDelete: Cascade)
-	gameid		Int					@unique
-	score			Int
-	result		GameResult
-	createdAt	DateTime		@default(now())
+model Player {
+  id          Int      @id @unique @default(autoincrement())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+  game        Game     @relation(fields: [gameId], references: [id])
+  status      playerStatus
+  gameId      Int
+  accuracy    Float     @default(0)
+  consitency  Float     @default(0)
+  reflex      Float     @default(0)
+  createdAt   DateTime  @default(now())
 }
 
 model Game {
 	id					Int       	@id @unique @default(autoincrement())
-	players			User[]      @relation("players")
-	winnerId		Int
-	score				Score[]			@relation("score")
 	mode				GameMode
+  players     Player[]
 	createdAt		DateTime		@default(now())
 }
 
-
 // add level and rank and xp fake data and store achievements in the database and rankes 
-
 
 model RoomMembership {
   id       Int      @id @default(autoincrement())
@@ -135,6 +136,7 @@ enum Status {
   INGAME
   ONLINE
   OFFLINE
+  INQUEUE
 	SPECTATING
 }
 
@@ -148,6 +150,11 @@ enum GameStatus {
   PENDING
   IN_PROGRESS
   FINISHED
+}
+
+enum playerStatus {
+  WINNER
+  LOSER
 }
 
 // # enum [bronze, silver, gold, platinum, diamond, master, grandmaster, challenger]
