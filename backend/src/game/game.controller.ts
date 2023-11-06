@@ -1,28 +1,49 @@
+import { UserService } from "src/user/user.service";
 import { CreateGameDto } from "./dto/create.dto";
 import { GameService } from "./game.service";
-import { Controller, Get, Post, Patch, Body } from "@nestjs/common";
+import { Controller, Get, Post, Patch, Body, Req, Query, ParseIntPipe, Param } from "@nestjs/common";
 
 @Controller("game")
 export class GameController {
-	constructor(private readonly gameService: GameService) {}
+	constructor(
+		private readonly gameService: GameService,
+		private readonly userService: UserService
+	) {}
 
-	// @Get()
-	// getGame() {
-	// 	return this.gameService.getGame();
-	// }
+	@Get()
+	async getGames() {
+		return this.gameService.getGames();
+	}
 
-	@Post()
-	async createGame(@Body() data: CreateGameDto) {
-		return this.gameService.createGame(data);
+	@Get(":id")
+	async getGameById(
+		@Param('id', ParseIntPipe) id: number,
+	) {
+		return this.gameService.getGame(id);
 	}
 
 	@Post("queue")
-	async findGame(@Body() data: any) {
-		return this.gameService.findGame(data);
+	async findGame(@Req() request: Request) {
+		const user = await this.userService.getCurrentUser(request);
+		return this.gameService.findGame(user);
 	}
 
-	// @Patch()
-	// updateGame() {
-	// 	return this.gameService.updateGame();
-	// }
+	@Post("invite")
+	async invitePlayer(
+		@Body() data: { userId: number },
+		@Req() request: Request,
+	) {
+		const user = await this.userService.getCurrentUser(request);
+		return this.gameService.invitePlayer(data, user);
+	}
+
+	@Post("accept")
+	async acceptInvite(
+		@Body() data: { userId: number },
+		@Req() request: Request,
+	) {
+		const user = await this.userService.getCurrentUser(request);
+		return this.gameService.acceptInvite(data, user);
+	}
+
 }

@@ -14,7 +14,6 @@ import { UserService } from './user/user.service';
 import { GameService } from './game/game.service';
 import { GameController } from './game/game.controller';
 import { GameModule } from './game/game.module';
-import { QueueModule } from './queue/queue.module';
 
 @Module({
   imports: [
@@ -24,7 +23,6 @@ import { QueueModule } from './queue/queue.module';
     PrismaModule,
     PassportModule,
 		GameModule,
-		QueueModule,
     // ThrottlerModule.forRoot({
     //   ttl: 1, // seconds
     //   limit: 1000, // requests
