@@ -1,13 +1,15 @@
 import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateGameDto } from './dto/create.dto';
-import { Status } from '@prisma/client';
+// import { Game, Status } from '@prisma/client';
 import { INQUIRER } from '@nestjs/core';
+import { GameGateway } from './game.gateway';
 
 @Injectable()
 export class GameService {
 	constructor(
 		private readonly prisma: PrismaService,
+		private readonly gameGateway: GameGateway,
 	) {}
 
 
@@ -26,7 +28,7 @@ export class GameService {
 		return games;
 	}
 
-	async getGame(id: number) {
+	async getGameById(id: number) {
 		const game = await this.prisma.game.findUnique({
 			where: {
 				id: id,
@@ -132,8 +134,30 @@ export class GameService {
 				status: "INQUEUE"
 			}
 		});
-		if (!opponent)
-			throw new HttpException(`No opponent found`, HttpStatus.BAD_REQUEST);
+		if (!opponent) {
+			console.log("no opponent found");
+			await this.prisma.user.update({
+				where: {
+					id: user.id,
+				},
+				data: {
+					status: "INQUEUE"
+				}
+			});
+			return;
+		}
+		
+		await this.prisma.user.updateMany({
+			where: {
+				id: {
+					in: [user.id, opponent.id],
+				},
+			},
+			data: {
+				status: "INGAME"
+			}
+		});
+		console.log("opponent found");
 	
 		const game = await this.prisma.game.create({
 			data: {
@@ -146,6 +170,10 @@ export class GameService {
 				}
 			}
 		});
+		if (!game)
+			throw new HttpException(`Error creating game`, HttpStatus.BAD_REQUEST);
+
+		console.log("game created");
 
 		const player = await this.prisma.player.create({
 			data: {
@@ -162,6 +190,8 @@ export class GameService {
 				},
 			},
 		});
+		if (!player)
+			throw new HttpException(`Error creating player 1`, HttpStatus.BAD_REQUEST);
 
 		const opponentPlayer = await this.prisma.player.create({
 			data: {
@@ -178,7 +208,29 @@ export class GameService {
 				},
 			},
 		});
+		if (!opponentPlayer)
+			throw new HttpException(`Error creating player 2`, HttpStatus.BAD_REQUEST);
 
+
+		this.gameGateway.server.to(String(player.userId)).emit('queue', game);
+		// console.log(this.gameGateway.server.sockets);
+		// console.log(this.gameGateway.server.sockets.sockets);
+		// console.log(this.gameGateway.server.co
+		// console.log(this.gameGateway.server.sockets[String(opponentPlayer.userId)]);
+		// console.log(this.gameGateway.server.sockets.sockets[String(player.userId)]);
+		// console.log(this.gameGateway.server.sockets.sockets[user.id]);
+		// this.gameGateway.server.sockets.sockets[user.id].emit('queue', game);
+		// const sockets = this.gameGateway.server.sockets._ids;
+		// this.gameGateway.server.sockets.sockets[player.userId].emit('queue', game);
+		// this.gameGateway.server.sockets.sockets[opponentPlayer.userId].emit('queue', game);
+		// console.log(sockets);
+		// const socket = this.gameGateway.server.sockets;
+		// const clients = socket.
+		// const client = this.gameGateway.server.sockets.
+		// if (!client)
+		// 	throw new HttpException(`Error finding client`, HttpStatus.BAD_REQUEST);
+		// console.log(client)
+		// client.emit('queue', game);
 		//send response to start the game
 	}
 }

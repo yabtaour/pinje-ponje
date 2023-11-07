@@ -14,6 +14,7 @@ import { UserService } from './user/user.service';
 import { GameService } from './game/game.service';
 import { GameController } from './game/game.controller';
 import { GameModule } from './game/game.module';
+import { GameGateway } from './game/game.gateway';
 
 @Module({
   imports: [
@@ -33,7 +34,7 @@ import { GameModule } from './game/game.module';
     providers: [
       UserService, JwtAuthService, JwtService,
       ProfilesService, PrismaService, AuthService,
-			GameService,
+			GameService, GameGateway
       // {
       //   provide: APP_FILTER,
       //   useClass: GlobalExceptionFilter,

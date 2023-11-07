@@ -27,6 +27,7 @@ const secret = process.env.JWT_SECRET;
     }),
   ],
   controllers: [AuthController],
+  exports: [JwtAuthService, AuthService, PrismaService],
   providers: [JwtAuthService, AuthService, PrismaService,
 							FortyTwoStrategy, LocalStrategy, GoogleStrategy, UserService,
 							ProfilesService],
