@@ -9,6 +9,31 @@ type gamePayload = {
   keyClick
 }
 
+class GameState {
+  private playerPaddlePositions: Map<number, number> = new Map(); // key: playerId, value: paddlePosition
+  private playersScores: Map<number, number> = new Map(); // key: playerId, value: score
+  private ballPosition: {x: number, y: number} = {x: 0, y: 0}; // x: 0-100, y: 0-100
+  private ballVelocity: {x: number, y: number} = {x: 0, y: 0}; // x: -100-100, y: -100-100
+
+
+  updatePlayerPaddlePosition(playerId: number, position: number) {
+    this.playerPaddlePositions.set(playerId, position);
+  }
+
+  updateBallPosition(position: {x: number, y: number}) {
+    this.ballPosition.x += this.ballVelocity.x;
+    this.ballPosition.y += this.ballVelocity.y;
+  }
+
+  getNewGameFrame() {
+    return {
+      playerPaddlePosition: Array.from(this.playerPaddlePositions.entries()),
+      ballPosition: this.ballPosition,
+      player
+    }
+  }
+}
+
 @WebSocketGateway({
   namespace: 'game',
   cors: {
