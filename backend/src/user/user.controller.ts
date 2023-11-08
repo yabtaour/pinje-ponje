@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Req, UseGuards } from '@nestjs/common';
 import {
 	ApiBearerAuth,
 	ApiBody,
@@ -72,7 +72,7 @@ export class UserController {
     description: 'Get a user by ID and return the user'
   })
   @ApiParam({ name: 'id', type: 'number' })
-  async FindUserByID(@Param('id') id: number) {
+  async FindUserByID(@Param('id', ParseIntPipe) id: number) {
     return this.userService.FindUserByID(id);
   }
 

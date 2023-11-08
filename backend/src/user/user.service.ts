@@ -155,6 +155,11 @@ export class UserService {
 			});
 			if (!user)
 				throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+			if (data.password) {
+				const rounds = await parseInt(process.env.BCRYPT_ROUNDS);
+				const HashedPassword = await bcrypt.hashSync(data.password, rounds);
+				data.password = HashedPassword;
+			}
     	const updatedUser = await this.prisma.user.update({
       	where: {
 					id: id,
