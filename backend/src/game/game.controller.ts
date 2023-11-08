@@ -35,8 +35,8 @@ export class GameController {
 		@Body() data: { userId: number },
 		@Req() request: Request,
 	) {
-		const user = await this.userService.getCurrentUser(request);
-		return this.gameService.invitePlayer(data, user);
+		// const user = await this.userService.getCurrentUser(request);
+		return this.gameService.invitePlayer(data);
 	}
 
 	@Post("accept")

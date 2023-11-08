@@ -46,7 +46,7 @@ export class GameService {
 		return game;
 	}
 
-	async invitePlayer(data: {userId: number}, user: any) {
+	async invitePlayer(data: {userId: number}) {
 		const opponent = await this.prisma.user.findFirst({
 			where: {
 				id: data.userId,
