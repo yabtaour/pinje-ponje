@@ -17,7 +17,8 @@ export class JwtAuthService {
   }
 
   async verifyToken(token: string, context: ExecutionContext) {
-      const decodedToken = await this.jwtService.verifyAsync(token, {
+      const actualToken = token.split(' ')[1];
+      const decodedToken = await this.jwtService.verify(actualToken, {
         secret: secret,
       });
       if (!decodedToken || !decodedToken.sub)
