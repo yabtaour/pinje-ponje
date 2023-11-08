@@ -57,6 +57,7 @@ model Player {
   userId      Int
   game        Game     @relation(fields: [gameId], references: [id])
   status      playerStatus
+  score       Int      @default(0)
   gameId      Int
   accuracy    Float     @default(0)
   consitency  Float     @default(0)

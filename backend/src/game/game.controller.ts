@@ -35,8 +35,8 @@ export class GameController {
 		@Body() data: { userId: number },
 		@Req() request: Request,
 	) {
-		// const user = await this.userService.getCurrentUser(request);
-		return this.gameService.invitePlayer(data);
+		const user = await this.userService.getCurrentUser(request);
+		return this.gameService.invitePlayer(data, user);
 	}
 
 	@Post("accept")
@@ -47,5 +47,15 @@ export class GameController {
 		const user = await this.userService.getCurrentUser(request);
 		return this.gameService.acceptInvite(data, user);
 	}
+
+	@Post("decline")
+	async declineInvite(
+		@Body() data: { userId: number },
+		@Req() request: Request,
+	) {
+		const user = await this.userService.getCurrentUser(request);
+		return this.gameService.declineInvite(data, user);
+	}
+
 
 }

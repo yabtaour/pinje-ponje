@@ -46,7 +46,7 @@ export class GameService {
 		return game;
 	}
 
-	async invitePlayer(data: {userId: number}) {
+	async invitePlayer(data: {userId: number}, user: any) {
 		const opponent = await this.prisma.user.findFirst({
 			where: {
 				id: data.userId,
@@ -58,28 +58,39 @@ export class GameService {
 		if (!opponent)
 			throw new HttpException(`No user with id ${data.userId} is available`, HttpStatus.BAD_REQUEST);
 	
-		// send notification to opponent
+		this.gameGateway.server.to(String(opponent.id)).emit('gamenotification', `you have a game invitation from ${user.profile.username}`);
 	}
 
 	async acceptInvite(data: {userId: number}, user: any) {
-		const opponent = await this.prisma.user.findFirst({
+		// const opponent = await this.prisma.user.findFirst({
+		// 	where: {
+		// 		id: data.userId,
+		// 		status: {
+		// 		 in: ["ONLINE", "INQUEUE"]
+		// 	 	}
+		// 	}
+		// });
+		// if (!opponent)
+		// 	throw new HttpException(`No user with id ${data.userId} is available`, HttpStatus.BAD_REQUEST);
+		
+		const updatedUser = await this.prisma.user.updateMany({
 			where: {
-				id: data.userId,
-				status: {
-				 in: ["ONLINE", "INQUEUE"]
-			 	}
+				id: {
+					in: [user.id, data.userId],
+				},
+			},
+			data: {
+				status: "INGAME"
 			}
 		});
-		if (!opponent)
-			throw new HttpException(`No user with id ${data.userId} is available`, HttpStatus.BAD_REQUEST);
-		
+
 		const game = await this.prisma.game.create({
 			data: {
 				mode: 'VSONE',
 				players: {
 					connect: [
 						{ id: data.userId },
-						{ id: opponent.id }
+						{ id: user.id }
 					]
 				}
 			}
@@ -113,7 +124,7 @@ export class GameService {
 				},
 				user: {
 					connect: {
-						id: opponent.id,
+						id: user.id,
 					},
 				},
 			},
@@ -121,9 +132,30 @@ export class GameService {
 		if (!opponentPlayer)
 			throw new HttpException(`Error creating opponent player`, HttpStatus.BAD_REQUEST);
 
+		this.gameGateway.server.to(String(player.userId)).emit('gameStart', "start the fucking game");
+		this.gameGateway.server.to(String(opponentPlayer.userId)).emit('gameStart', "start the game");
 		//send response to start the game
-		return game;
+		// return game;
 	}
+
+	async declineInvite(data: {userId: number}, user: any) {
+		const opponent = await this.prisma.user.findFirst({
+			where: {
+				id: data.userId,
+				status: {
+				 in: ["ONLINE", "INQUEUE"]
+			 	}
+			}
+		});
+		if (!opponent)
+			throw new HttpException(`No user with id ${data.userId} is available`, HttpStatus.BAD_REQUEST);
+		
+
+		this.gameGateway.server.to(String(opponent.id)).emit('gameNotification', `rejectak ${user.profile.username}`);
+		//send response to start the game
+	}
+
+	// async finishGame()
 
 	async findGame(user: any) {
 		const opponent = await this.prisma.user.findFirst({

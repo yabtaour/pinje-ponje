@@ -5,6 +5,10 @@ import { Server } from 'socket.io';
 import { AuthWithWs } from 'src/chat/dto/user-ws-dto';
 import { Client } from 'socket.io/dist/client';
 
+type gamePayload = {
+  keyClick
+}
+
 @WebSocketGateway({
   namespace: 'game',
   cors: {
@@ -30,6 +34,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       client.emit('queue', 'Hello world!');
       return 'Hello world!';
     }
+
+    // @SubscribeMessage('game')
+    // handleMessage(client: any, payload:)
     
     async handleConnection(client: AuthWithWs) {
       const sockets = this.server.sockets;
