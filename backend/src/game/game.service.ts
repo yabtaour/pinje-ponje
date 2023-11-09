@@ -4,6 +4,7 @@ import { CreateGameDto } from './dto/create.dto';
 // import { Game, Status } from '@prisma/client';
 import { INQUIRER } from '@nestjs/core';
 import { GameGateway } from './game.gateway';
+import { GameState } from './gameState';
 
 @Injectable()
 export class GameService {
@@ -61,18 +62,7 @@ export class GameService {
 		this.gameGateway.server.to(String(opponent.id)).emit('gamenotification', `you have a game invitation from ${user.profile.username}`);
 	}
 
-	async acceptInvite(data: {userId: number}, user: any) {
-		// const opponent = await this.prisma.user.findFirst({
-		// 	where: {
-		// 		id: data.userId,
-		// 		status: {
-		// 		 in: ["ONLINE", "INQUEUE"]
-		// 	 	}
-		// 	}
-		// });
-		// if (!opponent)
-		// 	throw new HttpException(`No user with id ${data.userId} is available`, HttpStatus.BAD_REQUEST);
-		
+	async acceptInvite(data: {userId: number}, user: any) {		
 		const updatedUser = await this.prisma.user.updateMany({
 			where: {
 				id: {
@@ -134,6 +124,17 @@ export class GameService {
 
 		this.gameGateway.server.to(String(player.userId)).emit('gameStart', "start the fucking game");
 		this.gameGateway.server.to(String(opponentPlayer.userId)).emit('gameStart', "start the game");
+
+		const gameState = new GameState(
+			{id: player.userId, paddlePosition: 5, score: 0},
+			{id: player.userId, paddlePosition: 5, score: 0},
+			{x: 0, y: 0},
+			{x: 0, y: 0},
+		)
+		this.gameGateway.currentGames[game.id] = gameState
+		this.gameGateway.server.to(String(player.userId)).emit('gameUpdate', gameState);
+		this.gameGateway.server.to(String(opponentPlayer.userId)).emit('gameUpdate', gameState);
+
 		//send response to start the game
 		// return game;
 	}
@@ -245,24 +246,15 @@ export class GameService {
 
 
 		this.gameGateway.server.to(String(player.userId)).emit('queue', game);
-		// console.log(this.gameGateway.server.sockets);
-		// console.log(this.gameGateway.server.sockets.sockets);
-		// console.log(this.gameGateway.server.co
-		// console.log(this.gameGateway.server.sockets[String(opponentPlayer.userId)]);
-		// console.log(this.gameGateway.server.sockets.sockets[String(player.userId)]);
-		// console.log(this.gameGateway.server.sockets.sockets[user.id]);
-		// this.gameGateway.server.sockets.sockets[user.id].emit('queue', game);
-		// const sockets = this.gameGateway.server.sockets._ids;
-		// this.gameGateway.server.sockets.sockets[player.userId].emit('queue', game);
-		// this.gameGateway.server.sockets.sockets[opponentPlayer.userId].emit('queue', game);
-		// console.log(sockets);
-		// const socket = this.gameGateway.server.sockets;
-		// const clients = socket.
-		// const client = this.gameGateway.server.sockets.
-		// if (!client)
-		// 	throw new HttpException(`Error finding client`, HttpStatus.BAD_REQUEST);
-		// console.log(client)
-		// client.emit('queue', game);
-		//send response to start the game
+
+		const gameState = new GameState(
+			{id: player.userId, paddlePosition: 5, score: 0},
+			{id: player.userId, paddlePosition: 5, score: 0},
+			{x: 0, y: 0},
+			{x: 0, y: 0},
+		)
+		this.gameGateway.currentGames[game.id] = gameState
+		this.gameGateway.server.to(String(player.userId)).emit('gameUpdate', gameState);
+		this.gameGateway.server.to(String(opponentPlayer.userId)).emit('gameUpdate', gameState);
 	}
 }

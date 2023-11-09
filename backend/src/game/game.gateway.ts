@@ -1,38 +1,7 @@
 import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { GameService } from './game.service';
-import { Logger } from '@nestjs/common';
 import { Server } from 'socket.io';
 import { AuthWithWs } from 'src/chat/dto/user-ws-dto';
-import { Client } from 'socket.io/dist/client';
-
-type gamePayload = {
-  keyClick
-}
-
-class GameState {
-  private playerPaddlePositions: Map<number, number> = new Map(); // key: playerId, value: paddlePosition
-  private playersScores: Map<number, number> = new Map(); // key: playerId, value: score
-  private ballPosition: {x: number, y: number} = {x: 0, y: 0}; // x: 0-100, y: 0-100
-  private ballVelocity: {x: number, y: number} = {x: 0, y: 0}; // x: -100-100, y: -100-100
-
-
-  updatePlayerPaddlePosition(playerId: number, position: number) {
-    this.playerPaddlePositions.set(playerId, position);
-  }
-
-  updateBallPosition(position: {x: number, y: number}) {
-    this.ballPosition.x += this.ballVelocity.x;
-    this.ballPosition.y += this.ballVelocity.y;
-  }
-
-  getNewGameFrame() {
-    return {
-      playerPaddlePosition: Array.from(this.playerPaddlePositions.entries()),
-      ballPosition: this.ballPosition,
-      player
-    }
-  }
-}
+import { GameState } from './gameState';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -45,9 +14,11 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @WebSocketServer()
   server: Server;
   
+  currentGames: Map<number, GameState> = new Map(); // key: gameId, value: GameState
+
   constructor(
     // private readonly gameService: GameService,
-    // logger: Logger = new Logger('GameGateway'),
+    // logger: Logger = new Logger('GameGateway')
   ) {}
   
     afterInit(server: Server) {
@@ -59,6 +30,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       client.emit('queue', 'Hello world!');
       return 'Hello world!';
     }
+
+
+    
 
     // @SubscribeMessage('game')
     // handleMessage(client: any, payload:)
