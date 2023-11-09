@@ -58,6 +58,23 @@ export class UserService {
     }
   }
 
+  async resetPassword(user: any, old: string, newPass: string) {
+	const isMatch = await bcrypt.compareSync(old, user.password);
+	if (!isMatch)
+		throw new HttpException('Old password is incorrect', HttpStatus.BAD_REQUEST);
+	const rounds = await parseInt(process.env.BCRYPT_ROUNDS);
+	const HashedPassword = await bcrypt.hashSync(newPass, rounds);
+	const updatedUser = await this.prisma.user.update({
+		where: {
+			id: user.id,
+		},
+		data: {
+			password: HashedPassword,
+		},
+	});
+	return updatedUser;
+  }
+
   async CreateUserIntra(reqData: CreateUserDtoIntra) {
 		// try {
 			const userExist = await this.prisma.user.findUnique({
