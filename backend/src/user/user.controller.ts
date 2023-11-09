@@ -76,6 +76,12 @@ export class UserController {
     return this.userService.FindUserByID(id);
   }
 
+  @Post('resetPassword')
+  async resetPassword(@Req() request: any, @Body() data: {old: string, new: string}) {
+    const user = await this.userService.getCurrentUser(request);
+    return this.userService.resetPassword(user, data.old, data.new);
+  }
+
   @Get()
   @ApiOperation({ summary: 'Get all users', 
     description: 'Get all users and return the users',
