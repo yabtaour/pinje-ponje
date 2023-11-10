@@ -26,7 +26,7 @@ export class AuthController {
     async handle42Auth(@Req() request: any, @Res() response: Response) {
         const user = request.user;
         console.log("Copy This Token: ", request.user.token);
-		response.cookie("token", request.user.token, {httpOnly: true});
+		response.cookie("token", "Brearer " + request.user.token, {httpOnly: true});
 		if (user.twoFactorAuth === true)
 			response.redirect('http://localhost:3001/verification');
 		else
@@ -37,8 +37,8 @@ export class AuthController {
   	@UseGuards(LocalAuthGuard)
 	async handleLogin(@Body() data: SignInDto, @Req() request: any, @Res() response: Response) {
 		const user = request.user;
-  	console.log("Copy This Token: ", request.user.token);
-		response.cookie("token", request.user.token, {httpOnly: true});
+  		console.log("Copy This Token: ", request.user.token);
+		response.cookie("token", "Brearer " + request.user.token, {httpOnly: true});
 		response.send(user);
 	}
 
@@ -47,7 +47,7 @@ export class AuthController {
 	async handleGoogleAuth(@Req() request: any, @Res() response: Response) {
 		const user = request.user;
 		console.log("Copy This Token: ", request.user.token);
-		response.cookie("token", request.user.token, {httpOnly: true});
+		response.cookie("token", "Brearer " + request.user.token, {httpOnly: true});
 		if (user.twoFactorAuth === true)
 			response.redirect('http://localhost:3001/verification');
 		else
@@ -68,7 +68,7 @@ export class AuthController {
 	@Post('signUp')
 	async signUp(@Body() data: SignUpDto, @Req() request: any, @Res() response: Response) {
 		const user = await this.authService.signUp(data);
-		response.cookie("token", user.token, {httpOnly: true});
+		response.cookie("token", "Brearer " + user.token, {httpOnly: true});
 		response.send(user);
 	}
 }
