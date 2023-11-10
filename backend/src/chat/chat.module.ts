@@ -5,11 +5,15 @@ import { ChatGateway } from './chat.gateway';
 import { Prisma } from '@prisma/client';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { AuthModule } from 'src/auth/auth.module';
+import { JwtModule, JwtService } from '@nestjs/jwt';
+import { JwtAuthService } from 'src/auth/jwt.service';
+import { UserModule } from 'src/user/user.module';
 // import { MuteCheckMiddleware } from './middlewares/MuteCheckMiddleware';
 
 @Module({
-  controllers: [],
-  imports: [PrismaModule],
+  controllers: [ChatController],
+  imports: [PrismaModule, AuthModule, UserModule],
   providers: [ ChatGateway, ChatService, PrismaService],
   exports: [ChatGateway],
 })

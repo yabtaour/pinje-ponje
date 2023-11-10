@@ -25,7 +25,7 @@ import { AuthWithWs, UserWsDto } from './dto/user-ws-dto';
   namespace: 'chat',
   cors: {
     origin: '*',
-  }
+  },
 })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 
@@ -85,7 +85,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('createRoom')
   async handleCreateRoom(client: any, payload: any) {
     console.log("user id : ", client.id);
-    const room = await this.chatService.createRoom(client, payload);
+    const room = await this.chatService.createRoom(+client.id, payload);
     client.join(room.name);
     this.server.to(room.name).emit('roomCreated', room);
   }

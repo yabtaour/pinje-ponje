@@ -21,11 +21,11 @@ import {
   ApiProperty,
   ApiTags
 } from '@nestjs/swagger';
-import { GetUser } from 'src/auth/decorators/get-user.decorator';
-import { JWTGuard } from 'src/auth/guards/jwt.guard';
-import { storageConfig } from 'src/microservices/storage.config';
-import { UserDto } from 'src/user/dto/user.dto';
-import { UserService } from 'src/user/user.service';
+import { GetUser } from '../auth/decorators/get-user.decorator';
+import { JWTGuard } from '../auth/guards/jwt.guard';
+import { storageConfig } from '../microservices/storage.config';
+import { UserDto } from '../user/dto/user.dto';
+import { UserService } from '../user/user.service';
 import { ProfilesService } from './profiles.service';
 // import { updateUserDto } from 'src/user/dto/update-user.dto';
 import { updateProfileDto } from './dto/update-profile.dto';
