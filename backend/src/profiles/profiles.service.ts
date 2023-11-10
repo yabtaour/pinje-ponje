@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { log } from 'console';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { de, fi, th } from '@faker-js/faker';

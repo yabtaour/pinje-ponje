@@ -5,15 +5,15 @@ import {
 	ApiOperation, ApiParam,
 	ApiTags,
 } from '@nestjs/swagger';
-import { JWTGuard } from 'src/auth/guards/jwt.guard';
+import { JWTGuard } from '../auth/guards/jwt.guard';
 import { CreateUserDtoLocal } from './dto/create-user.dto';
 import { updateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
 
 
+@UseGuards(JWTGuard)
 @Controller('users')
 @ApiTags('Users')
-@UseGuards(JWTGuard)
 @ApiBearerAuth()
 export class UserController {
   constructor(private readonly userService: UserService) {}

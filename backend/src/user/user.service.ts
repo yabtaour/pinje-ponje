@@ -4,8 +4,8 @@ import * as bcrypt from 'bcrypt';
 import { config } from 'dotenv';
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { ProfilesService } from 'src/profiles/profiles.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { ProfilesService } from '../profiles/profiles.service';
 import { CreateUserDtoIntra } from './dto/create-user.dto';
 import { updateUserDto } from './dto/update-user.dto';
 
@@ -311,6 +311,9 @@ async FindUserByID(id: number) {
 
 	async getCurrentUser(request: any) {
 		// try {
+			// console.log("request from user service : ", request);
+			// console.log("request.user from user service : ", request.user);
+			// console.log("request.user.sub from user service : ", request.user.sub);
 			const user = await this.prisma.user.findUnique({
 				where: {
 					id: parseInt(request.user.sub),
@@ -328,5 +331,6 @@ async FindUserByID(id: number) {
 	}
 
 }
+
 
 
