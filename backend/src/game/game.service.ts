@@ -257,4 +257,22 @@ export class GameService {
 		this.gameGateway.server.to(String(player.userId)).emit('gameUpdate', gameState);
 		this.gameGateway.server.to(String(opponentPlayer.userId)).emit('gameUpdate', gameState);
 	}
+
+
+	async updatePlayerPosition(userId: number, position: number, move: {x: number, y: number}) {
+		const player = await this.prisma.player.findFirst({
+			where: {
+				userId: userId,
+			},
+		});
+		if (!player)
+			throw new HttpException(`No player found`, HttpStatus.BAD_REQUEST);
+		let currentPlayerPosition = this.gameGateway.currentGames[player.gameId].player1.paddlePosition;
+		currentPlayerPosition.x += move.x;
+		currentPlayerPosition.y += move.y;
+
+		this.gameGateway.currentGames[player.gameId].player1.paddlePosition = currentPlayerPosition;
+		this.gameGateway.server.to(String(player.userId)).emit('paddleUpdate', currentPlayerPosition);
+	}
+
 }

@@ -2,6 +2,7 @@ import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessa
 import { Server } from 'socket.io';
 import { AuthWithWs } from 'src/chat/dto/user-ws-dto';
 import { GameState } from './gameState';
+import { GameService } from './game.service';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -17,7 +18,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   currentGames: Map<number, GameState> = new Map(); // key: gameId, value: GameState
 
   constructor(
-    // private readonly gameService: GameService,
+    private readonly gameService: GameService,
     // logger: Logger = new Logger('GameGateway')
   ) {}
   
@@ -31,7 +32,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return 'Hello world!';
     }
 
-
+    @SubscribeMessage('updatePlayerPosition')
+    updatePlayerPosition(client: any, payload: any): void {
+      this.gameService.updatePlayerPosition(payload.userId, payload.position, payload.move);
+    }
     
 
     // @SubscribeMessage('game')
