@@ -1,6 +1,9 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
+import { isInstance } from 'class-validator';
 import { Request, Response } from 'express';
+import { type } from 'os';
+import { JsonWebTokenError } from 'jsonwebtoken';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -11,6 +14,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal server error';
+
+    if (exception instanceof JsonWebTokenError) {
+      status = HttpStatus.UNAUTHORIZED;
+      message = exception.message;
+    }
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();

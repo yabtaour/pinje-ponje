@@ -30,6 +30,8 @@ const secret = process.env.JWT_SECRET;
   providers: [JwtAuthService, AuthService, PrismaService,
 							FortyTwoStrategy, LocalStrategy, GoogleStrategy, UserService,
 							ProfilesService],
+  exports: [JwtAuthService, AuthService, PrismaService],
+  
 })
 export class AuthModule {}
 

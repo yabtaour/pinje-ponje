@@ -19,7 +19,7 @@ export class ChatService {
 
 
 
-  async createRoom(socket: any, payload: CreateChatDmRoomDto) {
+  async createRoom(userid: number, payload: CreateChatDmRoomDto) {
     const roomId = await this.generateUniqueRoomId();
     const role = (payload.type !== 'DM') ? 'OWNER' : 'MEMBER';
 
@@ -34,7 +34,7 @@ export class ChatService {
         password: payload.password,
         members: {
           create: [{
-            user : { connect : { id : +socket.id } },
+            user : { connect : { id : +userid } },
             role: role as ChatRole,
           }]
         }
@@ -150,7 +150,13 @@ export class ChatService {
             roomType: true,
             updatedAt: true,
             createdAt: true,
-          }
+            messages: {
+              orderBy: {
+                createdAt: 'desc',
+              },
+              take: 1,
+            },
+          },
         },
       },
       skip,
