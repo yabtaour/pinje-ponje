@@ -54,8 +54,17 @@ export class UserController {
   })
   @ApiBody({ type: updateUserDto })
   async UpdateUser(@Req() request: any, @Body() data: updateUserDto) {
-		const user = await this.userService.getCurrentUser(request);
+    const user = await this.userService.getCurrentUser(request);
     return this.userService.UpdateUser(user.id, data);
+  }
+
+  @Get('QRCode')
+  @ApiOperation({ summary: 'Get QRCode', 
+    description: 'Get QRCode and return the QRCode',
+  })
+  async getQRCode(@Req() request: any) {
+    const user = await this.userService.getCurrentUser(request);
+    return this.userService.getQRCode(user.id);
   }
 
   
@@ -90,12 +99,4 @@ export class UserController {
     return this.userService.FindAllUsers();
   }
 
-	@Get('QRCode')
-	@ApiOperation({ summary: 'Get QRCode', 
-		description: 'Get QRCode and return the QRCode',
-	})
-	async getQRCode(@Req() request: any) {
-		const user = await this.userService.getCurrentUser(request);
-		return this.userService.getQRCode(user.id);
-	}
 }
