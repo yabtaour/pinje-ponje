@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
-import { ChatService } from './chat.service';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query, ParseIntPipe } from '@nestjs/common';
+import { ChatService, PaginationLimitDto, joinRoomDto } from './chat.service';
 import { CreateChatDmRoomDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { ChatGateway } from './chat.gateway';
@@ -21,13 +21,52 @@ export class ChatController {
   
     ) {}
 
-  @Post()
-  async create(@Req() request: Request) {
+  @Post('createRoom')
+  async createRoom(
+      @Req() request: Request,
+      @Body() data: CreateChatDmRoomDto
+    ){
     const user = await this.userService.getCurrentUser(request);
-    console.log("user from rest api chat : ", user.id);
-    // console.log("request from rest api chat : ", request);
-    // return this.chatService.create(createChatDmRoomDto);
+    const room = await this.chatService.createRoom(user.id, data);
+    console.log('room created', room);
+    this.chatgateway.server.to(String(user.id)).emit('roomCreated', room);
+    return room;
   }
 
+  @Get('getRooms')
+  async getAllRooms(
+      @Req() request: Request,
+      @Query() query: PaginationLimitDto
+    ){
+
+    const user = await this.userService.getCurrentUser(request);
+    const rooms = await this.chatService.getRoomsByUserId(user.id, query);
+    this.chatgateway.server.to(String(user.id)).emit('listOfRooms', rooms);
+    return rooms;
+  }
+
+  @Get('getRoom/:name')
+  async getOneRoom(
+      @Req() request: Request,
+      @Param('name') name: string
+    ){
+
+    const user = await this.userService.getCurrentUser(request);
+    const room = await this.chatService.getRoomByNames(name);
+    this.chatgateway.server.to(String(user.id)).emit('roomDetails', room);
+    return room;
+  }
+
+  @Post('joinRoom/:id')
+  async joinRoom(
+      @Param('id' , ParseIntPipe) room_id: number,
+      @Req() request: Request,
+      @Body() payload: joinRoomDto
+  ){
+    const user = await this.userService.getCurrentUser(request);
+    const room = await this.chatService.joinRoom(user.id, payload , room_id);
+    this.chatgateway.server.to(String(user.id)).emit('joinedRoom', room);
+    return room;
+  }
 }
 

@@ -27,14 +27,24 @@ export class UserController {
   async create(@Body() data: CreateUserDtoLocal) {
     return this.userService.CreateUserLocal(data);
   }
-
+  
   @Get('me')
   @ApiOperation({
     summary: 'Get the current user',
     description: 'Get the current user by token',
   })
   async FindUserByToken(@Req() request: any) {
-		return this.userService.getCurrentUser(request);
+    return this.userService.getCurrentUser(request);
+  }
+  
+  @Get('QRCode')
+  @ApiOperation({ summary: 'Get QRCode', 
+    description: 'Get QRCode and return the QRCode',
+  })
+  async getQRCode(@Req() request: any) {
+    const user = await this.userService.getCurrentUser(request);
+    console.log(user);
+    return await this.userService.getQRCode(user.id);
   }
 
   @Delete('delete')
@@ -90,12 +100,4 @@ export class UserController {
     return this.userService.FindAllUsers();
   }
 
-	@Get('QRCode')
-	@ApiOperation({ summary: 'Get QRCode', 
-		description: 'Get QRCode and return the QRCode',
-	})
-	async getQRCode(@Req() request: any) {
-		const user = await this.userService.getCurrentUser(request);
-		return this.userService.getQRCode(user.id);
-	}
 }

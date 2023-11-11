@@ -1,16 +1,45 @@
-import { Injectable, Logger, Patch } from '@nestjs/common';
+import { Injectable, Logger, Patch, Query } from '@nestjs/common';
 import { CreateChatDmRoomDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import * as crypto from 'crypto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma, ChatRoom, RoomType, ChatRole, User, Profile, RoomMembership } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
-import { ro } from '@faker-js/faker';
+import { de, ro } from '@faker-js/faker';
 import { RoomDto } from './dto/room-dto';
 import { get } from 'http';
 import { Socket } from 'socket.io';
 import { WsException } from '@nestjs/websockets';
 import { AuthWithWs } from './dto/user-ws-dto';
+import { skip } from 'node:test';
+import { IsIn, IsInt, IsNumber, IsOptional } from 'class-validator';
+import { Transform } from 'class-transformer';
+
+
+export class PaginationLimitDto {
+
+  @IsOptional()
+  @IsInt()
+  @Transform(({ value }) => parseInt(value))
+  skip?: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value))
+  take?: number;
+}
+
+export class joinRoomDto {
+
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }) => parseInt(value))
+  roomId?: number;
+
+  @IsOptional()
+  password?: string;
+}
+
 
 @Injectable()
 export class ChatService {
@@ -40,45 +69,47 @@ export class ChatService {
         }
       }
     })
-    room.password = undefined;
+    delete room.password;
     return room;
   }
 
-  async joinRoom(socket: any, payload: any){
+  async joinRoom(userid: number, payload: joinRoomDto, room_id: number) {
 
     const room = await this.prisma.chatRoom.findUnique({
       where: {
-        name : payload.name,
+        id : room_id,
       },
       select: {
         id: true,
+        name: true,
         password: true,
         roomType: true,
       }
     });
     if (!room)
-      throw new WsException(`Room with name ${payload.name} not found`);
+      throw new WsException(`Room not found`);
 
     if (room.roomType === 'PROTECTED' && room.password !== payload.password)
       throw new WsException(`Wrong password`);
 
-    if (await this.isUserInRoom(+room.id, +socket.id) === true)
+    if (await this.isUserInRoom(room_id, userid) === true)
       throw new WsException(`You are already a member of this room`);
+
 
     const patchedRoom = await this.prisma.chatRoom.update({
       where: {
-        name : payload.name,
+        id : room_id,
       },
       data: {
       members: {
         create: [{
-            user : { connect : { id : +socket.id } },
+            user : { connect : { id : userid } },
             role: 'MEMBER' as ChatRole,
           }]
         }
       }
     })
-    patchedRoom.password = undefined;
+    delete patchedRoom.password;
     return patchedRoom;
   }
   
@@ -126,15 +157,9 @@ export class ChatService {
     // hna khas ncheck protect to del and privet to check passorwd
   }
 
-  async getRoomsByUserId(userId: number, params: {
-    skip?: number;
-    take?: number;
-    cursor?: Prisma.ChatRoomWhereUniqueInput;
-    where?: Prisma.ChatRoomWhereInput;
-    orderBy?: Prisma.ChatRoomOrderByWithRelationInput;
-  }) {
+  async getRoomsByUserId(userId: number, params: PaginationLimitDto) {
 
-    const { cursor, orderBy, skip, take } = params;
+    const { skip: number, take } = params;
 
     // Retrieve the room memberships for the user
     const roomMemberships = await this.prisma.roomMembership.findMany({
@@ -159,10 +184,8 @@ export class ChatService {
           },
         },
       },
-      skip,
-      take,
-      cursor,
-      orderBy,
+      skip: params.skip,
+      take: params.take,
     });
 
     // Filter out the banned rooms
@@ -174,13 +197,7 @@ export class ChatService {
   }
 
   
-  async getRoomUsers(client : AuthWithWs, roonName: string, params: { // params : { skip?: number; take?: number; cursor?: Prisma.ChatRoomWhereUniqueInput; where?: Prisma.ChatRoomWhereInput; orderBy?: Prisma.ChatRoomOrderByWithRelationInput; }
-    skip?: number;
-    take?: number;
-    cursor?: Prisma.ChatRoomWhereUniqueInput;
-    where?: Prisma.ChatRoomWhereInput;
-    orderBy?: Prisma.ChatRoomOrderByWithRelationInput;
-  }) { // Func Scope Start : getRoomUsers
+  async getRoomUsers(client : AuthWithWs, roonName: string, params: PaginationLimitDto) { // Func Scope Start : getRoomUsers
 
     const roomId = await this.prisma.chatRoom.findUnique({
       where: {
@@ -195,8 +212,6 @@ export class ChatService {
       throw new WsException(`You are not a member of this room`);
     }
 
-
-    const { cursor, orderBy, skip, take} = params;
     const users =  this.prisma.roomMembership.findMany({
       where: {
         roomId: roomId.id,
@@ -215,10 +230,8 @@ export class ChatService {
           }
         },
       },
-      skip,
-      take,
-      cursor,
-      orderBy,
+      skip : params.skip,
+      take : params.take,
     });
 
     return users;
@@ -422,7 +435,7 @@ export class ChatService {
     return messageWithUser;
   }
 
-  async getMessages(client: any, payload: any) {
+  async getMessages(client: any, payload: any, params: PaginationLimitDto) {
     const room = await this.prisma.chatRoom.findUnique({
       where: {
         name : payload.name,
@@ -458,7 +471,9 @@ export class ChatService {
             }
           }
         }
-      }
+      },
+      skip : params.skip,
+      take : params.take,
     })
     return messages;
   }
@@ -484,6 +499,12 @@ export class ChatService {
         roomId: roomId,
       }
     });
+
+    if (roomMembership.state === 'BANNED')
+      throw new WsException(`You are banned from this room`);
+    if (roomMembership.state === 'MUTED')
+      throw new WsException(`You are muted from this room`);
+
     console.log('roomMembership : ', !!roomMembership);
     return !!roomMembership;
   }
