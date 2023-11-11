@@ -33,6 +33,7 @@ export class SocketIOAdapter extends IoAdapter {
     const server: Server = super.createIOServer(port, optionsWithCORS);
 
     server.of('chat').use(createTokenMiddleware(jwtService, this.logger, prisma));
+		server.of('notification').use(createTokenMiddleware(jwtService, this.logger, prisma));
 
     return server;
   }

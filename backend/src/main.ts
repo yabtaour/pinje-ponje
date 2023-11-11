@@ -42,7 +42,7 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
   
   // this section for cors configuration
-  await app.listen(3000, '127.0.0.1');
-	// await app.listen(3000);
+  // await app.listen(3000, '127.0.0.1');
+	await app.listen(3000);
 }
 bootstrap();
