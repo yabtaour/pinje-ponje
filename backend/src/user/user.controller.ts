@@ -1,19 +1,19 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Req, UseGuards } from '@nestjs/common';
 import {
 	ApiBearerAuth,
 	ApiBody,
 	ApiOperation, ApiParam,
 	ApiTags,
 } from '@nestjs/swagger';
-import { JWTGuard } from 'src/auth/guards/jwt.guard';
+import { JWTGuard } from '../auth/guards/jwt.guard';
 import { CreateUserDtoLocal } from './dto/create-user.dto';
 import { updateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
 
 
+@UseGuards(JWTGuard)
 @Controller('users')
 @ApiTags('Users')
-@UseGuards(JWTGuard)
 @ApiBearerAuth()
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -54,8 +54,17 @@ export class UserController {
   })
   @ApiBody({ type: updateUserDto })
   async UpdateUser(@Req() request: any, @Body() data: updateUserDto) {
-		const user = await this.userService.getCurrentUser(request);
+    const user = await this.userService.getCurrentUser(request);
     return this.userService.UpdateUser(user.id, data);
+  }
+
+  @Get('QRCode')
+  @ApiOperation({ summary: 'Get QRCode', 
+    description: 'Get QRCode and return the QRCode',
+  })
+  async getQRCode(@Req() request: any) {
+    const user = await this.userService.getCurrentUser(request);
+    return this.userService.getQRCode(user.id);
   }
 
   
@@ -72,8 +81,14 @@ export class UserController {
     description: 'Get a user by ID and return the user'
   })
   @ApiParam({ name: 'id', type: 'number' })
-  async FindUserByID(@Param('id') id: number) {
+  async FindUserByID(@Param('id', ParseIntPipe) id: number) {
     return this.userService.FindUserByID(id);
+  }
+
+  @Post('resetPassword')
+  async resetPassword(@Req() request: any, @Body() data: {old: string, new: string}) {
+    const user = await this.userService.getCurrentUser(request);
+    return this.userService.resetPassword(user, data.old, data.new);
   }
 
   @Get()
@@ -84,12 +99,4 @@ export class UserController {
     return this.userService.FindAllUsers();
   }
 
-	@Get('QRCode')
-	@ApiOperation({ summary: 'Get QRCode', 
-		description: 'Get QRCode and return the QRCode',
-	})
-	async getQRCode(@Req() request: any) {
-		const user = await this.userService.getCurrentUser(request);
-		return this.userService.getQRCode(user.id);
-	}
 }

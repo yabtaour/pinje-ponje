@@ -3,7 +3,8 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './global-exception.filter';
-// import { IoAdapter } from '@nestjs/platform-socket.io'; 
+import { IoAdapter } from '@nestjs/platform-socket.io';
+import { HttpAdapterHost } from '@nestjs/core';
 import { SocketIOAdapter } from './chat/SocketIoAdapter';
 
 
@@ -11,14 +12,14 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
   // this section for socket.io configuration
-  // const HttpAdapter = app.getHttpAdapter();
-  // app.useWebSocketAdapter(new IoAdapter(HttpAdapter));
+  const HttpAdapter = app.getHttpAdapter();
+  app.useWebSocketAdapter(new IoAdapter(HttpAdapter));
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.enableCors({
     // credentials: true,
     origin: '*', 
   });
-  // app.useGlobalFilters()
+  app.useGlobalFilters()
   
   // this section for global filter
   app.useGlobalPipes(
@@ -41,7 +42,7 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
   
   // this section for cors configuration
-  // await app.listen(3000, '10.0.2.15');
+  // await app.listen(3000, '127.0.0.1');
 	await app.listen(3000);
 }
 bootstrap();

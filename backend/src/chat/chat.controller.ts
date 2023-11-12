@@ -1,34 +1,33 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { CreateChatDmRoomDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
+import { ChatGateway } from './chat.gateway';
+import { AuthWithWs } from './dto/user-ws-dto';
+import { ConnectedSocket } from '@nestjs/websockets';
+import { Client } from 'socket.io/dist/client';
+import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import { use } from 'passport';
+import { JWTGuard } from 'src/auth/guards/jwt.guard';
+import { UserService } from 'src/user/user.service';
 
-@Controller('chat')
+@UseGuards(JWTGuard)
+@Controller('chatapi')
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly chatgateway: ChatGateway,
+    private readonly userService: UserService
+  
+    ) {}
 
-  // @Post()
-  // create(@Body() createChatDto: CreateChatDto) {
-  //   return this.chatService.create(createChatDto);
-  // }
+  @Post()
+  async create(@Req() request: Request) {
+    const user = await this.userService.getCurrentUser(request);
+    console.log("user from rest api chat : ", user.id);
+    // console.log("request from rest api chat : ", request);
+    // return this.chatService.create(createChatDmRoomDto);
+  }
 
-  // @Get()
-  // findAll() {
-  //   return this.chatService.findAll();
-  // }
-
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.chatService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateChatDto: UpdateChatDto) {
-  //   return this.chatService.update(+id, updateChatDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.chatService.remove(+id);
-  // }
 }
+

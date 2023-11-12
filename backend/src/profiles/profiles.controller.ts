@@ -1,14 +1,14 @@
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 import { ProfilesService } from './profiles.service';
 import {  Controller, Get, Post, Body, Patch, Param, Delete,
           UseGuards, Req, UseInterceptors, 
           UploadedFile, Query, BadRequestException, 
           InternalServerErrorException} from '@nestjs/common';
-import { GetUser } from 'src/auth/decorators/get-user.decorator';
-import { JWTGuard } from 'src/auth/guards/jwt.guard';
+import { GetUser } from '../auth/decorators/get-user.decorator';
+import { JWTGuard } from '../auth/guards/jwt.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UserDto } from 'src/user/dto/user.dto';
-import { storageConfig } from 'src/microservices/storage.config';
+import { UserDto } from '../user/dto/user.dto';
+import { storageConfig } from '../microservices/storage.config';
 import {  ApiTags, ApiBearerAuth, 
           ApiOperation, ApiParam, 
           ApiBody, 
@@ -96,9 +96,10 @@ export class ProfilesController {
   @Post('/friends/accept')
   @ApiOperation({ summary: 'Accept Friend Request', description: 'Accept Friend Request' })
   @ApiBody({ type: PostObject })
-  AccepteFriendRequest(@GetUser() user: UserDto, @Body() data: any ) {
+  async AccepteFriendRequest(@Body() data: {senderId: number}, @Req() req: Request ) {
+		const user = await this.userServices.getCurrentUser(req);
     console.log("AccepteFriendRequest: ", data);
-    return this.profilesService.AccepteFriendRequest(+user.sub, data);
+    return this.profilesService.AccepteFriendRequest(+user.id, data);
   }
   
   @Post('/friends/reject')

@@ -1,6 +1,7 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { config } from 'dotenv';
+import { PrismaService } from '../prisma/prisma.service';
 
 config()
 
@@ -8,7 +9,10 @@ const secret = process.env.JWT_SECRET;
 
 @Injectable()
 export class JwtAuthService {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly prismaService: PrismaService,
+  ) {}
 
   async generateToken(id: string){
     const payload = { sub: id };
@@ -17,11 +21,18 @@ export class JwtAuthService {
   }
 
   async verifyToken(token: string, context: ExecutionContext) {
-      const decodedToken = await this.jwtService.verifyAsync(token, {
+      const actualToken = token.split(' ')[1];
+      const decodedToken = await this.jwtService.verify(actualToken, {
         secret: secret,
       });
+      console.log("decodedToken", decodedToken)
       if (!decodedToken || !decodedToken.sub)
 				return null;
+      const user = await this.prismaService.user.findUnique({
+        where: { id: Number(decodedToken.sub) },
+      });
+      if (!user) return null;
 			return decodedToken;
+
   }
 }
