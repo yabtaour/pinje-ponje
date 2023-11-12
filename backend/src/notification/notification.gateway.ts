@@ -40,6 +40,11 @@ export class NotificationGateway implements OnGatewayInit, OnGatewayConnection, 
 		console.log('NotificationGateway Connection');
 	}
 
+	async sendNotificationToUser(userId: string, notification: any) {
+		console.log('NotificationGateway sendNotificationToUser');
+		this.server.to(userId).emit('notification', notification);
+	}
+
 	@SubscribeMessage('notification')
 	async notification(client: any, payload: any) {
 		console.log('NotificationGateway notification');

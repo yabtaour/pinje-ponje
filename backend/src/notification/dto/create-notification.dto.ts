@@ -5,11 +5,11 @@ import { NotificationType } from "@prisma/client";
 export class CreateNotificationDto {
 	@IsNotEmpty()
 	@IsNumber()
-	receiverid: number;
+	receiverId: number;
 
 	@IsNotEmpty()
 	@IsNumber()
-	senderid: number;
+	senderId: number;
 
 	@IsNotEmpty()
 	@IsNumber()

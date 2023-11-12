@@ -1,11 +1,14 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { NotificationGateway } from './notification.gateway';
 
 @Injectable()
 export class NotificationService {
 	constructor(
+		@Inject(forwardRef(() => NotificationGateway))
+		private notificationGateway: NotificationGateway,
 		private readonly prismaService: PrismaService,
 	) {}
 
@@ -15,12 +18,12 @@ export class NotificationService {
 				type: createNotificationDto.type,
 				sender: {
 					connect: {
-						id: createNotificationDto.senderid,
+						id: createNotificationDto.senderId,
 					},
 				},
 				receiver: {
 					connect: {
-						id: createNotificationDto.receiverid,
+						id: createNotificationDto.receiverId,
 					},
 				},
 			},
@@ -28,8 +31,8 @@ export class NotificationService {
 		if (!notification) {
 			throw new HttpException('Notification not created', HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		this.notificationGateway.sendNotificationToUser(createNotificationDto.receiverId.toString(), notification);
 		return notification;
-    // return 'This action adds a new notification';
   }
 
   async findAll() {
