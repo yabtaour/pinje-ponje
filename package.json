@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@compodoc/compodoc": "^1.1.21",
+    "@heroicons/react": "^1.0.6",
     "@nestjs/cli": "^10.1.5",
     "@nestjs/throttler": "^4.2.1",
     "react-cookie": "^6.1.1"
