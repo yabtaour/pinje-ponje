@@ -12,6 +12,7 @@ import { AuthService } from './auth.service';
 import { JwtAuthService } from './jwt.service';
 import { LocalStrategy } from './local.strategy';
 import { GoogleStrategy } from './google.strategy';
+import {NotificationModule } from '../notification/notification.module'
 
 config()
 
@@ -25,6 +26,7 @@ const secret = process.env.JWT_SECRET;
       secret: secret,
       signOptions: {expiresIn: '30d'},
     }),
+		NotificationModule,
   ],
   controllers: [AuthController],
   exports: [JwtAuthService, AuthService, PrismaService],

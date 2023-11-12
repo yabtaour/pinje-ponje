@@ -29,6 +29,8 @@ model User {
   reflex          Float     @default(0)
 	createdAt       DateTime  @default(now())
   updatedAt       DateTime  @default(now()) @updatedAt
+	notificationsSent		Notification[] @relation("sender")
+	notificationsReceived	Notification[] @relation("receiver")
 }
 
 model Profile {
@@ -90,7 +92,7 @@ model ChatMessage {
   content   String
   room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
   roomId    Int
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
   createdAt DateTime @default(now())
 }
@@ -106,6 +108,25 @@ model ChatRoom {
   createdAt   DateTime         @default(now())
 }
 
+model Notification {
+	id					Int								@id @default(autoincrement())
+	sender			User							@relation("sender", fields: [senderid], references: [id])
+	senderid		Int
+	receiver		User							@relation("receiver", fields: [receiverid], references: [id], onDelete: Cascade)
+	receiverid	Int
+	type				NotificationType
+	createdAt		DateTime					@default(now())
+	updatedAt		DateTime					@default(now()) @updatedAt
+	read				Boolean						@default(false)
+}
+
+enum NotificationType {
+	FRIEND_REQUEST
+	FRIEND_REQUEST_ACCEPTED
+	GAME_INVITE
+	GAME_INVITE_REJECTED
+	GROUPE_CHAT_INVITE
+}
 
 enum RoomType {
   PUBLIC

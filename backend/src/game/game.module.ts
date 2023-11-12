@@ -9,5 +9,6 @@ import { AuthModule } from "src/auth/auth.module";
 	controllers: [GameController],
 	imports: [UserModule, AuthModule],
 	providers: [GameService, GameGateway],
+	exports: [GameService, GameGateway],
 })
 export class GameModule {}

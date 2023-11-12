@@ -6,7 +6,7 @@ import { AuthController } from './auth/auth.controller';
 import { AuthModule } from './auth/auth.module';
 import { AuthService } from './auth/auth.service';
 import { JwtAuthService } from './auth/jwt.service';
-import { ChatModule } from './chat/chat.module';
+// import { ChatModule } from './chat/chat.module';
 import { GameController } from './game/game.controller';
 import { GameGateway } from './game/game.gateway';
 import { GameModule } from './game/game.module';
@@ -18,6 +18,10 @@ import { ProfilesModule } from './profiles/profiles.module';
 import { ProfilesService } from './profiles/profiles.service';
 import { UserModule } from './user/user.module';
 import { UserService } from './user/user.service';
+import { ChatModule } from './chat/chat.module';
+// import { APP_FILTER } from '@nestjs/core';
+// import { GlobalExceptionFilter } from './global-exception.filter';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -27,17 +31,21 @@ import { UserService } from './user/user.service';
     PrismaModule,
     PassportModule,
 		GameModule,
+		ChatModule,
+		NotificationModule,
     // ThrottlerModule.forRoot({
     //   ttl: 1, // seconds
     //   limit: 1000, // requests
     // }),
-    ChatModule,
   ],
     controllers: [AuthController, GameController],
     providers: [
-      UserService, JwtAuthService, JwtService,
-      ProfilesService, PrismaService, AuthService,
-			GameService, GameGateway,
+      // UserService, JwtAuthService, JwtService,
+      // ProfilesService, PrismaService, AuthService,
+			// GameService, GameGateway,
+    // controllers: [],
+      // UserService, JwtAuthService, JwtService,
+      // ProfilesService, PrismaService, AuthService,
       {
         provide: APP_FILTER,
         useClass: GlobalExceptionFilter,
