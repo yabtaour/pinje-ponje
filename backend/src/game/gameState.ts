@@ -22,7 +22,6 @@ export class GameState {
     private ballPosition: {x: number, y: number};
     private ballVelocity: {x: number, y: number};
 
-
     updatePlayerPaddlePosition(playerId: number, position: number) {
         if (playerId === this.player1.id) {
             this.player1.paddlePosition = position;

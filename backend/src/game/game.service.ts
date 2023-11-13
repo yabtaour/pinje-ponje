@@ -274,7 +274,7 @@ export class GameService {
 	}
 
 
-	async updatePlayerPosition(userId: number, position: number, move: {x: number, y: number}) {
+	async updatePlayerPosition(userId: number, direction: "up" | "down") {
 		const player = await this.prisma.player.findFirst({
 			where: {
 				userId: userId,
@@ -282,12 +282,25 @@ export class GameService {
 		});
 		if (!player)
 			throw new HttpException(`No player found`, HttpStatus.BAD_REQUEST);
-		let currentPlayerPosition = this.gameGateway.currentGames[player.gameId].player1.paddlePosition;
-		currentPlayerPosition.x += move.x;
-		currentPlayerPosition.y += move.y;
+		const rightPlayer = this.gameGateway.currentGames[player.gameId].player1 
+			? this.gameGateway.currentGames[player.gameId].player1 == userId 
+			: this.gameGateway.currentGames[player.gameId].player2;
+		let currentPlayerPosition = await rightPlayer.paddlePosition;
+		if (direction === "up")
+			currentPlayerPosition.y -= 1;
+		else if (direction === "down")
+			currentPlayerPosition.y += 1;
+		else
+			throw new HttpException(`Invalid direction`, HttpStatus.BAD_REQUEST);
 
-		this.gameGateway.currentGames[player.gameId].player1.paddlePosition = currentPlayerPosition;
-		this.gameGateway.server.to(String(player.userId)).emit('paddleUpdate', currentPlayerPosition);
+		rightPlayer.paddlePosition = currentPlayerPosition;
+	
+		this.gameGateway.currentGames[player.gameId] = rightPlayer;
+		await this.gameGateway.server.to(String(player.userId)).emit('paddleUpdate', currentPlayerPosition);
+		this.gameGateway.spectators.forEach(element => {
+			if (player.gameId === element)
+				this.gameGateway.server.to(String(element)).emit('frameChange', this.gameGateway.currentGames[player.gameId]);
+		});
 	}
 
 }
