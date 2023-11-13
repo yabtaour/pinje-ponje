@@ -20,7 +20,7 @@ export const fetchUserData = async (token: string) => {
     console.log(error);
     return null;
   }
-};
+};  
 
 export const Handle42Auth = async () => {
   window.location.href = "http://localhost:3000/auth/api";

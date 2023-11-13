@@ -37,7 +37,7 @@
     "jwt-decode": "^4.0.0",
     "next": "^13.4.12",
     "next-client-cookies": "^1.0.3",
-    "postcss": "8.4.27",
+    "postcss": "^8.4.31",
     "react": "^18.2.0",
     "react-cookie": "^6.1.1",
     "react-dom": "18.2.0",
@@ -51,6 +51,7 @@
   },
   "devDependencies": {
     "@types/js-cookie": "^3.0.5",
+    "@types/yup": "^0.32.0",
     "daisyui": "^3.9.4"
   }
 }
