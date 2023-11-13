@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, HttpException, HttpStatus, forwardRef } from '@nestjs/common';
 import { log } from 'console';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
@@ -8,9 +8,17 @@ import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { UserDto } from 'src/user/dto/user.dto';
 import { promises } from 'dns';
 import { PaginationLimitDto } from 'src/chat/chat.service';
+import { NotificationGateway } from 'src/notification/notification.gateway';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotificationType } from '@prisma/client';
+
 @Injectable()
 export class ProfilesService {
-  constructor(readonly prisma: PrismaService ) {}
+  constructor(
+		@Inject(forwardRef(() => NotificationService))
+		private readonly notificationService: NotificationService,
+		private readonly prisma: PrismaService
+	) {}
 
   // async FindAllProfiles(_id: number, search: string) {
   //   console.log("FindAllProfiles: ", search);
@@ -117,16 +125,21 @@ export class ProfilesService {
         }
       },
     });
+		this.notificationService.create({
+			senderId: _id,
+			receiverId: data.id,
+			type:	NotificationType.FRIEND_REQUEST,
+		})
     return sender;
   }
 
-  async AccepteFriendRequest(_id: number, data: any) {
+  async AccepteFriendRequest(_id: number, data: {senderId: number}) {
     console.log("AccepteFriendRequest: ", data);
-    if (!_id || !data.id) {
+    if (!_id || !data.senderId) {
       return "Profile id is undefined";
     }
     const otheruserFind = await this.prisma.profile.findUnique({
-      where: { userid: data.id },
+      where: { userid: data.senderId },
       include: { sentRequest: true },
     });
     if (otheruserFind){
@@ -136,7 +149,7 @@ export class ProfilesService {
       }
 
       const otheruser = await this.prisma.profile.update({
-        where: { userid: data.id },
+        where: { userid: data.senderId },
         data: {
           sentRequest: {
             disconnect: { id: _id }
@@ -154,11 +167,16 @@ export class ProfilesService {
           where: { userid: _id },
           data: {
             Friends: {
-              push : data.id
+              push : data.senderId
             }
           },
         });
       }
+			this.notificationService.create({
+				senderId: _id,
+				receiverId: data.senderId,
+				type:	NotificationType.FRIEND_REQUEST_ACCEPTED,
+			})
     }
   }
 
@@ -388,6 +406,8 @@ export class ProfilesService {
       return true;
     return false;
   }
+
+
   async filterFriendsByBlockingStatus(
     friends: any[],
     currentUser: number

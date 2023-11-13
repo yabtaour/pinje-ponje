@@ -14,6 +14,7 @@ import { UserService } from './user/user.service';
 import { ChatModule } from './chat/chat.module';
 import { APP_FILTER } from '@nestjs/core';
 import { GlobalExceptionFilter } from './global-exception.filter';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -22,16 +23,17 @@ import { GlobalExceptionFilter } from './global-exception.filter';
     ProfilesModule,
     PrismaModule,
     PassportModule,
+		ChatModule,
+		NotificationModule,
     // ThrottlerModule.forRoot({
     //   ttl: 1, // seconds
     //   limit: 1000, // requests
     // }),
-    ChatModule,
   ],
-    controllers: [AuthController],
+    // controllers: [],
     providers: [
-      UserService, JwtAuthService, JwtService,
-      ProfilesService, PrismaService, AuthService,
+      // UserService, JwtAuthService, JwtService,
+      // ProfilesService, PrismaService, AuthService,
       {
         provide: APP_FILTER,
         useClass: GlobalExceptionFilter,

@@ -102,9 +102,10 @@ export class ProfilesController {
   @Post('/friends/accept')
   @ApiOperation({ summary: 'Accept Friend Request', description: 'Accept Friend Request' })
   @ApiBody({ type: PostObject })
-  AccepteFriendRequest(@GetUser() user: UserDto, @Body() data: any ) {
+  async AccepteFriendRequest(@Body() data: {senderId: number}, @Req() req: Request ) {
+		const user = await this.userServices.getCurrentUser(req);
     console.log("AccepteFriendRequest: ", data);
-    return this.profilesService.AccepteFriendRequest(+user.sub, data);
+    return this.profilesService.AccepteFriendRequest(+user.id, data);
   }
   
   @Post('/friends/reject')
