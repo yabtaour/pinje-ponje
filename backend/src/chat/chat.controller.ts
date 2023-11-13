@@ -68,5 +68,43 @@ export class ChatController {
     this.chatgateway.server.to(String(user.id)).emit('joinedRoom', room);
     return room;
   }
+
+  @Get('getRoomUsers/:id')
+  async getRoomUsers(
+      @Param('id' , ParseIntPipe) room_id: number,
+      @Req() request: Request,
+      @Query() query: PaginationLimitDto
+  ){
+    const user = await this.userService.getCurrentUser(request);
+    const roomUers = await this.chatService.getRoomUsers(user.id, room_id, query);
+    this.chatgateway.server.to(String(user.id)).emit('listOfRoomMembers', roomUers);
+    return roomUers;
+  }
+
+  @Get('getRoomMessages/:id')
+  async getRoomMessages(
+      @Param('id' , ParseIntPipe) room_id: number,
+      @Req() request: Request,
+      @Query() query: PaginationLimitDto
+  ){
+    const user = await this.userService.getCurrentUser(request);
+    const roomMessages = await this.chatService.getMessages(user.id, room_id, query);
+    this.chatgateway.server.to(String(user.id)).emit('listOfMessages', roomMessages);
+    return roomMessages;
+  }
+
+  @Post('sendMessage/:id')
+  async sendMessage(
+      @Param('id' , ParseIntPipe) room_id: number,
+      @Req() request: Request,
+      @Body() payload: any
+  ){
+    const user = await this.userService.getCurrentUser(request);
+    const message = await this.chatService.createMessage(user.id, room_id, payload);
+    this.chatgateway.server.to(String(user.id)).emit('message', message);
+    return message;
+  }
+
 }
+
 

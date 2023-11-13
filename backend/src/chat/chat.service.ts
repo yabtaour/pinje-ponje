@@ -12,7 +12,7 @@ import { Socket } from 'socket.io';
 import { WsException } from '@nestjs/websockets';
 import { AuthWithWs } from './dto/user-ws-dto';
 import { skip } from 'node:test';
-import { IsIn, IsInt, IsNumber, IsOptional } from 'class-validator';
+import { IsIn, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 
@@ -40,6 +40,17 @@ export class joinRoomDto {
   password?: string;
 }
 
+
+export class MessageDto {
+
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }) => parseInt(value))
+  roomId?: number;
+
+  @IsNotEmpty()
+  message: string;
+}
 
 @Injectable()
 export class ChatService {
@@ -197,18 +208,18 @@ export class ChatService {
   }
 
   
-  async getRoomUsers(client : AuthWithWs, roonName: string, params: PaginationLimitDto) { // Func Scope Start : getRoomUsers
+  async getRoomUsers(user_id : number, room_id: number, params: PaginationLimitDto) { // Func Scope Start : getRoomUsers
 
     const roomId = await this.prisma.chatRoom.findUnique({
       where: {
-        name: roonName,
+        id: room_id,
       },
     });
     if (!roomId) {
-      throw new WsException(`Room with name ${roonName} not found`);
+      throw new WsException(`Room not found`);
     }
 
-    if (await this.isUserInRoom(+roomId.id, +client.id) === false) {
+    if (await this.isUserInRoom(+roomId.id, user_id) === false) {
       throw new WsException(`You are not a member of this room`);
     }
 
@@ -380,34 +391,41 @@ export class ChatService {
     })
   }
 
-  async createMessage(client: any, payload: any) {
+  async createMessage(user_id : number, room_id: number, payload: MessageDto) {
     const room = await this.prisma.chatRoom.findUnique({
       where: {
-        name : payload.name,
+        id : room_id,
       },
       select: {
         id: true,
         members: {
           where: {
-            userId: +client.id,
-          }
+            userId: user_id,
+          },
+          select: {
+            state: true,
+            user : {
+              select: {
+                id: true,
+                profile: {
+                  select: {
+                    username: true,
+                    avatar: true,
+                  }
+                }
+              }
+            }
+            
         }
       }
-    });
-    if (!room || !room.members[0]) {
-      // change the event name to ErrorEvent
-      client.emit('ErrorEvent', "You are not a member of this room or the room doesn't exist");
-      return;
     }
-    if (room.members[0].state === 'MUTED') {
-      client.emit('roomBroadcast', "You are muted");
-      return;
-    }
-
-    if (room.members[0].state === 'BANNED') {
-      client.emit('roomBroadcast', "You are banned");
-      return;
-    }
+  });
+    if (!room || !room.members[0])
+      throw new WsException(`You are not a member of this room or the room doesn't exist`);
+    if (room.members[0].state === 'MUTED')
+      throw new WsException(`You are muted from this room`);
+    if (room.members[0].state === 'BANNED')
+      throw new WsException(`You are banned from this room`);
 
     const message = await this.prisma.chatMessage.create({
       data: {
@@ -419,7 +437,7 @@ export class ChatService {
         },
         user: {
           connect: {
-            id: +client.id,
+            id: user_id,
           },
         }
       }
@@ -427,32 +445,31 @@ export class ChatService {
     const messageWithUser = {
       ...message,
       user: {
-        id: +client.id,
-        username: client.username,
-        avatar: client.avatar,
+        id: user_id,
+        username: room.members[0].user.profile.username,
+        avatar: room.members[0].user.profile.avatar,
       }
     }
     return messageWithUser;
   }
 
-  async getMessages(client: any, payload: any, params: PaginationLimitDto) {
+  async getMessages(user_id : number, room_id: number, params: PaginationLimitDto) {
     const room = await this.prisma.chatRoom.findUnique({
       where: {
-        name : payload.name,
+        id : room_id,
       },
       select: {
         id: true,
         members: {
           where: {
-            userId: +client.id,
+            userId: user_id,
           }
         }
       }
     });
     if (!room || !room.members[0]) {
       // change the event name to ErrorEvent
-      client.emit('ErrorEvent', "You are not a member of this room or the room doesn't exist");
-      return;
+      throw new WsException(`You are not a member of this room or the room doesn't exist`);
     }
     const messages = await this.prisma.chatMessage.findMany({
       where: {

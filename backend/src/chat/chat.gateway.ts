@@ -232,7 +232,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('sendMessage')
   async handleMessage(client: AuthWithWs, payload: any){
-    const message = await this.chatService.createMessage(client, payload);
+    const message = await this.chatService.createMessage(+client.id , payload.name, payload.message);
     if (message)
       this.server.to(payload.name).emit('message', message);
   }
@@ -251,7 +251,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('getMessages')
   async handleGetMessages(client: AuthWithWs, payload: any){
-    const messages = await this.chatService.getMessages(client, payload, {
+    const messages = await this.chatService.getMessages(+client.id, payload, {
       skip: client.handshake.query.skip ? +client.handshake.query.skip : 0,
       take: client.handshake.query.take ? +client.handshake.query.take : 10,
     }
