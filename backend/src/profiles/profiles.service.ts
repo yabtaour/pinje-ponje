@@ -7,6 +7,7 @@ import { de, fi, th } from '@faker-js/faker';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { UserDto } from 'src/user/dto/user.dto';
 import { promises } from 'dns';
+import { PaginationLimitDto } from 'src/chat/chat.service';
 @Injectable()
 export class ProfilesService {
   constructor(readonly prisma: PrismaService ) {}
@@ -61,13 +62,13 @@ export class ProfilesService {
     profile.Friends = undefined;
     const Object = {
       ...profile,
-      FriendsList: await this.FindAllFriends(_reqid, id),
+      FriendsList: await this.FindAllFriends(_reqid, id , {}),
     }
     return Object;
   }
 
 
-  async FindAllFriends(_currentUser: number, _id: number) {
+  async FindAllFriends(_currentUser: number, _id: number, params: PaginationLimitDto) {
     const isBlocked = await this.isBlockby(_currentUser, _id);
     const isBlockedby = await this.isBlockby(_id, _currentUser);
     if (isBlocked || isBlockedby)
@@ -89,6 +90,7 @@ export class ProfilesService {
         avatar: true,
         username: true,
       },
+      ...params,
     });
     if (!userFriends || !allFriends)
       throw new HttpException('No profile with this id', HttpStatus.NOT_FOUND);
