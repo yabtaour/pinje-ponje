@@ -5,12 +5,17 @@ import { CreateGameDto } from './dto/create.dto';
 import { INQUIRER } from '@nestjs/core';
 import { GameGateway } from './game.gateway';
 import { GameState } from './gameState';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotificationType } from '@prisma/client';
+import { NotificationGateway } from 'src/notification/notification.gateway';
 
 @Injectable()
 export class GameService {
 	constructor(
 		private readonly prisma: PrismaService,
 		private readonly gameGateway: GameGateway,
+		private readonly notificationService: NotificationService,
+		private readonly notificationGateway: NotificationGateway,
 	) {}
 
 
@@ -58,11 +63,17 @@ export class GameService {
 		});
 		if (!opponent)
 			throw new HttpException(`No user with id ${data.userId} is available`, HttpStatus.BAD_REQUEST);
-	
-		this.gameGateway.server.to(String(opponent.id)).emit('gamenotification', `you have a game invitation from ${user.profile.username}`);
+		this.notificationGateway.sendNotificationToUser(
+			String(opponent.id),
+			{
+				senderId: user.id,
+				receiverId: opponent.id,
+				type: NotificationType.GAME_INVITE,
+			}
+		);
 	}
 
-	async acceptInvite(data: {userId: number}, user: any) {		
+	async acceptInvite(data: {userId: number}, user: any) {
 		const updatedUser = await this.prisma.user.updateMany({
 			where: {
 				id: {
@@ -150,9 +161,13 @@ export class GameService {
 		});
 		if (!opponent)
 			throw new HttpException(`No user with id ${data.userId} is available`, HttpStatus.BAD_REQUEST);
-		
 
-		this.gameGateway.server.to(String(opponent.id)).emit('gameNotification', `rejectak ${user.profile.username}`);
+		this.notificationService.create({
+			senderId: data.userId,
+			receiverId:	user.id,
+			type: NotificationType.GAME_INVITE_REJECTED,
+		})
+		// this.gameGateway.server.to(String(opponent.id)).emit('gameNotification', `rejectak ${user.profile.username}`);
 		//send response to start the game
 	}
 

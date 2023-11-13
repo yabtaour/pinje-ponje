@@ -56,6 +56,4 @@ export class GameController {
 		const user = await this.userService.getCurrentUser(request);
 		return this.gameService.declineInvite(data, user);
 	}
-
-
 }
