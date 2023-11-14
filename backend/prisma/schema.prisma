@@ -65,6 +65,8 @@ model Player {
   consitency  Float     @default(0)
   reflex      Float     @default(0)
   createdAt   DateTime  @default(now())
+
+  @@unique([userId, gameId])
 }
 
 model Game {

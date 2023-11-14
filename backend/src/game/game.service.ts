@@ -145,9 +145,6 @@ export class GameService {
 		this.gameGateway.currentGames[game.id] = gameState
 		this.gameGateway.server.to(String(player.userId)).emit('gameUpdate', gameState);
 		this.gameGateway.server.to(String(opponentPlayer.userId)).emit('gameUpdate', gameState);
-
-		//send response to start the game
-		// return game;
 	}
 
 	async declineInvite(data: {userId: number}, user: any) {
@@ -194,7 +191,37 @@ export class GameService {
 			});
 			return;
 		}
+		console.log("opponent found");
 		
+		const game = await this.prisma.game.create({
+			data: {
+				mode: 'VSONE',
+				players: {
+					create: [
+						{ status: 'LOSER', user: { connect: { id: user.id } } },
+						{ status: 'LOSER', user: { connect: { id: opponent.id } } },
+					]
+				}
+			}
+		});
+		if (!game)
+		throw new HttpException(`Error creating game`, HttpStatus.BAD_REQUEST);
+
+		const player = await this.prisma.player.findFirst({
+			where: {
+				userId: user.id,
+			},
+		});
+		if (!player)
+			throw new HttpException(`No player found`, HttpStatus.BAD_REQUEST);
+		const opponentPlayer = await this.prisma.player.findFirst({
+			where: {
+				userId: opponent.id,
+			},
+		});
+		if (!opponentPlayer)
+			throw new HttpException(`No opponent player found`, HttpStatus.BAD_REQUEST);
+
 		await this.prisma.user.updateMany({
 			where: {
 				id: {
@@ -205,66 +232,12 @@ export class GameService {
 				status: "INGAME"
 			}
 		});
-		console.log("opponent found");
-	
-		const game = await this.prisma.game.create({
-			data: {
-				mode: 'VSONE',
-				players: {
-					connect: [
-						{ id: user.id },
-						{ id: opponent.id }
-					]
-				}
-			}
-		});
-		if (!game)
-			throw new HttpException(`Error creating game`, HttpStatus.BAD_REQUEST);
-
-		console.log("game created");
-
-		const player = await this.prisma.player.create({
-			data: {
-				status: 'LOSER',
-				game: {
-					connect: {
-						id: game.id,
-					},
-				},
-				user: {
-					connect: {
-						id: user.id,
-					},
-				},
-			},
-		});
-		if (!player)
-			throw new HttpException(`Error creating player 1`, HttpStatus.BAD_REQUEST);
-
-		const opponentPlayer = await this.prisma.player.create({
-			data: {
-				status: 'LOSER',
-				game: {
-					connect: {
-						id: game.id,
-					},
-				},
-				user: {
-					connect: {
-						id: opponent.id,
-					},
-				},
-			},
-		});
-		if (!opponentPlayer)
-			throw new HttpException(`Error creating player 2`, HttpStatus.BAD_REQUEST);
-
 
 		this.gameGateway.server.to(String(player.userId)).emit('queue', game);
 
 		const gameState = new GameState(
 			{id: player.userId, paddlePosition: 5, score: 0},
-			{id: player.userId, paddlePosition: 5, score: 0},
+			{id: opponentPlayer.userId, paddlePosition: 5, score: 0},
 			{x: 0, y: 0},
 			{x: 0, y: 0},
 		)
@@ -273,34 +246,42 @@ export class GameService {
 		this.gameGateway.server.to(String(opponentPlayer.userId)).emit('gameUpdate', gameState);
 	}
 
-
-	async updatePlayerPosition(userId: number, direction: "up" | "down") {
-		const player = await this.prisma.player.findFirst({
+	
+	async updatePlayerPosition(userId: number, direction: "up" | "down", gameId: number) {
+		const player = await this.prisma.player.findUnique({
 			where: {
-				userId: userId,
+				userId_gameId: {
+					userId: Number(userId),
+					gameId: gameId,
+				},
 			},
 		});
 		if (!player)
 			throw new HttpException(`No player found`, HttpStatus.BAD_REQUEST);
-		const rightPlayer = this.gameGateway.currentGames[player.gameId].player1 
-			? this.gameGateway.currentGames[player.gameId].player1 == userId 
-			: this.gameGateway.currentGames[player.gameId].player2;
-		let currentPlayerPosition = await rightPlayer.paddlePosition;
+
+		let rightPlayer = null;
+
+		if (this.gameGateway.currentGames[player.gameId].player1.id == userId)
+			rightPlayer = this.gameGateway.currentGames[player.gameId].player1;
+		else
+			rightPlayer = this.gameGateway.currentGames[player.gameId].player2;
+		
+		let currentPlayerPosition: number = await rightPlayer.paddlePosition;
+
 		if (direction === "up")
-			currentPlayerPosition.y -= 1;
+			currentPlayerPosition -= 1;
 		else if (direction === "down")
-			currentPlayerPosition.y += 1;
+			currentPlayerPosition += 1;
 		else
 			throw new HttpException(`Invalid direction`, HttpStatus.BAD_REQUEST);
 
 		rightPlayer.paddlePosition = currentPlayerPosition;
-	
-		this.gameGateway.currentGames[player.gameId] = rightPlayer;
-		await this.gameGateway.server.to(String(player.userId)).emit('paddleUpdate', currentPlayerPosition);
-		this.gameGateway.spectators.forEach(element => {
-			if (player.gameId === element)
-				this.gameGateway.server.to(String(element)).emit('frameChange', this.gameGateway.currentGames[player.gameId]);
-		});
-	}
 
+		if (this.gameGateway.currentGames[player.gameId].player1.id == userId)
+			this.gameGateway.currentGames[player.gameId].player1 = rightPlayer;
+		else
+			this.gameGateway.currentGames[player.gameId].player2 = rightPlayer;
+
+		await this.gameGateway.server.to(String(player.userId)).emit('paddleUpdate', currentPlayerPosition);
+	}
 }

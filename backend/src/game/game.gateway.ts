@@ -15,10 +15,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @WebSocketServer()
   server: Server;
-  
-  currentGames: Map<number, GameState> = new Map(); // key: gameId, value: GameState
-  spectators: Map<number, number> = new Map(); // key: gameId, value: userId)
 
+  currentGames: Map<number, GameState> = new Map(); // key: gameId, value: GameState
   constructor(
 		@Inject(forwardRef(() => GameService))
 		private gameService: GameService,
@@ -36,15 +34,15 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return 'Hello world!';
     }
 
-    @SubscribeMessage('spectate')
-    spectate(client: any, payload: {userId: number, gameId: number}): void {
-      this.spectators.set(payload.gameId, payload.userId);
-    }
+    // @SubscribeMessage('spectate')
+    // spectate(client: any, payload: {userId: number, gameId: number}): void {
+    //   this.spectators.set(payload.gameId, payload.userId);
+    // }
 
     @SubscribeMessage('updatePlayerPosition')
-    updatePlayerPosition(client: any, payload: {direction: "up" | "down"}): void {
+    updatePlayerPosition(client: any, payload: {gameId: number, direction: "up" | "down"}): void {
       console.log(client);
-      this.gameService.updatePlayerPosition(client.id, payload.direction);
+      this.gameService.updatePlayerPosition(client.id, payload.direction, payload.gameId);
     }
     
 
