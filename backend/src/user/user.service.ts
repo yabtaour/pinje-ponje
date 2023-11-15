@@ -313,6 +313,7 @@ async FindUserByID(id: number) {
 
 	async getQRCode(id: number) {
 		// try {
+			console.log("id from user service : ", id);
 			const user = await this.prisma.user.findUnique({
 				where: {
 					id: id,
@@ -320,8 +321,13 @@ async FindUserByID(id: number) {
 			});
 			if (!user)
 				throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+			console.log("user from user service : ", user);
 			if (user.twoFactor == false)
+			{
+				console.log("Two factor is not enabled");
 				throw new HttpException('Two factor is not enabled', HttpStatus.NOT_FOUND);
+			}
+			console.log("Two factor is enabled");
 			const secret = user.twoFactorSecret;
 			const otpauth = authenticator.keyuri(user.email, "pinje-ponge", secret);
 			const generatedQR = await toDataURL(otpauth);

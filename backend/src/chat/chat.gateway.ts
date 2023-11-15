@@ -6,7 +6,7 @@ import {
 } from '@nestjs/websockets';
 import { Namespace, Server, Socket } from 'socket.io'
 import { Logger, UseFilters, UsePipes, ValidationPipe, WsExceptionFilter } from '@nestjs/common';
-import { ChatService } from './chat.service';
+import { ChatService, PaginationLimitDto, joinRoomDto } from './chat.service';
 import { CreateChatDmRoomDto } from './dto/create-chat.dto';
 import { ChatRoom } from '@prisma/client';
 import { AllExceptionsFilter } from '../all.exception.filter';
@@ -107,8 +107,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const rooms = await this.chatService.getRoomsByUserId(+client.id, {
         skip: client.handshake.query.skip ? +client.handshake.query.skip : 0,
         take: client.handshake.query.take ? +client.handshake.query.take : 10,
-        cursor: client.handshake.query.cursor ? { id: +client.handshake.query.cursor } : undefined,
-        where: client.handshake.query.where ? JSON.parse(client.handshake.query.where) : undefined,
       }
     );
     this.server.to(client.id).emit('listOfRooms', rooms);
@@ -141,12 +139,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
    */
   
   @SubscribeMessage('joinRoom')
-  async handleJoinRoom(client: AuthWithWs, payload: any) {
-    const room = await this.chatService.joinRoom(client, payload);
-    client.join(payload.name);
-    this.server.to(payload.name).emit('roomJoined', room);
-    const message = "New User " + client.id + " Joined Room " + payload.name;
-    this.server.to(payload.name).emit('roomBroadcast', message);
+  async handleJoinRoom(client: AuthWithWs, payload: joinRoomDto) {
+    const room = await this.chatService.joinRoom(+client.id, payload, payload.roomId);
+    client.join(String(payload.roomId));
+    this.server.to(String(payload.roomId)).emit('roomJoined', room);
+    const message = "New User " + client.id + " Joined Room " + String(payload.roomId);
+    this.server.to(String(payload.roomId)).emit('roomBroadcast', message);
   }
 
 
@@ -163,8 +161,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const users = await this.chatService.getRoomUsers(client, payload.name,  {
       skip: client.handshake.query.skip ? +client.handshake.query.skip : 0,
       take: client.handshake.query.take ? +client.handshake.query.take : 10,
-      cursor: client.handshake.query.cursor ? { id: +client.handshake.query.cursor } : undefined,
-      where: client.handshake.query.where ? JSON.parse(client.handshake.query.where) : undefined,
     }
      );
     this.server.to(client.id).emit('listOfRoomMembers', users);
@@ -237,7 +233,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('sendMessage')
   async handleMessage(client: AuthWithWs, payload: any){
-    const message = await this.chatService.createMessage(client, payload);
+    const message = await this.chatService.createMessage(+client.id , payload.name, payload.message);
     if (message)
       this.server.to(payload.name).emit('message', message);
   }
@@ -256,7 +252,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('getMessages')
   async handleGetMessages(client: AuthWithWs, payload: any){
-    const messages = await this.chatService.getMessages(client, payload);
+    const messages = await this.chatService.getMessages(+client.id, payload, {
+      skip: client.handshake.query.skip ? +client.handshake.query.skip : 0,
+      take: client.handshake.query.take ? +client.handshake.query.take : 10,
+    }
+  );
     this.server.to(client.id).emit('listOfMessages', messages);
   }
 
