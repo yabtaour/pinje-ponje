@@ -5,9 +5,10 @@ import Performance from "./components/Performance";
 import PlayerBanner from "./components/PlayerBanner";
 import ProgressBar from "./components/ProgressBar";
 import SkillAnalytics from "./components/SkillAnalytics";
+
+
 export default function Profile() {
     return (
-
         <div className="bg-[#151424] " style={{
             paddingTop: '5rem',
             paddingLeft: '10rem',
