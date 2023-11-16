@@ -9,8 +9,8 @@ export default function Dashboard() {
 
     return (
         <div className="bg-[#151424] h-screen w-screen " style={{
-            paddingTop: '5rem',
-            paddingLeft: '16rem',
+            // paddingTop: '5rem',
+            // paddingLeft: '16rem',
         }}>
 
 

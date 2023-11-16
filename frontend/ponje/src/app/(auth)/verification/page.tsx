@@ -7,7 +7,6 @@ export default function VerificationPage() {
     const handleSubmit = async (values: any) => {
         console.log("this is the values from the verification page : ", values);
         try {
-            
             // const res = await axios.post('/auth/2fa', values);
             // if (res.status === 200)
             //     router.push('/dashboard');
