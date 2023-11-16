@@ -16,6 +16,65 @@ export class GameService {
 		private readonly notificationGateway: NotificationGateway,
 	) {}
 
+	async getWinRateByUserId(id: number) {
+		const user = await this.prisma.user.findUnique({
+			where: {
+				id: id,
+			},
+		});
+		if (!user)
+			throw new HttpException(`No user found`, HttpStatus.BAD_REQUEST);
+		const games = await this.prisma.game.findMany({
+			where: {
+				players: {
+					// some: {
+
+				},
+			},
+		});
+	}
+
+	async getGamesByUserId(id: number) {
+		const user = await this.prisma.user.findUnique({
+			where: {
+				id: id,
+			},
+		});
+		if (!user)
+			throw new HttpException(`No user found`, HttpStatus.BAD_REQUEST);
+		const games = await this.prisma.game.findMany({
+			where: {
+				players: {
+					some: {
+						userId: id,
+					},
+				},
+			},
+			include: {
+				players: {
+					select: {
+						status: true,
+						score: true,
+						user: {
+							select: {
+								id: true,
+								profile: {
+									select: {
+										username: true,
+										avatar: true,
+									},
+								},
+							},
+						}
+					},
+				},
+			},
+		});
+		if (!games)
+			throw new HttpException(`No games found`, HttpStatus.BAD_REQUEST);
+		return games;
+	}
+
 	async getGames() {
 		const games = await this.prisma.game.findMany({
 			include: {
