@@ -1,17 +1,17 @@
 'use client';
 import { login } from '@/app/globalRedux/features/authSlice';
 import { useAppSelector } from '@/app/globalRedux/store';
-import { fetchUserData, verifyToken } from '@/app/utils/auth';
+import { fetchUserData, setSession, verifyToken } from '@/app/utils/auth';
 import { getCookie } from 'cookies-next';
 import { useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import axios from '../utils/axios';
 
 
 
 interface AuthGuardProps {
     children: React.ReactNode;
-    // cookie: string | undefined;
 }
 
 const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
@@ -33,11 +33,15 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
             fetchUserData(accessToken).then((data) => {
 
                 dipatch(login({ user: data, token: accessToken }));
+                setSession(accessToken);
+                console.log(axios.defaults.headers.common.Authorization);
+
             })
         }
 
-        if (!isAithenticated && !accessToken && !verifyToken(accessToken))
+        if (!isAithenticated && !accessToken && !verifyToken(accessToken)) {
             router.push('/sign-in');
+        }
     }, [isAithenticated, router]);
 
     return <>{children}</>;

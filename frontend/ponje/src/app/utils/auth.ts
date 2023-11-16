@@ -1,7 +1,8 @@
 " use client";
+import axios from "@/app/utils/axios";
 import { JwtPayload, jwtDecode } from "jwt-decode";
 import { useDispatch } from "react-redux";
-import axios from "./axios";
+
 export type KeyedObject = {
   [key: string]: string | number | KeyedObject | any;
 };
@@ -12,7 +13,7 @@ export const fetchUserData = async (token: string) => {
   try {
     const response = await axios.get("/users/me", {
       headers: {
-        Authorization: token,
+        Authorization: `${token}`,
       },
     });
     return response.data;
@@ -39,7 +40,7 @@ export const verifyToken = (access_token?: string | null): boolean => {
   return decoded.exp ? decoded.exp > Date.now() / 1000 : false;
 };
 
-const setSession = (access_token?: string | null) => {
+export const setSession = (access_token?: string | null) => {
   if (access_token) {
     localStorage.setItem("access_token", access_token);
     axios.defaults.headers.common.Authorization = `${access_token}`;

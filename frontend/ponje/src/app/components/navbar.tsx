@@ -1,9 +1,8 @@
 
 'use client'
-import { Avatar, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Navbar, NavbarBrand, NavbarContent, NavbarItem } from "@nextui-org/react";
-import Link from "next/link";
+import { Avatar, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Navbar, NavbarContent, NavbarItem } from "@nextui-org/react";
 import Image from 'next/image';
-
+import Notification from "./notification";
 
 
 
@@ -43,18 +42,31 @@ export default function NavBar() {
                     />
 
                 </NavbarItem>
-                <NavbarItem>
-                    <svg width="1.5em" height="1.5em" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <g fill="none" stroke="#2859C5">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 19v-9a6 6 0 0 1 6-6v0a6 6 0 0 1 6 6v9M6 19h12M6 19H4m14 0h2m-9 3h2"></path>
-                            <circle cx="12" cy="3" r="1"></circle>
-                        </g>
-                    </svg>
 
+
+
+
+                <NavbarItem>
+                    <Dropdown placement="bottom-end">
+                        <DropdownTrigger>
+                            <svg width="1.5em" height="1.5em" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <g fill="none" stroke="#2859C5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 19v-9a6 6 0 0 1 6-6v0a6 6 0 0 1 6 6v9M6 19h12M6 19H4m14 0h2m-9 3h2"></path>
+                                    <circle cx="12" cy="3" r="1"></circle>
+                                </g>
+                            </svg>
+                        </DropdownTrigger>
+                        <DropdownMenu className="bg-[#323054] text-white" aria-label="Profile Actions" variant="flat">
+                            <DropdownItem>
+                                <Notification />
+                            </DropdownItem>
+                        </DropdownMenu>
+
+                    </Dropdown>
                 </NavbarItem>
                 <NavbarItem className="grow-0">
 
-                    <Dropdown placement="bottom-end">
+                    <Dropdown backdrop="blur" placement="bottom-end">
                         <DropdownTrigger>
                             <Avatar
                                 isBordered
@@ -66,13 +78,13 @@ export default function NavBar() {
                                 src="cartman.png"
                             />
                         </DropdownTrigger>
-                        <DropdownMenu aria-label="Profile Actions" variant="flat">
-                            <DropdownItem key="profile" className="h-14 gap-2">
+                        <DropdownMenu className="bg-[#323054] text-white" aria-label="Profile Actions" variant="flat">
+                            <DropdownItem key="profile" className="h-14 gap-2 hover:bg-[#504e89]">
                                 <p className="font-semibold">Signed in as</p>
                                 <p className="font-semibold">hamid@jimayl.com</p>
                             </DropdownItem>
-                            <DropdownItem key="settings">Settings</DropdownItem>
-                            <DropdownItem key="logout" color="danger">
+                            <DropdownItem className="hover:bg-[#504e89]" key="settings">Settings</DropdownItem>
+                            <DropdownItem className="hover:bg-[#504e89]" key="logout" color="danger">
                                 Log Out
                             </DropdownItem>
                         </DropdownMenu>
