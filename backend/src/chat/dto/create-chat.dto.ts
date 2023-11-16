@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { Transform } from "class-transformer";
+import { IsIn, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class CreateChatDmRoomDto {
 
@@ -8,6 +9,11 @@ export class CreateChatDmRoomDto {
     @IsString()
     @IsOptional()
     password?: string;
+
+    @IsOptional()
+    @IsNumber()
+    @Transform(({value}) => parseInt(value))
+    peer_id?: number;
 
     @IsNotEmpty()
     @IsString()
