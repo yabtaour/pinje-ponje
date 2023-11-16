@@ -225,6 +225,9 @@ async FindUserByID(id: number) {
 	// try {
   	const user = await this.prisma.user.findUnique({
     	where: { id: id },
+		include: {
+			profile: true,
+		},
     	// select: {
       // 	id: true,
       // 	email: true,
