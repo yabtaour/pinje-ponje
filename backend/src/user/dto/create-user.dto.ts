@@ -46,7 +46,7 @@ export class CreateUserDtoLocal {
     @IsNotEmpty()
     @IsString()
     @ApiProperty()
-    Hashpassword: string
+    password: string
 
     @IsEmail()
     @ApiProperty()
