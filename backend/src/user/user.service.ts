@@ -352,6 +352,8 @@ async FindUserByID(id: number) {
 			});
 			if (!user)
 				throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+			delete user.password;
+			delete user.twoFactorSecret;
 			return user;
 		// } catch (error) {
 		// 	throw new InternalServerErrorException(error);
