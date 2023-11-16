@@ -17,6 +17,8 @@ import {  ApiTags, ApiBearerAuth,
 // import { updateUserDto } from 'src/user/dto/update-user.dto';
 import { updateProfileDto } from './dto/update-profile.dto';
 import { fr } from '@faker-js/faker';
+import { query } from 'express';
+import { PaginationLimitDto } from 'src/chat/chat.service';
 
 export class PostObject {
   @ApiProperty()
@@ -69,9 +71,13 @@ export class ProfilesController {
   @ApiOperation({ summary: 'Get All Friends by ID', description: 'Get All Friends by ID' })
   @ApiParam({ name: 'id', description: 'Profile ID' })
   @Get(':id/friends')
-  FindAllFriends(@GetUser() user: UserDto, @Param('id') id: string) {
+  FindAllFriends(
+    @GetUser() user: UserDto, 
+    @Param('id') id: string, 
+    @Query () query: PaginationLimitDto
+    ){
     console.log("FindAllFriends: ", user);
-    return this.profilesService.FindAllFriends(+user.sub, +id);
+    return this.profilesService.FindAllFriends(+user.sub, +id, query);
   }
   
 

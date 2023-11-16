@@ -63,6 +63,9 @@ export class ChatService {
     const roomId = await this.generateUniqueRoomId();
     const role = (payload.type !== 'DM') ? 'OWNER' : 'MEMBER';
 
+    if (payload.type === 'DM' && payload.peer_id === undefined)
+      throw new WsException(`Peer id is required`);
+
     if (payload.type === 'PROTECTED' && payload.password === undefined) {
       throw new WsException(`Room password is required`);
     }
@@ -73,13 +76,19 @@ export class ChatService {
         roomType: payload.type as RoomType,
         password: payload.password,
         members: {
-          create: [{
-            user : { connect : { id : +userid } },
-            role: role as ChatRole,
-          }]
-        }
-      }
-    })
+          create: [
+            {
+              user: { connect: { id: userid } },
+              role: role as ChatRole,
+            },
+          ],
+        },
+      },
+    });
+
+    if (payload.type == 'DM' && payload.peer_id !== undefined)
+      await this.joinRoom(payload.peer_id, { }, room.id);
+
     delete room.password;
     return room;
   }
@@ -514,15 +523,17 @@ export class ChatService {
       where: {
         userId: userId,
         roomId: roomId,
+      },
+      select: {
+        state: true,
       }
     });
 
-    if (roomMembership.state === 'BANNED')
+    if (roomMembership && roomMembership.state === 'BANNED')
       throw new WsException(`You are banned from this room`);
-    if (roomMembership.state === 'MUTED')
+    if (roomMembership && roomMembership.state === 'MUTED')
       throw new WsException(`You are muted from this room`);
 
-    console.log('roomMembership : ', !!roomMembership);
     return !!roomMembership;
   }
 
