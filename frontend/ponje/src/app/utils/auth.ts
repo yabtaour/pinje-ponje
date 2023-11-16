@@ -43,7 +43,7 @@ export const verifyToken = (access_token?: string | null): boolean => {
 export const setSession = (access_token?: string | null) => {
   if (access_token) {
     localStorage.setItem("access_token", access_token);
-    axios.defaults.headers.common.Authorization = `${access_token}`;
+    axios.defaults.headers.common.Authorization =  `Bearer ${access_token}`;
   } else {
     localStorage.removeItem("access_token");
     delete axios.defaults.headers.common.Authorization;
