@@ -30,3 +30,4 @@ export default function ProgressBar({ user }: { user: User | null | undefined })
         </>
     )
 }
+

@@ -5,15 +5,15 @@ import {
 	ApiOperation, ApiParam,
 	ApiTags,
 } from '@nestjs/swagger';
-import { JWTGuard } from 'src/auth/guards/jwt.guard';
+import { JWTGuard } from '../auth/guards/jwt.guard';
 import { CreateUserDtoLocal } from './dto/create-user.dto';
 import { updateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
 
 
+@UseGuards(JWTGuard)
 @Controller('users')
 @ApiTags('Users')
-@UseGuards(JWTGuard)
 @ApiBearerAuth()
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -27,14 +27,24 @@ export class UserController {
   async create(@Body() data: CreateUserDtoLocal) {
     return this.userService.CreateUserLocal(data);
   }
-
+  
   @Get('me')
   @ApiOperation({
     summary: 'Get the current user',
     description: 'Get the current user by token',
   })
   async FindUserByToken(@Req() request: any) {
-		return this.userService.getCurrentUser(request);
+    return this.userService.getCurrentUser(request);
+  }
+  
+  @Get('QRCode')
+  @ApiOperation({ summary: 'Get QRCode', 
+    description: 'Get QRCode and return the QRCode',
+  })
+  async getQRCode(@Req() request: any) {
+    const user = await this.userService.getCurrentUser(request);
+    console.log(user);
+    return await this.userService.getQRCode(user.id);
   }
 
   @Delete('delete')
@@ -54,8 +64,17 @@ export class UserController {
   })
   @ApiBody({ type: updateUserDto })
   async UpdateUser(@Req() request: any, @Body() data: updateUserDto) {
-		const user = await this.userService.getCurrentUser(request);
+    const user = await this.userService.getCurrentUser(request);
     return this.userService.UpdateUser(user.id, data);
+  }
+
+  @Get('QRCode')
+  @ApiOperation({ summary: 'Get QRCode', 
+    description: 'Get QRCode and return the QRCode',
+  })
+  async getQRCode(@Req() request: any) {
+    const user = await this.userService.getCurrentUser(request);
+    return this.userService.getQRCode(user.id);
   }
 
   
@@ -90,12 +109,4 @@ export class UserController {
     return this.userService.FindAllUsers();
   }
 
-	@Get('QRCode')
-	@ApiOperation({ summary: 'Get QRCode', 
-		description: 'Get QRCode and return the QRCode',
-	})
-	async getQRCode(@Req() request: any) {
-		const user = await this.userService.getCurrentUser(request);
-		return this.userService.getQRCode(user.id);
-	}
 }

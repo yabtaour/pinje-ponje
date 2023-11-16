@@ -15,7 +15,9 @@ export class JWTGuard implements CanActivate {
 			throw new HttpException("Token not found", HttpStatus.UNAUTHORIZED);
 		const decodedToken = await this.jwtService.verifyToken(token, context);
 		if (!decodedToken || !decodedToken.sub)
+		{
 			throw new HttpException("Invalid token", HttpStatus.UNAUTHORIZED);
+		}
 		context.switchToHttp().getRequest().user = decodedToken;
 		return true;
 	}
