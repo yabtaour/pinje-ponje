@@ -1,11 +1,10 @@
 "use client"
-import React from 'react'
-import { Formik, Field, ErrorMessage, Form } from 'formik';
-import * as Yup from 'yup';
-import { updateUser, resetPassword } from "../../utils/update";
-import { useState } from 'react';
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
 import axios, { AxiosError } from 'axios';
+import { ErrorMessage, Field, Form, Formik } from 'formik';
+import React, { useState } from 'react';
+import * as Yup from 'yup';
+import { resetPassword, updateUser } from "../../utils/update";
 
 export default function UserSettings() {
     const [userToken, setUserToken] = React.useState("");
@@ -26,9 +25,7 @@ export default function UserSettings() {
     };
 
     return (
-        <div className="min-h-screen bg-[#151424] flex flex-col justify-center" style={{
-            paddingTop: '5rem',
-            paddingLeft: '14rem',
+        <div className="min-h-screen bg-[#151424]  flex flex-col justify-center" style={{
         }}>
             {showSuccessBadge && (
                 <div className="alert alert-success w-1/3">
@@ -36,12 +33,12 @@ export default function UserSettings() {
                     <span>Your profile has been updated successfully!</span>
                 </div>
             )}
-            <div className="max-w-4xl w-full mx-auto">
+            <div className="max-w-3xl w-full mx-auto">
                 <h3 className="text-3xl font-semibold text-center text-[#4E40F4] mb-4">
                     Profile Settings
                 </h3>
 
-                <div className="bg-[#1B1A2D] p-8 rounded-lg">
+                <div className="bg-[#1B1A2D] p-8 rounded-lg h-full w-fill">
                     <Formik
                         initialValues={{
                             username: "",
@@ -67,7 +64,7 @@ export default function UserSettings() {
                         })}
                         onSubmit={async (values, { setSubmitting }) => {
                             const { username, bio, oldpassword, newpassword, email } = values;
-                            const userProfileData = { username, bio , email};
+                            const userProfileData = { username, bio, email };
                             try {
                                 if (username || bio || email) {
                                     await updateUser(userProfileData, userToken);

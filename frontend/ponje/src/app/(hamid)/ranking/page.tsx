@@ -1,13 +1,12 @@
-import React from 'react'
-import Image from 'next/image'
+'use client';
+import Image from 'next/image';
 
 
 export const Podium = () => {
   return (
     <div className="flex space-x-0" style={{
-      paddingTop: '5rem',
-      paddingLeft: '11rem',
-  }}>
+
+    }}>
       <div>
         <div className="relative max-w-[150px] mx-auto  min-w-0 break-words bg-[#1B1A2D] w-full mb-6 shadow-lg rounded-xl mt-28">
           <div className="px-6">
