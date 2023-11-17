@@ -25,13 +25,13 @@ export class JwtAuthService {
       const decodedToken = await this.jwtService.verify(actualToken, {
         secret: secret,
       });
-      console.log("decodedToken", decodedToken)
       if (!decodedToken || !decodedToken.sub)
 				return null;
       const user = await this.prismaService.user.findUnique({
         where: { id: Number(decodedToken.sub) },
       });
-      if (!user) return null;
+      if (!user)
+				 return null;
 			return decodedToken;
 
   }

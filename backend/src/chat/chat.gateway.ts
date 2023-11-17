@@ -83,7 +83,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
    */
 
   @SubscribeMessage('createRoom')
-  async handleCreateRoom(client: AuthWithWs, payload: CreateChatDmRoomDto) {
+  async handleCreateRoom(client: any, payload: any) {
     console.log("user id : ", client.id);
     const room = await this.chatService.createRoom(+client.id, payload);
     client.join(room.name);
@@ -102,6 +102,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   
   @SubscribeMessage('getRooms')
   async handleGetRooms(client: any, payload: any) {
+    console.log("sadasdfasdfasdfasdf");
     console.log("The User ID Requesting Rooms : ", client.id)
     const rooms = await this.chatService.getRoomsByUserId(+client.id, {
         skip: client.handshake.query.skip ? +client.handshake.query.skip : 0,
