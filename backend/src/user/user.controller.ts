@@ -43,7 +43,6 @@ export class UserController {
   })
   async getQRCode(@Req() request: any) {
     const user = await this.userService.getCurrentUser(request);
-    console.log(user);
     return await this.userService.getQRCode(user.id);
   }
 

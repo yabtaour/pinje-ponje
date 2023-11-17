@@ -1,4 +1,4 @@
-import { faker } from '@faker-js/faker';
+import { de, faker } from '@faker-js/faker';
 import { HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { config } from 'dotenv';
@@ -225,6 +225,9 @@ async FindUserByID(id: number) {
 	// try {
   	const user = await this.prisma.user.findUnique({
     	where: { id: id },
+		include: {
+			profile: true,
+		},
     	// select: {
       // 	id: true,
       // 	email: true,
@@ -249,6 +252,9 @@ async FindUserByID(id: number) {
   	if (!user) {
     	throw new HttpException("User not found", HttpStatus.NOT_FOUND);
   	}
+	delete user.password;
+	delete user.twoFactorSecret;
+	
   	return user;
 	// } catch (error) {
 	// 	throw new InternalServerErrorException(error);
@@ -352,6 +358,8 @@ async FindUserByID(id: number) {
 			});
 			if (!user)
 				throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+			delete user.password;
+			delete user.twoFactorSecret;
 			return user;
 		// } catch (error) {
 		// 	throw new InternalServerErrorException(error);

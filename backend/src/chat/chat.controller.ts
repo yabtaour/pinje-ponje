@@ -10,6 +10,7 @@ import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { use } from 'passport';
 import { JWTGuard } from 'src/auth/guards/jwt.guard';
 import { UserService } from 'src/user/user.service';
+import { th } from '@faker-js/faker';
 
 @UseGuards(JWTGuard)
 @Controller('chatapi')
@@ -28,7 +29,6 @@ export class ChatController {
     ){
     const user = await this.userService.getCurrentUser(request);
     const room = await this.chatService.createRoom(user.id, data);
-    console.log('room created', room);
     this.chatgateway.server.to(String(user.id)).emit('roomCreated', room);
     return room;
   }
