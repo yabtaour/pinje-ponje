@@ -1,19 +1,33 @@
-import { UserService } from '../user/user.service';
-import { ProfilesService } from './profiles.service';
-import {  Controller, Get, Post, Body, Patch, Param, Delete,
-          UseGuards, Req, UseInterceptors, 
-          UploadedFile, Query, BadRequestException, 
-          InternalServerErrorException} from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation, ApiParam,
+  ApiProperty,
+  ApiTags
+} from '@nestjs/swagger';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import { JWTGuard } from '../auth/guards/jwt.guard';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { UserDto } from '../user/dto/user.dto';
 import { storageConfig } from '../microservices/storage.config';
-import {  ApiTags, ApiBearerAuth, 
-          ApiOperation, ApiParam, 
-          ApiBody, 
-          ApiProperty,
-          ApiConsumes} from '@nestjs/swagger';
+import { UserDto } from '../user/dto/user.dto';
+import { UserService } from '../user/user.service';
+import { ProfilesService } from './profiles.service';
 // import { updateUserDto } from 'src/user/dto/update-user.dto';
 import { updateProfileDto } from './dto/update-profile.dto';
 import { fr } from '@faker-js/faker';
@@ -103,6 +117,7 @@ export class ProfilesController {
   @ApiOperation({ summary: 'Accept Friend Request', description: 'Accept Friend Request' })
   @ApiBody({ type: PostObject })
   async AccepteFriendRequest(@Body() data: {senderId: number}, @Req() req: Request ) {
+		console.log("AccepteFriendRequest: ", data);
 		const user = await this.userServices.getCurrentUser(req);
     console.log("AccepteFriendRequest: ", data);
     return this.profilesService.AccepteFriendRequest(+user.id, data);
@@ -189,3 +204,5 @@ export class ProfilesController {
   }
 
 }
+
+

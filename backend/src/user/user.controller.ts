@@ -66,8 +66,6 @@ export class UserController {
     const user = await this.userService.getCurrentUser(request);
     return this.userService.UpdateUser(user.id, data);
   }
-
-
   
   @Get('fake')
   @ApiOperation({ summary: 'Create fake users', 

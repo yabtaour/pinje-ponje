@@ -29,11 +29,10 @@ const secret = process.env.JWT_SECRET;
 		NotificationModule,
   ],
   controllers: [AuthController],
+  exports: [JwtAuthService, AuthService, PrismaService],
   providers: [JwtAuthService, AuthService, PrismaService,
 							FortyTwoStrategy, LocalStrategy, GoogleStrategy, UserService,
-							ProfilesService],
-  exports: [JwtAuthService, AuthService, PrismaService],
-  
+							ProfilesService],  
 })
 export class AuthModule {}
 
