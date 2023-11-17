@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import {
 	ApiBearerAuth,
 	ApiBody,
@@ -8,7 +8,10 @@ import {
 import { JWTGuard } from '../auth/guards/jwt.guard';
 import { CreateUserDtoLocal } from './dto/create-user.dto';
 import { updateUserDto } from './dto/update-user.dto';
-import { UserService } from './user.service';
+import { FriendsActionsDto, UserService, blockAndUnblockUserDto } from './user.service';
+import { UserDto } from './dto/user.dto';
+import { PaginationLimitDto } from 'src/chat/chat.service';
+import { GetUser } from 'src/auth/decorators/get-user.decorator';
 
 
 @UseGuards(JWTGuard)
@@ -33,7 +36,9 @@ export class UserController {
     summary: 'Get the current user',
     description: 'Get the current user by token',
   })
-  async FindUserByToken(@Req() request: any) {
+  async FindUserByToken(
+      @Req() request: any
+    ){
     return this.userService.getCurrentUser(request);
   }
   
@@ -41,7 +46,9 @@ export class UserController {
   @ApiOperation({ summary: 'Get QRCode', 
     description: 'Get QRCode and return the QRCode',
   })
-  async getQRCode(@Req() request: any) {
+  async getQRCode(
+      @Req() request: any
+    ){
     const user = await this.userService.getCurrentUser(request);
     return await this.userService.getQRCode(user.id);
   }
@@ -51,7 +58,9 @@ export class UserController {
     summary: 'Delete a user by ID',
     description: 'Delete a user by ID and return the user deleted',
   })
-  async remove(@Req() request: any) {
+  async remove(
+      @Req() request: any
+    ){
 		const user = await this.userService.getCurrentUser(request);
     return this.userService.RemoveUsers(user.id);
   }
@@ -62,17 +71,12 @@ export class UserController {
     description: 'Update a user by ID and return the user updated',
   })
   @ApiBody({ type: updateUserDto })
-  async UpdateUser(@Req() request: any, @Body() data: updateUserDto) {
+  async UpdateUser(
+      @Req() request: any,
+      @Body() data: updateUserDto
+    ){
     const user = await this.userService.getCurrentUser(request);
     return this.userService.UpdateUser(user.id, data);
-  }
-  
-  @Get('fake')
-  @ApiOperation({ summary: 'Create fake users', 
-  description: 'Create fake users and return the users created'
-  })
-  async createFake() {
-  	return this.userService.CreateUsersFake();
   }
 
   @Get(':id')
@@ -80,12 +84,18 @@ export class UserController {
     description: 'Get a user by ID and return the user'
   })
   @ApiParam({ name: 'id', type: 'number' })
-  async FindUserByID(@Param('id', ParseIntPipe) id: number) {
+  async FindUserByID(
+      @Param('id', ParseIntPipe) id: number
+    ){
     return this.userService.FindUserByID(id);
   }
 
   @Post('resetPassword')
-  async resetPassword(@Req() request: any, @Body() data: {old: string, new: string}) {
+  async resetPassword(
+      @Req() request: any,
+      @Body() data: {old: string, 
+      new: string}
+    ){
     const user = await this.userService.getCurrentUser(request);
     return this.userService.resetPassword(user, data.old, data.new);
   }
@@ -94,8 +104,113 @@ export class UserController {
   @ApiOperation({ summary: 'Get all users', 
     description: 'Get all users and return the users',
   })
-  async FindAllUsers(@Req() request: any) {
-    return this.userService.FindAllUsers();
+  async FindAllUsers(
+      @Req() request: any
+    ){
+    const user = await this.userService.getCurrentUser(request);
+    return this.userService.FindAllUsers(user.id);
+  }
+
+  @Get('/blocked-users')
+  @ApiOperation({ summary: 'Get all blocked users', 
+    description: 'Get all blocked users and return the users',
+  })
+  async FindAllBlockedUsers(
+      @Req() request: any
+    ){
+    const user = await this.userService.getCurrentUser(request);
+    return this.userService.FindAllBlockedUsers(user.id);
+  }
+
+  @Post('/block')
+  @ApiOperation({ summary: 'Block Friend', description: 'Block Friend' })
+  @ApiBody({ type: blockAndUnblockUserDto })
+  async BlockFriend(
+      @Req() request: any,
+      @Body() data: blockAndUnblockUserDto
+    ){
+    const user = await this.userService.getCurrentUser(request);
+    return this.userService.BlockFriend(user.id, data);
+  }
+
+  @Delete('/unblock')
+  @ApiOperation({ summary: 'UnBlock Friend', description: 'UnBlock Friend' })
+  @ApiBody({ type: blockAndUnblockUserDto })
+  async UnBlockFriend(
+      @Req() request: any,
+      @Body() data: blockAndUnblockUserDto
+    ){
+    const user = await this.userService.getCurrentUser(request);
+    return await this.userService.UnBlockFriend(user.id, data);
+  }
+
+
+  @ApiOperation({ summary: 'Get All Friends by ID', description: 'Get All Friends by ID' })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @Get(':id/friends')
+  async FindAllFriends(
+      @Req() request: any,
+      @Param('id', ParseIntPipe) id: number, 
+      @Query () query: PaginationLimitDto
+    ){
+    const user = await this.userService.getCurrentUser(request);
+    return this.userService.FindAllFriends(user.id, id, query);
+  }
+
+  @Post('/friends/cancel')
+  @ApiOperation({ summary: 'Cancel Friend Request', description: 'Cancel Friend Request' })
+  @ApiBody({ type: FriendsActionsDto })
+  async CancelFriendRequest(
+      @Req () request: Request,
+      @Body() data: FriendsActionsDto,
+    ){
+    const user = await this.userService.getCurrentUser(request);
+    return this.userService.CancelFriendRequest(user.id, data);
+  }
+
+  // to do: fix this and optimize it
+  @Delete('/friends/unfriend')
+  @ApiOperation({ summary: 'Unfriend', description: 'Unfriend' })
+  @ApiBody({ type: FriendsActionsDto })
+  async Unfriend(
+      @Req () request: Request,
+      @Body() data: FriendsActionsDto,
+    ){
+    const user = await this.userService.getCurrentUser(request);
+    return this.userService.Unfriend(user.id, data);
+  }
+
+  @Delete('/friends/decline')
+  @ApiOperation({ summary: 'Decline Friend Request', description: 'Decline Friend Request' })
+  @ApiBody({ type: FriendsActionsDto })
+  async DeclineFriendRequest(
+      @Req () request: Request,
+      @Body() data: FriendsActionsDto,
+    ){
+    const user = await this.userService.getCurrentUser(request);
+    return this.userService.DeclineFriendRequest(user.id, data);
+  }
+
+  @Post('/friends/accept')
+  @ApiOperation({ summary: 'Accept Friend Request', description: 'Accept Friend Request' })
+  @ApiBody({ type: FriendsActionsDto })
+  async AcceptFriendRequest(
+      @Req () request: Request,
+      @Body() data: FriendsActionsDto,
+    ){
+    const user = await this.userService.getCurrentUser(request);
+    return this.userService.AcceptFriendRequest(user.id, data);
+  }
+
+  @Post('/friends/send')
+  @ApiOperation({ summary: 'Send Friend Request', description: 'Send Friend Request' })
+  @ApiBody({ type: FriendsActionsDto })
+  async SendFriendRequest(
+      @Req () request: Request,
+      @Body() data: FriendsActionsDto,
+    ){
+    const user = await this.userService.getCurrentUser(request);
+    return this.userService.SentFriendRequest(user.id, data);
   }
 
 }

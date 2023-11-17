@@ -1,4 +1,4 @@
-import { de, faker } from '@faker-js/faker';
+import { de, faker, th, tr } from '@faker-js/faker';
 import { HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { config } from 'dotenv';
@@ -8,18 +8,21 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ProfilesService } from '../profiles/profiles.service';
 import { CreateUserDtoIntra } from './dto/create-user.dto';
 import { updateUserDto } from './dto/update-user.dto';
+import { IsNotEmpty, IsNumber } from 'class-validator';
+import { PaginationLimitDto } from 'src/chat/chat.service';
 
 config()
 
-class data {
-  intraid: number;
-  Hashpassword: string;
-  email: string;
-  profile: {
-    username: string;
-    avatar: string;
-    login: string;
-  }
+export class blockAndUnblockUserDto {
+	@IsNotEmpty()
+	@IsNumber()
+	id: number;
+}
+
+export class FriendsActionsDto {
+	@IsNotEmpty()
+	@IsNumber()
+	id: number;
 }
 
 @Injectable()
@@ -28,35 +31,6 @@ export class UserService {
 		private readonly prisma: PrismaService,
 		private readonly profile: ProfilesService
 	) {}
-    
-  async CreateUsersFake() {
-    try {
-      for (let i = 0; i < 2; i++) {
-        const FakeUser =  new data();
-        let firstName = faker.person.firstName();
-        let lastName = faker.person.lastName();
-        FakeUser.intraid = faker.number.int(500000);
-        FakeUser.Hashpassword = faker.number.int(600) + "password";
-        FakeUser.email = firstName + lastName + (i*i) + "@gmail.com";
-        await this.prisma.user.create({
-          data: {
-            intraid: FakeUser.intraid,
-            password: FakeUser.Hashpassword,
-            email: FakeUser.email,
-            profile: {
-              create: {
-                username: firstName + lastName,
-                avatar: "./path/to/avatar/" + lastName + faker.number.int(9000),
-              },
-            }
-          }
-        })
-      }
-      return "Fake Users Creatig Success";
-    } catch (error) {
-      return "Error: User Already Exist";
-    }
-  }
 
   async resetPassword(user: any, old: string, newPass: string) {
 	const isMatch = await bcrypt.compareSync(old, user.password);
@@ -76,7 +50,6 @@ export class UserService {
   }
 
   async CreateUserIntra(reqData: CreateUserDtoIntra) {
-		// try {
 			const userExist = await this.prisma.user.findUnique({
 				where: {
 					email: reqData.email,
@@ -164,8 +137,7 @@ export class UserService {
 
 // this only update User Level : Email : Hashpassword : twofactor
   async UpdateUser(id: number, data: updateUserDto) {
-		// try {
-			const user = await this.prisma.user.findUnique({
+		const user = await this.prisma.user.findUnique({
 				where : {
 					id: id,
 				},
@@ -191,9 +163,6 @@ export class UserService {
       	}
     	})
     	return updatedUser;
-		// } catch (error) {
-		// 	throw new InternalServerErrorException(error);
-		// }
   }
 
 
@@ -206,23 +175,22 @@ export class UserService {
     return avatar[Math.floor(Math.random() * avatar.length)];
   }
 
-  async FindAllUsers() {
-		// try {
-    	const users = await this.prisma.user.findMany({
-      	include: {
-       		profile: true,
-      	},
-    	});
-			if (!users)
-				throw new HttpException('Users not found', HttpStatus.NOT_FOUND);
-    	return users;
-		// } catch (error) {
-		// 	throw new InternalServerErrorException(error);
-		// }
+  async FindAllUsers(_id: number) {
+    const users = await this.prisma.user.findMany({
+		select: {
+			id: true,
+			email: true,
+			status: true,
+			twoFactor: true,
+			profile: true,
+		},
+    });
+	if (!users)
+		throw new HttpException('Users not found', HttpStatus.NOT_FOUND);	
+    return users;
   }
 
 async FindUserByID(id: number) {
-	// try {
   	const user = await this.prisma.user.findUnique({
     	where: { id: id },
 		include: {
@@ -256,20 +224,13 @@ async FindUserByID(id: number) {
 	delete user.twoFactorSecret;
 	
   	return user;
-	// } catch (error) {
-	// 	throw new InternalServerErrorException(error);
-	// }
 }
 
   async FindUserByIntraId(id: number) {
-		// try {
     	const user = await this.prisma.user.findFirst({
-      	where: {intraid: id},
-    });
-    return user;
-		// } catch (error) {
-		// 	throw new InternalServerErrorException(error);
-		// }
+    	  	where: {intraid: id},
+    	});
+    	return user;
 	}
 
 	async FindUserByGoogleId(id: string) {
@@ -338,16 +299,9 @@ async FindUserByID(id: number) {
 			const otpauth = authenticator.keyuri(user.email, "pinje-ponge", secret);
 			const generatedQR = await toDataURL(otpauth);
 			return generatedQR;
-		// } catch (error) {
-		// 	throw new InternalServerErrorException(error);
-		// }
 	}
 
 	async getCurrentUser(request: any) {
-		// try {
-			// console.log("request from user service : ", request);
-			// console.log("request.user from user service : ", request.user);
-			// console.log("request.user.sub from user service : ", request.user.sub);
 			const user = await this.prisma.user.findUnique({
 				where: {
 					id: parseInt(request.user.sub),
@@ -361,12 +315,259 @@ async FindUserByID(id: number) {
 			delete user.password;
 			delete user.twoFactorSecret;
 			return user;
-		// } catch (error) {
-		// 	throw new InternalServerErrorException(error);
-		// }
 	}
 
-}
+	async FindAllBlockedUsers(_id: number) {
+		const user = await this.prisma.user.findUnique({
+		  where: { id: _id },
+		  select: {
+			blocking: true,
+		  },
+		});
+		if (!user)
+		  throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+		return user;
+	  }
+
+	async BlockFriend(_id: number, data: blockAndUnblockUserDto){
+		const blockedUser = await this.prisma.user.findUnique({
+			where : { id: data.id},
+		});
+		if (!blockedUser)
+		  throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+		if (blockedUser.id == _id)
+		  throw new HttpException("You can't block yourself", HttpStatus.BAD_REQUEST);
+		const user = await this.prisma.user.update({
+		  where: { id: _id},
+		  data: {
+			blocking: {
+			  connect: { id: data.id }
+			}
+		  }
+		})
+		return user;
+	}
+
+	async UnBlockFriend(_id: number, data: blockAndUnblockUserDto){
+
+		const blockedUser = await this.prisma.user.findUnique({
+		  where : { id: data.id}
+		})
+		if (!blockedUser)
+		  throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+		const user = await this.prisma.user.update({
+		  where: { id: _id},
+		  data: {
+			blocking: {
+			  disconnect: { id: data.id }
+			}
+		  }
+		})
+		return user;
+	}
+
+	async FindAllFriends(_currentUser: number, _id: number, params: PaginationLimitDto) {
+		const isBlocked = await this.isBlockby(_currentUser, _id);
+		const isBlockedby = await this.isBlockby(_id, _currentUser);
+		if (isBlocked || isBlockedby)
+		  return [];
+		const getAllFriends = await this.prisma.user.findUnique({
+		  where: { id: _id },
+			  select: {
+				Friends: true,
+			  },
+		});
+		const infoAboutAllFriends = await this.prisma.user.findMany({
+		  where: {
+			id: {
+			  in: getAllFriends.Friends,
+			},
+		  },
+		  select: {
+			id: true,
+			profile : true,
+		  },
+		  ...params,
+		});
+		if (!getAllFriends || !infoAboutAllFriends)
+		  throw new HttpException('No user with this id', HttpStatus.NOT_FOUND);
+		const filterdFriends =  await this.filterFriendsByBlockingStatus(infoAboutAllFriends, _currentUser);
+		return filterdFriends;
+	  }
+
+	  async Unfriend(profileId: number, data: any): Promise<any> {
+
+		const friendProfile = await this.prisma.user.findUnique({
+		  where: { id: data.id },
+		});
+	
+		if (!friendProfile)
+			throw new HttpException('No user with this id', HttpStatus.NOT_FOUND);
+	
+		await this.removeFromFriendList(profileId, data.id);
+		await this.removeFromFriendList(data.id, profileId);
+	
+		return friendProfile;
+	  }
 
 
+	  async CancelFriendRequest(_id: number, data: FriendsActionsDto) {
+
+		const receiver = await this.prisma.user.findUnique({
+		  where: { id: data.id },
+		  include: { pendingRequest: true },
+		});
+		if (!receiver)
+			throw new HttpException('No user with this id', HttpStatus.NOT_FOUND);
+		
+		const existingRequest = receiver.pendingRequest.find((element) => element.id === _id);
+		if (!existingRequest)
+			throw new HttpException('No request with this id', HttpStatus.NOT_FOUND);
+		const req_receiver = await this.prisma.user.update({
+		  where: { id: _id },
+		  data: {
+			sentRequest: {
+			  disconnect: { id: data.id }
+			}
+		  },
+		});
+
+		return req_receiver;
+	  }
+
+
+	  async DeclineFriendRequest(_id: number, data: FriendsActionsDto) {
+		const inviter = await this.prisma.user.findUnique({
+		  where: { id: data.id },
+		  include: { sentRequest: true },
+		});
+		if (!inviter)
+			throw new HttpException('No user with this id', HttpStatus.NOT_FOUND);
+	
+		const existingRequest = inviter.sentRequest.find((element) => element.id === _id);
+		if (!existingRequest)
+			throw new HttpException('No request with this id', HttpStatus.NOT_FOUND);
+		const req_sender = await this.prisma.user.update({
+		  where: { id: _id },
+		  data: {
+			pendingRequest: {
+			  disconnect: { id: data.id } 
+			}
+		  },
+		});
+		return req_sender;
+	  }
+
+
+	  async AcceptFriendRequest(_id: number, data: FriendsActionsDto) {
+
+		const peer_user = await this.prisma.user.findUnique({
+		  where: { id: data.id },
+		  include: { sentRequest: true },
+		});
+		if (peer_user){
+		  const existingRequest = peer_user.sentRequest.find((element) => element.id === _id);
+		  if (!existingRequest)
+			throw new HttpException('No request with this id', HttpStatus.NOT_FOUND);
+	
+		  const otheruser = await this.prisma.user.update({
+			where: { id: data.id },
+			data: {
+			  sentRequest: {
+				disconnect: { id: _id }
+			  },
+			  Friends: {
+				push : _id
+			  }
+			},
+		  });
+		  const buttonclicker = await this.prisma.user.findUnique({
+			where: { id: _id },
+		  });
+		  if (buttonclicker) {
+			const updateclickerProfile = await this.prisma.user.update({
+			  where: { id: _id },
+			  data: {
+				Friends: {
+				  push : data.id
+				}
+			  },
+			});
+		  }
+		}
+	  }
+
+	  async SentFriendRequest(_id: number, data: FriendsActionsDto) {
+		
+		const newFriendProfile = await this.prisma.user.findUnique({
+		  where: { id: data.id },
+		});
+		
+		if (!newFriendProfile)
+		  throw new HttpException('No profile with this id', HttpStatus.NOT_FOUND);
+		const sender = await this.prisma.user.update({
+		  where: { id: _id },
+		  data: {
+			sentRequest: {
+			  connect: { id: data.id }
+			}
+		  },
+		});
+		return sender;
+	  }
+
+	  // Not routes functions
+	  async isBlockby(_id: number, id: number) : Promise<boolean>{
+		const user = await this.prisma.user.findUnique({
+		  where: { id: _id },
+		  select: {
+			blockedBy: true,
+		  },
+		});
+		if (!user) {
+		  throw new HttpException('No profile with this id', HttpStatus.NOT_FOUND);
+		}
+		const blocking = user.blockedBy.find((element) => element.id === id);
+		if (blocking)
+		  return true;
+		return false;
+	  }
+	  async filterFriendsByBlockingStatus(
+		friends: any[],
+		currentUser: number
+	  ): Promise<any> {
+		const nonBlockedFriends = await Promise.all(
+		  friends.map(async (friend) => {
+			const isBlockedByFriend = await this.isBlockby(friend.id, currentUser);
+			const isBlockedByCurrentUserFriend = await this.isBlockby(currentUser, friend.id);
+			if (!isBlockedByFriend && !isBlockedByCurrentUserFriend) {
+			  return friend;
+			}
+			return null;
+		  })
+		);
+		const filteredFriends = nonBlockedFriends.filter((friend) => friend !== null);
+		return filteredFriends;
+	  }
+
+	  async removeFromFriendList(profileId: number, friendId: number): Promise<void> {
+
+		const user = await this.prisma.user.findUnique({
+		  where: { id: profileId },
+		});
+	
+		if (user) {
+		  const updatedFriends = user.Friends.filter((friend) => friend !== friendId);
+	
+		  await this.prisma.user.update({
+			where: { id: profileId },
+			data: {
+			  Friends: {
+				set: updatedFriends,
+			  },
+			},
+		  });
+		}
+	  }
+} 
 

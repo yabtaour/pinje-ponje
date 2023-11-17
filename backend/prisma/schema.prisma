@@ -23,6 +23,11 @@ model User {
   messages 				ChatMessage[]
   profile  				Profile?
   players 				Player[]
+  blockedBy       User[] @relation("UserBlockeds")
+  blocking        User[] @relation("UserBlockeds")
+  Friends        Int[]
+  pendingRequest  User[] @relation("UserPending")
+  sentRequest     User[] @relation("UserPending")
   winRate         Float			@default(0)
   accuracy        Float     @default(0)
   consitency      Float     @default(0)
@@ -38,9 +43,9 @@ model Profile {
   username       String    @unique
   bio            String?   @default("I am a new player") @db.VarChar(255)
   avatar         String?
-  Friends        Int[]
   blockedBy      Profile[] @relation("UserBlocked")
   blocking       Profile[] @relation("UserBlocked")
+  Friends        Int[]
   pendingRequest Profile[] @relation("UserPending")
   sentRequest    Profile[] @relation("UserPending")
   user           User      @relation(fields: [userid], references: [id], onDelete: Cascade)

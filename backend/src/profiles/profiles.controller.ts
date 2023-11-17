@@ -58,12 +58,12 @@ export class ProfilesController {
     return this.profilesService.updateProfile(user, data);
   }
 
-  @Get('/blocked-users')
-  @ApiOperation({ summary: 'Get All Blocked Users', description: 'Get All Blocked Users' })
-  FindAllBlockedUsers(@GetUser() user: UserDto) {
-    console.log("FindAllBlockedUsers: ", user);
-    return this.profilesService.FindAllBlockedUsers(+user.sub);
-  }
+  // @Get('/blocked-users')
+  // @ApiOperation({ summary: 'Get All Blocked Users', description: 'Get All Blocked Users' })
+  // FindAllBlockedUsers(@GetUser() user: UserDto) {
+  //   console.log("FindAllBlockedUsers: ", user);
+  //   return this.profilesService.FindAllBlockedUsers(+user.sub);
+  // }
 
   @Get('avatar')
   @ApiOperation({ summary: 'Get Avatar', description: 'Get Avatar' })
@@ -82,17 +82,17 @@ export class ProfilesController {
   }
 
   // Get All Friends by ID
-  @ApiOperation({ summary: 'Get All Friends by ID', description: 'Get All Friends by ID' })
-  @ApiParam({ name: 'id', description: 'Profile ID' })
-  @Get(':id/friends')
-  FindAllFriends(
-    @GetUser() user: UserDto, 
-    @Param('id') id: string, 
-    @Query () query: PaginationLimitDto
-    ){
-    console.log("FindAllFriends: ", user);
-    return this.profilesService.FindAllFriends(+user.sub, +id, query);
-  }
+  // @ApiOperation({ summary: 'Get All Friends by ID', description: 'Get All Friends by ID' })
+  // @ApiParam({ name: 'id', description: 'Profile ID' })
+  // @Get(':id/friends')
+  // FindAllFriends(
+  //   @GetUser() user: UserDto, 
+  //   @Param('id') id: string, 
+  //   @Query () query: PaginationLimitDto
+  //   ){
+  //   console.log("FindAllFriends: ", user);
+  //   return this.profilesService.FindAllFriends(+user.sub, +id, query);
+  // }
   
 
   // @Get()
@@ -104,65 +104,65 @@ export class ProfilesController {
   // }
 
 
-  @Post('/friends/send')
-  @ApiOperation({ summary: 'Send Friend Request', description: 'Send Friend Request' })
-  @ApiBody({ type: PostObject })
-  SentFriendsRequest(@GetUser() user: UserDto ,@Body() data: any ) {
-    console.log("SentFriendsRequest: ", data);
-    return this.profilesService.SentFriendsRequest(+user.sub, data);
-  }
+  // @Post('/friends/send')
+  // @ApiOperation({ summary: 'Send Friend Request', description: 'Send Friend Request' })
+  // @ApiBody({ type: PostObject })
+  // SentFriendsRequest(@GetUser() user: UserDto ,@Body() data: any ) {
+  //   console.log("SentFriendsRequest: ", data);
+  //   return this.profilesService.SentFriendsRequest(+user.sub, data);
+  // }
 
 
-  @Post('/friends/accept')
-  @ApiOperation({ summary: 'Accept Friend Request', description: 'Accept Friend Request' })
-  @ApiBody({ type: PostObject })
-  async AccepteFriendRequest(@Body() data: {senderId: number}, @Req() req: Request ) {
-		console.log("AccepteFriendRequest: ", data);
-		const user = await this.userServices.getCurrentUser(req);
-    console.log("AccepteFriendRequest: ", data);
-    return this.profilesService.AccepteFriendRequest(+user.id, data);
-  }
+  // @Post('/friends/accept')
+  // @ApiOperation({ summary: 'Accept Friend Request', description: 'Accept Friend Request' })
+  // @ApiBody({ type: PostObject })
+  // async AccepteFriendRequest(@Body() data: {senderId: number}, @Req() req: Request ) {
+	// 	console.log("AccepteFriendRequest: ", data);
+	// 	const user = await this.userServices.getCurrentUser(req);
+  //   console.log("AccepteFriendRequest: ", data);
+  //   return this.profilesService.AccepteFriendRequest(+user.id, data);
+  // }
   
-  @Post('/friends/reject')
-  @ApiOperation({ summary: 'Decline Friend Request', description: 'Decline Friend Request' })
-  @ApiBody({ type: PostObject })
-  DeclineFriendRequest(@GetUser() user: UserDto, @Body() data: any ) {
-    console.log("DeclineFriendRequest: ", data);
-    return this.profilesService.DeclineFriendRequest(+user.sub, data);
-  }
+  // @Post('/friends/reject')
+  // @ApiOperation({ summary: 'Decline Friend Request', description: 'Decline Friend Request' })
+  // @ApiBody({ type: PostObject })
+  // DeclineFriendRequest(@GetUser() user: UserDto, @Body() data: any ) {
+  //   console.log("DeclineFriendRequest: ", data);
+  //   return this.profilesService.DeclineFriendRequest(+user.sub, data);
+  // }
 
-  @Post('/friends/cancel')
-  @ApiOperation({ summary: 'Cancel Friend Request', description: 'Cancel Friend Request' })
-  @ApiBody({ type: PostObject })
-  CancelFriendRequest(@GetUser() user: UserDto, @Body() data: any ) {
-    console.log("CancelFriendRequest: ", data);
-    return this.profilesService.CancelFriendRequest(+user.sub, data);
-  }
+  // @Post('/friends/cancel')
+  // @ApiOperation({ summary: 'Cancel Friend Request', description: 'Cancel Friend Request' })
+  // @ApiBody({ type: PostObject })
+  // CancelFriendRequest(@GetUser() user: UserDto, @Body() data: any ) {
+  //   console.log("CancelFriendRequest: ", data);
+  //   return this.profilesService.CancelFriendRequest(+user.sub, data);
+  // }
 
   
-  @Post('friend/block')
-  @ApiOperation({ summary: 'Block Friend', description: 'Block Friend' })
-  @ApiBody({ type: PostObject })
-  BlockFriend(@GetUser() user: UserDto, @Body() data: any) {
-    console.log("BlockFriend: ", data);
-    return this.profilesService.BlockFriend(+user.sub, data);
-  }
+  // @Post('friend/block')
+  // @ApiOperation({ summary: 'Block Friend', description: 'Block Friend' })
+  // @ApiBody({ type: PostObject })
+  // BlockFriend(@GetUser() user: UserDto, @Body() data: any) {
+  //   console.log("BlockFriend: ", data);
+  //   return this.profilesService.BlockFriend(+user.sub, data);
+  // }
   
-  @Post('friend/unblock')
-  @ApiOperation({ summary: 'UnBlock Friend', description: 'UnBlock Friend' })
-  @ApiBody({ type: PostObject })
-  UnBlockFriend(@GetUser() user: UserDto, @Body() data: any) {
-    console.log("UnBlockFriend: ", data);
-    return this.profilesService.UnBlockFriend(+user.sub, data);
-  }
+  // @Post('friend/unblock')
+  // @ApiOperation({ summary: 'UnBlock Friend', description: 'UnBlock Friend' })
+  // @ApiBody({ type: PostObject })
+  // UnBlockFriend(@GetUser() user: UserDto, @Body() data: any) {
+  //   console.log("UnBlockFriend: ", data);
+  //   return this.profilesService.UnBlockFriend(+user.sub, data);
+  // }
 
-  @Delete('/friends/unfriend')
-  @ApiOperation({ summary: 'Remove Friend', description: 'Remove Friend' })
-  @ApiBody({ type: PostObject })
-  removeFriend(@GetUser() user: UserDto, @Body() data: any) {
-    console.log("RemoveFriend: ", data);
-    return this.profilesService.RemoveFriend(+user.sub, data);
-  }
+  // @Delete('/friends/unfriend')
+  // @ApiOperation({ summary: 'Remove Friend', description: 'Remove Friend' })
+  // @ApiBody({ type: PostObject })
+  // removeFriend(@GetUser() user: UserDto, @Body() data: any) {
+  //   console.log("RemoveFriend: ", data);
+  //   return this.profilesService.RemoveFriend(+user.sub, data);
+  // }
 
   
   // storage is defined in the top of the file

@@ -1,4 +1,4 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
+import { ExecutionContext, Injectable, ParseIntPipe } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { config } from 'dotenv';
 import { PrismaService } from '../prisma/prisma.service';
@@ -27,6 +27,8 @@ export class JwtAuthService {
       });
       if (!decodedToken || !decodedToken.sub)
 				return null;
+      if (decodedToken.sub >= 2147483647)
+        return null;
       const user = await this.prismaService.user.findUnique({
         where: { id: Number(decodedToken.sub) },
       });
