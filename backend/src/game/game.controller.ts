@@ -17,12 +17,21 @@ export class GameController {
 		return this.gameService.getGames();
 	}
 
+	@Get('user/winrate/:id')
+	async getWinrateByUserId(
+		@Param('id', ParseIntPipe) id: number,
+	) {
+		return this.gameService.getWinRateByUserId(id);
+	}
+	
 	@Get('user/:id')
 	async getGamesByUserId(
 		@Param('id', ParseIntPipe) id: number,
 	) {
+		console.log(id);
 		return this.gameService.getGamesByUserId(id);
 	}
+
 
 	@Get(":id")
 	async getGameById(

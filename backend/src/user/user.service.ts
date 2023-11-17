@@ -139,15 +139,6 @@ export class UserService {
     } else if (data.twoFactor && data.twoFactor == false) {
       secret = null;
     }
-      // await this.prisma.user.update({
-      //   where: {
-      //     id: user_id,
-      //   },
-      //   data: {
-      //     twoFactor: true,
-      //     twoFactorSecret: secret,
-      //   },
-      // });
       const updatedUser = await this.prisma.user.update({
         where: {
           id: user_id,
@@ -209,6 +200,7 @@ export class UserService {
     const sanitizedUsers = users.map(({ password, twoFactorSecret, ...user }) => user);
     return sanitizedUsers;
   }
+// this only update User Level : Email : Hashpassword : twofactor
 
   async FindUserByID(@Param('user_id', ParseIntPipe) user_id: number, searchid: number) {
     const user = await this.prisma.user.findFirst({

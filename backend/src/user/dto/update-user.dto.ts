@@ -1,17 +1,14 @@
-import { IsBoolean, IsEmail, IsOptional, IsString } from 'class-validator';
 
+import{ PartialType } from '@nestjs/mapped-types';
+import { CreateUserDtoLocal } from './create-user.dto';
+import { Exclude } from 'class-transformer';
+import { Status } from '@prisma/client';
+import { IsOptional } from 'class-validator';
 
-export class updateUserDto {
-
-    @IsOptional()
-    @IsBoolean()
-    twoFactor
-
-    @IsOptional()
-    @IsString()
-    username: string;
+export class updateUserDto extends PartialType(CreateUserDtoLocal) {
+    @Exclude()
+    twoFactorSecret?: string;
 
     @IsOptional()
-    @IsEmail()
-    email: string;
+    status: Status;
 }

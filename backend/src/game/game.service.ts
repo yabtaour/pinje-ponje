@@ -24,14 +24,28 @@ export class GameService {
 		});
 		if (!user)
 			throw new HttpException(`No user found`, HttpStatus.BAD_REQUEST);
-		const games = await this.prisma.game.findMany({
+		const wonGamesCount = await this.prisma.game.count({
 			where: {
 				players: {
-					// some: {
-
+					some: {
+						userId: id,
+						status: "WINNER",
+					},
 				},
 			},
 		});
+		const lostGamesCount = await this.prisma.game.count({
+			where: {
+				players: {
+					some: {
+						userId: id,
+						status: "LOSER",
+					},
+				},
+			},
+		});
+		const winRate = wonGamesCount / (wonGamesCount + lostGamesCount);
+		return ({wonGamesCount: wonGamesCount, lostGamesCount: lostGamesCount, winRate: winRate});
 	}
 
 	async getWinRate(id: number) {
@@ -443,7 +457,6 @@ export class GameService {
 			this.gameGateway.currentGames.delete(gameId);
 			console.log("game over");
 			console.log(this.gameGateway.currentGames);
-			
 		}
 
 		if (this.gameGateway.currentGames[player.gameId].player1.id == userId)
