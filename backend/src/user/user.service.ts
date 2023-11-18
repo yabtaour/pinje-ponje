@@ -177,6 +177,7 @@ export class UserService {
 				const HashedPassword = await bcrypt.hashSync(data.password, rounds);
 				data.password = HashedPassword;
 			}
+			console.log("data from user service : ", data);
     	const updatedUser = await this.prisma.user.update({
       	where: {
 					id: id,

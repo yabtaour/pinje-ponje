@@ -64,6 +64,8 @@ export class UserController {
   @ApiBody({ type: updateUserDto })
   async UpdateUser(@Req() request: any, @Body() data: updateUserDto) {
     const user = await this.userService.getCurrentUser(request);
+    console.log(user);
+    console.log(data);
     return this.userService.UpdateUser(user.id, data);
   }
   
