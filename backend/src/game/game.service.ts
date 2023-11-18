@@ -34,6 +34,39 @@ export class GameService {
 		});
 	}
 
+	async getWinRate(id: number) {
+		const user = await this.prisma.user.findUnique({
+			where: {
+				id: id,
+			},
+		});
+		if (!user)
+			throw new HttpException(`No user found`, HttpStatus.BAD_REQUEST);
+
+		const wonGames = await this.prisma.game.findMany({
+			where: {
+				players: {
+					some: {
+						userId: id,
+						status: "WINNER",
+					},
+				},
+			},
+		});
+		const lostGames = await this.prisma.game.findMany({
+			where: {
+				players: {
+					some: {
+						userId: id,
+						status: "LOSER",
+					},
+				},
+			},
+		});
+		const winRate = (wonGames.length / (wonGames.length + lostGames.length)) * 100;
+		return {wonGames: wonGames.length, lostGames: lostGames.length, winRate: winRate};
+	}
+
 	async getGamesByUserId(id: number) {
 		const user = await this.prisma.user.findUnique({
 			where: {
