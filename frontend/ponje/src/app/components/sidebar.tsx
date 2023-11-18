@@ -1,161 +1,64 @@
 'use client';
 
-import { Margarine } from "next/font/google";
 import { useState } from "react";
 
-export default function SideBar(Props: any) {
 
+export default function SideBar(Props: any) {
     const { collapsed, toggleSidebar } = Props;
 
-    const [active, setActive] = useState('home');
+    const menuItems = [
+        { id: 'home', icon: <path fill="#3574FF" d="M21 20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.489a1 1 0 0 1 .386-.79l8-6.222a1 1 0 0 1 1.228 0l8 6.222a1 1 0 0 1 .386.79v10.51Zm-2-1V9.978l-7-5.445l-7 5.445V19h14Z" />, text: 'Home' },
+        { id: 'Ranking', icon: <path fill="#3574FF" fill-rule="evenodd" d="M12 3.034c-.058.101-.123.217-.199.354l-.098.176l-.023.04c-.078.144-.208.382-.425.547c-.221.168-.488.226-.643.26l-.044.009l-.19.043c-.176.04-.319.072-.44.103c.079.097.182.219.316.376l.13.152l.03.034c.108.125.282.325.363.585c.08.256.052.52.035.686a3.903 3.903 0 0 0-.005.047l-.02.203a35.76 35.76 0 0 0-.042.46c.105-.046.223-.1.364-.165l.179-.082l.04-.02c.144-.067.393-.185.672-.185s.528.118.672.186l.04.019l.179.082c.14.065.26.12.364.165a35.76 35.76 0 0 0-.042-.46l-.02-.203a3.903 3.903 0 0 0-.005-.047c-.017-.167-.045-.43.035-.686c.08-.26.255-.46.363-.585l.03-.034l.13-.152c.134-.157.237-.279.316-.376c-.121-.03-.264-.063-.44-.103l-.19-.043l-.044-.01c-.155-.033-.422-.091-.643-.26c-.217-.164-.347-.402-.425-.545l-.023-.041l-.098-.176c-.076-.137-.14-.253-.199-.354ZM11.014 1.8c.172-.225.484-.55.986-.55s.814.325.986.55c.165.214.33.511.5.816l.023.041l.098.177l.057.1l.099.023l.19.043l.048.01c.327.075.653.148.903.247c.276.109.65.32.795.785c.142.455-.037.841-.193 1.09c-.145.23-.365.486-.59.749l-.03.035l-.13.153l-.082.097c.002.036.007.078.012.135l.02.203l.004.046c.034.352.067.692.055.964c-.012.286-.08.718-.468 1.011c-.4.304-.84.238-1.12.157c-.258-.073-.563-.214-.87-.355l-.043-.02l-.18-.083L12 8.185l-.085.04l-.179.082l-.044.02c-.306.141-.61.282-.869.355c-.28.08-.72.147-1.12-.157c-.387-.293-.456-.725-.468-1.01c-.012-.273.02-.613.055-.965l.004-.046l.02-.203l.013-.135a9.85 9.85 0 0 0-.083-.097l-.13-.153l-.03-.035c-.225-.263-.445-.52-.59-.75c-.156-.248-.335-.634-.193-1.09c.144-.463.519-.675.795-.784c.25-.099.576-.172.903-.246l.047-.01l.191-.044l.1-.023l.056-.1l.098-.177l.023-.041c.17-.305.335-.602.5-.816Zm-.063 7.45h2.098c.665 0 1.238 0 1.697.062c.492.066.963.215 1.345.597s.531.853.597 1.345c.062.459.062 1.032.062 1.697v2.466c.164-.05.333-.082.504-.105c.459-.062 1.032-.062 1.697-.062h.098c.665 0 1.238 0 1.697.062c.492.066.963.215 1.345.597s.531.853.597 1.345c.062.459.062 1.032.062 1.697V22a.75.75 0 0 1-1.5 0v-3c0-.728-.002-1.2-.048-1.546c-.044-.325-.115-.427-.172-.484c-.057-.057-.159-.128-.484-.172c-.347-.046-.818-.048-1.546-.048c-.728 0-1.2.002-1.546.048c-.325.044-.427.115-.484.172c-.057.057-.128.159-.172.484c-.046.347-.048.818-.048 1.546v3a.75.75 0 0 1-1.5 0v-9c0-.728-.002-1.2-.048-1.546c-.044-.325-.115-.427-.172-.484c-.057-.057-.159-.128-.484-.172c-.347-.046-.818-.048-1.546-.048h-2c-.728 0-1.2.002-1.546.048c-.325.044-.427.115-.484.172c-.057.057-.128.159-.172.484c-.046.347-.048.818-.048 1.546v9a.75.75 0 0 1-1.5 0c0-.728-.002-1.2-.048-1.546c-.044-.325-.115-.427-.172-.484c-.057-.057-.159-.128-.484-.172c-.347-.046-.818-.048-1.546-.048c-.728 0-1.2.002-1.546.048c-.325.044-.427.115-.484.172c-.057.057-.128.159-.172.484c-.046.347-.048.818-.048 1.546a.75.75 0 0 1-1.5 0v-.05c0-.664 0-1.237.062-1.696c.066-.492.215-.963.597-1.345s.854-.531 1.345-.597c.459-.062 1.032-.062 1.697-.062h.098c.665 0 1.238 0 1.697.062c.171.023.34.056.504.105v-5.466c0-.665 0-1.238.062-1.697c.066-.492.215-.963.597-1.345s.854-.531 1.345-.597c.459-.062 1.032-.062 1.697-.062Z" clip-rule="evenodd" />, text: 'Ranking' },
+        { id: 'Career', icon: <path fill="#3574FF" d="M19 21q-.975 0-1.75-.563T16.175 19H11q-1.65 0-2.825-1.175T7 15q0-1.65 1.175-2.825T11 11h2q.825 0 1.413-.588T15 9q0-.825-.588-1.413T13 7H7.825q-.325.875-1.088 1.438T5 9q-1.25 0-2.125-.875T2 6q0-1.25.875-2.125T5 3q.975 0 1.738.563T7.824 5H13q1.65 0 2.825 1.175T17 9q0 1.65-1.175 2.825T13 13h-2q-.825 0-1.413.588T9 15q0 .825.588 1.413T11 17h5.175q.325-.875 1.088-1.438T19 15q1.25 0 2.125.875T22 18q0 1.25-.875 2.125T19 21ZM5 7q.425 0 .713-.288T6 6q0-.425-.288-.713T5 5q-.425 0-.713.288T4 6q0 .425.288.713T5 7Z" />, text: 'Career' },
+        { id: 'Chat', icon: <path fill="#3574FF" d="M10 0C4.547 0 0 3.75 0 8.5c0 2.43 1.33 4.548 3.219 6.094a4.778 4.778 0 0 1-.969 2.25a14.4 14.4 0 0 1-.656.781a2.507 2.507 0 0 0-.313.406c-.057.093-.146.197-.187.407c-.042.209.015.553.187.812l.125.219l.25.125c.875.437 1.82.36 2.688.125c.867-.236 1.701-.64 2.5-1.063c.798-.422 1.557-.864 2.156-1.187c.084-.045.138-.056.219-.094C10.796 19.543 13.684 21 16.906 21c.031.004.06 0 .094 0c1.3 0 5.5 4.294 8 2.594c.1-.399-2.198-1.4-2.313-4.375c1.957-1.383 3.22-3.44 3.22-5.719c0-3.372-2.676-6.158-6.25-7.156C18.526 2.664 14.594 0 10 0zm0 2c4.547 0 8 3.05 8 6.5S14.547 15 10 15c-.812 0-1.278.332-1.938.688c-.66.355-1.417.796-2.156 1.187c-.64.338-1.25.598-1.812.781c.547-.79 1.118-1.829 1.218-3.281l.032-.563l-.469-.343C3.093 12.22 2 10.423 2 8.5C2 5.05 5.453 2 10 2z" />, text: 'Chat' },
+    ];
+
+    const [activePage, setActivePage] = useState('home');
+
+    const handleMenuItemClick = (id: string) => {
+        setActivePage(id);
+    };
 
     return (
-        <div>
-            <aside className="z-40  h-screen ">
-                <div className=" h-full px-3 py-4 ">
-                    <ul className="space-y-2 font-medium">
-                        <li >
-                            <a href="#" className={`flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 `}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill="#3574FF" d="M21 20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.489a1 1 0 0 1 .386-.79l8-6.222a1 1 0 0 1 1.228 0l8 6.222a1 1 0 0 1 .386.79v10.51Zm-2-1V9.978l-7-5.445l-7 5.445V19h14Z" />
+        <aside className="z-40 bg-[#151424] h-full sticky top-0">
+            <div className="h-full px-3 py-4">
+                <ul className="space-y-2 font-medium text-lg">
+                    {menuItems.map((item) => (
+                        <li key={item.id}>
+                            <a
+                                href="#"
+                                className={`flex  items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-blue-900 dark:hover:bg-blue-900 group ${activePage === item.id ? 'bg-blue-900' : ''}`}
+                                onClick={() => handleMenuItemClick(item.id)}
+                            >
+                                <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    {item.icon}
                                 </svg>
-                                <span className='text-[#3574FF] flex-1 ml-3 whitespace-nowrap'
-                                    style={
-                                        collapsed ? { display: 'none' } : { display: 'block' }
-                                    }
-                                >Home</span>
-                                <span className="inline-flex items-center justify-center px-2 ml-3 text-sm font-medium text-gray-800 bg-gray-100 rounded-full dark:bg-gray-700 dark:text-gray-300"></span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                                <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <svg fill="#3574FF" stroke="#fff" strokeWidth="0">
-                                        <path strokeLinecap="round" d="M16 22v-9c0-1.414 0-2.121-.44-2.56C15.122 10 14.415 10 13 10h-2c-1.414 0-2.121 0-2.56.44C8 10.878 8 11.585 8 13v9m0 0c0-1.414 0-2.121-.44-2.56C7.122 19 6.415 19 5 19c-1.414 0-2.121 0-2.56.44C2 19.878 2 20.585 2 22m20 0v-3c0-1.414 0-2.121-.44-2.56C21.122 16 20.415 16 19 16c-1.414 0-2.121 0-2.56.44C16 16.878 16 17.585 16 19v3">
-
-                                        </path>
-                                        <path d="M11.146 3.023C11.526 2.34 11.716 2 12 2c.284 0 .474.34.854 1.023l.098.176c.108.194.162.29.246.354c.085.064.19.088.4.135l.19.044c.738.167 1.107.25 1.195.532c.088.283-.164.577-.667 1.165l-.13.152c-.143.167-.215.25-.247.354c-.032.104-.021.215 0 .438l.02.203c.076.785.114 1.178-.115 1.352c-.23.175-.576.015-1.267-.303l-.178-.082c-.197-.09-.295-.136-.399-.136c-.104 0-.202.046-.399.136l-.178.082c-.691.318-1.037.478-1.267.303c-.23-.174-.191-.567-.115-1.352l.02-.203c.021-.223.032-.334 0-.438c-.032-.103-.104-.187-.247-.354l-.13-.152c-.503-.588-.755-.882-.667-1.165c.088-.282.457-.365 1.195-.532l.19-.044c.21-.047.315-.07.4-.135c.084-.064.138-.16.246-.354l.098-.176Z"></path>
-                                    </svg>
-                                </svg>
-                                <span className=" text-[#3574FF] flex-1 ml-3 whitespace-nowrap"
-                                    style={
-                                        collapsed ? { display: 'none' } : { display: 'block' }
-                                    }>Ranking</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                                <svg width="1em" height="1em" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill="#3574FF" d="M19 21q-.975 0-1.75-.563T16.175 19H11q-1.65 0-2.825-1.175T7 15q0-1.65 1.175-2.825T11 11h2q.825 0 1.413-.588T15 9q0-.825-.588-1.413T13 7H7.825q-.325.875-1.088 1.438T5 9q-1.25 0-2.125-.875T2 6q0-1.25.875-2.125T5 3q.975 0 1.738.563T7.824 5H13q1.65 0 2.825 1.175T17 9q0 1.65-1.175 2.825T13 13h-2q-.825 0-1.413.588T9 15q0 .825.588 1.413T11 17h5.175q.325-.875 1.088-1.438T19 15q1.25 0 2.125.875T22 18q0 1.25-.875 2.125T19 21ZM5 7q.425 0 .713-.288T6 6q0-.425-.288-.713T5 5q-.425 0-.713.288T4 6q0 .425.288.713T5 7Z"></path>
-                                </svg>
-                                <span className=" text-[#3574FF] flex-1 ml-3 whitespace-nowrap"
-                                    style={
-                                        collapsed ? { display: 'none' } : { display: 'block' }
-                                    }>Career</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                                <svg width="1em" height="1em" viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill="#3574FF" d="M10 0C4.547 0 0 3.75 0 8.5c0 2.43 1.33 4.548 3.219 6.094a4.778 4.778 0 0 1-.969 2.25a14.4 14.4 0 0 1-.656.781a2.507 2.507 0 0 0-.313.406c-.057.093-.146.197-.187.407c-.042.209.015.553.187.812l.125.219l.25.125c.875.437 1.82.36 2.688.125c.867-.236 1.701-.64 2.5-1.063c.798-.422 1.557-.864 2.156-1.187c.084-.045.138-.056.219-.094C10.796 19.543 13.684 21 16.906 21c.031.004.06 0 .094 0c1.3 0 5.5 4.294 8 2.594c.1-.399-2.198-1.4-2.313-4.375c1.957-1.383 3.22-3.44 3.22-5.719c0-3.372-2.676-6.158-6.25-7.156C18.526 2.664 14.594 0 10 0zm0 2c4.547 0 8 3.05 8 6.5S14.547 15 10 15c-.812 0-1.278.332-1.938.688c-.66.355-1.417.796-2.156 1.187c-.64.338-1.25.598-1.812.781c.547-.79 1.118-1.829 1.218-3.281l.032-.563l-.469-.343C3.093 12.22 2 10.423 2 8.5C2 5.05 5.453 2 10 2z"></path>
-                                </svg>
-                                <span className=" text-[#3574FF] flex-1 ml-3 whitespace-nowrap"
-                                    style={
-                                        collapsed ? { display: 'none' } : { display: 'block' }
-                                    }>Chat</span>
-                            </a>
-                        </li>
-
-                        <li className="relative" style={{
-                            paddingTop: '39rem',
-                        }} >
-                            <button onClick={toggleSidebar} className='flex items-center justify-center w-full p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group focus:outline-none'>
-                                <span className="flex items-center">
-                                    <svg width="1em" height="1em" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                                        <path fill="#3574FF" fillRule="evenodd" d="M0 12.25a.75.75 0 0 0 1.5 0v-8.5a.75.75 0 0 0-1.5 0v8.5Zm7.841-8.03a.75.75 0 0 1 0 1.06l-1.97 1.97h9.379a.75.75 0 0 1 0 1.5H5.871l1.97 1.97a.75.75 0 1 1-1.06 1.06L3.53 8.53L3 8l.53-.53l3.25-3.25a.75.75 0 0 1 1.061 0Z" clipRule="evenodd"></path>
-                                    </svg>
+                                <span className={`text-[#fff] flex-1 ml-3 whitespace-nowrap ${collapsed ? 'hidden' : 'block'}`}>
+                                    {item.text}
                                 </span>
-                            </button>
+                            </a>
                         </li>
-                    </ul>
-                </div>
-            </aside >
+                    ))}
 
-        </div >
-    )
+                    <li className="relative" style={{ paddingTop: '39rem' }}>
+                        <button
+                            onClick={toggleSidebar}
+                            className='flex items-center justify-center w-full p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group focus:outline-none'
+                        >
+                            <span className="flex items-center">
+                                <svg width="1em" height="1em" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill="#3574FF" fillRule="evenodd" d="M0 12.25a.75.75 0 0 0 1.5 0v-8.5a.75.75 0 0 0-1.5 0v8.5Zm7.841-8.03a.75.75 0 0 1 0 1.06l-1.97 1.97h9.379a.75.75 0 0 1 0 1.5H5.871l1.97 1.97a.75.75 0 1 1-1.06 1.06L3.53 8.53L3 8l.53-.53l3.25-3.25a.75.75 0 0 1 1.061 0Z" clipRule="evenodd"></path>
+                                </svg>
+                            </span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+
+
+
+
+    );
 }
-
-
-
-// export default function SideBar() {
-//     const [collapsed, setCollapsed] = useState(false);
-
-//     const toggleCollapse = () => {
-//         setCollapsed(!collapsed);
-//     };
-
-//     return (
-//         <aside className={`z-40 w-${collapsed ? '16' : '64'} h-screen transition-all duration-300 ease-in-out`}>
-//             <div className="bg-[#1B1839] h-full px-3 py-4 ">
-//                 <ul className="space-y-2 font-medium">
-//                     <li>
-//                         <a href="#" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700">
-//                             <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-//                                 {/* Home icon */}
-//                             </svg>
-//                             {!collapsed && <span className="flex-1 ml-3 whitespace-nowrap">Home</span>}
-//                         </a>
-//                     </li>
-//                     <li>
-//                         <a href="#" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-//                             <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-//                                 {/* Ranking icon */}
-//                             </svg>
-//                             {!collapsed && <span className="flex-1 ml-3 whitespace-nowrap">Ranking</span>}
-//                         </a>
-//                     </li>
-//                     <li>
-//                         <a href="#" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-//                             <svg width="1em" height="1em" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-//                                 {/* Career icon */}
-//                             </svg>
-//                             {!collapsed && <span className="flex-1 ml-3 whitespace-nowrap">Career</span>}
-//                         </a>
-//                     </li>
-//                     <li>
-//                         <a href="#" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-//                             <svg width="1em" height="1em" viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg">
-//                                 {/* Chat icon */}
-//                             </svg>
-//                             {!collapsed && <span className="flex-1 ml-3 whitespace-nowrap">Chat</span>}
-//                             {!collapsed && (
-//                                 <span className="inline-flex items-center justify-center w-3 h-3 p-3 ml-3 text-sm font-medium text-blue-800 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-blue-300">
-//                                     3
-//                                 </span>
-//                             )}
-//                         </a>
-//                     </li>
-//                     {!collapsed && (
-//                         <li className="relative">
-//                             <button className="flex items-center justify-between w-full p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group focus:outline-none">
-//                                 <span className="flex items-center">
-//                                     <svg width="1em" height="1em" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-//                                         {/* Button icon */}
-//                                     </svg>
-//                                 </span>
-//                             </button>
-//                         </li>
-//                     )}
-//                 </ul>
-//             </div>
-//             <div className="absolute bottom-0 left-0 right-0">
-//                 <button
-//                     className="p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group focus:outline-none"
-//                     onClick={toggleCollapse}
-//                 >
-//                     {!collapsed ? 'Collapse' : 'Expand'}
-//                 </button>
-//             </div>
-//         </aside>
-//     );
-// }

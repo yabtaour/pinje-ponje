@@ -4,6 +4,8 @@ import { AuthWithWs } from 'src/chat/dto/user-ws-dto';
 import { GameState } from './gameState';
 import { GameService } from './game.service';
 import { Inject, forwardRef } from '@nestjs/common';
+import { IsNotEmpty, IsNumber } from 'class-validator';
+import { UpdateBallPositionDto, UpdatePaddlePositionDto, UpdateScoreDto } from './dto/game.dto';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -11,6 +13,7 @@ import { Inject, forwardRef } from '@nestjs/common';
     origin: '*'
   }
 })
+
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 
   @WebSocketServer()
@@ -40,12 +43,26 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     // }
 
     @SubscribeMessage('updatePlayerPosition')
-    updatePlayerPosition(client: any, payload: {gameId: number, direction: "up" | "down"}): void {
+    updatePlayerPosition(client: any, payload: UpdatePaddlePositionDto): void {
       console.log(client);
-      this.gameService.updatePlayerPosition(client.id, payload.direction, payload.gameId);
+      this.gameService.updatePlayerPosition(client.id, payload);
+    }
+  
+    // @SubscribeMessage('updateBallPosition')
+    // updateBallPosition(client: any, payload: UpdateBallPositionDto): void {
+    //   this.gameService.updateBallPosition(payload);
+    // }
+
+    @SubscribeMessage('gameOver')
+    gameOver(client: any, payload: {gameId: number}): void {
+      this.gameService.gameOver(payload.gameId);
     }
     
-
+    @SubscribeMessage('updateScore')
+    updateScore(client: any, payload: UpdateScoreDto): void {
+      console.log(payload);
+      this.gameService.updateScore(payload.userId, payload.gameId);
+    }
     // @SubscribeMessage('game')
     // handleMessage(client: any, payload:)
     

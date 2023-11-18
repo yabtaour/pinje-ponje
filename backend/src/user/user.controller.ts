@@ -43,7 +43,6 @@ export class UserController {
   })
   async getQRCode(@Req() request: any) {
     const user = await this.userService.getCurrentUser(request);
-    console.log(user);
     return await this.userService.getQRCode(user.id);
   }
 
@@ -67,16 +66,6 @@ export class UserController {
     const user = await this.userService.getCurrentUser(request);
     return this.userService.UpdateUser(user.id, data);
   }
-
-  @Get('QRCode')
-  @ApiOperation({ summary: 'Get QRCode', 
-    description: 'Get QRCode and return the QRCode',
-  })
-  async getQRCode(@Req() request: any) {
-    const user = await this.userService.getCurrentUser(request);
-    return this.userService.getQRCode(user.id);
-  }
-
   
   @Get('fake')
   @ApiOperation({ summary: 'Create fake users', 

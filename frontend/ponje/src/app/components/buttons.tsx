@@ -24,3 +24,18 @@ export function AuthGoogleButton() {
         </button>
     )
 }
+
+
+
+
+export function AcceptFriendRequest() {
+}
+
+export function DeclineFriendRequest() {
+}
+
+export function AcceptGameInvitation() {
+}
+
+export function DeclineGameInvitation() {
+}
