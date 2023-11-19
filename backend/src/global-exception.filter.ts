@@ -1,8 +1,6 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
-import { isInstance } from 'class-validator';
 import { Request, Response } from 'express';
-import { type } from 'os';
 import { JsonWebTokenError } from 'jsonwebtoken';
 
 @Catch()

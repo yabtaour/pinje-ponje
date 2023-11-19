@@ -8,10 +8,10 @@ import {
 import { JWTGuard } from '../auth/guards/jwt.guard';
 import { CreateUserDtoLocal } from './dto/create-user.dto';
 import { updateUserDto } from './dto/update-user.dto';
-import { FriendsActionsDto, UserService, blockAndUnblockUserDto } from './user.service';
-import { UserDto } from './dto/user.dto';
 import { PaginationLimitDto } from 'src/chat/chat.service';
-import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import { blockAndUnblockUserDto } from './dto/blockAndUnblock-user.dto';
+import { FriendsActionsDto } from './dto/FriendsActions-user.dto';
+import { UserService } from './user.service';
 
 
 @UseGuards(JWTGuard)
@@ -79,15 +79,18 @@ export class UserController {
     return this.userService.UpdateUser(user.id, data);
   }
 
-  @Get(':id')
+  @Get('/:id/')
   @ApiOperation({summary: 'Get a user by ID',
     description: 'Get a user by ID and return the user'
   })
   @ApiParam({ name: 'id', type: 'number' })
   async FindUserByID(
+      @Req() request: any,
       @Param('id', ParseIntPipe) id: number
     ){
-    return this.userService.FindUserByID(id);
+
+    const user = await this.userService.getCurrentUser(request);
+    return this.userService.FindUserByID(user.id, id);
   }
 
   @Post('resetPassword')
@@ -105,10 +108,12 @@ export class UserController {
     description: 'Get all users and return the users',
   })
   async FindAllUsers(
-      @Req() request: any
+      @Req() request: any,
+      @Query () query: PaginationLimitDto
     ){
     const user = await this.userService.getCurrentUser(request);
-    return this.userService.FindAllUsers(user.id);
+    console.log(+"user.id");
+    return this.userService.FindAllUsers(user.id, query);
   }
 
   @Get('/blocked-users')
@@ -130,7 +135,7 @@ export class UserController {
       @Body() data: blockAndUnblockUserDto
     ){
     const user = await this.userService.getCurrentUser(request);
-    return this.userService.BlockFriend(user.id, data);
+    return this.userService.BlockUser(user.id, data);
   }
 
   @Delete('/unblock')

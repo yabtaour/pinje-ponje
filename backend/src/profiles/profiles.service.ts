@@ -46,29 +46,12 @@ export class ProfilesService {
   // }
 
   async FindProfileById(_reqid: number , id: number) {
-    // const isBlocked = await this.isBlockby(_reqid, id);
-    // const isBlockedby = await this.isBlockby(id, _reqid);
-    // if (isBlocked || isBlockedby)
-      // throw new HttpException('Profile not found', HttpStatus.NOT_FOUND);
     const profile = await this.prisma.profile.findUnique({
       where: { userid: id },
-      include: {
-        pendingRequest: true,
-        sentRequest: true,
-        blockedBy: true,
-        blocking: true,
-      },
     });
     if (!profile)
       throw new HttpException('Profile not found', HttpStatus.NOT_FOUND);
-    profile.blockedBy = undefined;
-    profile.blocking = undefined;
-    profile.Friends = undefined;
-    const Object = {
-      ...profile,
-      // FriendsList: await this.FindAllFriends(_reqid, id , {}),
-    }
-    return Object;
+    return profile;
   }
 
 

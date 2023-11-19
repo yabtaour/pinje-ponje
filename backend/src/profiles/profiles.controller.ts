@@ -186,15 +186,13 @@ export class ProfilesController {
     try {
       if (!user || !ima)
         throw new BadRequestException('Invalid Request Data.');
-      const result = this.profilesService.uploadAvatar(1, ima);
+      const result = this.profilesService.uploadAvatar(+user.sub, ima);
       return result;
     }
     catch (error) {
       throw new BadRequestException(error.message);
     }
   }
-
-
 
   @Delete('avatar')
   @ApiOperation({ summary: 'Delete Avatar', description: 'Delete Avatar' })
