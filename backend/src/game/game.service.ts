@@ -336,19 +336,10 @@ export class GameService {
 			{x: 0, y: 0},
 			{x: 0, y: 0},
 		)
-		console.log("7tal hna all good");
-		console.log(this.gameGateway.currentGames[game.id]);
 		this.gameGateway.currentGames[game.id] = gameState;
-		console.log(this.gameGateway.currentGames[game.id]);
-		console.log("7tal hna all good");
-		console.log(this.gameGateway.server);
 		await this.gameGateway.server.to(String(opponentPlayer.userId)).emit('queue', game);
-		console.log("7tal hna all good");
 		await this.gameGateway.server.to(String(player.userId)).emit('gameStart', gameState);
-		console.log("7tal hna all good");
 		await this.gameGateway.server.to(String(opponentPlayer.userId)).emit('gameStart', gameState);
-		console.log("7tal hna all good");
-		console.log(this.gameGateway.currentGames[game.id]);
 	}
 
 	async updatePlayerPosition(client: number, payload: UpdatePaddlePositionDto) {
@@ -388,11 +379,11 @@ export class GameService {
 
 		await this.gameGateway.server
 				.to(String(this.gameGateway.currentGames[payload.gameId].player1.id))
-				.emit('scoreUpdate', this.gameGateway.currentGames[payload.gameId]);
+				.emit('updatePlayerPosition', this.gameGateway.currentGames[payload.gameId]);
 
 		await this.gameGateway.server
 				.to(String(this.gameGateway.currentGames[payload.gameId].player2.id))
-				.emit('scoreUpdate', this.gameGateway.currentGames[payload.gameId]);
+				.emit('updatePlayerPosition', this.gameGateway.currentGames[payload.gameId]);
 	}
 
 	async updateBallPosition(x: number, y: number, gameId: number) {
