@@ -336,11 +336,18 @@ export class GameService {
 			{x: 0, y: 0},
 			{x: 0, y: 0},
 		)
-		this.gameGateway.currentGames[game.id] = gameState
-		this.gameGateway.server.to(String(opponentPlayer.userId)).emit('queue', game);
-		this.gameGateway.server.to(String(player.userId)).emit('gameStart', gameState);
-		this.gameGateway.server.to(String(opponentPlayer.userId)).emit('gameStart', gameState);
-
+		console.log("7tal hna all good");
+		console.log(this.gameGateway.currentGames[game.id]);
+		this.gameGateway.currentGames[game.id] = gameState;
+		console.log(this.gameGateway.currentGames[game.id]);
+		console.log("7tal hna all good");
+		console.log(this.gameGateway.server);
+		await this.gameGateway.server.to(String(opponentPlayer.userId)).emit('queue', game);
+		console.log("7tal hna all good");
+		await this.gameGateway.server.to(String(player.userId)).emit('gameStart', gameState);
+		console.log("7tal hna all good");
+		await this.gameGateway.server.to(String(opponentPlayer.userId)).emit('gameStart', gameState);
+		console.log("7tal hna all good");
 		console.log(this.gameGateway.currentGames[game.id]);
 	}
 
@@ -399,6 +406,49 @@ export class GameService {
 		await this.gameGateway.server.to(String(gameId)).emit('gameOver');
 	}
 
+
+	async finishGame(winnerId: number, loserId: number, gameId: number) {
+		await this.gameGateway.server.to(String(winnerId)).emit('gameOver', "YOU WON THE GAME !!! CONGRATULATIONS !!!");
+		await this.gameGateway.server.to(String(loserId)).emit('gameOver', "YOU LOST THE GAME !!! GOOD LUCK NEXT TIME :( :( :(");
+		await this.prisma.player.update({
+			where: {
+				userId_gameId: {
+					userId: Number(winnerId),
+					gameId: gameId,
+				},
+			},
+			data: {
+				status: "WINNER",
+				accuracy: 10,
+				reflex: 10,
+				consitency: 10
+			},
+		});
+		await this.prisma.player.update({
+			where: {
+				userId_gameId: {
+					userId: Number(loserId),
+					gameId: gameId,
+				},
+			},
+			data: {
+				status: "LOSER",
+			},
+		});
+		await this.prisma.user.updateMany({
+			where: {
+				id: {
+					in: [winnerId, loserId],
+				},
+			},
+			data: {
+				status: "ONLINE"
+			}
+		});
+		this.gameGateway.currentGames.delete(gameId);
+		console.log(this.gameGateway.currentGames);
+	}
+
 	async updateScore(userId: number, gameId: number) {
 		const player = await this.prisma.player.findUnique({
 			where: {
@@ -425,38 +475,11 @@ export class GameService {
 			opponentPlayer = this.gameGateway.currentGames[player.gameId].player1;
 		}
 		
-		let currentPlayerScore: number = await actualPlayer.score;
-		currentPlayerScore += 1;
-		actualPlayer.score = currentPlayerScore;
+		actualPlayer.score += 1;
 
 		if (actualPlayer.score >= 10) {
-			await this.prisma.player.update({
-				where: {
-					userId_gameId: {
-						userId: Number(userId),
-						gameId: gameId,
-					},
-				},
-				data: {
-					status: "WINNER",
-				},
-			});
-			await this.prisma.user.updateMany({
-				where: {
-					id: {
-						in: [actualPlayer.id, opponentPlayer.id],
-					},
-				},
-				data: {
-					status: "ONLINE"
-				}
-			});
-			await this.gameGateway.server.to(String(actualPlayer.id)).emit('gameOver', "YOU WON THE GAME !!! CONGRATULATIONS !!!");
-			await this.gameGateway.server.to(String(opponentPlayer.id)).emit('gameOver', "YOU LOST THE GAME !!! GOOD LUCK NEXT TIME :( :( :(");
-			console.log(this.gameGateway.currentGames);
-			this.gameGateway.currentGames.delete(gameId);
-			console.log("game over");
-			console.log(this.gameGateway.currentGames);
+			await this.finishGame(actualPlayer.id, opponentPlayer.id, player.gameId);
+			return;
 		}
 
 		if (this.gameGateway.currentGames[player.gameId].player1.id == userId)
