@@ -4,13 +4,13 @@ import axios from "./axios";
 interface userData {
     username: string;
     bio: string;
-    email: string;
+    email: string; // user object
 }
 
 
 export const updateUser = async (userData : userData, token : string) => {
     try {
-        const response = await axios.patch('/users/me', userData, {
+        const response = await axios.patch('/users', userData, {
             headers: {
                 Authorization: token,
             },

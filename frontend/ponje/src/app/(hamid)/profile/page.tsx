@@ -1,4 +1,4 @@
-
+"use client" ;
 import axios from "@/app/utils/axios";
 import { useEffect, useState } from "react";
 import FriendsList from "./components/FriendsList";
