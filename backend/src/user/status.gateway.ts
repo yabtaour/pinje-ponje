@@ -1,0 +1,46 @@
+import { Inject, Injectable, forwardRef } from "@nestjs/common";
+import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
+import { Server } from "socket.io";
+import { UserService } from "./user.service";
+
+@WebSocketGateway({
+    namespace: 'status',
+    cors: {
+        origin: '*'
+    }
+})
+@Injectable()
+export class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+    
+    @WebSocketServer()
+    server: Server;
+    
+    constructor(
+        @Inject(forwardRef(() => UserService))
+        private userService: UserService,
+        // private userService: UserService,
+    ) {}
+
+    afterInit(server: Server) {
+        console.log('StatusGateway initialized');
+    }
+
+    handleConnection(client: any, ...args: any[]) {
+        console.log('StatusGateway connected');
+        client.join('status');
+        const payload: {
+            status: string,
+            user: number,
+        } = {
+            status: 'online',
+            user: Number(client.id),
+        };
+        this.server.to('status').emit('status', payload);
+    }
+
+    handleDisconnect(client: any) {
+        console.log('StatusGateway disconnected');
+    }
+
+    // @SubscribeMessage('queue')
+}
