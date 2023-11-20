@@ -1,9 +1,10 @@
-import { Catch, ArgumentsHost, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Catch, ArgumentsHost, BadRequestException, NotFoundException, HttpException } from '@nestjs/common';
 import { BaseWsExceptionFilter } from '@nestjs/websockets';
 import { WsException } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
 
-@Catch()
+@Catch(WsException, HttpException, Error, BadRequestException, NotFoundException)
+
 export class AllExceptionsFilter extends BaseWsExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const client = host.switchToWs().getClient();
@@ -12,7 +13,6 @@ export class AllExceptionsFilter extends BaseWsExceptionFilter {
       logger.error(exception);
       super.catch(exception, host);
 
-      // console.log(exception);
       client.emit('ErrorEvent', {
         message: exception.message,
       });
