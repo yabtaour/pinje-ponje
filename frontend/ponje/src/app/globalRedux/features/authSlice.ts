@@ -26,6 +26,7 @@ type User = {
     createdAt: string;
     updatedAt: string;
     userid: number;
+    bio?: string | null;
   };
 };
 
@@ -49,24 +50,35 @@ export const auth = createSlice({
   reducers: {
     login: (state, action) => {
       if (action.payload.user && action.payload.user.id) {
-        state.value = {
+        const newState = {
           isAuthenticated: true,
           token: action.payload.token,
           user: action.payload.user,
         };
-        localStorage.setItem("auth", JSON.stringify(state.value));
-        return state;
+        localStorage.setItem("auth", JSON.stringify(newState));
+        return { ...state, value: newState };
       } else {
         console.error("Invalid payload structure for login");
+        return state;
       }
-
-      return state;
     },
-    logout: () => {
-      return initialState;
+    logout: () => initialState,
+
+    UpdateUser(state, action) {
+      const newUser = action.payload;
+      const updatedUser = { ...state.value.user, ...newUser };
+      const updatedState = {
+        ...state,
+        value: {
+          ...state.value,
+          user: updatedUser,
+        },
+      };
+      localStorage.setItem("auth", JSON.stringify(updatedState.value));
+      return updatedState;
     },
   },
 });
 
-export const { login, logout } = auth.actions;
+export const { login, logout, UpdateUser } = auth.actions;
 export default auth.reducer;

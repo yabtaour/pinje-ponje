@@ -1,22 +1,34 @@
 "use client"
+import UploadAvatar from '@/app/components/avatarUpload';
+import { UpdateUser } from '@/app/globalRedux/features/authSlice';
+import { useAppSelector } from '@/app/globalRedux/store';
+import { fetchUserData } from '@/app/utils/auth';
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
 import axios, { AxiosError } from 'axios';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import * as Yup from 'yup';
 import { resetPassword, updateUser } from "../../utils/update";
 
 export default function UserSettings() {
-    const [userToken, setUserToken] = React.useState("");
     const [showSuccessBadge, setShowSuccessBadge] = useState(false);
     const [resetPasswordError, setResetPasswordError] = useState("");
+    const user = useAppSelector((state) => state.authReducer.value.user);
+    const userToken = useAppSelector((state) => state.authReducer.value.token);
+    const dispatch = useDispatch();
 
-    React.useEffect(() => {
-        const token = localStorage.getItem('access_token');
-        if (token) {
-            setUserToken(token);
+    useEffect(() => {
+        if (!user) {
+            const accessToken: string | null = localStorage.getItem('access_token');
+            if (accessToken) {
+                const user = fetchUserData(accessToken).then((data) => {
+                    dispatch(UpdateUser(user))
+                })
+            }
         }
-    }, []);
+    }, [user])
+
 
     const [passwordShown, setPasswordShown] = useState(false);
 
@@ -24,15 +36,89 @@ export default function UserSettings() {
         setPasswordShown(!passwordShown);
     };
 
+
+
+    console.log("user : ", user);
+    const initialValues = {
+        username: user?.profile?.username ? user?.profile?.username : "",
+        email: user?.email ? user?.email : "",
+        bio: user?.profile?.bio ? user?.profile?.bio : "",
+        oldpassword: "",
+        newpassword: "",
+        confirmnewpassword: "",
+    };
+
+
+
+    const validationSchema = Yup.object().shape({
+        username: Yup.string(),
+        email: Yup.string().email("Invalid email address"),
+        oldpassword: Yup.string(),
+        newpassword: Yup.string().when("oldpassword", {
+            is: (oldpassword: string) => oldpassword && oldpassword.length > 0,
+            then: (schema) => schema.required("New Password is required").min(8, 'Password must be at least 8 characters'),
+        }),
+        confirmnewpassword: Yup.string().when("newpassword", {
+            is: (newpassword: string) => newpassword && newpassword.length > 0,
+            then: (schema) => schema.required("Confirm Password is required").oneOf([Yup.ref('newpassword')], 'Passwords must match'),
+        }),
+        bio: Yup.string().max(60, 'Bio must be less than 60 characters'),
+
+    });
+
+
+    const onSubmit = async (values: any, { setSubmitting }: any) => {
+        const { username, bio, oldpassword, newpassword, email } = values;
+        let userProfileData = { username, bio, email };
+        try {
+            if (username || bio || email) {
+                if (username === user?.profile?.username)
+                    userProfileData.username = "";
+                if (email === user?.email)
+                    userProfileData.email = "";
+
+                const response = await updateUser(userProfileData, userToken);
+
+                const updatedUser = {
+                    ...user,
+                    profile: {
+                        ...user?.profile,
+                        avatar: response.data.avatar,
+                    },
+                };
+
+                dispatch(UpdateUser(updatedUser));
+                console.log("updatedUser : ", updatedUser);
+            }
+            if (oldpassword && newpassword) {
+                await resetPassword(oldpassword, newpassword);
+                console.log("Password updated successfully.");
+                setResetPasswordError("");
+            }
+            setShowSuccessBadge(true);
+            setTimeout(() => setShowSuccessBadge(false), 5000);
+        }
+        catch (error) {
+            console.log(error);
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                if (err.response?.status === 401) {
+                    setResetPasswordError("Incorrect password");
+                }
+            }
+        }
+        setSubmitting(false);
+    };
+
+
+
+
+
+
     return (
         <div className="min-h-screen bg-[#151424]  flex flex-col justify-center" style={{
         }}>
-            {showSuccessBadge && (
-                <div className="alert alert-success w-1/3">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    <span>Your profile has been updated successfully!</span>
-                </div>
-            )}
+
             <div className="max-w-3xl w-full mx-auto">
                 <h3 className="text-3xl font-semibold text-center text-[#4E40F4] mb-4">
                     Profile Settings
@@ -40,69 +126,14 @@ export default function UserSettings() {
 
                 <div className="bg-[#1B1A2D] p-8 rounded-lg h-full w-fill">
                     <Formik
-                        initialValues={{
-                            username: "",
-                            email: "",
-                            oldpassword: "",
-                            newpassword: "",
-                            confirmnewpassword: "",
-                            bio: "",
-                        }}
-                        validationSchema={Yup.object().shape({
-                            username: Yup.string(),
-                            email: Yup.string().email("Invalid email address"),
-                            oldpassword: Yup.string(),
-                            newpassword: Yup.string().when("oldpassword", {
-                                is: (oldpassword: string) => oldpassword && oldpassword.length > 0,
-                                then: (schema) => schema.required("New Password is required").min(8, 'Password must be at least 8 characters'),
-                            }),
-                            confirmnewpassword: Yup.string().when("newpassword", {
-                                is: (newpassword: string) => newpassword && newpassword.length > 0,
-                                then: (schema) => schema.required("Confirm Password is required").oneOf([Yup.ref('newpassword')], 'Passwords must match'),
-                            }),
-                            bio: Yup.string().max(60, 'Bio must be less than 60 characters'),
-                        })}
-                        onSubmit={async (values, { setSubmitting }) => {
-                            const { username, bio, oldpassword, newpassword, email } = values;
-                            const userProfileData = { username, bio, email };
-                            try {
-                                if (username || bio || email) {
-                                    await updateUser(userProfileData, userToken);
-                                    console.log("Profile updated successfully.");
-                                }
-                                if (oldpassword && newpassword) {
-                                    await resetPassword(oldpassword, newpassword);
-                                    console.log("Password updated successfully.");
-                                    setResetPasswordError("");
-                                }
-                                setShowSuccessBadge(true);
-                                setTimeout(() => setShowSuccessBadge(false), 5000);
-                            }
-                            catch (error) {
-                                console.log(error);
-                                if (axios.isAxiosError(error)) {
-                                    const err = error as AxiosError;
-                                    if (err.response?.status === 401) {
-                                        setResetPasswordError("Incorrect password");
-                                    }
-                                }
-                            }
-                            setSubmitting(false);
-                        }}
+                        initialValues={initialValues}
+                        validationSchema={validationSchema}
+                        onSubmit={onSubmit}
                     >
                         {({ isSubmitting }) => (
                             <Form className="flex flex-col lg:flex-row gap-8">
                                 <div className="flex-1 flex flex-col items-center lg:items-start">
-                                    <div className="flex items-center justify-center w-full mb-6">
-                                        <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center h-32 w-32 rounded-full cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600 border-2 border-gray-300 border-dashed">
-                                            <div className="flex flex-col items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="38" height="33" viewBox="0 0 58 53" fill="none">
-                                                    <path d="M52.5 13H44.575L40 8H25V13H37.8L42.375 18H52.5V48H12.5V25.5H7.5V48C7.5 50.75 9.75 53 12.5 53H52.5C55.25 53 57.5 50.75 57.5 48V18C57.5 15.25 55.25 13 52.5 13ZM20 33C20 39.9 25.6 45.5 32.5 45.5C39.4 45.5 45 39.9 45 33C45 26.1 39.4 20.5 32.5 20.5C25.6 20.5 20 26.1 20 33ZM32.5 25.5C36.625 25.5 40 28.875 40 33C40 37.125 36.625 40.5 32.5 40.5C28.375 40.5 25 37.125 25 33C25 28.875 28.375 25.5 32.5 25.5ZM12.5 13H20V8H12.5V0.5H7.5V8H0V13H7.5V20.5H12.5V13Z" fill="#C6BCBC" />
-                                                </svg>
-                                            </div>
-                                            <input id="dropzone-file" type="file" className="hidden" />
-                                        </label>
-                                    </div>
+                                    <UploadAvatar />
                                     <div className="mb-4 w-full">
                                         <label htmlFor="username" className="text-sm font-regular text-[#73d3ff]">Username</label>
                                         <Field
@@ -235,6 +266,14 @@ export default function UserSettings() {
                     </Formik>
                 </div>
             </div>
+            {
+                showSuccessBadge && (
+                    <div className="alert alert-success w-1/3">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <span>Your profile has been updated successfully!</span>
+                    </div>
+                )
+            }
         </div >
     );
 }

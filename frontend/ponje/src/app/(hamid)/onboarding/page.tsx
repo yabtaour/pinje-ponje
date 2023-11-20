@@ -1,5 +1,6 @@
 'use client';
 
+import UploadAvatar from "@/app/components/avatarUpload";
 import { useAppSelector } from "@/app/globalRedux/store";
 import { Textarea, useToast } from "@chakra-ui/react";
 import { Modal, ModalContent, NextUIProvider } from '@nextui-org/react';
@@ -11,7 +12,6 @@ import { useDispatch } from "react-redux";
 import * as Yup from 'yup';
 
 
-import { Avatar } from "@nextui-org/react";
 
 export default function Onboarding() {
     const toast = useToast()
@@ -86,7 +86,7 @@ export default function Onboarding() {
                                         <Form>
                                             <div className="flex flex-col relative mb-8 mx-auto">
 
-                                                <div className="flex  justify-center ">
+                                                {/* <div className="flex  justify-center ">
 
 
                                                     <label htmlFor="avatar" className="cursor-pointer" style={{
@@ -125,7 +125,10 @@ export default function Onboarding() {
                                                             }
                                                         />
                                                     </label>
-                                                </div>
+                                                </div> */}
+                                                <UploadAvatar />
+
+
                                             </div>
                                             <div className="flex flex-col relative mb-8">
                                                 <div className="absolute top-[-2rem] text-slate-200 text-sm mb-8">Bio</div>
