@@ -136,10 +136,10 @@ export class UserService {
   }
 
   // this only update User Level : Email : Hashpassword : twofactor
-  async UpdateUser(id: number, data: updateUserDto) {
+  async UpdateUser(user_id: number, data: updateUserDto) {
     const user = await this.prisma.user.findUnique({
       where: {
-        id: id,
+        id: user_id,
       },
     });
     if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
@@ -150,7 +150,7 @@ export class UserService {
     }
     const updatedUser = await this.prisma.user.update({
       where: {
-        id: id,
+        id: user_id,
       },
       data: {
         ...data,
@@ -183,7 +183,7 @@ export class UserService {
     return users;
   }
 
-  async FindUserByID(@Param('user_id', ParseIntPipe) user_id: Number, searchid: Number) {
+  async FindUserByID(@Param('user_id', ParseIntPipe) user_id: number, searchid: number) {
     const user = await this.prisma.user.findMany({
       where: {
         AND: [
@@ -193,8 +193,8 @@ export class UserService {
           {
             NOT: {
               OR: [
-                { blockedBy: { some: { blockerId: user_id as number, blockedId: searchid as number }  } },
-                { blocking: { some: { blockerId: searchid as number, blockedId: user_id as number} }  },
+                { blockedBy: { some: { blockerId: user_id, blockedId: searchid }  } },
+                { blocking: { some: { blockerId: searchid, blockedId: user_id} }  },
               ],
             },
           },
