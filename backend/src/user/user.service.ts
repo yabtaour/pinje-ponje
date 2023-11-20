@@ -301,9 +301,9 @@ export class UserService {
     return user;
   }
 
-  async FindAllBlockedUsers(_id: number) {
+  async FindAllBlockedUsers(user_id: number) {
     const blockedList = await this.prisma.userBlocking.findMany({
-      where: { blockerId: _id },
+      where: { blockerId: user_id },
       select: {
         blocked: {
           select: {
@@ -321,7 +321,7 @@ export class UserService {
     return blockedList;
   }
 
-  async BlockUser(_id: number, data: blockAndUnblockUserDto) {
+  async BlockUser(user_id: number, data: blockAndUnblockUserDto) {
     const blockedUser = await this.prisma.user.findUnique({
       where: { id: data.id },
     });
@@ -329,7 +329,7 @@ export class UserService {
       // if blocked user not found
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 
-    if (blockedUser.id == _id)
+    if (blockedUser.id == user_id)
       // if want to block himself
       throw new HttpException(
         "You can't block yourself",
@@ -339,7 +339,7 @@ export class UserService {
     const ifAlready = await this.prisma.userBlocking.findUnique({
       where: {
         blockerId_blockedId: {
-          blockerId: _id,
+          blockerId: user_id,
           blockedId: data.id,
         },
       },
@@ -350,7 +350,7 @@ export class UserService {
 
     await this.prisma.userBlocking.create({
       data: {
-        blockerId: _id,
+        blockerId: user_id,
         blockedId: data.id,
       },
     });
@@ -358,7 +358,7 @@ export class UserService {
     return 'You have blocked this user';
   }
 
-  async UnBlockFriend(_id: number, data: blockAndUnblockUserDto) {
+  async UnBlockFriend(user_id: number, data: blockAndUnblockUserDto) {
     const blockedUser = await this.prisma.user.findUnique({
       where: { id: data.id },
     });
@@ -369,7 +369,7 @@ export class UserService {
     const ifAlready = await this.prisma.userBlocking.findUnique({
       where: {
         blockerId_blockedId: {
-          blockerId: _id,
+          blockerId: user_id,
           blockedId: data.id,
         },
       },
@@ -381,7 +381,7 @@ export class UserService {
     const user = await this.prisma.userBlocking.delete({
       where: {
         blockerId_blockedId: {
-          blockerId: _id,
+          blockerId: user_id,
           blockedId: data.id,
         },
       },
@@ -392,12 +392,12 @@ export class UserService {
 
   async FindAllFriends(
     _currentUser: number,
-    @Param('user_id', ParseIntPipe) _id: number,
+    @Param('user_id', ParseIntPipe) user_id: number,
     params: PaginationLimitDto,
   ) {
     const listofFriends = await this.prisma.friendship.findMany({
       where: {
-        userId: _id,
+        userId: user_id,
       },
       select: {
         friend: {
@@ -475,12 +475,12 @@ export class UserService {
     return 'Friend request canceled';
   }
 
-  async DeclineFriendRequest(_id: number, data: FriendsActionsDto) {
+  async DeclineFriendRequest(user_id: number, data: FriendsActionsDto) {
     const getFriendRequest = await this.prisma.friendRequest.findUnique({
       where: {
         senderId_receiverId: {
           senderId: data.id,
-          receiverId: _id,
+          receiverId: user_id,
         },
       },
     });
@@ -490,7 +490,7 @@ export class UserService {
       where: {
         senderId_receiverId: {
           senderId: data.id,
-          receiverId: _id,
+          receiverId: user_id,
         },
       },
     });
@@ -543,24 +543,24 @@ export class UserService {
     return 'Friend request accepted';
   }
 
-  async SentFriendRequest(_id: number, data: FriendsActionsDto) {
+  async SentFriendRequest(user_id: number, data: FriendsActionsDto) {
     const newFriendProfile = await this.prisma.user.findUnique({
       where: { id: data.id },
     });
 
-    if (!newFriendProfile || newFriendProfile.id === _id)
+    if (!newFriendProfile || newFriendProfile.id === user_id)
       throw new HttpException('No profile with this id', HttpStatus.NOT_FOUND);
 
     const createRequest = await this.prisma.friendRequest.upsert({
       where: {
         senderId_receiverId: {
-          senderId: _id,
+          senderId: user_id,
           receiverId: data.id,
         },
       },
       update: {},
       create: {
-        senderId: _id,
+        senderId: user_id,
         receiverId: data.id,
       },
     });
@@ -569,9 +569,9 @@ export class UserService {
   }
 
   // Not routes functions
-  async isBlockby(_id: number, id: number): Promise<boolean> {
+  async isBlockby(user_id: number, id: number): Promise<boolean> {
     const user = await this.prisma.user.findUnique({
-      where: { id: _id },
+      where: { id: user_id },
       select: {
         blockedBy: true,
       },
