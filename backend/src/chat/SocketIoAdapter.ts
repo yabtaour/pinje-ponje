@@ -35,6 +35,7 @@ export class SocketIOAdapter extends IoAdapter {
     server.of('chat').use(createTokenMiddleware(jwtService, this.logger, prisma));
     server.of('game').use(createTokenMiddleware(jwtService, this.logger, prisma));
 		server.of('notification').use(createTokenMiddleware(jwtService, this.logger, prisma));
+    server.of('status').use(createTokenMiddleware(jwtService, this.logger, prisma));
 
     return server;
   }
