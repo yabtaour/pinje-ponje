@@ -140,6 +140,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(client: AuthWithWs, payload: joinRoomDto) {
+    console.log("payload : ", payload);
     const room = await this.chatService.joinRoom(+client.id, payload, payload.roomId);
     client.join(String(payload.roomId));
     this.server.to(String(payload.roomId)).emit('roomJoined', room);
