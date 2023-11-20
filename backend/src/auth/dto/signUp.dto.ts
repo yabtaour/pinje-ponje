@@ -11,10 +11,6 @@ export class SignUpDto {
 	@IsNotEmpty({ message: "password is required"})
 	@IsString()
 	password: string;
-
-	@IsOptional()
-	@IsString()
-	avatar: string;
 }
 
 export class SignInDto {

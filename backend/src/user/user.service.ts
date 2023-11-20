@@ -13,6 +13,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ProfilesService } from '../profiles/profiles.service';
 import { CreateUserDtoIntra } from './dto/create-user.dto';
 import { updateUserDto } from './dto/update-user.dto';
+import { SignUpDto } from 'src/auth/dto/signUp.dto';
+import { IsNotEmpty, IsNumber } from 'class-validator';
 import { PaginationLimitDto } from 'src/chat/chat.service';
 import { blockAndUnblockUserDto } from './dto/blockAndUnblock-user.dto';
 import { FriendsActionsDto } from './dto/FriendsActions-user.dto';
@@ -103,37 +105,6 @@ export class UserService {
     return user;
   }
 
-  async CreateUserLocal(data: any) {
-    const userExist = await this.prisma.user.findUnique({
-      where: {
-        email: data.email,
-      },
-    });
-    if (userExist)
-      throw new HttpException('User already exist', HttpStatus.CONFLICT);
-    const rounds = await parseInt(process.env.BCRYPT_ROUNDS);
-    const HashedPassword = await bcrypt.hashSync(data.password, rounds);
-    const user = await this.prisma.user.create({
-      data: {
-        intraid: 33,
-        password: HashedPassword,
-        email: data.email,
-        profile: {
-          create: {
-            username: data.username,
-            avatar: 'data.profile.avatar',
-          },
-        },
-      },
-    });
-    if (!user) {
-      throw new HttpException(
-        'User creation failed: Unprocessable Entity',
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
-    }
-    return user;
-  }
 
   // this only update User Level : Email : Hashpassword : twofactor
   async UpdateUser(user_id: number, data: updateUserDto) {
@@ -161,8 +132,35 @@ export class UserService {
         },
       },
     });
-    return updatedUser;
+    return user;
   }
+
+  async CreateUserLocal(data: SignUpDto) {
+			const userExist = await this.prisma.user.findUnique({
+				where: {
+					email: data.email,
+				},
+			});
+			if (userExist)
+				throw new HttpException('User already exist', HttpStatus.CONFLICT);
+      const rounds = await parseInt(process.env.BCRYPT_ROUNDS);
+      const HashedPassword = await bcrypt.hashSync(data.password, rounds);
+      const user = await this.prisma.user.create({
+        data: {
+          password: HashedPassword,
+          email: data.email,
+          profile: { 
+            create: {
+              username: data.username,
+            },
+          }
+        }
+      })
+      if (!user) {
+        throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
+      }
+      return user;
+}
 
   async FindAllUsers(
     @Param('id', ParseIntPipe) id: number,
@@ -397,7 +395,7 @@ export class UserService {
     @Param('user_id', ParseIntPipe) _id: number,
     params: PaginationLimitDto,
   ) {
-    const listofFriends = await this.prisma.friendshipTest.findMany({
+    const listofFriends = await this.prisma.friendship.findMany({
       where: {
         userId: _id,
       },
@@ -417,7 +415,7 @@ export class UserService {
     @Param('user_id', ParseIntPipe) user_id: Number,
     data: any,
   ): Promise<any> {
-    const getFriendship = await this.prisma.friendshipTest.findMany({
+    const getFriendship = await this.prisma.friendship.findMany({
       where: {
         OR: [
           {
@@ -435,7 +433,7 @@ export class UserService {
     if (getFriendship.length == 0)
       throw new HttpException('No user with this id', HttpStatus.NOT_FOUND);
 
-    const deleteFriend = await this.prisma.friendshipTest.deleteMany({
+    const deleteFriend = await this.prisma.friendship.deleteMany({
       where: {
         OR: [
           {
@@ -452,11 +450,11 @@ export class UserService {
     return 'Friendship deleted';
   }
 
-  async CancelFriendRequest(_id: number, data: FriendsActionsDto) {
+  async CancelFriendRequest(user_id: number, data: FriendsActionsDto) {
     const getFriendRequest = await this.prisma.friendRequest.findUnique({
       where: {
         senderId_receiverId: {
-          senderId: _id,
+          senderId: user_id,
           receiverId: data.id,
         },
       },
@@ -468,7 +466,7 @@ export class UserService {
     const req_receiver = await this.prisma.friendRequest.delete({
       where: {
         senderId_receiverId: {
-          senderId: _id,
+          senderId: user_id,
           receiverId: data.id,
         },
       },
@@ -520,7 +518,7 @@ export class UserService {
     if (getFriendRequest.length == 0)
       throw new HttpException('No request with this id', HttpStatus.NOT_FOUND);
 
-    await this.prisma.friendshipTest.createMany({
+    await this.prisma.friendship.createMany({
       data: [
         {
           userId: user_id as number,

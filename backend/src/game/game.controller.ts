@@ -31,6 +31,13 @@ export class GameController {
 		return this.gameService.getGameById(id);
 	}
 
+	@Get("winrate/:id")
+	async getWinrate(
+		@Param('id', ParseIntPipe) id: number,
+	) {
+		return this.gameService.getWinRate(id);
+	}
+
 	@Post("queue")
 	async findGame(@Req() request: Request) {
 		const user = await this.userService.getCurrentUser(request);
