@@ -21,16 +21,15 @@ import { GetUser } from 'src/auth/decorators/get-user.decorator';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post()
-  @ApiOperation({
-    summary: 'Create a new user', 
-    description: 'Create a new user and return the user created',
-  })
-  @ApiBody({ type: CreateUserDtoLocal })
-  async create(@Body() data: CreateUserDtoLocal) {
-    return this.userService.CreateUserLocal(data);
-  }
-  
+  // @Post()
+  // @ApiOperation({
+  //   summary: 'Create a new user', 
+  //   description: 'Create a new user and return the user created',
+  // })
+  // @ApiBody({ type: CreateUserDtoLocal })
+  // async create(@Body() data: CreateUserDtoLocal) {
+  //   return this.userService.CreateUserLocal(data);
+  // }
   @Get('me')
   @ApiOperation({
     summary: 'Get the current user',

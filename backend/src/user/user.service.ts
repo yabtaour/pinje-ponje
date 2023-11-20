@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ProfilesService } from '../profiles/profiles.service';
 import { CreateUserDtoIntra } from './dto/create-user.dto';
 import { updateUserDto } from './dto/update-user.dto';
+import { SignUpDto } from 'src/auth/dto/signUp.dto';
 import { IsNotEmpty, IsNumber } from 'class-validator';
 import { PaginationLimitDto } from 'src/chat/chat.service';
 
@@ -102,8 +103,7 @@ export class UserService {
 	return user;
   }
 
-  async CreateUserLocal(data: any) {
-    // try {
+  async CreateUserLocal(data: SignUpDto) {
 			const userExist = await this.prisma.user.findUnique({
 				where: {
 					email: data.email,
@@ -115,13 +115,11 @@ export class UserService {
       const HashedPassword = await bcrypt.hashSync(data.password, rounds);
       const user = await this.prisma.user.create({
         data: {
-          intraid: 33,
           password: HashedPassword,
           email: data.email,
           profile: { 
             create: {
               username: data.username,
-              avatar: "data.profile.avatar",
             },
           }
         }
@@ -130,9 +128,6 @@ export class UserService {
         throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
       }
       return user;
-    // } catch (error) {
-    //   throw new HttpException('User creation failed: Unprocessable Entity', HttpStatus.UNPROCESSABLE_ENTITY);
-    // }
 }
 
 // this only update User Level : Email : Hashpassword : twofactor
