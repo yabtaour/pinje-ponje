@@ -30,6 +30,16 @@ export class UserService {
 		private readonly profile: ProfilesService
 	) {}
     
+
+  async getAllUsers() {
+	const users = await this.prisma.user.findMany({
+	  include: {
+		profile: true,
+	  },
+	});
+	return users;
+  }
+
   async CreateUsersFake() {
     try {
       for (let i = 0; i < 2; i++) {
