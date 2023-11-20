@@ -1,5 +1,4 @@
-
-'use client'
+'use client';
 import { Avatar, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Navbar, NavbarContent, NavbarItem } from "@nextui-org/react";
 import Image from 'next/image';
 import Notification from "./notification";

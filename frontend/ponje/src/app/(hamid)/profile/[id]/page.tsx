@@ -27,7 +27,7 @@ export default function Profile({ params }: { params: { id: number } }) {
             }
         };
         fetchData();
-    }, [params.id, user]);
+    }, [params.id]);
 
     return (
         <div className="bg-[#151424] relative flex-grow min-h-screen p-0">
