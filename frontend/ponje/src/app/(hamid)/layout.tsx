@@ -19,6 +19,7 @@ export default function Layout({
     return (
         <AuthProvider>
             <AuthGuard>
+                {/* <OnboardingGuard> */}
                 <NextUIProvider>
                     <div className="flex flex-col h-screen bg-gray-100">
                         <div className="w-full border-b border-blue-500">
@@ -38,6 +39,7 @@ export default function Layout({
                         </div>
                     </div>
                 </NextUIProvider>
+                {/* </OnboardingGuard> */}
             </AuthGuard>
         </AuthProvider>
     );
