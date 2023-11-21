@@ -1,14 +1,61 @@
-# this is the docker-compose.yml file for the backend service
+version: '3.8'
+
 services:
-  db:
-    container_name: ppdatabase
-    image: postgres:latest
+  frontend:
+    build:
+      context: ${FRONT_DIR_PATH}
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    container_name: frontend_container
+    environment:
+      - NEXTJS_API_URL=${NEXTJS_API_URL}
+    depends_on:
+      - frontend
+
+  backend:
+    build:
+      context: ${BACK_DIR_PATH}
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    container_name: backend_container
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - POSTGRES_DB=${POSTGRES_DB}
+
     env_file: .env
+    depends_on:
+      - postgres
+    networks:
+      - backend
+    # command: sh -c "npx prisma migrate deploy && npm run start:dev"
+
+  postgres:
+    build:
+      context: ${DB_DUMP_DIR}
+      dockerfile: Dockerfile
+    container_name: postgres_container
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - '5432:5432'
+      - "5432:5432"
+    env_file:
+      - .env
+    networks:
+      - backend
+
   adminer:
-    container_name: adminer
     image: adminer
+    container_name: adminer
+    restart: always
     ports:
-      - '8080:8080'
-# end of backend service.
+      - 8080:8080
+    networks:
+      - backend
+
+networks:
+  backend:
+  frontend:

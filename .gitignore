@@ -1,7 +1,7 @@
 ## source: pinj-ponje 0.0.1
 ##--------------------
 ## .env and Credentials files
-/.env
+.env
 backend/.env
 frontend/.env
 
