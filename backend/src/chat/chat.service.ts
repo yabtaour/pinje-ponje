@@ -241,9 +241,9 @@ export class ChatService {
         role: true,
         user: {
           select: {
+            username: true,
             profile : {
               select: {
-                username: true,
                 avatar: true,
               }
             }
@@ -286,28 +286,18 @@ export class ChatService {
         include: {
           user: {
             select: {
-              profile: {
-                select: {
-                  username: true,
-                }
-              }
+              username: true,
             }
           }
         }
       })
-
-      console.log('user name', user.user.profile.username);
 
       const kickeduser = await this.prisma.user.findUnique({
         where: {
           id: payload.userId,
         },
         select: {
-          profile: {
-            select: {
-              username: true,
-            }
-          }
+          username: true,
         }
       })
       return kickeduser;
@@ -416,9 +406,9 @@ export class ChatService {
             user : {
               select: {
                 id: true,
+                username: true,
                 profile: {
                   select: {
-                    username: true,
                     avatar: true,
                   }
                 }
@@ -455,7 +445,7 @@ export class ChatService {
       ...message,
       user: {
         id: user_id,
-        username: room.members[0].user.profile.username,
+        username: room.members[0].user.username,
         avatar: room.members[0].user.profile.avatar,
       }
     }
@@ -489,9 +479,9 @@ export class ChatService {
         createdAt: true,
         user: {
           select: {
+            username: true,
             profile: {
               select: {
-                username: true,
                 avatar: true,
               }
             }
