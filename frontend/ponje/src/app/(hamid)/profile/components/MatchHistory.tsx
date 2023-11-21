@@ -133,9 +133,7 @@ export default function MatchHistory() {
                         </TableColumn>
                     )}
                 </TableHeader>
-                <TableBody style={
-                    {}
-                } className="bg-[#000] " items={users}>
+                <TableBody className="bg-[#000] " items={users}>
                     {(item) => (
                         <TableRow key={item.id}>
                             {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
