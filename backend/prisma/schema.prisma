@@ -11,35 +11,43 @@ datasource db {
 }
 
 model User {
-  id              Int              @id @unique @default(autoincrement())
-  password        String?
-  email           String           @unique
-  intraid         Int?
-  googleId        String?
-  twoFactor       Boolean          @default(false)
-  twoFactorSecret String?
-  status          Status           @default(ONLINE)
-  Rooms           RoomMembership[]
-  messages        ChatMessage[]
-  profile         Profile?
-  players         Player[]
-
-  blockedBy UserBlocking[] @relation("BlockedBy")
-  blocking  UserBlocking[] @relation("Blocking")
-
-  friends  Friendship[] @relation("firend")
-  friendOf Friendship[] @relation("frinedof")
-
-  pendingRequest        FriendRequest[] @relation("UserPending")
-  sentRequest           FriendRequest[] @relation("userRequest")
+  id                    Int             @id @unique @default(autoincrement())
+  username              String          @unique
+  password              String?
+  email                 String          @unique
+  intraid               Int?
+  googleId              String?
+  twoFactor             Boolean         @default(false)
+  twoFactorSecret       String?
+  status                Status          @default(ONLINE)
   winRate               Float           @default(0)
   accuracy              Float           @default(0)
   consitency            Float           @default(0)
   reflex                Float           @default(0)
-  createdAt             DateTime        @default(now())
-  updatedAt             DateTime        @default(now()) @updatedAt
+  gamePoints            Int             @default(0)
+  rank                  Rank            @default(UNRANKED)
+  level                 Int             @default(0)
+  experience            Int             @default(0)
+
+  profile               Profile?
+
+  Rooms                 RoomMembership[]
+  messages              ChatMessage[]
+  players               Player[]
+  blockedBy             UserBlocking[] @relation("BlockedBy")
+  blocking              UserBlocking[] @relation("Blocking")
+  friends               Friendship[] @relation("firend")
+  friendOf              Friendship[] @relation("frinedof")
+  pendingRequest        FriendRequest[] @relation("UserPending")
+  sentRequest           FriendRequest[] @relation("userRequest")
   notificationsSent     Notification[]  @relation("sender")
   notificationsReceived Notification[]  @relation("receiver")
+
+
+
+
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @default(now()) @updatedAt
 }
 
 model Friendship {
@@ -75,15 +83,12 @@ model UserBlocking {
 
 model Profile {
   id         Int      @id @unique @default(autoincrement())
-  username   String   @unique
   bio        String?  @default("I am a new player") @db.VarChar(255)
   avatar     String?
+
   user       User     @relation(fields: [userid], references: [id], onDelete: Cascade)
   userid     Int      @unique
-  experience Int      @default(0)
-  gamePoints Int      @default(0)
-  rank       Rank     @default(UNRANKED)
-  level      Int      @default(0)
+
   createdAt  DateTime @default(now())
   updatedAt  DateTime @default(now()) @updatedAt
 }
