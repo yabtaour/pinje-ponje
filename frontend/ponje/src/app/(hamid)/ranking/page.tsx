@@ -1,5 +1,170 @@
 'use client';
+import { Pagination, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, User, getKeyValue } from '@nextui-org/react';
 import Image from 'next/image';
+import React from 'react';
+
+const columns = [
+  { name: "NAME", uid: "name" },
+  { name: "ROLE", uid: "role" },
+  { name: "STATUS", uid: "status" },
+
+]
+
+
+export const users = [
+  {
+    key: "1",
+    name: "Tony Reichert",
+    role: "CEO",
+    status: "Active",
+  },
+  {
+    key: "2",
+    name: "Zoey Lang",
+    role: "Technical Lead",
+    status: "Paused",
+  },
+  {
+    key: "3",
+    name: "Jane Fisher",
+    role: "Senior Developer",
+    status: "Active",
+  },
+  {
+    key: "4",
+    name: "William Howard",
+    role: "Community Manager",
+    status: "Vacation",
+  },
+  {
+    key: "5",
+    name: "Emily Collins",
+    role: "Marketing Manager",
+    status: "Active",
+  },
+  {
+    key: "6",
+    name: "Brian Kim",
+    role: "Product Manager",
+    status: "Active",
+  },
+  {
+    key: "7",
+    name: "Laura Thompson",
+    role: "UX Designer",
+    status: "Active",
+  },
+  {
+    key: "8",
+    name: "Michael Stevens",
+    role: "Data Analyst",
+    status: "Paused",
+  },
+  {
+    key: "9",
+    name: "Sophia Nguyen",
+    role: "Quality Assurance",
+    status: "Active",
+  },
+  {
+    key: "10",
+    name: "James Wilson",
+    role: "Front-end Developer",
+    status: "Vacation",
+  },
+  {
+    key: "11",
+    name: "Ava Johnson",
+    role: "Back-end Developer",
+    status: "Active",
+  },
+  {
+    key: "12",
+    name: "Isabella Smith",
+    role: "Graphic Designer",
+    status: "Active",
+  },
+  {
+    key: "13",
+    name: "Oliver Brown",
+    role: "Content Writer",
+    status: "Paused",
+  },
+  {
+    key: "14",
+    name: "Lucas Jones",
+    role: "Project Manager",
+    status: "Active",
+  },
+  {
+    key: "15",
+    name: "Grace Davis",
+    role: "HR Manager",
+    status: "Active",
+  },
+  {
+    key: "16",
+    name: "Elijah Garcia",
+    role: "Network Administrator",
+    status: "Active",
+  },
+  {
+    key: "17",
+    name: "Emma Martinez",
+    role: "Accountant",
+    status: "Vacation",
+  },
+  {
+    key: "18",
+    name: "Benjamin Lee",
+    role: "Operations Manager",
+    status: "Active",
+  },
+  {
+    key: "19",
+    name: "Mia Hernandez",
+    role: "Sales Manager",
+    status: "Paused",
+  },
+  {
+    key: "20",
+    name: "Daniel Lewis",
+    role: "DevOps Engineer",
+    status: "Active",
+  },
+  {
+    key: "21",
+    name: "Amelia Clark",
+    role: "Social Media Specialist",
+    status: "Active",
+  },
+  {
+    key: "22",
+    name: "Jackson Walker",
+    role: "Customer Support",
+    status: "Active",
+  },
+  {
+    key: "23",
+    name: "Henry Hall",
+    role: "Security Analyst",
+    status: "Active",
+  },
+  {
+    key: "24",
+    name: "Charlotte Young",
+    role: "PR Specialist",
+    status: "Paused",
+  },
+  {
+    key: "25",
+    name: "Liam King",
+    role: "Mobile App Developer",
+    status: "Active",
+  },
+];
+
+
 
 
 export const Podium = () => {
@@ -123,162 +288,117 @@ export const Podium = () => {
 }
 
 
-// export const Leaderboard = () => {
-//   return (
-//     <div>
-//       <div className="overflow-x-auto w-1/2 ml  bg-[#1B1A2D]">
-//         <table className="table">
-//           <thead>
-//             <tr className='bg-[#333153] text-[#8C87E1]'>
-//               <th></th>
-//               <th>Name</th>
-//               <th>XP</th>
-//               <th>Games won</th>
-//               <th>Rank</th>
-//               <th></th>
-//             </tr>
-//           </thead>
-//           <tbody>
-//             {/* row 1 */}
-//             <tr>
-//               <td className='w-2'>
-//                 <p className="text-3xl text-[#73d3ff] font-bold leading-normal mb-1">4</p>
-//               </td>
-//               <td>
-//                 <div className="flex items-center space-x-3">
-//                   <div className="avatar">
-//                     <div className="mask mask-squircle w-12 h-12">
-//                       <img src="/tailwind-css-component-profile-2@56w.png" alt="User profile pic" />
-//                     </div>
-//                   </div>
-//                   <div>
-//                     <div className="font-bold">souki</div>
-//                     <div className="text-sm opacity-50">ssabbaji</div>
-//                   </div>
-//                 </div>
-//               </td>
-//               <td>
-//                 12000
-//                 <br />
-//               </td>
-//               <td className='object-center'>30</td>
-//               {/* <td>Gold</td> */}
-//               <td>
-//                 <img src="/rank_icon.svg" alt="hero" className="w-10 h-10 rounded-full object-center" />
-//               </td>
-//               <th>
-//                 <button className="btn btn-ghost btn-xs text-[#4E40F4]">visit profile</button>
-//               </th>
-//             </tr>
-//             {/* row 2 */}
-//             <tr>
-//               <td className='w-2'>
-//                 <p className="text-2xl text-[#73d3ff] font-bold leading-normal mb-1">5</p>
-//               </td>
-//               <td>
-//                 <div className="flex items-center space-x-3">
-//                   <div className="avatar">
-//                     <div className="mask mask-squircle w-12 h-12">
-//                       <img src="/tailwind-css-component-profile-3@56w.png" alt="User profile pic" />
-//                     </div>
-//                   </div>
-//                   <div>
-//                     <div className="font-bold">Amine</div>
-//                     <div className="text-sm opacity-50">rsaf</div>
-//                   </div>
-//                 </div>
-//               </td>
-//               <td>
-//                 11500
-//                 <br />
-//               </td>
-//               <td>27</td>
-//               {/* <td>Gold</td> */}
-//               <td>
-//                 <img src="/rank_icon.svg" alt="hero" className="w-10 h-10 rounded-full object-center" />
-//               </td>
-//               <th>
-//                 <button className="btn btn-ghost btn-xs text-[#4E40F4]">visit profile</button>
-//               </th>
-//             </tr>
-//             {/* row 3 */}
-//             <tr>
-//               <td className='w-2'>
-//                 <p className="text-3xl text-[#73d3ff] font-bold leading-normal mb-1">6</p>
-//               </td>
-//               <td>
-//                 <div className="flex items-center space-x-3">
-//                   <div className="avatar">
-//                     <div className="mask mask-squircle w-12 h-12">
-//                       <img src="/tailwind-css-component-profile-4@56w.png" alt="User profile pic" />
-//                     </div>
-//                   </div>
-//                   <div>
-//                     <div className="font-bold">escanor</div>
-//                     <div className="text-sm opacity-50">yabtaour</div>
-//                   </div>
-//                 </div>
-//               </td>
-//               <td>
-//                 11000
-//                 <br />
-//               </td>
-//               <td>23</td>
-//               {/* <td>Silver</td> */}
-//               <td>
-//                 <img src="/rank_icon.svg" alt="hero" className="w-10 h-10 rounded-full object-center" />
-//               </td>
-//               <th>
-//                 <button className="btn btn-ghost btn-xs text-[#4E40F4]">visit profile</button>
-//               </th>
-//             </tr>
-//             {/* row 4 */}
-//             <tr>
-//               <td className='w-2'>
-//                 <p className="text-3xl text-[#73d3ff] font-bold leading-normal mb-1">7</p>
-//               </td>
-//               <td>
-//                 <div className="flex items-center space-x-3">
-//                   <div className="avatar">
-//                     <div className="mask mask-squircle w-12 h-12">
-//                       <img src="/tailwind-css-component-profile-5@56w.png" alt="User profile pic" />
-//                     </div>
-//                   </div>
-//                   <div>
-//                     <div className="font-bold">dark hamid</div>
-//                     <div className="text-sm opacity-50">ahouari</div>
-//                   </div>
-//                 </div>
-//               </td>
-//               <td>
-//                 10337
-//                 <br />
-//               </td>
-//               <td>20</td>
-//               {/* <td>Silver</td> */}
-//               <td>
-//                 <img src="/rank_icon.svg" alt="hero" className="w-10 h-10 rounded-full object-center" />
-//               </td>
-//               <th>
-//                 <button className="btn btn-ghost btn-xs text-[#4E40F4]">visit profile</button>
-//               </th>
-//             </tr>
-//           </tbody>
-//         </table>
-//       </div>
-//     </div>
-//   )
-// }
+export const Leaderboard = () => {
+  const [page, setPage] = React.useState(1);
+  const rowsPerPage = 10;
+
+  const pages = Math.ceil(users.length / rowsPerPage);
+
+  const items = React.useMemo(() => {
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+
+    return users.slice(start, end);
+  }, [page, users]);
+
+  const renderCell = React.useCallback((user: any, columnKey: any) => {
+    const cellValue = user[columnKey];
+
+    switch (columnKey) {
+      case "user":
+        return (
+          <button className="hover:bg-[#333153] p-1 rounded-lg ">
+            <User
+              avatarProps={{ radius: "lg", src: user.avatar }}
+              description={user.email}
+              name={cellValue}
+            >
+              {user.email}
+            </User>
+          </button>
+        );
+      case "EXP":
+        return <p className="text-default-400">{cellValue}</p>;
+
+      case "Rank":
+      case "Games Won":
+      case "Visit Profile":
+      default:
+        return cellValue;
+    }
+  }, []);
+
+
+
+
+
+
+
+
+  return (
+    <div className="p-0 m-0">
+
+      <Table
+        style={{
+          padding: "0px",
+          color: "#fff",
+        }}
+        isCompact isStriped
+        aria-label="Example table with client side pagination"
+        bottomContent={
+          <div className="flex w-full justify-center">
+            <Pagination
+              isCompact
+              showControls
+              showShadow
+              style={{
+                color: "#fff",
+              }}
+              page={page}
+              total={pages}
+              onChange={(page) => setPage(page)}
+            />
+          </div>
+        }
+        classNames={{
+          wrapper: "min-h-[222px]",
+        }}
+      >
+        <TableHeader>
+          <TableColumn className='bg-[#333153]' key="name">NAME</TableColumn>
+          <TableColumn className='bg-[#333153]' key="role">ROLE</TableColumn>
+          <TableColumn className='bg-[#333153]' key="status">STATUS</TableColumn>
+        </TableHeader>
+        <TableBody className="bg-[#000] " items={items}>
+          {(item) => (
+            <TableRow key={item.name}>
+              {(columnKey) => <TableCell>{getKeyValue(item, columnKey)}</TableCell>}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
 
 export default function RankPage() {
   return (
-    <div className="bg-[#151424] flex justify-center items-center">
-      <div className="flex flex-row justify-center">
+    <>
+      <div className='w-full flex justify-center bg-[#151424] '>
         <Podium />
       </div>
-      <div className="ml-[670px]">
-        {/* <Leaderboard /> */}
+
+      <div className='bg-[#151424]'>
+        <div className='w-full flex justify-center'>
+          <Leaderboard />
+        </div>
+
       </div>
-    </div>
+    </>
+
+
+
+
+
   );
 }
