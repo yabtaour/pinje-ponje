@@ -9,7 +9,7 @@ export type KeyedObject = {
 
 export function getCookie(key: string) {}
 
-export const fetchUserData = async (token: string) => {
+export const fetchUserData = async (token: string ) => {
   try {
     const response = await axios.get("/users/me", {
       headers: {
