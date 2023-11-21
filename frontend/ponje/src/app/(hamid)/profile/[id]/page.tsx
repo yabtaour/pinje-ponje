@@ -34,9 +34,6 @@ export default function Profile({ params }: { params: { id: number } }) {
             <div>
                 <PlayerBanner user={user} />
             </div>
-
-
-
             <div id="biggest wrapper" className="flex flex-col items-center justify-center">
                 <div className="flex justify-center ">
                     <div className="flex justify-center flex-row flex-wrap">

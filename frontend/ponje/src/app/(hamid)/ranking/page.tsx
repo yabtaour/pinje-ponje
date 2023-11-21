@@ -319,10 +319,5 @@ export default function RankPage() {
         )
       }
     </>
-
-
-
-
-
   );
 }
