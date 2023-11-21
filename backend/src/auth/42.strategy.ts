@@ -16,7 +16,6 @@ const sid = process.env.SECRET;
 export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
     constructor(
       private readonly jwtService: JwtAuthService,
-      private readonly userService: UserService,
       private readonly authService: AuthService,
     ){
         super({
@@ -27,19 +26,14 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
     }
 
     async validate(
-        accessToken: string,
-        refreshToken: string,
         profile: any, 
         done: VerifiedCallback
-    ): Promise<void> {
+    ) {
       const newUser = {
         intraid: Number(profile.id),
         email: profile._json.email,
         Hashpassword: null,
-        profile: {
-          username: profile.username,
-          login: profile.username,
-        }
+        username: profile.username,
       };
       const user = await this.authService.userCreateOrNot(newUser, "42");
       const token = await this.jwtService.generateToken(String(user.id));
