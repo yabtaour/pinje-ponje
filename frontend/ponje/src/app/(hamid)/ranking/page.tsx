@@ -1,173 +1,25 @@
 'use client';
-import { Pagination, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, User, getKeyValue } from '@nextui-org/react';
+import Loader from '@/app/components/loader';
+import { useAppSelector } from '@/app/globalRedux/store';
+
+import axios from '@/app/utils/axios';
+import { User as NextUIUser, Pagination, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@nextui-org/react';
+
+
 import Image from 'next/image';
-import React from 'react';
+import Link from 'next/link';
+import React, { useEffect } from 'react';
 
 const columns = [
-  { name: "NAME", uid: "name" },
-  { name: "ROLE", uid: "role" },
-  { name: "STATUS", uid: "status" },
+  { name: "User", uid: "user" },
+  { name: "XP", uid: "xp" },
+  { name: "Games Won", uid: "games Won" },
+  { name: "Rank", uid: "rank" },
+  { name: "Profile", uid: "profile" },
 
 ]
 
-
-export const users = [
-  {
-    key: "1",
-    name: "Tony Reichert",
-    role: "CEO",
-    status: "Active",
-  },
-  {
-    key: "2",
-    name: "Zoey Lang",
-    role: "Technical Lead",
-    status: "Paused",
-  },
-  {
-    key: "3",
-    name: "Jane Fisher",
-    role: "Senior Developer",
-    status: "Active",
-  },
-  {
-    key: "4",
-    name: "William Howard",
-    role: "Community Manager",
-    status: "Vacation",
-  },
-  {
-    key: "5",
-    name: "Emily Collins",
-    role: "Marketing Manager",
-    status: "Active",
-  },
-  {
-    key: "6",
-    name: "Brian Kim",
-    role: "Product Manager",
-    status: "Active",
-  },
-  {
-    key: "7",
-    name: "Laura Thompson",
-    role: "UX Designer",
-    status: "Active",
-  },
-  {
-    key: "8",
-    name: "Michael Stevens",
-    role: "Data Analyst",
-    status: "Paused",
-  },
-  {
-    key: "9",
-    name: "Sophia Nguyen",
-    role: "Quality Assurance",
-    status: "Active",
-  },
-  {
-    key: "10",
-    name: "James Wilson",
-    role: "Front-end Developer",
-    status: "Vacation",
-  },
-  {
-    key: "11",
-    name: "Ava Johnson",
-    role: "Back-end Developer",
-    status: "Active",
-  },
-  {
-    key: "12",
-    name: "Isabella Smith",
-    role: "Graphic Designer",
-    status: "Active",
-  },
-  {
-    key: "13",
-    name: "Oliver Brown",
-    role: "Content Writer",
-    status: "Paused",
-  },
-  {
-    key: "14",
-    name: "Lucas Jones",
-    role: "Project Manager",
-    status: "Active",
-  },
-  {
-    key: "15",
-    name: "Grace Davis",
-    role: "HR Manager",
-    status: "Active",
-  },
-  {
-    key: "16",
-    name: "Elijah Garcia",
-    role: "Network Administrator",
-    status: "Active",
-  },
-  {
-    key: "17",
-    name: "Emma Martinez",
-    role: "Accountant",
-    status: "Vacation",
-  },
-  {
-    key: "18",
-    name: "Benjamin Lee",
-    role: "Operations Manager",
-    status: "Active",
-  },
-  {
-    key: "19",
-    name: "Mia Hernandez",
-    role: "Sales Manager",
-    status: "Paused",
-  },
-  {
-    key: "20",
-    name: "Daniel Lewis",
-    role: "DevOps Engineer",
-    status: "Active",
-  },
-  {
-    key: "21",
-    name: "Amelia Clark",
-    role: "Social Media Specialist",
-    status: "Active",
-  },
-  {
-    key: "22",
-    name: "Jackson Walker",
-    role: "Customer Support",
-    status: "Active",
-  },
-  {
-    key: "23",
-    name: "Henry Hall",
-    role: "Security Analyst",
-    status: "Active",
-  },
-  {
-    key: "24",
-    name: "Charlotte Young",
-    role: "PR Specialist",
-    status: "Paused",
-  },
-  {
-    key: "25",
-    name: "Liam King",
-    role: "Mobile App Developer",
-    status: "Active",
-  },
-];
-
-
-
-
-export const Podium = () => {
+export const Podium = ({ users }: { users: DisplayedInfo[] }) => {
   return (
     <div className="flex flex-row"  >
       <div>
@@ -287,10 +139,24 @@ export const Podium = () => {
   )
 }
 
+export type DisplayedInfo = {
+  id: number,
+  username: string,
+  ex: number,
+  rank: string,
+  avatar: string,
+  gamesWon: number
+}
 
-export const Leaderboard = () => {
+
+
+export const Leaderboard = ({ users }: { users: DisplayedInfo[] }) => {
   const [page, setPage] = React.useState(1);
-  const rowsPerPage = 10;
+
+
+  const accessToken = useAppSelector((state) => state.authReducer.value.token);
+
+  const rowsPerPage = 20;
 
   const pages = Math.ceil(users.length / rowsPerPage);
 
@@ -301,6 +167,10 @@ export const Leaderboard = () => {
     return users.slice(start, end);
   }, [page, users]);
 
+
+
+
+
   const renderCell = React.useCallback((user: any, columnKey: any) => {
     const cellValue = user[columnKey];
 
@@ -308,92 +178,146 @@ export const Leaderboard = () => {
       case "user":
         return (
           <button className="hover:bg-[#333153] p-1 rounded-lg ">
-            <User
-              avatarProps={{ radius: "lg", src: user.avatar }}
-              description={user.email}
+            <NextUIUser
+              avatarProps={{ radius: "lg", src: user?.profile?.avatar }}
+              description={user.username}
               name={cellValue}
             >
-              {user.email}
-            </User>
+            </NextUIUser>
           </button>
         );
-      case "EXP":
+      case "XP" || "Games Won":
         return <p className="text-default-400">{cellValue}</p>;
-
       case "Rank":
-      case "Games Won":
-      case "Visit Profile":
+        return <p>{"IMAGE RANK"}</p>;
+      case "profile":
+        return (
+          <Link href={`/profile/${user.id}`}>
+            <h1 className="text-indigo-600">
+              <span className="text-sm">Visit Profile</span>
+            </h1>
+          </Link>
+        );
       default:
         return cellValue;
     }
-  }, []);
-
-
-
-
-
-
+  }, [1]);
 
 
   return (
-    <div className="p-0 m-0">
-
-      <Table
-        style={{
-          padding: "0px",
-          color: "#fff",
-        }}
-        isCompact isStriped
-        aria-label="Example table with client side pagination"
-        bottomContent={
-          <div className="flex w-full justify-center">
-            <Pagination
-              isCompact
-              showControls
-              showShadow
+    <div className="p-0 m-0 w-2/3 flex " >
+      {
+        users.length === 0 ? (
+          <Loader />
+        ) : (
+          <>
+            <Table
               style={{
+                padding: "0px",
                 color: "#fff",
               }}
-              page={page}
-              total={pages}
-              onChange={(page) => setPage(page)}
-            />
-          </div>
-        }
-        classNames={{
-          wrapper: "min-h-[222px]",
-        }}
-      >
-        <TableHeader>
-          <TableColumn className='bg-[#333153]' key="name">NAME</TableColumn>
-          <TableColumn className='bg-[#333153]' key="role">ROLE</TableColumn>
-          <TableColumn className='bg-[#333153]' key="status">STATUS</TableColumn>
-        </TableHeader>
-        <TableBody className="bg-[#000] " items={items}>
-          {(item) => (
-            <TableRow key={item.name}>
-              {(columnKey) => <TableCell>{getKeyValue(item, columnKey)}</TableCell>}
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+              isCompact isStriped
+              aria-label="Example table with client side pagination"
+              bottomContent={
+                <div className="flex w-full justify-center">
+                  <Pagination
+                    isCompact
+                    showControls
+                    showShadow
+                    style={{
+                      color: "#fff",
+                    }}
+                    page={page}
+                    total={pages}
+                    onChange={(page) => setPage(page)}
+                  />
+                </div>
+              }
+              classNames={{
+                wrapper: "min-h-[222px]",
+              }}
+            >
+              <TableHeader columns={columns}>
+                {(column) => (
+                  <TableColumn style={{
+                    backgroundColor: "#333153"
+                  }} key={column.uid} align={"center"}>
+                    {column.name}
+                  </TableColumn>
+                )}
+              </TableHeader>
+              <TableBody className="bg-[#000] " items={items}>
+                {(item) => (
+                  <TableRow key={item.id}>
+                    {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+
+          </>
+        )
+
+
+
+      }
     </div>
   );
 }
 
 export default function RankPage() {
+
+  const [users, setUsers] = React.useState([] as DisplayedInfo[]);
+
+
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await axios.get('/users', {
+          headers: {
+            'Authorization': `${localStorage.getItem('access_token')}`
+          }
+        });
+        const transformedUsers = res.data.map((user: any) => ({
+          id: user?.id,
+          username: user?.username,
+          ex: user?.experience,
+          rank: user?.rank,
+          gamesWon: user?.gamesWon,
+          avatar: user?.profile?.avatar
+        }));
+
+        setUsers(transformedUsers);
+        console.log("users : ", users);
+        return res.data;
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchUsers()
+
+  }, []);
+
+
   return (
     <>
-      <div className='w-full flex justify-center bg-[#151424] '>
-        <Podium />
-      </div>
+      {
+        users.length === 0 ? (
+          <Loader />
+        ) : (
+          <>
+            <div className='w-full  flex justify-center bg-[#151424] '>
+              <Podium users={users.slice(0, 3)} />
+            </div>
 
-      <div className='bg-[#151424]'>
-        <div className='w-full flex justify-center'>
-          <Leaderboard />
-        </div>
-
-      </div>
+            <div className='bg-[#151424]  w-full flex justify-center'>
+              <Leaderboard users={users.slice(3)} />
+            </div>
+          </>
+        )
+      }
     </>
 
 
