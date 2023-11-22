@@ -126,19 +126,33 @@ export class UserService {
       },
     });
     if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    try {
+    let secret = null;
+    if (data.twoFactor && data.twoFactor == true) {
+      secret = authenticator.generateSecret();
+      // const otpauth = authenticator.keyuri(user.email, 'pinje-ponge', secret);
+      // const generatedQR = await toDataURL(otpauth);
+    } else if (data.twoFactor && data.twoFactor == false) {
+      secret = null;
+    }
+      // await this.prisma.user.update({
+      //   where: {
+      //     id: user_id,
+      //   },
+      //   data: {
+      //     twoFactor: true,
+      //     twoFactorSecret: secret,
+      //   },
+      // });
       const updatedUser = await this.prisma.user.update({
         where: {
           id: user_id,
         },
         data: {
           ...data,
+          twoFactorSecret: secret,
         },
       });
       return updatedUser;
-    } catch (err) {
-        throw new HttpException(err, HttpStatus.BAD_REQUEST);
-    }
   }
 
   async CreateUserLocal(data: SignUpDto) {
@@ -192,7 +206,7 @@ export class UserService {
   }
 
   async FindUserByID(@Param('user_id', ParseIntPipe) user_id: number, searchid: number) {
-    const user = await this.prisma.user.findMany({
+    const user = await this.prisma.user.findFirst({
       where: {
         AND: [
           {
@@ -212,11 +226,12 @@ export class UserService {
         profile: true,
       },
     });
-    if (user.length == 0) {
+    console.log(user);
+    if (user == null) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
-    delete user[0].password;
-    delete user[0].twoFactorSecret;
+    delete user.password;
+    delete user.twoFactorSecret;
     return user;
   }
 
@@ -297,28 +312,11 @@ export class UserService {
     });
     if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     delete user.password;
-    delete user.twoFactorSecret;
+    // delete user.twoFactorSecret;
     return user;
   }
 
   async FindAllBlockedUsers(user_id: number) {
-    // const blockedList = await this.prisma.userBlocking.findMany({
-    //   where: { blockerId: user_id },
-    //   select: {
-    //     blocked: {
-    //       select: {
-    //         id: true,
-    //         username: true,
-    //         profile: {
-    //           select: {
-    //             avatar: true,
-    //           },
-    //         },
-    //       },
-    //     },
-    //   },
-    // });
-
     const blockedList = await this.prisma.userBlocking.findMany({
       where: { blockerId: user_id },
         include:{
@@ -431,7 +429,7 @@ export class UserService {
     @Param('user_id', ParseIntPipe) user_id: Number,
     data: any,
   ): Promise<any> {
-    const getFriendship = await this.prisma.friendship.findMany({
+    const getFriendship = await this.prisma.friendship.findFirst({
       where: {
         OR: [
           {
@@ -445,7 +443,7 @@ export class UserService {
         ],
       },
     });
-    if (getFriendship.length == 0)
+    if (getFriendship == null)
       throw new HttpException('No user with this id', HttpStatus.NOT_FOUND);
 
     const deleteFriend = await this.prisma.friendship.deleteMany({
@@ -516,7 +514,7 @@ export class UserService {
     @Param('user_id', ParseIntPipe) user_id: Number,
     data: FriendsActionsDto,
   ) {
-    const getFriendRequest = await this.prisma.friendRequest.findMany({
+    const getFriendRequest = await this.prisma.friendRequest.findFirst({
       where: {
         OR: [
           {
@@ -530,7 +528,7 @@ export class UserService {
         ],
       },
     });
-    if (getFriendRequest.length == 0)
+    if (getFriendRequest == null)
       throw new HttpException('No request with this id', HttpStatus.NOT_FOUND);
 
     await this.prisma.friendship.createMany({

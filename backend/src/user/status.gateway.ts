@@ -42,5 +42,16 @@ export class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         console.log('StatusGateway disconnected');
     }
 
+    onDisconnect(client: any) {
+        console.log('StatusGateway disconnected');
+        const payload: {
+            status: string,
+            user: number,
+        } = {
+            status: 'offline',
+            user: Number(client.id),
+        };
+        this.server.to('status').emit('status', payload);
+    }
     // @SubscribeMessage('queue')
 }

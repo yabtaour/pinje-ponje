@@ -1,18 +1,19 @@
 'use client';
 import InputCode from '@/app/components/inputCode';
+import axios from '@/app/utils/axios';
 import { Toast } from '@chakra-ui/react';
+import { useRouter } from 'next/navigation';
 
 export default function VerificationPage() {
-
+    const router  = useRouter();
     const handleSubmit = async (values: any) => {
-        console.log("this is the values from the verification page : ", values);
         try {
-            // const res = await axios.post('/auth/2fa', values);
-            // if (res.status === 200)
-            //     router.push('/dashboard');
+            const res = await axios.post('/auth/2fa', values);
+            console.log(res);
+            if (res.status === 200)
+                router.push('/dashboard');
         }
         catch (error) {
-            console.log("this is the error from the verification page : ", error);
             Toast({
                 title: 'Error',
                 status: 'error',
