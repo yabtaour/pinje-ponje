@@ -45,7 +45,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleConnection(client: AuthWithWs) {
     const sockets = this.server.sockets;
 
-    const userRooms = await this.chatService.getRoomsByUserId(+client.id, {skip: 0});
+    const userRooms = await this.chatService.getRoomsByUserId(parseInt(client.id), {skip: 0});
   
     userRooms.forEach((room) => {
       this.logger.debug(`Client ${client.id} joined room ${room.name}`);
@@ -53,7 +53,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     });
   
     this.logger.debug(`Number of connected sockets: ${sockets.size}`);
-    this.logger.log(`Client connected: ` +client.id);
+    this.logger.log(`Client connected: `, client.id);
   }
 
   /**
@@ -64,10 +64,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleDisconnect(client: AuthWithWs) {
     const sockets = this.server.sockets;
 
-    this.logger.log(`Disconnected socket id: `+client.id);
+    this.logger.log(`Disconnected socket id: `, client.id);
     this.logger.debug(`Number of connected sockets: ${sockets.size}`);
 
-    const userRooms = await this.chatService.getRoomsByUserId(+client.id, {skip: 0});
+    const userRooms = await this.chatService.getRoomsByUserId(parseInt(client.id), {skip: 0});
   
     userRooms.forEach((room) => {
       this.logger.debug(`Client ${client.id} leave room ${room.name}`);
@@ -85,7 +85,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('createRoom')
   async handleCreateRoom(client: any, payload: any) {
     console.log("user id : ", client.id);
-    const room = await this.chatService.createRoom(+client.id, payload);
+    const room = await this.chatService.createRoom(parseInt(client.id), payload);
     client.join(room.name);
     this.server.to(room.name).emit('roomCreated', room);
   }
@@ -101,14 +101,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
    */
   
   @SubscribeMessage('getRooms')
-  async handleGetRooms(client: any, payload: any) {
+  async handleGetRooms(client: AuthWithWs, payload: any) {
     console.log("sadasdfasdfasdfasdf");
     console.log("The User ID Requesting Rooms : ", client.id)
-    const rooms = await this.chatService.getRoomsByUserId(+client.id, {
-        skip: client.handshake.query.skip ? +client.handshake.query.skip : 0,
-        take: client.handshake.query.take ? +client.handshake.query.take : 10,
-      }
-    );
+    const rooms = await this.chatService.getRoomsByUserId(parseInt(client.id), client.handshake.query);
     this.server.to(client.id).emit('listOfRooms', rooms);
   }
 
@@ -141,10 +137,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(client: AuthWithWs, payload: joinRoomDto) {
     console.log("payload : ", payload);
-    const room = await this.chatService.joinRoom(+client.id, payload, payload.roomId);
+    const room = await this.chatService.joinRoom(parseInt(client.id), payload, payload.roomId);
     client.join(String(payload.roomId));
     this.server.to(String(payload.roomId)).emit('roomJoined', room);
-    const message = "New User " + client.id + " Joined Room " + String(payload.roomId);
+    const message = "New User " +  client.id + " Joined Room " + String(payload.roomId);
     this.server.to(String(payload.roomId)).emit('roomBroadcast', message);
   }
 
@@ -159,11 +155,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('getRoomUsers')
   async handleGetRoomUsers(client: any, payload: any) {
-    const users = await this.chatService.getRoomUsers(client, payload.name,  {
-      skip: client.handshake.query.skip ? +client.handshake.query.skip : 0,
-      take: client.handshake.query.take ? +client.handshake.query.take : 10,
-    }
-     );
+    const users = await this.chatService.getRoomUsers(client, payload.name, client.handshake.query);
     this.server.to(client.id).emit('listOfRoomMembers', users);
   }
 
@@ -178,7 +170,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('kick')
   async handleKick(client: AuthWithWs, payload: any) {
-    const room = await this.chatService.kickUserFromRoom(client, payload);
+    const room = await this.chatService.kickUserFromRoom(parseInt(client.id), payload);
     this.server.to(payload.name).emit('roomBroadcast', "User Kicked");
   }
 
@@ -193,7 +185,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('mute')
   async handleMute(client: AuthWithWs, payload: any) {
-    const room = await this.chatService.MuteUserFromRoom(client, payload);
+    const room = await this.chatService.MuteUserFromRoom(parseInt(client.id), payload);
     this.server.to(payload.name).emit('roomBroadcast', "User Muted");
   }
 
@@ -208,14 +200,14 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('ban')
   async handleBan(client: AuthWithWs, payload: any) {
-    const room = await this.chatService.BanUserFromRoom(client, payload);
+    const room = await this.chatService.BanUserFromRoom(parseInt(client.id), payload);
     this.server.emit('roomBroadcast', "User Banned");
     this.server.to(payload.name).emit('roomBroadcast', "User Banned");
   }
 
   @SubscribeMessage('unban')
   async handleUnban(client: AuthWithWs, payload: any) {
-    const room = await this.chatService.UnBanUserFromRoom(client, payload);
+    const room = await this.chatService.UnBanUserFromRoom(parseInt(client.id), payload);
     this.server.to(payload.name).emit('roomBroadcast', "User Unbanned");
   }
 
@@ -234,7 +226,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('sendMessage')
   async handleMessage(client: AuthWithWs, payload: any){
-    const message = await this.chatService.createMessage(+client.id , payload.name, payload.message);
+    const message = await this.chatService.createMessage(parseInt(client.id) , payload.name, payload.message);
     if (message)
       this.server.to(payload.name).emit('message', message);
   }
@@ -253,11 +245,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('getMessages')
   async handleGetMessages(client: AuthWithWs, payload: any){
-    const messages = await this.chatService.getMessages(+client.id, payload, {
-      skip: client.handshake.query.skip ? +client.handshake.query.skip : 0,
-      take: client.handshake.query.take ? +client.handshake.query.take : 10,
-    }
-  );
+    const messages = await this.chatService.getMessages(parseInt(client.id), payload, client.handshake.query);
     this.server.to(client.id).emit('listOfMessages', messages);
   }
 
