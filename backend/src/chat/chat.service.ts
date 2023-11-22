@@ -174,36 +174,43 @@ export class ChatService {
   }
 
   async getRoomsByUserId(userId: number, params: PaginationLimitDto) {
-
+ 
     const { skip: number, take } = params;
-
+  
     // Retrieve the room memberships for the user
     const roomMemberships = await this.prisma.roomMembership.findMany({
       where: {
         userId: userId,
       },
-      select: {
-        state: true,
+      include: {
         room: {
-          select: {
-            id: true,
-            name: true,
-            roomType: true,
-            updatedAt: true,
-            createdAt: true,
+          include: {
             messages: {
               orderBy: {
                 createdAt: 'desc',
               },
               take: 1,
             },
+            members: {
+              where: {
+                userId : { not: userId}
+              },
+              select: {
+                user: {
+                  select: {
+                    username: true,
+                    status: true,
+                    profile: true,
+                  }
+                }
+              }
+            }
           },
         },
       },
       skip: params.skip,
       take: params.take,
     });
-
     // Filter out the banned rooms
     const rooms = roomMemberships
       .filter((membership) => membership.state !== 'BANNED')
@@ -212,7 +219,6 @@ export class ChatService {
     return rooms;
   }
 
-  
   async getRoomUsers(user_id : number, room_id: number, params: PaginationLimitDto) { // Func Scope Start : getRoomUsers
 
     const roomId = await this.prisma.chatRoom.findUnique({

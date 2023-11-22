@@ -102,12 +102,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   
   @SubscribeMessage('getRooms')
   async handleGetRooms(client: AuthWithWs, payload: any) {
-    console.log("sadasdfasdfasdfasdf");
     console.log("The User ID Requesting Rooms : ", client.id)
     const rooms = await this.chatService.getRoomsByUserId(parseInt(client.id), client.handshake.query);
     this.server.to(client.id).emit('listOfRooms', rooms);
   }
-
+  
   /**
    * Returns the room with the given name.
    * @param client The WebSocket client [ Socket ].
@@ -143,7 +142,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const message = "New User " +  client.id + " Joined Room " + String(payload.roomId);
     this.server.to(String(payload.roomId)).emit('roomBroadcast', message);
   }
-
 
   /**
    * Returns a list of all users in the room with the given name.

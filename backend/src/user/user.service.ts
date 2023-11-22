@@ -17,6 +17,8 @@ import { FriendsActionsDto } from './dto/FriendsActions-user.dto';
 import { blockAndUnblockUserDto } from './dto/blockAndUnblock-user.dto';
 import { CreateUserDtoIntra } from './dto/create-user.dto';
 import { updateUserDto } from './dto/update-user.dto';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotificationGateway } from 'src/notification/notification.gateway';
 
 config();
 
@@ -25,6 +27,8 @@ export class UserService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly profile: ProfilesService,
+		private readonly notificationService: NotificationService,
+		private readonly notificationGateway: NotificationGateway,
   ) {}
 
   async resetPassword(user: any, old: string, newPass: string) {
