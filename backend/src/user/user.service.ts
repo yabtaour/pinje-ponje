@@ -126,19 +126,33 @@ export class UserService {
       },
     });
     if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    try {
+    let secret = null;
+    if (data.twoFactor && data.twoFactor == true) {
+      secret = authenticator.generateSecret();
+      // const otpauth = authenticator.keyuri(user.email, 'pinje-ponge', secret);
+      // const generatedQR = await toDataURL(otpauth);
+    } else if (data.twoFactor && data.twoFactor == false) {
+      secret = null;
+    }
+      // await this.prisma.user.update({
+      //   where: {
+      //     id: user_id,
+      //   },
+      //   data: {
+      //     twoFactor: true,
+      //     twoFactorSecret: secret,
+      //   },
+      // });
       const updatedUser = await this.prisma.user.update({
         where: {
           id: user_id,
         },
         data: {
           ...data,
+          twoFactorSecret: secret,
         },
       });
       return updatedUser;
-    } catch (err) {
-        throw new HttpException(err, HttpStatus.BAD_REQUEST);
-    }
   }
 
   async CreateUserLocal(data: SignUpDto) {
@@ -298,7 +312,7 @@ export class UserService {
     });
     if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     delete user.password;
-    delete user.twoFactorSecret;
+    // delete user.twoFactorSecret;
     return user;
   }
 

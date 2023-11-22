@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
 import { UserService } from 'src/user/user.service';
@@ -26,7 +26,7 @@ export class AuthController {
         const user = request.user;
         console.log("Copy This Token: ", request.user.token);
 		response.cookie("token", "Brearer " + request.user.token);
-		if (user.twoFactorAuth === true)
+		if (user.twoFactor === true)
 			response.redirect('http://localhost:3001/verification');
 		else
 			response.redirect('http://localhost:3001/dashboard');
@@ -35,14 +35,17 @@ export class AuthController {
 	
 	@Get('google')
 	@UseGuards(AuthGuard('google'))
-	async handleGoogleAuth(@Req() request: any, @Res() response: Response) {
+	async handleGoogleAuth(
+		@Req() request: any,
+		@Res() response: Response
+	 ) {
 		const user = request.user;
 		console.log("Copy This Token: ", request.user.token);
 		response.cookie("token", "Brearer " + request.user.token);
-		if (user.twoFactorAuth === true)
-		response.redirect('http://localhost:3001/verification');
-	else
-		response.redirect('http://localhost:3001/dashboard');
+		if (user.twoFactor === true)
+			response.redirect('http://localhost:3001/verification');
+		else
+			response.redirect('http://localhost:3001/dashboard');
 	}
 
 	@Post('2fa')
@@ -51,10 +54,12 @@ export class AuthController {
 		@Body() body: {twofactorcode: string},
 		@Req() request: Request
 	) {
+		console.log(body);
 		const user = await this.userService.getCurrentUser(request);
     	const isValid = await this.authService.userTwoFaChecker(user, body);
 		if (!isValid)
-		throw new HttpException("invalid code", HttpStatus.BAD_REQUEST);
+			throw new HttpException("invalid code", HttpStatus.BAD_REQUEST);
+		return user;
 	}
 
 	@Post('login')
@@ -63,7 +68,11 @@ export class AuthController {
 		const user = request.user;
 	  	console.log("Copy This Token: ", request.user.token);
 		response.cookie("token", "Brearer " + request.user.token);
-		response.send(user);
+		if (user.twoFactor === true)
+			response.redirect('http://localhost:3001/verification');
+		else
+			response.redirect('http://localhost:3001/dashboard');
+		// response.send(user);
 	}
 
 	@Post('signUp')
