@@ -20,7 +20,7 @@ export default function SideBar(Props: any) {
     };
 
     return (
-        <aside className="z-40 bg-[#151424] h-full sticky top-0">
+        <aside className="z-40 bg-[#151424] h-full ">
             <div className="h-full px-3 py-4">
                 <ul className="space-y-2 font-medium text-lg">
                     {menuItems.map((item) => (

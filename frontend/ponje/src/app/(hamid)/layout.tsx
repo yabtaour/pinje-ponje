@@ -21,15 +21,15 @@ export default function Layout({
             <AuthGuard>
                 {/* <OnboardingGuard> */}
                 <NextUIProvider>
-                    <div className="flex flex-col h-screen bg-gray-100">
+                    <div className="flex flex-col h-full bg-gray-100">
                         <div className="w-full border-b border-blue-500">
                             <NavBar />
                         </div>
-                        <div className="flex flex-1">
+                        <div className="flex flex-1 sticky top-0">
                             <aside
                                 className={`${collapsed ? 'w-16' : 'w-64'
-                                    } border-r border-blue-500 transition-all duration-300 ease-in-out sticky top-0`}
-                                style={{ height: '100vh' }}
+                                    } border-r border-blue-500 transition-all duration-300 ease-in-out `}
+
                             >
                                 <SideBar collapsed={collapsed} toggleSidebar={toggleSidebar} />
                             </aside>
