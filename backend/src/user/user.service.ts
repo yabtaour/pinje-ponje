@@ -179,18 +179,16 @@ export class UserService {
     params: PaginationLimitDto,
   ) {
     const users = await this.prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        status: true,
-        twoFactor: true,
+      include : {
         profile: true,
       },
       ...params,
     });
     if (!users)
       throw new HttpException('Users not found', HttpStatus.NOT_FOUND);
-    return users;
+    // Remove sensitive information using map and object destructuring
+    const sanitizedUsers = users.map(({ password, twoFactorSecret, ...user }) => user);
+    return sanitizedUsers;
   }
 
   async FindUserByID(@Param('user_id', ParseIntPipe) user_id: number, searchid: number) {
@@ -210,16 +208,15 @@ export class UserService {
           },
         ],
       },
-      select: {
-        id : true,
-        email: true,
-        twoFactor: true,
+      include: {
         profile: true,
       },
     });
     if (user.length == 0) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
+    delete user[0].password;
+    delete user[0].twoFactorSecret;
     return user;
   }
 
@@ -261,6 +258,9 @@ export class UserService {
     });
     const user = await this.prisma.user.delete({
       where: { id: id },
+      include: {
+        profile: true,
+      }
     });
     if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     return user;
@@ -302,22 +302,35 @@ export class UserService {
   }
 
   async FindAllBlockedUsers(user_id: number) {
+    // const blockedList = await this.prisma.userBlocking.findMany({
+    //   where: { blockerId: user_id },
+    //   select: {
+    //     blocked: {
+    //       select: {
+    //         id: true,
+    //         username: true,
+    //         profile: {
+    //           select: {
+    //             avatar: true,
+    //           },
+    //         },
+    //       },
+    //     },
+    //   },
+    // });
+
     const blockedList = await this.prisma.userBlocking.findMany({
       where: { blockerId: user_id },
-      select: {
-        blocked: {
-          select: {
-            id: true,
-            username: true,
-            profile: {
-              select: {
-                avatar: true,
-              },
-            },
-          },
-        },
-      },
+        include:{
+          blocked: {
+            select: {
+              username: true,
+              profile: true,
+            }
+          }
+        }
     });
+
     return blockedList;
   }
 
@@ -354,7 +367,6 @@ export class UserService {
         blockedId: data.id,
       },
     });
-
     return 'You have blocked this user';
   }
 
@@ -401,14 +413,18 @@ export class UserService {
       },
       select: {
         friend: {
-          select: {
-            id: true,
+          include: {
             profile: true,
           },
         },
       },
     });
-    return listofFriends;
+
+    const sanitizedFriends = listofFriends.map(({ friend }) => {
+      const { password, twoFactorSecret, ...sanitizedFriend } = friend;
+      return sanitizedFriend;
+    });
+    return sanitizedFriends;
   }
 
   async Unfriend(

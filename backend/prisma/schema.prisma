@@ -224,12 +224,8 @@ enum playerStatus {
 // # enum [bronze, silver, gold, platinum, diamond, master, grandmaster, challenger]
 enum Rank {
   UNRANKED
+  IRON
   BRONZE
   SILVER
   GOLD
-  PLATINUM
-  DIAMOND
-  MASTER
-  GRANDMASTER
-  CHALLENGER
 }

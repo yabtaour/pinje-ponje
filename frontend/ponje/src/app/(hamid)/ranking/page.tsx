@@ -1,12 +1,27 @@
 'use client';
+import Loader from '@/app/components/loader';
+import { useAppSelector } from '@/app/globalRedux/store';
+
+import axios from '@/app/utils/axios';
+import { User as NextUIUser, Pagination, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@nextui-org/react';
+
+
 import Image from 'next/image';
+import Link from 'next/link';
+import React, { useEffect } from 'react';
 
+const columns = [
+  { name: "User", uid: "user" },
+  { name: "XP", uid: "xp" },
+  { name: "Games Won", uid: "games Won" },
+  { name: "Rank", uid: "rank" },
+  { name: "Profile", uid: "profile" },
 
-export const Podium = () => {
+]
+
+export const Podium = ({ users }: { users: DisplayedInfo[] }) => {
   return (
-    <div className="flex space-x-0" style={{
-
-    }}>
+    <div className="flex flex-row"  >
       <div>
         <div className="relative max-w-[150px] mx-auto  min-w-0 break-words bg-[#1B1A2D] w-full mb-6 shadow-lg rounded-xl mt-28">
           <div className="px-6">
@@ -14,7 +29,7 @@ export const Podium = () => {
               <div className="w-full flex justify-center">
                 <div className="relative">
                   <Image
-                    src="/docs/images/people/profile-picture-5.jpg"
+                    src="https://www.citedesartsparis.net/media/cia/188349-img_20200902_151505.jpg"
                     alt="Team member"
                     className="align-middle absolute -m-10 -ml-10 lg:-ml-9 max-w-[70px] border-2 border-[#c5c5c2] rounded-full"
                     width={70}
@@ -59,7 +74,7 @@ export const Podium = () => {
               <div className="w-full flex justify-center">
                 <div className="relative">
                   <Image
-                    src="/docs/images/people/profile-picture-5.jpg"
+                    src="https://www.citedesartsparis.net/media/cia/188349-img_20200902_151505.jpg"
                     alt="Team member"
                     className="align-middle absolute -m-10 -ml-10 lg:-ml-9 max-w-[70px] border-2 border-yellow-500 rounded-full"
                     width={70}
@@ -93,7 +108,7 @@ export const Podium = () => {
               <div className="w-full flex justify-center">
                 <div className="relative">
                   <Image
-                    src="/docs/images/people/profile-picture-5.jpg"
+                    src="https://www.citedesartsparis.net/media/cia/188349-img_20200902_151505.jpg"
                     alt="Team member"
                     className="align-middle absolute -m-10 -ml-10 lg:-ml-9 max-w-[70px] border-2 border-[#d18c3d] rounded-full"
                     width={70}
@@ -124,163 +139,185 @@ export const Podium = () => {
   )
 }
 
+export type DisplayedInfo = {
+  id: number,
+  username: string,
+  ex: number,
+  rank: string,
+  avatar: string,
+  gamesWon: number
+}
 
-export const Leaderboard = () => {
+
+
+export const Leaderboard = ({ users }: { users: DisplayedInfo[] }) => {
+  const [page, setPage] = React.useState(1);
+
+
+  const accessToken = useAppSelector((state) => state.authReducer.value.token);
+
+  const rowsPerPage = 20;
+
+  const pages = Math.ceil(users.length / rowsPerPage);
+
+  const items = React.useMemo(() => {
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+
+    return users.slice(start, end);
+  }, [page, users]);
+
+
+
+
+
+  const renderCell = React.useCallback((user: any, columnKey: any) => {
+    const cellValue = user[columnKey];
+
+    switch (columnKey) {
+      case "user":
+        return (
+          <button className="hover:bg-[#333153] p-1 rounded-lg ">
+            <NextUIUser
+              avatarProps={{ radius: "lg", src: user?.profile?.avatar }}
+              description={user.username}
+              name={cellValue}
+            >
+            </NextUIUser>
+          </button>
+        );
+      case "XP" || "Games Won":
+        return <p className="text-default-400">{cellValue}</p>;
+      case "Rank":
+        return <p>{"IMAGE RANK"}</p>;
+      case "profile":
+        return (
+          <Link href={`/profile/${user.id}`}>
+            <h1 className="text-indigo-600">
+              <span className="text-sm">Visit Profile</span>
+            </h1>
+          </Link>
+        );
+      default:
+        return cellValue;
+    }
+  }, [1]);
+
+
   return (
-    <div>
-      <div className="overflow-x-auto w-1/2 ml  bg-[#1B1A2D]">
-        <table className="table">
-          <thead>
-            <tr className='bg-[#333153] text-[#8C87E1]'>
-              <th></th>
-              <th>Name</th>
-              <th>XP</th>
-              <th>Games won</th>
-              <th>Rank</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {/* row 1 */}
-            <tr>
-              <td className='w-2'>
-                <p className="text-3xl text-[#73d3ff] font-bold leading-normal mb-1">4</p>
-              </td>
-              <td>
-                <div className="flex items-center space-x-3">
-                  <div className="avatar">
-                    <div className="mask mask-squircle w-12 h-12">
-                      <img src="/tailwind-css-component-profile-2@56w.png" alt="User profile pic" />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="font-bold">souki</div>
-                    <div className="text-sm opacity-50">ssabbaji</div>
-                  </div>
+    <div className="p-0 m-0 w-2/3 flex " >
+      {
+        users.length === 0 ? (
+          <Loader />
+        ) : (
+          <>
+            <Table
+              style={{
+                padding: "0px",
+                color: "#fff",
+              }}
+              isCompact isStriped
+              aria-label="Example table with client side pagination"
+              bottomContent={
+                <div className="flex w-full justify-center">
+                  <Pagination
+                    isCompact
+                    showControls
+                    showShadow
+                    style={{
+                      color: "#fff",
+                    }}
+                    page={page}
+                    total={pages}
+                    onChange={(page) => setPage(page)}
+                  />
                 </div>
-              </td>
-              <td>
-                12000
-                <br />
-              </td>
-              <td className='object-center'>30</td>
-              {/* <td>Gold</td> */}
-              <td>
-                <img src="/rank_icon.svg" alt="hero" className="w-10 h-10 rounded-full object-center" />
-              </td>
-              <th>
-                <button className="btn btn-ghost btn-xs text-[#4E40F4]">visit profile</button>
-              </th>
-            </tr>
-            {/* row 2 */}
-            <tr>
-              <td className='w-2'>
-                <p className="text-2xl text-[#73d3ff] font-bold leading-normal mb-1">5</p>
-              </td>
-              <td>
-                <div className="flex items-center space-x-3">
-                  <div className="avatar">
-                    <div className="mask mask-squircle w-12 h-12">
-                      <img src="/tailwind-css-component-profile-3@56w.png" alt="User profile pic" />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="font-bold">Amine</div>
-                    <div className="text-sm opacity-50">rsaf</div>
-                  </div>
-                </div>
-              </td>
-              <td>
-                11500
-                <br />
-              </td>
-              <td>27</td>
-              {/* <td>Gold</td> */}
-              <td>
-                <img src="/rank_icon.svg" alt="hero" className="w-10 h-10 rounded-full object-center" />
-              </td>
-              <th>
-                <button className="btn btn-ghost btn-xs text-[#4E40F4]">visit profile</button>
-              </th>
-            </tr>
-            {/* row 3 */}
-            <tr>
-              <td className='w-2'>
-                <p className="text-3xl text-[#73d3ff] font-bold leading-normal mb-1">6</p>
-              </td>
-              <td>
-                <div className="flex items-center space-x-3">
-                  <div className="avatar">
-                    <div className="mask mask-squircle w-12 h-12">
-                      <img src="/tailwind-css-component-profile-4@56w.png" alt="User profile pic" />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="font-bold">escanor</div>
-                    <div className="text-sm opacity-50">yabtaour</div>
-                  </div>
-                </div>
-              </td>
-              <td>
-                11000
-                <br />
-              </td>
-              <td>23</td>
-              {/* <td>Silver</td> */}
-              <td>
-                <img src="/rank_icon.svg" alt="hero" className="w-10 h-10 rounded-full object-center" />
-              </td>
-              <th>
-                <button className="btn btn-ghost btn-xs text-[#4E40F4]">visit profile</button>
-              </th>
-            </tr>
-            {/* row 4 */}
-            <tr>
-              <td className='w-2'>
-                <p className="text-3xl text-[#73d3ff] font-bold leading-normal mb-1">7</p>
-              </td>
-              <td>
-                <div className="flex items-center space-x-3">
-                  <div className="avatar">
-                    <div className="mask mask-squircle w-12 h-12">
-                      <img src="/tailwind-css-component-profile-5@56w.png" alt="User profile pic" />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="font-bold">dark hamid</div>
-                    <div className="text-sm opacity-50">ahouari</div>
-                  </div>
-                </div>
-              </td>
-              <td>
-                10337
-                <br />
-              </td>
-              <td>20</td>
-              {/* <td>Silver</td> */}
-              <td>
-                <img src="/rank_icon.svg" alt="hero" className="w-10 h-10 rounded-full object-center" />
-              </td>
-              <th>
-                <button className="btn btn-ghost btn-xs text-[#4E40F4]">visit profile</button>
-              </th>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+              }
+              classNames={{
+                wrapper: "min-h-[222px]",
+              }}
+            >
+              <TableHeader columns={columns}>
+                {(column) => (
+                  <TableColumn style={{
+                    backgroundColor: "#333153"
+                  }} key={column.uid} align={"center"}>
+                    {column.name}
+                  </TableColumn>
+                )}
+              </TableHeader>
+              <TableBody className="bg-[#000] " items={items}>
+                {(item) => (
+                  <TableRow key={item.id}>
+                    {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+
+          </>
+        )
+
+
+
+      }
     </div>
-  )
+  );
 }
 
 export default function RankPage() {
+
+  const [users, setUsers] = React.useState([] as DisplayedInfo[]);
+
+
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await axios.get('/users', {
+          headers: {
+            'Authorization': `${localStorage.getItem('access_token')}`
+          }
+        });
+        const transformedUsers = res.data.map((user: any) => ({
+          id: user?.id,
+          username: user?.username,
+          ex: user?.experience,
+          rank: user?.rank,
+          gamesWon: user?.gamesWon,
+          avatar: user?.profile?.avatar
+        }));
+
+        setUsers(transformedUsers);
+        console.log("users : ", users);
+        return res.data;
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchUsers()
+
+  }, []);
+
+
   return (
-    <div className="bg-[#151424] min-h-screen">
-      <div className="ml-[800px]">
-        <Podium />
-      </div>
-      <div className="ml-[670px]">
-        <Leaderboard />
-      </div>
-    </div>
+    <>
+      {
+        users.length === 0 ? (
+          <Loader />
+        ) : (
+          <>
+            <div className='w-full  flex justify-center bg-[#151424] '>
+              <Podium users={users.slice(0, 3)} />
+            </div>
+
+            <div className='bg-[#151424]  w-full flex justify-center'>
+              <Leaderboard users={users.slice(3)} />
+            </div>
+          </>
+        )
+      }
+    </>
   );
 }
