@@ -19,7 +19,7 @@ export class CreateChatDmRoomDto {
     @IsString()
     type: string;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
     role: string;
 }
