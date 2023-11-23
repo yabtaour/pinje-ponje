@@ -25,7 +25,7 @@ export class AuthController {
     async handle42Auth(@Req() request: any, @Res() response: Response) {
         const user = request.user;
         console.log("Copy This Token: ", request.user.token);
-		response.cookie("token", "Brearer " + request.user.token);
+		response.cookie("token", "Bearer " + request.user.token);
 		if (user.twoFactor === true)
 			response.redirect('http://localhost:3001/verification');
 		else
@@ -41,7 +41,7 @@ export class AuthController {
 	 ) {
 		const user = request.user;
 		console.log("Copy This Token: ", request.user.token);
-		response.cookie("token", "Brearer " + request.user.token);
+		response.cookie("token", "Bearer " + request.user.token);
 		if (user.twoFactor === true)
 			response.redirect('http://localhost:3001/verification');
 		else
@@ -67,7 +67,7 @@ export class AuthController {
 	async handleLogin(@Body() data: SignInDto, @Req() request: any, @Res() response: Response) {
 		const user = request.user;
 	  	console.log("Copy This Token: ", request.user.token);
-		response.cookie("token", "Brearer " + request.user.token);
+		response.cookie("token", "Bearer " + request.user.token);
 		if (user.twoFactor === true)
 			response.redirect('http://localhost:3001/verification');
 		else
