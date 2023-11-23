@@ -47,8 +47,8 @@ export default function Profile({ params }: { params: { id: number } }) {
                     <div className="flex justify-center">
                         <SkillAnalytics />
                         <div className="flex justify-center">
-                            <ProgressBar user={user} />
                             <Performance user={user} />
+                            <ProgressBar user={user} />
                         </div>
                     </div>
                 </div>

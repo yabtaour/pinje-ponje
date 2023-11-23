@@ -16,6 +16,7 @@ export const fetchUserData = async (token: string ) => {
         Authorization: `${token}`,
       },
     });
+    console.log(token);
     return response.data;
   } catch (error) {
     console.log(error);

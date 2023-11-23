@@ -1,13 +1,15 @@
 
+"use client";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, User } from "@nextui-org/react";
 import React from "react";
+import { useState } from "react";
 
 const columns = [
     { name: "TYPE", uid: "type" },
-    { name: "Result", uid: "result" },
-    { name: "Opponent", uid: "opponent" },
+    { name: "RESULT", uid: "result" },
+    { name: "OPPONENT", uid: "opponent" },
     { name: "XP", uid: "ex" },
-    { name: "Date", uid: "date" },
+    { name: "DATE", uid: "date" },
 ];
 
 const users = [
@@ -106,8 +108,9 @@ export default function MatchHistory() {
                 return <p className="text-default-400">{cellValue}</p>;
             case "result":
                 const bgColor = cellValue === "WIN" ? "bg-green-300" : "bg-red-300";
+                const textColor = cellValue === "WIN" ? "text-green-700" : "text-red-700";
                 return (
-                    <span className={`px-2 py-1 font-semibold leading-tight text-green-700 rounded-sm ${bgColor}`}>
+                    <span className={`px-1 py-0.5 font-semibold text-sm leading-tight ${textColor} rounded-sm ${bgColor}`}>
                         {cellValue}
                     </span>
                 );
@@ -115,27 +118,27 @@ export default function MatchHistory() {
                 return cellValue;
         }
     }, []);
+    const [currentIndex, setCurrentIndex] = useState(0);
 
     return (
 
         <div className="p-0 m-0">
             <h2 className="text-2xl font-light text-[#4E40F4] mb-1"> Match history </h2>
-            <Table style={{
+            <Table isStriped style={{
                 padding: "0px",
                 color: "#fff",
-            }} radius='lg' isCompact isStriped className=" text[#fff]" aria-label="Example table with custom cells">
+            }} radius='lg' className=" text[#fff]" aria-label="Example table with custom cells">
                 <TableHeader columns={columns}>
                     {(column) => (
-                        <TableColumn style={{
-                            backgroundColor: "#333153"
-                        }} key={column.uid} align={"center"}>
+                        <TableColumn className='bg-[#333153] text-[#8C87E1] font-medium text-sm'
+                            key={column.uid} align={"center"}>
                             {column.name}
                         </TableColumn>
                     )}
                 </TableHeader>
                 <TableBody className="bg-[#000] " items={users}>
                     {(item) => (
-                        <TableRow key={item.id}>
+                        <TableRow key={item.id} className={currentIndex % 2 === 0 ? "bg-[#1B1A2D]" : "bg-[#312e52]"}>
                             {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
                         </TableRow>
                     )}
