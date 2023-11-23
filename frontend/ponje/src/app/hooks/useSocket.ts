@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import io, { Socket } from "socket.io-client";
+import { Socket, io } from "socket.io-client";
 
 type EventType = "notifications" | "newMessage";
 
@@ -12,18 +12,21 @@ const useSocket = () => {
   const [notificationSocket, setNotificationSocket] = useState<Socket | null>(
     null
   );
-
+  const token = localStorage?.getItem("access_token")?.replace("Brearer ", "");
   useEffect(() => {
     const newChatSocket = io(`${SOCKET_SERVER_URL}/chat`, {
+      auth: { token: token },
+    });
+    const newGameSocket = io(`${SOCKET_SERVER_URL}/chat`, {
+      auth: { token: token },
       autoConnect: false,
     });
-    const newGameSocket = io(`${SOCKET_SERVER_URL}/game`, {
+    const newStatusSocket = io(`${SOCKET_SERVER_URL}/chat`, {
+      auth: { token: token },
       autoConnect: false,
     });
-    const newStatusSocket = io(`${SOCKET_SERVER_URL}/status`, {
-      autoConnect: false,
-    });
-    const newNotificationSocket = io(`${SOCKET_SERVER_URL}/notification`, {
+    const newNotificationSocket = io(`${SOCKET_SERVER_URL}/chat`, {
+      auth: { token: token },
       autoConnect: false,
     });
 

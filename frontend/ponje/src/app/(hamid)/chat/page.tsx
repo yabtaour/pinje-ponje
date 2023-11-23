@@ -1,25 +1,30 @@
 'use client';
 
-import useSocket from "@/app/hooks/useSocket";
+// import useSocket from "@/app/hooks/useSocket";
+import { useAppSelector } from "@/app/globalRedux/store";
 import { User } from "@nextui-org/react";
-import { useEffect, useState } from "react";
 import ChatInput from "./components/chatInput";
 
 
 
 export default function Chat() {
-    const { chatSocket } = useSocket();
-    const [messages, setMessages] = useState([]) as any[]
 
+    const token = useAppSelector(state => state?.authReducer?.value?.token)?.replace('Bearer ', '');
 
-    useEffect(() => {
-        chatSocket?.on('connect', () => {
-            console.log('connected');
-        })
-        return () => {
-            chatSocket?.disconnect();
-        }
-    }, [])
+    // const { chatSocket } = useSocket();
+    // const [messages, setMessages] = useState([]) as any[]
+    // const chatSocket = io('http://localhost:3000/chat', {
+    //     auth: { token: token }
+    // });
+
+    // useEffect(() => {
+    //     chatSocket?.on('connect', () => {
+    //         console.log('connected');
+    //     })
+    //     return () => {
+    //         chatSocket?.disconnect();
+    //     }
+    // }, [])
     return (
         <div className="bg-[#151424] h-full  p-0">
             <div className="bg-[#1B1A2D] w-full sticky top-0">
