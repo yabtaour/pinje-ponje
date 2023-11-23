@@ -19,6 +19,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
 
     const router = useRouter();
     const isAithenticated = useAppSelector((state) => state.authReducer.value.isAuthenticated);
+    const tokenFromSlice = useAppSelector((state) => state.authReducer.value.token);
     const dipatch = useDispatch();
 
 
@@ -27,6 +28,9 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
         let tokenFromCookie = getCookie('token')
         if (tokenFromCookie)
             localStorage.setItem('access_token', tokenFromCookie);
+
+        if (!tokenFromSlice)
+            dipatch(login({ token: tokenFromCookie }));
 
         const accessToken: string | null = localStorage.getItem('access_token');
         if (accessToken && !isAithenticated) {

@@ -1,19 +1,17 @@
-import { getCookie } from "cookies-next";
 import { useEffect, useState } from "react";
 import { Socket, io } from "socket.io-client";
+import { EventType, SOCKET_SERVER_URL } from "./useSocket";
 
-type EventType = "notifications" | "newMessage";
-
-const SOCKET_SERVER_URL = "http://localhost:3000";
-
-const useSocket = () => {
+export const useSocket = () => {
   const [chatSocket, setChatSocket] = useState<Socket | null>(null);
   const [gameSocket, setGameSocket] = useState<Socket | null>(null);
   const [statusSocket, setStatusSocket] = useState<Socket | null>(null);
   const [notificationSocket, setNotificationSocket] = useState<Socket | null>(
     null
   );
-  const token = getCookie("token")?.replace("Bearer ", "");
+  const token = localStorage.getItem("access_token") || null;
+
+
 
   useEffect(() => {
     const newChatSocket = io(`${SOCKET_SERVER_URL}/chat`, {
@@ -66,10 +64,8 @@ const useSocket = () => {
   //       statusSocket.emit("setStatus", status);
   //     }
   //   };
-
   //gameSocket
   //notificationSocket
-
   return {
     chatSocket,
     gameSocket,
@@ -80,5 +76,3 @@ const useSocket = () => {
     // setStatus,
   };
 };
-
-export default useSocket;
