@@ -181,6 +181,9 @@ export class ChatService {
     const roomMemberships = await this.prisma.roomMembership.findMany({
       where: {
         userId: userId,
+        state: {
+          in : ['ACTIVE', 'MUTED']
+        }
       },
       include: {
         room: {
@@ -201,9 +204,14 @@ export class ChatService {
               select: {
                 user: {
                   select: {
+                    id: true,
                     username: true,
                     status: true,
-                    profile: true,
+                    profile: {
+                      select: {
+                        avatar: true,
+                      }
+                    }
                   }
                 }
               }
@@ -215,11 +223,11 @@ export class ChatService {
       take: params.take,
     });
     // Filter out the banned rooms
-    const rooms = roomMemberships
-      .filter((membership) => membership.state !== 'BANNED')
-      .map((membership) => membership.room);
+    // const rooms = roomMemberships
+    //   .filter((membership) => membership.state !== 'BANNED')
+    //   .map((membership) => membership.room);
 
-    return rooms;
+    return roomMemberships;
   }
 
   async getRoomUsers(user_id : number, room_id: number, params: PaginationLimitDto) { // Func Scope Start : getRoomUsers
