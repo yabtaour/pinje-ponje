@@ -193,7 +193,10 @@ export class ChatService {
             },
             members: {
               where: {
-                userId : { not: userId}
+                userId : { not: userId},
+                state : {
+                  in : ['ACTIVE', 'MUTED']
+                }
               },
               select: {
                 user: {
