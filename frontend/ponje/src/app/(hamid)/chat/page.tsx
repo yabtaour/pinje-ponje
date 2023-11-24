@@ -1,32 +1,57 @@
 'use client';
-
-// import useSocket from "@/app/hooks/useSocket";
 import { useAppSelector } from "@/app/globalRedux/store";
+import useSocket from "@/app/hooks/useSocket";
 import { User } from "@nextui-org/react";
+import { useContext, useState } from "react";
 import ChatInput from "./components/chatInput";
+import { ChatContext } from "./layout";
 
 
 
 export default function Chat() {
-
+    const [messages, setMessages] = useState([]) as any[]
     const token = useAppSelector(state => state?.authReducer?.value?.token)?.replace('Bearer ', '');
-
-    // const { chatSocket } = useSocket();
-    // const [messages, setMessages] = useState([]) as any[]
-    // const chatSocket = io('http://localhost:3000/chat', {
-    //     auth: { token: token }
-    // });
+    const socket = useSocket();
+    const { activeConversation, setActiveConversation } = useContext(ChatContext);
 
     // useEffect(() => {
-    //     chatSocket?.on('connect', () => {
+    //     console.log("from Chat: ", activeConversation);
+    // }, [activeConversation?.id]);
+
+
+    // useEffect(() => {
+    //     console.log("connecting to socket");
+    //     socket.chatSocket?.on('connect', () => {
     //         console.log('connected');
-    //     })
+    //     });
     //     return () => {
-    //         chatSocket?.disconnect();
+    //         socket.chatSocket?.disconnect();
+    //     };
+    // }, []);
+
+
+
+
+    // useEffect(() => {
+    //     console.log("activeConversation: ", activeConversation);
+    //     if (activeConversation) {
+    //         socket.chatSocket?.emit('getMessages', {
+    //             name: activeConversation?.name,
+    //         });
+
+    //         socket.chatSocket?.on('listOfMessages', (message: any) => {
+    //             console.log("newMessage: ", message);
+    //             setMessages((messages: any) => [...messages, message]);
+    //         });
     //     }
-    // }, [])
+
+
+
+    // }, [activeConversation?.id])
+
+
     return (
-        <div className="bg-[#151424] h-full  p-0">
+        <div className="bg-[#151424] h-full w-full  p-0">
             <div className="bg-[#1B1A2D] w-full sticky top-0">
                 <User className="text-white my-2 p-4"
                     name="hamid"
@@ -36,6 +61,7 @@ export default function Chat() {
                     }}
                 />
             </div>
+
             <div className="">
                 <ChatInput />
             </div>

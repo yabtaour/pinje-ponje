@@ -2,10 +2,9 @@
 
 import Loader from "@/app/components/loader";
 import useSocket from "@/app/hooks/useSocket";
-import { useEffect, useState } from "react";
-
-
-
+import moment from 'moment';
+import { useContext, useEffect, useState } from "react";
+import { ChatContext } from "../layout";
 
 export type conversationType = {
     id: number,
@@ -15,12 +14,25 @@ export type conversationType = {
 }
 
 
+const formatMessageDate = (createdAt: any) => {
+    const messageDate = moment(createdAt);
+    const currentDate = moment();
+
+    if (messageDate.isSame(currentDate, 'day')) {
+        return messageDate.format('LT');
+    } else if (messageDate.isSame(currentDate.clone().subtract(1, 'day'), 'day')) {
+        return 'Yesterday';
+    } else {
+        return messageDate.format('MMM DD, YYYY');
+    }
+};
 
 
 export default function Conversation({ collapsed }: any) {
-
     const [conversations, setConversations] = useState<any[]>([] as any[]);
     const socket = useSocket();
+    const { activeConversation, setActiveConversation } = useContext(ChatContext);
+
 
     useEffect(() => {
         console.log("connecting to socket");
@@ -33,6 +45,7 @@ export default function Conversation({ collapsed }: any) {
     }, [socket.chatSocket]);
 
     useEffect(() => {
+
         console.log("chatSocket: ", socket.chatSocket);
         socket.chatSocket?.emit('getRooms', {
             skip: 0,
@@ -50,70 +63,81 @@ export default function Conversation({ collapsed }: any) {
     }, [socket.chatSocket]);
 
     return (
+        <div className="w-full p-0">
+            <div className="w-full p-0">
+                {
+                    conversations.length === 0 ? (<Loader />) : (
+                        <>
+                            {
+                                conversations.map((conversation: any) => (
+                                    <button onClick={() => {
+                                        // TODO : it should be just the id but rsaf has another idea
 
-        //         {
-        //             conversations?(<Loader />) 
-        //             :
-        //     (
-        //         < div className="p-2 sticky top-0" >
+                                        console.log("conversation: ", conversation);
+                                        setActiveConversation(conversation);
+                                    }} className={`sticky w-full p-2 m-1 top-0 rounded-full ${activeConversation?.id === conversation?.id ? 'bg-[#252341]' : 'hover:bg-[#252341]'
+                                        }`}>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-start ">
 
-        //             {/* <User className="text-white my-2"
+                                                {
+                                                    conversation?.roomType
+                                                        !== "DM" ? (
+                                                        <img
+                                                            src="https://i.redd.it/ow1iazp3ob351.jpg"
+                                                            alt="avatar"
+                                                            className="w-12 h-12 rounded-full"
+                                                        />
+                                                    ) : (
+                                                        <img
+                                                            src={`${conversation?.members[0]?.user?.profile?.avatar}`}
+                                                            alt="avatar"
+                                                            className="w-12 h-12 rounded-full"
+                                                        />
+                                                    )
+                                                }
+                                                <div >
+                                                    <h2 className="mb-1 p-0">
+                                                        {
+                                                            conversation?.roomType !== "DM" ? (
+                                                                <p className="text-white text-sm font-semibold">
+                                                                    {collapsed ? "" : conversation?.name}
+                                                                </p>
+                                                            ) : (
+                                                                <p className="text-white text-sm font-semibold">
+                                                                    {collapsed ? "" : conversation?.members[0]?.user?.username}
+                                                                </p>
+                                                            )
+                                                        }
+                                                    </h2>
+                                                    <p className="text-gray-400 ml-3 text-xs font-light">
+                                                        {
+                                                            collapsed ? "" : (
 
-        //                         name={collapsed ? "" : "hamid"}
-        //                         description={collapsed ? "" : "last message"}
-        //                         avatarProps={{
-        //                             src: "https://i1.rgstatic.net/ii/profile.image/11431281112723810-1673524482454_Q512/Hamid-Ouaissa.jpg"
-        //                         }}
-        //                     /> */}
-
-        //         </div >
-
-        //     )
-
-
-        // }
-        <>
-            {
-                conversations.length === 0 ? (<Loader />) : (
-                    <>
-                        {
-                            conversations.map((conversation: any) => (
-                                <div className="p-2 sticky top-0" key={conversation.id}>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center">
-                                            <img
-                                                src="https://i1.rgstatic.net/ii/profile.image/11431281112723810-1673524482454_Q512/Hamid-Ouaissa.jpg"
-                                                alt="avatar"
-                                                className="w-12 h-12 rounded-full"
-                                            />
-                                            <div className="ml-2">
-                                                <p className="text-white text-sm font-semibold">{conversation?.name}</p>
-                                                <p className="text-gray-400 text-xs font-light">{conversation?.messages
-                                                [0]?.content}</p>
+                                                                conversation?.messages?.[0]?.content.length > 10
+                                                                    ? conversation?.messages?.[0]?.content.slice(0, 10) + "..."
+                                                                    : conversation?.messages?.[0]?.content
+                                                            )
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="text-gray-400 text-xs ml-70 font-light">
+                                                {
+                                                    collapsed ? "" : (
+                                                        formatMessageDate(conversation?.messages?.[0]?.createdAt)
+                                                    )
+                                                }
                                             </div>
                                         </div>
-                                        <div className="text-gray-400 text-xs font-light">
-                                            12:45
-                                        </div>
-                                    </div>
-                                </div>
-                            ))
-                        }
-                    </>
-                )
-            }
-        </>
+                                    </button>
+                                ))
+                            }
+                        </>
+                    )
+                }
+            </div>
+        </div>
+
     )
-
 }
-
-
-//? : the user component 
-{/* <User className="text-white my-2"
-
-    name={collapsed ? "" : "hamid"}
-    description={collapsed ? "" : "last message"}
-    avatarProps={{
-        src: "https://i1.rgstatic.net/ii/profile.image/11431281112723810-1673524482454_Q512/Hamid-Ouaissa.jpg"
-    }}
-/> */}

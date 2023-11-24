@@ -13,11 +13,13 @@ const useSocket = () => {
   const [notificationSocket, setNotificationSocket] = useState<Socket | null>(
     null
   );
+
   const token = getCookie("token")?.replace("Bearer ", "");
 
   useEffect(() => {
     const newChatSocket = io(`${SOCKET_SERVER_URL}/chat`, {
       auth: { token: token },
+      // autoConnect: false,
     });
     const newGameSocket = io(`${SOCKET_SERVER_URL}/chat`, {
       auth: { token: token },
