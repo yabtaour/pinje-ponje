@@ -23,6 +23,21 @@ export const updateUser = async (userData: userData, token: string | null) => {
   }
 };
 
+export const fetchQRCode = async (token: string | null) => {
+  try {
+    const response = await axios.get("/users/QRCode", {
+      headers: {
+        Authorization: token,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch QRCode:", error);
+    throw error;
+  }
+}
+
 // Get users/QRCode
 // POST users/resetPassword
 
@@ -38,3 +53,4 @@ export const resetPassword = async (old: string, newpass: string) => {
     throw error;
   }
 };
+

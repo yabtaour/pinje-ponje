@@ -19,125 +19,87 @@ const columns = [
 
 ]
 
+const fakeUsers: DisplayedInfo[] = [
+  {
+    id: 78,
+    username: "Soukaina",
+    ex: 7500,
+    rank: "UNRANKED",
+    avatar: "https://example.com/avatar1.jpg",
+    gamesWon: 0,
+  },
+  {
+    id: 79,
+    username: "JohnDoe",
+    ex: 12000,
+    rank: "SILVER",
+    avatar: "https://example.com/avatar2.jpg",
+    gamesWon: 100,
+  },
+  {
+    id: 80,
+    username: "JaneDoe",
+    ex: 8000,
+    rank: "GOLD",
+    avatar: "https://example.com/avatar3.jpg",
+    gamesWon: 50,
+  },
+];
+
 export const Podium = ({ users }: { users: DisplayedInfo[] }) => {
+  const rankedUsers = users.slice().sort((a, b) => b.ex - a.ex);
+
+  if (rankedUsers.length >= 2) {
+    const temp = rankedUsers[0];
+    rankedUsers[0] = rankedUsers[1];
+    rankedUsers[1] = temp;
+  }
+
   return (
-    <div className="flex flex-row"  >
-      <div>
-        <div className="relative max-w-[150px] mx-auto  min-w-0 break-words bg-[#1B1A2D] w-full mb-6 shadow-lg rounded-xl mt-28">
-          <div className="px-6">
-            <div className="flex flex-wrap justify-center">
-              <div className="w-full flex justify-center">
-                <div className="relative">
-                  <Image
-                    src="https://www.citedesartsparis.net/media/cia/188349-img_20200902_151505.jpg"
-                    alt="Team member"
-                    className="align-middle absolute -m-10 -ml-10 lg:-ml-9 max-w-[70px] border-2 border-[#c5c5c2] rounded-full"
-                    width={70}
-                    height={70}
-                  />
-                </div>
-              </div>
-              <div className="w-full text-center mt-9">
-                <div className="flex justify-center lg:pt-4 pt-8 pb-0">
-                </div>
-              </div>
-            </div>
-            <div className="text-center ">
-              <p className="text-3xl text-white font-bold leading-normal mb-1">#2</p>
-              <p className="text-lg text-white font-regular leading-normal mb-1">John Doe</p>
-              <p className="text-xl text-[#c5c5c2] font-bold leading-normal mb-1">12000</p>
-            </div>
-            <div className="mt-2 py-2 text-center">
+    <div className="flex flex-row">
+      {rankedUsers.map((user, index) => (
+        <div key={user.id}>
+          <div className={`relative max-w-[150px] mx-auto min-w-0 break-words bg-[#1B1A2D] w-full mb-6 shadow-lg rounded-xl mt-${index === 1 ? "20" : "28"}`}>
+            <div className="px-6">
               <div className="flex flex-wrap justify-center">
-                <button className="btn btn-ghost btn-xs text-[#4E40F4]">visit profile</button>
+                <div className="w-full flex justify-center">
+                  <div className="relative">
+                    <Image
+                      src={user.avatar}  
+                      alt="Team member"
+                      className="align-middle absolute -m-10 -ml-10 lg:-ml-9 max-w-[70px] border-2 border-[#c5c5c2] rounded-full"
+                      width={70}
+                      height={70}
+                    />
+                  </div>
+                </div>
+                <div className="w-full text-center mt-9">
+                  <div className="flex justify-center lg:pt-4 pt-8 pb-0">
+                  </div>
+                </div>
               </div>
-              <p className="text-xs text-[#9e9cc8] font-regular leading-normal mb-1">@ssabbaji</p>
+              <div className="text-center ">
+                <p className={`text-3xl text-white font-bold leading-normal mb-1`}>#{index === 0 ? 2 : index === 1 ? 1 : 3}</p>
+                <p className={`text-lg text-white font-regular leading-normal mb-1`}>{user.username}</p>
+                <p className={`text-xl font-bold leading-normal mb-1`} style={{ color: index === 1 ? "#f4e240" : index === 2 ? "#d18c3d" : "#c5c5c2" }}>{user.ex}</p>
+              </div>
+              <div className="mt-2 py-2 text-center">
+                <div className="flex flex-wrap justify-center">
+                <Link href={`/profile/${user.id}`}>
+                    <button className="btn btn-ghost btn-xs text-[#4E40F4]">visit profile</button>
+                  </Link>
+                </div>
+                <p className="text-xs text-[#9e9cc8] font-regular leading-normal mb-1">{`@${user.username}`}</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div>
-        <div className="relative max-w-[150px] mx-auto  min-w-0 break-words bg-[#2a2843] w-full mb-6 shadow-lg rounded-xl mt-20 h-[265px]">
-          <div className="relative flex justify-center">
-            <div className="absolute top-[-70px]">
-              <Image
-                src="/crown_icon.svg"
-                alt="crown icon"
-                className=""
-                width={25}
-                height={25}
-              />
-            </div>
-          </div>
-          <div className="px-6">
-            <div className="flex flex-wrap justify-center">
-              <div className="w-full flex justify-center">
-                <div className="relative">
-                  <Image
-                    src="https://www.citedesartsparis.net/media/cia/188349-img_20200902_151505.jpg"
-                    alt="Team member"
-                    className="align-middle absolute -m-10 -ml-10 lg:-ml-9 max-w-[70px] border-2 border-yellow-500 rounded-full"
-                    width={70}
-                    height={70}
-                  />
-                </div>
-              </div>
-              <div className="w-full text-center mt-9">
-                <div className="flex justify-center lg:pt-4 pt-8 pb-0">
-                </div>
-              </div>
-            </div>
-            <div className="text-center ">
-              <p className="text-3xl text-white font-bold leading-normal mb-1">#1</p>
-              <p className="text-lg text-white font-regular leading-normal mb-1">John Doe</p>
-              <p className="text-xl text-[#f4e240] font-bold leading-normal mb-1">12000</p>
-            </div>
-            <div className="mt-2 py-2 text-center">
-              <div className="flex flex-wrap justify-center">
-                <button className="btn btn-ghost btn-xs text-[#4E40F4]">visit profile</button>
-              </div>
-              <p className="text-xs text-[#9e9cc8] font-semibold leading-normal mb-1">@ssabbaji</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div>
-        <div className="relative max-w-[150px] mx-auto  min-w-0 break-words bg-[#1B1A2D] w-full mb-6 shadow-lg rounded-xl mt-28">
-          <div className="px-6">
-            <div className="flex flex-wrap justify-center">
-              <div className="w-full flex justify-center">
-                <div className="relative">
-                  <Image
-                    src="https://www.citedesartsparis.net/media/cia/188349-img_20200902_151505.jpg"
-                    alt="Team member"
-                    className="align-middle absolute -m-10 -ml-10 lg:-ml-9 max-w-[70px] border-2 border-[#d18c3d] rounded-full"
-                    width={70}
-                    height={70}
-                  />
-                </div>
-              </div>
-              <div className="w-full text-center mt-9">
-                <div className="flex justify-center lg:pt-4 pt-8 pb-0">
-                </div>
-              </div>
-            </div>
-            <div className="text-center ">
-              <p className="text-3xl text-white font-bold leading-normal mb-1">#3</p>
-              <p className="text-lg text-white font-regular leading-normal mb-1">John Doe</p>
-              <p className="text-xl text-[#d18c3d] font-bold leading-normal mb-1">12000</p>
-            </div>
-            <div className="mt-2 py-2 text-center">
-              <div className="flex flex-wrap justify-center">
-                <button className="btn btn-ghost btn-xs text-[#4E40F4]">visit profile</button>
-              </div>
-              <p className="text-xs text-[#9e9cc8] font-medium leading-normal mb-1">@ssabbaji</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      ))}
     </div>
-  )
+  );
 }
+
+
 
 export type DisplayedInfo = {
   id: number,
@@ -301,6 +263,7 @@ export default function RankPage() {
   }, []);
 
 
+  console.log("Fake Users:", fakeUsers);
   return (
     <>
       {
@@ -309,7 +272,10 @@ export default function RankPage() {
         ) : (
           <>
             <div className='w-full  flex justify-center bg-[#151424] '>
-              <Podium users={users.slice(0, 3)} />
+              {/* users is empty for now so am using an array of fake users */}
+              {/* <Podium users={users.slice(0, 3)} /> */}
+              <Podium users={fakeUsers} />
+
             </div>
 
             <div className='bg-[#151424]  w-full flex justify-center'>

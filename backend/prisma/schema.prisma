@@ -141,7 +141,7 @@ model ChatMessage {
 
 model ChatRoom {
   id        Int              @id @default(autoincrement())
-  name      String           @unique
+  name      String
   password  String?
   roomType  RoomType         @default(DM)
   members   RoomMembership[]

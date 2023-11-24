@@ -83,7 +83,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
    */
 
   @SubscribeMessage('createRoom')
-  async handleCreateRoom(client: any, payload: any) {
+  async handleCreateRoom(client: any, payload: CreateChatDmRoomDto){
     console.log("user id : ", client.id);
     const room = await this.chatService.createRoom(parseInt(client.id), payload);
     client.join(room.name);
@@ -102,16 +102,15 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   
   @SubscribeMessage('getRooms')
   async handleGetRooms(client: AuthWithWs, payload: any) {
-    console.log("sadasdfasdfasdfasdf");
     console.log("The User ID Requesting Rooms : ", client.id)
     const rooms = await this.chatService.getRoomsByUserId(parseInt(client.id), client.handshake.query);
     this.server.to(client.id).emit('listOfRooms', rooms);
   }
-
+  
   /**
    * Returns the room with the given name.
    * @param client The WebSocket client [ Socket ].
-   * @param payload Search parameters [ { name: 'room' } ].
+   * @param payload Search parameters [ { id: 'roomid' } ].
    *
    * @returns The room with the given name.
    * @throws {Error} If the room with the given name does not exist.
@@ -119,7 +118,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('getRoom')
   async handleGetRoom(client: AuthWithWs, payload: any) {
-    const room = await this.chatService.getRoomByNames(payload.name);
+    const room = await this.chatService.getRoomByNames(payload.id);
     console.log("room : ", room);
     this.server.to(client.id).emit('roomDetails', room);
   }
@@ -128,7 +127,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   /**
    * Join a user to a room.
    * @param client The WebSocket client [ Socket ].
-   * @param payload Search parameters [ { name: 'room' } ].
+   * @param payload Search parameters [ { id: 'roomid' } ].
    * @returns The room with the given name.
    * @throws {Error} If the room with the given name does not exist.
    * @throws {Error} If the user is already a member of the room.
@@ -144,25 +143,24 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.server.to(String(payload.roomId)).emit('roomBroadcast', message);
   }
 
-
   /**
    * Returns a list of all users in the room with the given name.
    * @param client The WebSocket client [ Socket ].
-   * @param payload Search parameters [ { name: 'room' } ].
+   * @param payload Search parameters [ { id: 'roomid' } ].
    * @returns A list of users.
    * @throws {Error} If the room with the given name does not exist.
    */
 
   @SubscribeMessage('getRoomUsers')
   async handleGetRoomUsers(client: any, payload: any) {
-    const users = await this.chatService.getRoomUsers(client, payload.name, client.handshake.query);
+    const users = await this.chatService.getRoomUsers(client, payload.id, client.handshake.query);
     this.server.to(client.id).emit('listOfRoomMembers', users);
   }
 
   /**
    * Kick a user from a room.
    * @param client The WebSocket client [ Socket ].
-   * @param payload Search parameters [ { name: 'room', userId: 1 } ].
+   * @param payload Search parameters [ { id: 'roomid', userId: 1 } ].
    * @returns The room with the given name.
    * @throws {Error} If the room with the given name does not exist.
    * @throws {Error} If the user is not a member of the room.
@@ -171,7 +169,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('kick')
   async handleKick(client: AuthWithWs, payload: any) {
     const room = await this.chatService.kickUserFromRoom(parseInt(client.id), payload);
-    this.server.to(payload.name).emit('roomBroadcast', "User Kicked");
+    this.server.to(payload.id).emit('roomBroadcast', "User Kicked");
   }
 
   /**
