@@ -2,7 +2,7 @@
 import { useAppSelector } from "@/app/globalRedux/store";
 import useSocket from "@/app/hooks/useSocket";
 import { User } from "@nextui-org/react";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import ChatInput from "./components/chatInput";
 import { ChatContext } from "./layout";
 
@@ -14,9 +14,9 @@ export default function Chat() {
     const socket = useSocket();
     const { activeConversation, setActiveConversation } = useContext(ChatContext);
 
-    // useEffect(() => {
-    //     console.log("from Chat: ", activeConversation);
-    // }, [activeConversation?.id]);
+    useEffect(() => {
+        console.log("from Chat: ", activeConversation);
+    }, [activeConversation?.id]);
 
 
     // useEffect(() => {
@@ -32,22 +32,20 @@ export default function Chat() {
 
 
 
-    // useEffect(() => {
-    //     console.log("activeConversation: ", activeConversation);
-    //     if (activeConversation) {
-    //         socket.chatSocket?.emit('getMessages', {
-    //             name: activeConversation?.name,
-    //         });
+    useEffect(() => {
+        console.log("activeConversation: ", activeConversation);
+        // if (activeConversation) {
+        socket.chatSocket?.emit('getMessages', {
+            id: activeConversation?.room?.id,
+        });
 
-    //         socket.chatSocket?.on('listOfMessages', (message: any) => {
-    //             console.log("newMessage: ", message);
-    //             setMessages((messages: any) => [...messages, message]);
-    //         });
-    //     }
+        socket.chatSocket?.on('listOfMessages', (message: any) => {
+            console.log("newMessage: ", message);
+            setMessages((messages: any) => [...messages, message]);
+        });
+        // }
 
-
-
-    // }, [activeConversation?.id])
+    }, [activeConversation?.id])
 
 
     return (
@@ -68,4 +66,6 @@ export default function Chat() {
         </div>
     )
 }
+
+
 

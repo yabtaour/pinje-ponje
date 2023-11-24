@@ -14,7 +14,7 @@ const useSocket = () => {
     null
   );
 
-  const token = getCookie("token")?.replace("Bearer ", "");
+  const token = getCookie("token");
 
   useEffect(() => {
     const newChatSocket = io(`${SOCKET_SERVER_URL}/chat`, {
