@@ -36,10 +36,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
             email: profile.email,
             Hashpassword: null,
             googleId: profile.id,
-            profile: {
-                username: profile.given_name,
-                login: profile.family_name,
-            },
+            username: profile.given_name,
+            profile: {},
         };
         const user = await this.authService.userCreateOrNot(newUser, "google");
         const token = await this.jwtService.generateToken(String(user.id));

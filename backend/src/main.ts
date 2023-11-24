@@ -1,11 +1,10 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { GlobalExceptionFilter } from './global-exception.filter';
-import { IoAdapter } from '@nestjs/platform-socket.io';
-import { HttpAdapterHost } from '@nestjs/core';
 import { SocketIOAdapter } from './chat/SocketIoAdapter';
+import { GlobalExceptionFilter } from './global-exception.filter';
 
 
 async function bootstrap() {
@@ -16,7 +15,7 @@ async function bootstrap() {
   app.useWebSocketAdapter(new IoAdapter(HttpAdapter));
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.enableCors({
-    // credentials: true,
+    credentials: true,
     origin: '*', 
   });
   app.useGlobalFilters()
@@ -33,8 +32,8 @@ async function bootstrap() {
 
     // this section for swagger configuration
   const options = new DocumentBuilder()
-  .setTitle('PingPong API')
-  .setDescription('bestNoobiBackendEver')
+  .setTitle('pinjponj API')
+  .setDescription('The pinjponj API description')
   .setVersion('1.0')
   .addBearerAuth()
   .build();

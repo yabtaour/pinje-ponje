@@ -11,82 +11,122 @@ datasource db {
 }
 
 model User {
-  id              Int     @id @unique @default(autoincrement())
-  password    		String?
-  email           String  @unique
-  intraid         Int?
-  googleId        String?
-  twoFactor       Boolean @default(false)
-  twoFactorSecret String?
-	status          Status  @default(ONLINE)
-  Rooms    				RoomMembership[]
-  messages 				ChatMessage[]
-  profile  				Profile?
-  players 				Player[]
-  winRate         Float			@default(0)
-  accuracy        Float     @default(0)
-  consitency      Float     @default(0)
-  reflex          Float     @default(0)
-	createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @default(now()) @updatedAt
-	notificationsSent		Notification[] @relation("sender")
-	notificationsReceived	Notification[] @relation("receiver")
+  id                    Int             @id @unique @default(autoincrement())
+  username              String          @unique
+  password              String?
+  email                 String          @unique
+  intraid               Int?
+  googleId              String?
+  twoFactor             Boolean         @default(false)
+  twoFactorSecret       String?
+  status                Status          @default(ONLINE)
+  winRate               Float           @default(0)
+  accuracy              Float           @default(0)
+  consitency            Float           @default(0)
+  reflex                Float           @default(0)
+  gamePoints            Int             @default(0)
+  rank                  Rank            @default(UNRANKED)
+  level                 Int             @default(0)
+  experience            Int             @default(0)
+
+  profile               Profile?
+
+  Rooms                 RoomMembership[]
+  messages              ChatMessage[]
+  players               Player[]
+  blockedBy             UserBlocking[] @relation("BlockedBy")
+  blocking              UserBlocking[] @relation("Blocking")
+  friends               Friendship[] @relation("firend")
+  friendOf              Friendship[] @relation("frinedof")
+  pendingRequest        FriendRequest[] @relation("UserPending")
+  sentRequest           FriendRequest[] @relation("userRequest")
+  notificationsSent     Notification[]  @relation("sender")
+  notificationsReceived Notification[]  @relation("receiver")
+
+
+
+
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @default(now()) @updatedAt
+}
+
+model Friendship {
+  createdAt DateTime @default(now())
+  userId    Int
+  friendId  Int
+  user      User     @relation("firend", fields: [userId], references: [id])
+  friend    User     @relation("frinedof", fields: [friendId], references: [id])
+
+  @@id([userId, friendId])
+}
+
+model FriendRequest {
+  id         Int      @id @unique @default(autoincrement())
+  sender     User     @relation("userRequest", fields: [senderId], references: [id])
+  senderId   Int
+  receiver   User     @relation("UserPending", fields: [receiverId], references: [id], onDelete: Cascade)
+  receiverId Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@unique([senderId, receiverId])
+}
+
+model UserBlocking {
+  blockerId Int
+  blockedId Int
+  blocked   User @relation("BlockedBy", fields: [blockedId], references: [id], onDelete: Cascade)
+  blocker   User @relation("Blocking", fields: [blockerId], references: [id], onDelete: Cascade)
+
+  @@id([blockerId, blockedId])
 }
 
 model Profile {
-  id             Int       @id @unique @default(autoincrement())
-  username       String    @unique
-  bio            String?   @default("I am a new player") @db.VarChar(255)
-  avatar         String?
-  Friends        Int[]
-  blockedBy      Profile[] @relation("UserBlocked")
-  blocking       Profile[] @relation("UserBlocked")
-  pendingRequest Profile[] @relation("UserPending")
-  sentRequest    Profile[] @relation("UserPending")
-  user           User      @relation(fields: [userid], references: [id], onDelete: Cascade)
-  userid         Int       @unique
-	experience		 Int			 @default(0)
-	gamePoints		 Int			 @default(0)
-	rank					 Rank			 @default(UNRANKED)
-	level					 Int			 @default(0)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @default(now()) @updatedAt
+  id         Int      @id @unique @default(autoincrement())
+  bio        String?  @default("I am a new player") @db.VarChar(255)
+  avatar     String?
+
+  user       User     @relation(fields: [userid], references: [id], onDelete: Cascade)
+  userid     Int      @unique
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
 }
 
 model Player {
-  id          Int      @id @unique @default(autoincrement())
-  user        User     @relation(fields: [userId], references: [id])
-  userId      Int
-  game        Game     @relation(fields: [gameId], references: [id])
-  status      playerStatus
-  score       Int      @default(0)
-  gameId      Int
-  accuracy    Float     @default(0)
-  consitency  Float     @default(0)
-  reflex      Float     @default(0)
-  createdAt   DateTime  @default(now())
+  id         Int          @id @unique @default(autoincrement())
+  user       User         @relation(fields: [userId], references: [id])
+  userId     Int
+  game       Game         @relation(fields: [gameId], references: [id])
+  status     playerStatus
+  score      Int          @default(0)
+  gameId     Int
+  accuracy   Float        @default(0)
+  consitency Float        @default(0)
+  reflex     Float        @default(0)
+  createdAt  DateTime     @default(now())
 
   @@unique([userId, gameId])
 }
 
 model Game {
-	id					Int       	@id @unique @default(autoincrement())
-	mode				GameMode
-  players     Player[]
-	createdAt		DateTime		@default(now())
+  id        Int      @id @unique @default(autoincrement())
+  mode      GameMode
+  players   Player[]
+  createdAt DateTime @default(now())
 }
 
 // add level and rank and xp fake data and store achievements in the database and rankes 
 
 model RoomMembership {
-  id       Int      @id @default(autoincrement())
-  role     ChatRole
-  state    MemberState @default(ACTIVE)
+  id         Int         @id @default(autoincrement())
+  role       ChatRole
+  state      MemberState @default(ACTIVE)
   unmuteTime DateTime?
-  user     User     @relation(fields: [userId], references: [id])
-  userId   Int
-  room     ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  roomId   Int
+  user       User        @relation(fields: [userId], references: [id])
+  userId     Int
+  room       ChatRoom    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId     Int
 }
 
 model ChatMessage {
@@ -100,34 +140,34 @@ model ChatMessage {
 }
 
 model ChatRoom {
-  id          Int              @id @default(autoincrement())
-  name        String           @unique
-  password    String?
-  roomType    RoomType         @default(DM)
-  members     RoomMembership[]
-  messages    ChatMessage[]
-  updatedAt   DateTime         @updatedAt
-  createdAt   DateTime         @default(now())
+  id        Int              @id @default(autoincrement())
+  name      String
+  password  String?
+  roomType  RoomType         @default(DM)
+  members   RoomMembership[]
+  messages  ChatMessage[]
+  updatedAt DateTime         @updatedAt
+  createdAt DateTime         @default(now())
 }
 
 model Notification {
-	id					Int								@id @default(autoincrement())
-	sender			User							@relation("sender", fields: [senderid], references: [id])
-	senderid		Int
-	receiver		User							@relation("receiver", fields: [receiverid], references: [id], onDelete: Cascade)
-	receiverid	Int
-	type				NotificationType
-	createdAt		DateTime					@default(now())
-	updatedAt		DateTime					@default(now()) @updatedAt
-	read				Boolean						@default(false)
+  id         Int              @id @default(autoincrement())
+  sender     User             @relation("sender", fields: [senderid], references: [id])
+  senderid   Int
+  receiver   User             @relation("receiver", fields: [receiverid], references: [id], onDelete: Cascade)
+  receiverid Int
+  type       NotificationType
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @default(now()) @updatedAt
+  read       Boolean          @default(false)
 }
 
 enum NotificationType {
-	FRIEND_REQUEST
-	FRIEND_REQUEST_ACCEPTED
-	GAME_INVITE
-	GAME_INVITE_REJECTED
-	GROUPE_CHAT_INVITE
+  FRIEND_REQUEST
+  FRIEND_REQUEST_ACCEPTED
+  GAME_INVITE
+  GAME_INVITE_REJECTED
+  GROUPE_CHAT_INVITE
 }
 
 enum RoomType {
@@ -161,13 +201,13 @@ enum Status {
   ONLINE
   OFFLINE
   INQUEUE
-	SPECTATING
+  SPECTATING
 }
 
 enum GameMode {
-	VSONE
-	VSBOT
-	VSALL
+  VSONE
+  VSBOT
+  VSALL
 }
 
 enum GameStatus {
@@ -184,12 +224,8 @@ enum playerStatus {
 // # enum [bronze, silver, gold, platinum, diamond, master, grandmaster, challenger]
 enum Rank {
   UNRANKED
+  IRON
   BRONZE
   SILVER
   GOLD
-  PLATINUM
-  DIAMOND
-  MASTER
-  GRANDMASTER
-  CHALLENGER
 }

@@ -1,3 +1,5 @@
+'use client';
+
 import { Handle42Auth, HandleGoogleAuth } from "../utils/auth";
 
 

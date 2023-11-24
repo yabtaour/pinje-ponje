@@ -105,9 +105,9 @@ export class GameService {
 						user: {
 							select: {
 								id: true,
+								username: true,
 								profile: {
 									select: {
-										username: true,
 										avatar: true,
 									},
 								},
