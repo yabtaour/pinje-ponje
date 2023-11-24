@@ -17,6 +17,9 @@ import { FriendsActionsDto } from './dto/FriendsActions-user.dto';
 import { blockAndUnblockUserDto } from './dto/blockAndUnblock-user.dto';
 import { CreateUserDtoIntra } from './dto/create-user.dto';
 import { updateUserDto } from './dto/update-user.dto';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotificationGateway } from 'src/notification/notification.gateway';
+import { NotificationType } from '@prisma/client';
 
 config();
 
@@ -25,6 +28,8 @@ export class UserService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly profile: ProfilesService,
+		private readonly notificationService: NotificationService,
+		private readonly notificationGateway: NotificationGateway,
   ) {}
 
   async resetPassword(user: any, old: string, newPass: string) {
@@ -210,7 +215,7 @@ export class UserService {
       where: {
         AND: [
           {
-            id: searchid as number,
+            id: searchid,
           },
           {
             NOT: {
@@ -226,7 +231,6 @@ export class UserService {
         profile: true,
       },
     });
-    console.log(user);
     if (user == null) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
@@ -511,7 +515,7 @@ export class UserService {
   }
 
   async AcceptFriendRequest(
-    @Param('user_id', ParseIntPipe) user_id: Number,
+    @Param('user_id', ParseIntPipe) user_id: number,
     data: FriendsActionsDto,
   ) {
     const getFriendRequest = await this.prisma.friendRequest.findFirst({
@@ -519,10 +523,10 @@ export class UserService {
         OR: [
           {
             senderId: data.id,
-            receiverId: user_id as number,
+            receiverId: user_id,
           },
           {
-            senderId: user_id as number,
+            senderId: user_id,
             receiverId: data.id,
           },
         ],
@@ -534,12 +538,12 @@ export class UserService {
     await this.prisma.friendship.createMany({
       data: [
         {
-          userId: user_id as number,
+          userId: user_id,
           friendId: data.id,
         },
         {
           userId: data.id,
-          friendId: user_id as number,
+          friendId: user_id,
         },
       ],
     });
@@ -548,11 +552,15 @@ export class UserService {
       where: {
         senderId_receiverId: {
           senderId: data.id,
-          receiverId: user_id as number,
+          receiverId: user_id,
         },
       },
     });
-
+    this.notificationService.create({
+      senderId: user_id,
+      receiverId: data.id,
+      type: NotificationType.FRIEND_REQUEST_ACCEPTED
+    })
     return 'Friend request accepted';
   }
 
@@ -577,6 +585,11 @@ export class UserService {
         receiverId: data.id,
       },
     });
+    this.notificationService.create({
+      senderId: user_id,
+      receiverId: data.id,
+      type: NotificationType.FRIEND_REQUEST
+    })
     return 'Friend Request has been sent';
   }
 }
