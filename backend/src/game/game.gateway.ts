@@ -37,21 +37,11 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return 'Hello world!';
     }
 
-    // @SubscribeMessage('spectate')
-    // spectate(client: any, payload: {userId: number, gameId: number}): void {
-    //   this.spectators.set(payload.gameId, payload.userId);
-    // }
-
     @SubscribeMessage('updatePlayerPosition')
     updatePlayerPosition(client: any, payload: UpdatePaddlePositionDto): void {
       console.log(client);
       this.gameService.updatePlayerPosition(client.id, payload);
     }
-  
-    // @SubscribeMessage('updateBallPosition')
-    // updateBallPosition(client: any, payload: UpdateBallPositionDto): void {
-    //   this.gameService.updateBallPosition(payload);
-    // }
 
     @SubscribeMessage('gameOver')
     gameOver(client: any, payload: {gameId: number}): void {
@@ -63,9 +53,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       console.log(payload);
       this.gameService.updateScore(payload.userId, payload.gameId);
     }
-    // @SubscribeMessage('game')
-    // handleMessage(client: any, payload:)
-    
+ 
+   
     async handleConnection(client: AuthWithWs) {
       const sockets = this.server.sockets;
       // const rooms = await this.gameService.getRooms();

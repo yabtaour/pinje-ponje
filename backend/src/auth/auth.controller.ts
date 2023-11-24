@@ -8,6 +8,7 @@ import { LocalAuthGuard } from './guards/local.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { SignInDto, SignUpDto } from './dto/signUp.dto';
 import { JWTGuard } from './guards/jwt.guard';
+import { StatusGateway } from 'src/user/status.gateway';
 
 
 //talk to anas about new routes
@@ -17,7 +18,8 @@ import { JWTGuard } from './guards/jwt.guard';
 export class AuthController {
     constructor(
         private readonly userService: UserService,
-        private readonly authService: AuthService
+        private readonly authService: AuthService,
+		private readonly statusGateway: StatusGateway
     ) {}
 
     @Get('api')
@@ -29,7 +31,14 @@ export class AuthController {
 		if (user.twoFactor === true)
 			response.redirect('http://localhost:3001/verification');
 		else
+		{
+			const payload = {
+				status: "online",
+				userId: user.user.id
+			}
+			this.statusGateway.server.emit('status', payload);
 			response.redirect('http://localhost:3001/dashboard');
+		}
 	}
 
 	
@@ -45,7 +54,14 @@ export class AuthController {
 		if (user.twoFactor === true)
 			response.redirect('http://localhost:3001/verification');
 		else
+		{
+			const payload = {
+				status: "online",
+				userId: user.user.id
+			}
+			this.statusGateway.server.emit('status', payload);
 			response.redirect('http://localhost:3001/dashboard');
+		}
 	}
 
 	@Post('2fa')
@@ -59,6 +75,11 @@ export class AuthController {
     	const isValid = await this.authService.userTwoFaChecker(user, body);
 		if (!isValid)
 			throw new HttpException("invalid code", HttpStatus.BAD_REQUEST);
+		const payload = {
+			status: "online",
+			userId: user.id
+		}
+		this.statusGateway.server.emit('status', payload);
 		return user;
 	}
 
@@ -71,7 +92,14 @@ export class AuthController {
 		if (user.twoFactor === true)
 			response.redirect('http://localhost:3001/verification');
 		else
+		{
+			const payload = {
+				status: "online",
+				userId: user.id
+			}
+			this.statusGateway.server.emit('status', payload);
 			response.redirect('http://localhost:3001/dashboard');
+		}
 		// response.send(user);
 	}
 
@@ -79,6 +107,11 @@ export class AuthController {
 	async signUp(@Body() data: SignUpDto, @Req() request: any, @Res() response: Response) {
 		const user = await this.authService.signUp(data);
 		response.cookie("token", "Brearer " + user.token);
+		const payload = {
+			status: "online",
+			userId: user.user.id
+		}
+		this.statusGateway.server.emit('status', payload);
 		response.send(user);
 	}
 }

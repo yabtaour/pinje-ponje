@@ -18,7 +18,6 @@ export class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     constructor(
         @Inject(forwardRef(() => UserService))
         private userService: UserService,
-        // private userService: UserService,
     ) {}
 
     afterInit(server: Server) {
@@ -53,5 +52,4 @@ export class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         };
         this.server.to('status').emit('status', payload);
     }
-    // @SubscribeMessage('queue')
 }

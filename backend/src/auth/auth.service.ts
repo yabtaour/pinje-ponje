@@ -21,10 +21,6 @@ export class AuthService {
       });
       console.log(result);
       return result;
-      // return authenticator.verify({
-			// 	token: String(twofactorcode),
-			// 	secret: user.twoFactorSecret
-			// });
     }
 
     async userTwoFaChecker(user: any, body: { twofactorcode: string }) {

@@ -6,6 +6,7 @@ import { NotificationService } from 'src/notification/notification.service';
 import { GameGateway } from './game.gateway';
 import { GameState } from './gameState';
 import { UpdatePaddlePositionDto } from './dto/game.dto';
+import { StatusGateway } from 'src/user/status.gateway';
 
 @Injectable()
 export class GameService {
@@ -14,25 +15,8 @@ export class GameService {
 		private readonly gameGateway: GameGateway,
 		private readonly notificationService: NotificationService,
 		private readonly notificationGateway: NotificationGateway,
+		private readonly statusGateway: StatusGateway,
 	) {}
-
-	async getWinRateByUserId(id: number) {
-		const user = await this.prisma.user.findUnique({
-			where: {
-				id: id,
-			},
-		});
-		if (!user)
-			throw new HttpException(`No user found`, HttpStatus.BAD_REQUEST);
-		const games = await this.prisma.game.findMany({
-			where: {
-				players: {
-					// some: {
-
-				},
-			},
-		});
-	}
 
 	async getWinRate(id: number) {
 		const user = await this.prisma.user.findUnique({
@@ -220,6 +204,14 @@ export class GameService {
 			}
 		});
 
+		const payload = {
+			status: 'offline',
+			user: Number(user.id),
+		};
+		this.statusGateway.server.to('status').emit('status', payload);
+		payload.user = Number(opponent.id);
+		this.statusGateway.server.to('status').emit('status', payload);
+
 		const gameState = new GameState(
 			{id: player.userId, paddlePosition: 5, score: 0},
 			{id: player.userId, paddlePosition: 5, score: 0},
@@ -315,6 +307,13 @@ export class GameService {
 				status: "INGAME"
 			}
 		});
+		const payload = {
+			status: 'ingame',
+			user: Number(user.id),
+		};
+		this.statusGateway.server.to('status').emit('status', payload);
+		payload.user = Number(opponent.id);
+		this.statusGateway.server.to('status').emit('status', payload);
 
 		const gameState = new GameState(
 			{id: player.userId, paddlePosition: 5, score: 0},
@@ -437,12 +436,16 @@ export class GameService {
 					status: "ONLINE"
 				}
 			});
+			const payload = {
+				status: 'online',
+				user: Number(actualPlayer.id),
+			};
+			this.statusGateway.server.to('status').emit('status', payload);
+			payload.user = Number(opponentPlayer.id);
+			this.statusGateway.server.to('status').emit('status', payload);
 			await this.gameGateway.server.to(String(actualPlayer.id)).emit('gameOver', "YOU WON THE GAME !!! CONGRATULATIONS !!!");
 			await this.gameGateway.server.to(String(opponentPlayer.id)).emit('gameOver', "YOU LOST THE GAME !!! GOOD LUCK NEXT TIME :( :( :(");
-			console.log(this.gameGateway.currentGames);
 			this.gameGateway.currentGames.delete(gameId);
-			console.log("game over");
-			console.log(this.gameGateway.currentGames);
 			
 		}
 
