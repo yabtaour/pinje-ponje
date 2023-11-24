@@ -43,7 +43,7 @@ export default function SideBar(Props: any) {
                     <li className="relative" style={{ paddingTop: '39rem' }}>
                         <button
                             onClick={toggleSidebar}
-                            className='flex items-center justify-center w-full p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group focus:outline-none'
+                            className='flex items-center justify-center w-full p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group focus:outline-none mt-[-16rem]'
                         >
                             <span className="flex items-center">
                                 <svg width="1em" height="1em" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
@@ -55,10 +55,6 @@ export default function SideBar(Props: any) {
                 </ul>
             </div>
         </aside>
-
-
-
-
 
     );
 }

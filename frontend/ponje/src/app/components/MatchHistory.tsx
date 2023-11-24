@@ -41,7 +41,8 @@ export default function MatchHistory() {
                     <tr className='bg-[#1B1A2D]'>
                         <td>Normal</td>
                         <td className="px-4 py-3 text-xs ">
-                            <span className="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-300 rounded-sm"> WIN </span>
+                        <span className="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-300 rounded-sm"> WIN </span>
+                            <span className="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-300 rounded-sm"> W </span>
                         </td>
                         <td>+50</td>
                         <td>the voices</td>
