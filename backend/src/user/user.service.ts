@@ -136,7 +136,7 @@ export class UserService {
       secret = authenticator.generateSecret();
       // const otpauth = authenticator.keyuri(user.email, 'pinje-ponge', secret);
       // const generatedQR = await toDataURL(otpauth);
-    } else if (data.twoFactor && data.twoFactor == false) {
+    } else {
       secret = null;
     }
       const updatedUser = await this.prisma.user.update({
