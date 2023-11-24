@@ -47,9 +47,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     const userRooms = await this.chatService.getRoomsByUserId(parseInt(client.id), {skip: 0});
   
-    userRooms.forEach((room) => {
-      this.logger.debug(`Client ${client.id} joined room ${room.name}`);
-      client.join(room.name);
+    userRooms.forEach((rooms) => {
+      this.logger.debug(`Client ${client.id} joined room ${rooms.room.name}`);
+      client.join(String(rooms.id));
     });
   
     this.logger.debug(`Number of connected sockets: ${sockets.size}`);
@@ -69,9 +69,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     const userRooms = await this.chatService.getRoomsByUserId(parseInt(client.id), {skip: 0});
   
-    userRooms.forEach((room) => {
-      this.logger.debug(`Client ${client.id} leave room ${room.name}`);
-      client.leave(room.name);
+    userRooms.forEach((rooms) => {
+      this.logger.debug(`Client ${client.id} leave room ${rooms.room.name}`);
+      client.leave(String(rooms.id));
     });
 
   }
@@ -86,8 +86,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleCreateRoom(client: any, payload: CreateChatDmRoomDto){
     console.log("user id : ", client.id);
     const room = await this.chatService.createRoom(parseInt(client.id), payload);
-    client.join(room.name);
-    this.server.to(room.name).emit('roomCreated', room);
+    client.join(String(room.id));
+    this.server.to(String(room.id)).emit('roomCreated', room);
   }
 
   /**
@@ -175,7 +175,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   /**
    * Ban a user from a room.
    * @param client The WebSocket client [ Socket ].
-   * @param payload Search parameters [ { name: 'room', userId: 1 } ].
+   * @param payload Search parameters [ { id: 'roomid', userId: 1 } ].
    * @returns The room with the given name.
    * @throws {Error} If the room with the given name does not exist.
    * @throws {Error} If the user is not a member of the room.
@@ -190,7 +190,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   /**
    * Ban a user from a room.
    * @param client The WebSocket client [ Socket ].
-   * @param payload Search parameters [ { name: 'room', userId: 1 } ].
+   * @param payload Search parameters [ { id: 'roomid', userId: 1 } ].
    * @returns The room with the given name. and emit to [ roomBroadcast ].
    * @throws {Error} If the room with the given name does not exist.
    * @throws {Error} If the user is not a member of the room.
@@ -200,19 +200,19 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleBan(client: AuthWithWs, payload: any) {
     const room = await this.chatService.BanUserFromRoom(parseInt(client.id), payload);
     this.server.emit('roomBroadcast', "User Banned");
-    this.server.to(payload.name).emit('roomBroadcast', "User Banned");
+    this.server.to(String(payload.id)).emit('roomBroadcast', "User Banned");
   }
 
   @SubscribeMessage('unban')
   async handleUnban(client: AuthWithWs, payload: any) {
     const room = await this.chatService.UnBanUserFromRoom(parseInt(client.id), payload);
-    this.server.to(payload.name).emit('roomBroadcast', "User Unbanned");
+    this.server.to(String(payload.id)).emit('roomBroadcast', "User Unbanned");
   }
 
   /**
    * Sends a message to a room.
    * @param client The WebSocket client [ Socket ].
-   * @param payload payload [ { name: 'room', message: 'hello' } ].
+   * @param payload payload [ { id: 'roomid', message: 'hello' } ].
    * @returns The message.
    * @throws {Error} If the room with the given name does not exist.
    * @throws {Error} If the user is not a member of the room.

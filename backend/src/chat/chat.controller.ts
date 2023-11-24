@@ -12,8 +12,10 @@ import { JWTGuard } from 'src/auth/guards/jwt.guard';
 import { UserService } from 'src/user/user.service';
 import { th } from '@faker-js/faker';
 import { chatActionsDto } from './dto/actions-dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @UseGuards(JWTGuard)
+@ApiBearerAuth()
 @Controller('chatapi')
 export class ChatController {
   constructor(
@@ -41,6 +43,7 @@ export class ChatController {
     ){
 
     const user = await this.userService.getCurrentUser(request);
+    console.log(user.id);
     const rooms = await this.chatService.getRoomsByUserId(user.id, query);
     this.chatgateway.server.to(String(user.id)).emit('listOfRooms', rooms);
     return rooms;
