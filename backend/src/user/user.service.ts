@@ -184,53 +184,71 @@ export class UserService {
       return user;
 }
 
-  async FindAllUsers(
-    @Param('id', ParseIntPipe) id: number,
-    params: PaginationLimitDto,
-  ) {
-    const users = await this.prisma.user.findMany({
-      include : {
-        profile: true,
-      },
-      ...params,
-    });
-    if (!users)
-      throw new HttpException('Users not found', HttpStatus.NOT_FOUND);
-    // Remove sensitive information using map and object destructuring
-    const sanitizedUsers = users.map(({ password, twoFactorSecret, ...user }) => user);
-    return sanitizedUsers;
+
+  giveRandomAvatar() {
+    const avatar = [
+      "path://shinra.png",
+      "path://stewie.png",
+      "path://escanor.png",
+    ];
+    return avatar[Math.floor(Math.random() * avatar.length)];
   }
 // this only update User Level : Email : Hashpassword : twofactor
 
-  async FindUserByID(@Param('user_id', ParseIntPipe) user_id: number, searchid: number) {
-    const user = await this.prisma.user.findFirst({
-      where: {
-        AND: [
-          {
-            id: searchid,
-          },
-          {
-            NOT: {
-              OR: [
-                { blockedBy: { some: { blockerId: user_id, blockedId: searchid }  } },
-                { blocking: { some: { blockerId: searchid, blockedId: user_id} }  },
-              ],
-            },
-          },
-        ],
-      },
-      include: {
-        profile: true,
-      },
-    });
-    if (user == null) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
-    delete user.password;
-    delete user.twoFactorSecret;
-    return user;
+  async FindAllUsers() {
+		// try {
+    	const users = await this.prisma.user.findMany({
+      	include: {
+       		profile: true,
+      	},
+    	});
+			if (!users)
+				throw new HttpException('Users not found', HttpStatus.NOT_FOUND);
+    	return users;
+		// } catch (error) {
+		// 	throw new InternalServerErrorException(error);
+		// }
   }
 
+async FindUserByID(id: number) {
+	// try {
+  	const user = await this.prisma.user.findUnique({
+    	where: { id: id },
+		include: {
+			profile: true,
+		},
+    	// select: {
+      // 	id: true,
+      // 	email: true,
+      // 	twofactor: true,
+      // 	twoFactorSecret: true,
+      // 	profile: {
+      // 	  select: {
+      // 	    id : true,
+      // 	    username: true,
+      // 	    avatar: true,
+      // 	    login: true,
+      // 	    Rank: true,
+      // 	    level: true,
+      // 	    sentRequest: true,
+      // 	    pendingRequest: true,
+      // 	    blocking: true,
+      // 	    createdAt: true,
+      // 	  },
+      // 	},
+    	// },
+  	});
+  	if (!user) {
+    	throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+  	}
+	delete user.password;
+	delete user.twoFactorSecret;
+	
+  	return user;
+	// } catch (error) {
+	// 	throw new InternalServerErrorException(error);
+	// }
+}
 
   async FindUserByIntraId(id: number) {
     const user = await this.prisma.user.findFirst({
