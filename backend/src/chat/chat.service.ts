@@ -146,10 +146,10 @@ export class ChatService {
   }
 
   // switch to unique name
-  async getRoomByNames(roomName: string): Promise<ChatRoom> {
+  async getRoomByNames(room_id: number): Promise<ChatRoom> {
     const room = await this.prisma.chatRoom.findUnique({
       where: {
-        name: roomName,
+        id: room_id,
       },
       select: {
         id: true,
@@ -162,11 +162,11 @@ export class ChatService {
     })
 
     if  (!room) {
-      throw new WsException(`Room with name ${roomName} not found`);
+      throw new WsException(`Room with name ${room_id} not found`);
     }
 
     if (room.roomType === 'PRIVATE' || room.roomType === 'DM')
-      throw new WsException(`Room With name ${roomName} doesn't exist or Not Public`);
+      throw new WsException(`Room With name ${room_id} doesn't exist or Not Public`);
     
 
     return room;

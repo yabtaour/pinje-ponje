@@ -46,14 +46,14 @@ export class ChatController {
     return rooms;
   }
 
-  @Get('rooms/:name')
+  @Get('rooms/:id')
   async getOneRoom(
       @Req() request: Request,
-      @Param('name') name: string
+      @Param('id', ParseIntPipe) id: number
     ){
 
     const user = await this.userService.getCurrentUser(request);
-    const room = await this.chatService.getRoomByNames(name);
+    const room = await this.chatService.getRoomByNames(id);
     this.chatgateway.server.to(String(user.id)).emit('roomDetails', room);
     return room;
   }
