@@ -1,7 +1,5 @@
-import React from "react";
+'use client';
 import Image from "next/image";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserPlus } from "@fortawesome/free-solid-svg-icons";
 
 export default function PlayerBanner () {
     return (

@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query, ParseIntPipe } from '@nestjs/common';
-import { ChatService, PaginationLimitDto, joinRoomDto } from './chat.service';
+import { ChatService, MessageDto, PaginationLimitDto, joinRoomDto } from './chat.service';
 import { CreateChatDmRoomDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { ChatGateway } from './chat.gateway';
@@ -11,8 +11,11 @@ import { use } from 'passport';
 import { JWTGuard } from 'src/auth/guards/jwt.guard';
 import { UserService } from 'src/user/user.service';
 import { th } from '@faker-js/faker';
+import { chatActionsDto } from './dto/actions-dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @UseGuards(JWTGuard)
+@ApiBearerAuth()
 @Controller('chatapi')
 export class ChatController {
   constructor(
@@ -22,7 +25,7 @@ export class ChatController {
   
     ) {}
 
-  @Post('createRoom')
+  @Post('room')
   async createRoom(
       @Req() request: Request,
       @Body() data: CreateChatDmRoomDto
@@ -33,31 +36,32 @@ export class ChatController {
     return room;
   }
 
-  @Get('getRooms')
+  @Get('rooms')
   async getAllRooms(
       @Req() request: Request,
       @Query() query: PaginationLimitDto
     ){
 
     const user = await this.userService.getCurrentUser(request);
+    console.log(user.id);
     const rooms = await this.chatService.getRoomsByUserId(user.id, query);
     this.chatgateway.server.to(String(user.id)).emit('listOfRooms', rooms);
     return rooms;
   }
 
-  @Get('getRoom/:name')
+  @Get('rooms/:id')
   async getOneRoom(
       @Req() request: Request,
-      @Param('name') name: string
+      @Param('id', ParseIntPipe) id: number
     ){
 
     const user = await this.userService.getCurrentUser(request);
-    const room = await this.chatService.getRoomByNames(name);
+    const room = await this.chatService.getRoomByNames(id);
     this.chatgateway.server.to(String(user.id)).emit('roomDetails', room);
     return room;
   }
 
-  @Post('joinRoom/:id')
+  @Post('rooms/:id/join')
   async joinRoom(
       @Param('id' , ParseIntPipe) room_id: number,
       @Req() request: Request,
@@ -69,7 +73,19 @@ export class ChatController {
     return room;
   }
 
-  @Get('getRoomUsers/:id')
+  @Post('rooms/:id/leave')
+  async leave(
+      @Param('id' , ParseIntPipe) room_id: number,
+      @Req() request: Request,
+      @Body() payload: joinRoomDto
+  ){
+    const user = await this.userService.getCurrentUser(request);
+    const room = await this.chatService.leave_room(user.id, payload , room_id);
+    this.chatgateway.server.to(String(user.id)).emit('leave the room', room);
+    return room;
+  }
+
+  @Get('rooms/:id/users')
   async getRoomUsers(
       @Param('id' , ParseIntPipe) room_id: number,
       @Req() request: Request,
@@ -81,7 +97,7 @@ export class ChatController {
     return roomUers;
   }
 
-  @Get('getRoomMessages/:id')
+  @Get('rooms/:id/messages')
   async getRoomMessages(
       @Param('id' , ParseIntPipe) room_id: number,
       @Req() request: Request,
@@ -93,16 +109,60 @@ export class ChatController {
     return roomMessages;
   }
 
-  @Post('sendMessage/:id')
+  @Post('rooms/:room_id/message')
   async sendMessage(
-      @Param('id' , ParseIntPipe) room_id: number,
+      @Param('room_id' , ParseIntPipe) room_id: number,
       @Req() request: Request,
-      @Body() payload: any
+      @Body() payload: MessageDto
   ){
     const user = await this.userService.getCurrentUser(request);
     const message = await this.chatService.createMessage(user.id, room_id, payload);
     this.chatgateway.server.to(String(user.id)).emit('message', message);
     return message;
+  }
+
+  @Post('kick')
+  async kick(
+    @Param('room_id' , ParseIntPipe) room_id: number,
+    @Req() request: Request,
+    @Body() payload: chatActionsDto
+  ){
+      const user = await this.userService.getCurrentUser(request);
+      const message = await this.chatService.kickUserFromRoom(user.id, payload);
+      this.chatgateway.server.to(String(payload.id)).emit('roomBroadcast', "User Kicked");
+  }
+
+  @Post('ban')
+  async ban(
+    @Param('room_id' , ParseIntPipe) room_id: number,
+    @Req() request: Request,
+    @Body() payload: chatActionsDto
+  ){
+      const user = await this.userService.getCurrentUser(request);
+      const message = await this.chatService.BanUserFromRoom(user.id, payload);
+      this.chatgateway.server.to(String(payload.id)).emit('roomBroadcast', "User banned");
+  }
+
+  @Post('unban')
+  async unban(
+    @Param('room_id' , ParseIntPipe) room_id: number,
+    @Req() request: Request,
+    @Body() payload: chatActionsDto
+  ){
+      const user = await this.userService.getCurrentUser(request);
+      const message = await this.chatService.UnBanUserFromRoom(user.id, payload);
+      this.chatgateway.server.to(String(payload.id)).emit('roomBroadcast', "User uban");
+  }
+
+  @Post('mute')
+  async mute(
+    @Param('room_id' , ParseIntPipe) room_id: number,
+    @Req() request: Request,
+    @Body() payload: chatActionsDto
+  ){
+      const user = await this.userService.getCurrentUser(request);
+      const message = await this.chatService.MuteUserFromRoom(user.id, payload);
+      this.chatgateway.server.to(String(payload.id)).emit('roomBroadcast', "User muted");
   }
 
 }

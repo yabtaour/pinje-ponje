@@ -1,10 +1,10 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { GlobalExceptionFilter } from './global-exception.filter';
-import { IoAdapter } from '@nestjs/platform-socket.io';
 import { SocketIOAdapter } from './chat/SocketIoAdapter';
+import { GlobalExceptionFilter } from './global-exception.filter';
 
 
 async function bootstrap() {

@@ -11,17 +11,16 @@ export const createTokenMiddleware =
     // i need to check if user is in the database
     // to do: check if user is in the database
     try {
-        console.log("token : ", token);
-        const payload = jwtService.verify(token);
-        console.log("payload : ", payload);
+        const actualToken = token.split(" ")[1];
+        const payload = jwtService.verify(actualToken);
         const user = await prisma.user.findUnique({
           where : {
             id : +payload.sub,
           },
           select : {
+            username : true,
               profile : {
                     select : {
-                        username : true,
                         avatar : true,
                     }
               }
@@ -33,9 +32,8 @@ export const createTokenMiddleware =
             throw new Error('User not found');
         }
 
-        logger.debug(`Client connected: ` +user.profile.username);
         socket.id = payload.sub;
-        socket.username = user.profile.username;
+        socket.username = user.username;
         socket.avatar = user.profile.avatar;
         next();
     } catch {

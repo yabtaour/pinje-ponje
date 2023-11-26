@@ -27,16 +27,13 @@ export default function Profile({ params }: { params: { id: number } }) {
             }
         };
         fetchData();
-    }, [params.id, user]);
+    }, [params.id]);
 
     return (
         <div className="bg-[#151424] relative flex-grow min-h-screen p-0">
             <div>
                 <PlayerBanner user={user} />
             </div>
-
-
-
             <div id="biggest wrapper" className="flex flex-col items-center justify-center">
                 <div className="flex justify-center ">
                     <div className="flex justify-center flex-row flex-wrap">

@@ -25,20 +25,8 @@ export class CreateUserDtoIntra {
     email: string;
 
     @IsNotEmpty()
-    @IsObject()
-    @ValidateNested()
-    @ApiProperty()
-    @Type(() => CreateProfileDto)
-    profile: CreateProfileDto;
-
-    @IsOptional()
-    @IsBoolean()
-    twofactor: boolean;
-
-    @IsOptional()
     @IsString()
-    twoFactorSecret: string;
-    
+    username: string;
 }
 
 export class CreateUserDtoLocal {
@@ -51,18 +39,8 @@ export class CreateUserDtoLocal {
     @IsEmail()
     @ApiProperty()
     email: string; 
-
-    @IsNotEmpty()
-    @IsObject()
-    @ValidateNested()
-    @ApiProperty()
-    @Type(() => CreateProfileDto)
-    profile: CreateProfileDto;
  
-    @IsOptional()
-    twofactor: boolean;
-
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
-    twoFactorSecret: string;
+    username: string;
 }

@@ -14,6 +14,7 @@ import { AuthWithWs } from './dto/user-ws-dto';
 import { skip } from 'node:test';
 import { IsIn, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { chatActionsDto } from './dto/actions-dto';
 
 
 export class PaginationLimitDto {
@@ -132,28 +133,23 @@ export class ChatService {
     delete patchedRoom.password;
     return patchedRoom;
   }
-  
-  // async leaveRoom(socket: any, payload: RoomDto){
-  //   const userID = 3;
-  //   const room = await this.prisma.chatRoom.update({
-  //     where: {
-  //       name : payload.name,
-  //     },
-  //     data: {
-  //       members: {
-  //         delete: [{
-  //           user : { connect : { id : userID } },
-  //         }]
-  //       }
-  //     }
-  //   })
-  //   return room;
-  // }
+
+  async leave_room(userid: number, payload: joinRoomDto, room_id: number) {
+    const room = this.prisma.roomMembership.deleteMany({
+      where: {
+        AND: {
+          userId : userid,
+          roomId : room_id
+        }
+      }
+    })
+  }
+
   // switch to unique name
-  async getRoomByNames(roomName: string): Promise<ChatRoom> {
+  async getRoomByNames(room_id: number): Promise<ChatRoom> {
     const room = await this.prisma.chatRoom.findUnique({
       where: {
-        name: roomName,
+        id: room_id,
       },
       select: {
         id: true,
@@ -166,11 +162,11 @@ export class ChatService {
     })
 
     if  (!room) {
-      throw new WsException(`Room with name ${roomName} not found`);
+      throw new WsException(`Room with name ${room_id} not found`);
     }
 
     if (room.roomType === 'PRIVATE' || room.roomType === 'DM')
-      throw new WsException(`Room With name ${roomName} doesn't exist or Not Public`);
+      throw new WsException(`Room With name ${room_id} doesn't exist or Not Public`);
     
 
     return room;
@@ -178,45 +174,62 @@ export class ChatService {
   }
 
   async getRoomsByUserId(userId: number, params: PaginationLimitDto) {
-
+ 
     const { skip: number, take } = params;
-
+  
     // Retrieve the room memberships for the user
     const roomMemberships = await this.prisma.roomMembership.findMany({
       where: {
         userId: userId,
+        state: {
+          in : ['ACTIVE', 'MUTED']
+        }
       },
-      select: {
-        state: true,
+      include: {
         room: {
-          select: {
-            id: true,
-            name: true,
-            roomType: true,
-            updatedAt: true,
-            createdAt: true,
+          include: {
             messages: {
               orderBy: {
                 createdAt: 'desc',
               },
               take: 1,
             },
+            members: {
+              where: {
+                userId : { not: userId},
+                state : {
+                  in : ['ACTIVE', 'MUTED']
+                }
+              },
+              select: {
+                user: {
+                  select: {
+                    id: true,
+                    username: true,
+                    status: true,
+                    profile: {
+                      select: {
+                        avatar: true,
+                      }
+                    }
+                  }
+                }
+              }
+            }
           },
         },
       },
       skip: params.skip,
       take: params.take,
     });
-
     // Filter out the banned rooms
-    const rooms = roomMemberships
-      .filter((membership) => membership.state !== 'BANNED')
-      .map((membership) => membership.room);
+    // const rooms = roomMemberships
+    //   .filter((membership) => membership.state !== 'BANNED')
+    //   .map((membership) => membership.room);
 
-    return rooms;
+    return roomMemberships;
   }
 
-  
   async getRoomUsers(user_id : number, room_id: number, params: PaginationLimitDto) { // Func Scope Start : getRoomUsers
 
     const roomId = await this.prisma.chatRoom.findUnique({
@@ -228,7 +241,7 @@ export class ChatService {
       throw new WsException(`Room not found`);
     }
 
-    if (await this.isUserInRoom(+roomId.id, user_id) === false) {
+    if (await this.isUserInRoom(roomId.id, user_id) === false) {
       throw new WsException(`You are not a member of this room`);
     }
 
@@ -241,9 +254,9 @@ export class ChatService {
         role: true,
         user: {
           select: {
+            username: true,
             profile : {
               select: {
-                username: true,
                 avatar: true,
               }
             }
@@ -260,11 +273,11 @@ export class ChatService {
 
 
   // idea : insetead of delete the user from the room we can just change the state to kicked  
-  async kickUserFromRoom(client: any, payload: any) {
+  async kickUserFromRoom(user_id : number, payload: chatActionsDto){
 
       const room = await this.prisma.chatRoom.findUnique({
         where: {
-          name : payload.name,
+          id: payload.id,
         },
         select: {
           members: {
@@ -275,7 +288,7 @@ export class ChatService {
         }
       });
 
-      if (await this.isUserAdminInRoom(room.members[0].roomId, +client.id) === false) {
+      if (await this.isUserAdminInRoom(room.members[0].roomId, user_id) === false) {
         throw new WsException(`Not Allowed`);
       }
 
@@ -286,38 +299,28 @@ export class ChatService {
         include: {
           user: {
             select: {
-              profile: {
-                select: {
-                  username: true,
-                }
-              }
+              username: true,
             }
           }
         }
       })
-
-      console.log('user name', user.user.profile.username);
 
       const kickeduser = await this.prisma.user.findUnique({
         where: {
           id: payload.userId,
         },
         select: {
-          profile: {
-            select: {
-              username: true,
-            }
-          }
+          username: true,
         }
       })
       return kickeduser;
   }
   
 
-  async MuteUserFromRoom(client: any, payload: any): Promise<void> {
+  async MuteUserFromRoom(user_id : number, payload: chatActionsDto){
     const room = await this.prisma.chatRoom.findUnique({
       where: {
-        name : payload.name,
+        id: payload.id,
       },
       select: {
         members: {
@@ -343,11 +346,17 @@ export class ChatService {
 
     // i need a middleware to check if the user is muted or not to update the state
   }
+
+  async unMuteUser(user_id : number, payload: chatActionsDto){
+
+
+    
+  }
   
-  async BanUserFromRoom(client: any, payload: any): Promise<void> {
+  async BanUserFromRoom(user_id : number, payload: chatActionsDto){
     const room = await this.prisma.chatRoom.findUnique({
       where: {
-        name : payload.name,
+        id: payload.id,
       },
       select: {
         members: {
@@ -358,7 +367,7 @@ export class ChatService {
       }
     });
 
-    if (await this.isUserAdminInRoom(room.members[0].roomId, +client.id) === false) {
+    if (await this.isUserAdminInRoom(room.members[0].roomId, user_id) === false) {
       throw new WsException(`Not Allowed`);
     }
 
@@ -372,10 +381,10 @@ export class ChatService {
     })
   }
 
-  async UnBanUserFromRoom(client: any, payload: any): Promise<void> {
+  async UnBanUserFromRoom(user_id : number, payload: chatActionsDto){
     const room = await this.prisma.chatRoom.findUnique({
       where: {
-        name : payload.name,
+        id: payload.id,
       },
       select: {
         members: {
@@ -386,7 +395,7 @@ export class ChatService {
       }
     });
 
-    if (await this.isUserAdminInRoom(room.members[0].roomId, +client.id) === false) {
+    if (await this.isUserAdminInRoom(room.members[0].roomId, user_id) === false) {
       throw new WsException(`Not Allowed`);
     }
 
@@ -416,22 +425,21 @@ export class ChatService {
             user : {
               select: {
                 id: true,
+                username: true,
                 profile: {
                   select: {
-                    username: true,
                     avatar: true,
                   }
                 }
               }
             }
-            
         }
       }
     }
   });
     if (!room || !room.members[0])
       throw new WsException(`You are not a member of this room or the room doesn't exist`);
-    if (room.members[0].state === 'MUTED')
+    if (room.members[0].state === 'MUTED' )
       throw new WsException(`You are muted from this room`);
     if (room.members[0].state === 'BANNED')
       throw new WsException(`You are banned from this room`);
@@ -455,7 +463,7 @@ export class ChatService {
       ...message,
       user: {
         id: user_id,
-        username: room.members[0].user.profile.username,
+        username: room.members[0].user.username,
         avatar: room.members[0].user.profile.avatar,
       }
     }
@@ -489,9 +497,9 @@ export class ChatService {
         createdAt: true,
         user: {
           select: {
+            username: true,
             profile: {
               select: {
-                username: true,
                 avatar: true,
               }
             }
@@ -503,10 +511,6 @@ export class ChatService {
     })
     return messages;
   }
-
-  /**
-  // Small function to help in other functions
-  **/
 
 
   // leave here and move it later to extr file
@@ -549,18 +553,3 @@ export class ChatService {
   }
   // Class END.
   }
-
-
-
-  // room :  {
-  //   id: 5,
-  //   name: '89CF2',
-  //   password: '123',
-  //   roomType: 'DM',
-  //   updatedAt: 2023-09-28T06:49:18.547Z,
-  //   createdAt: 2023-09-28T06:49:18.547Z,
-  //   members: [
-  //     { id: 7, role: 'MEMBER', state: 'ACTIVE', userId: 1, roomId: 5 },
-  //     { id: 8, role: 'MEMBER', state: 'ACTIVE', userId: 3, roomId: 5 }
-  //   ]
-  // }

@@ -1,5 +1,5 @@
-import React from 'react';
-import Image from 'next/image';
+'use client';
+
 
 export default function Achievements() {
     return (
