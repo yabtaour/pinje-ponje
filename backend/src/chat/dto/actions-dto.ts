@@ -5,10 +5,12 @@ export class chatActionsDto {
 
     @IsNotEmpty()
     @IsNumber()
+    @Transform(({value}) => parseInt(value))
     id: number;
 
     @IsNotEmpty()
     @IsNumber()
+    @Transform(({value}) => parseInt(value))
     userId: number;
 
 }
