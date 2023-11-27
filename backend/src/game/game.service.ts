@@ -6,6 +6,7 @@ import { NotificationService } from 'src/notification/notification.service';
 import { GameGateway } from './game.gateway';
 import { GameState } from './gameState';
 import { UpdatePaddlePositionDto } from './dto/game.dto';
+import { WsException } from '@nestjs/websockets';
 
 @Injectable()
 export class GameService {
@@ -352,7 +353,8 @@ export class GameService {
 			},
 		});
 		if (!currentPlayer)
-			throw new HttpException(`No player found`, HttpStatus.BAD_REQUEST);
+			throw new WsException(`No player found`);
+			// throw new HttpException(`No player found`, HttpStatus.BAD_REQUEST);
 
 		let actualPlayer = null;
 
@@ -368,7 +370,8 @@ export class GameService {
 		else if (payload.direction === "down")
 			actualPlayerPosition += 1;
 		else
-			throw new HttpException(`Invalid direction`, HttpStatus.BAD_REQUEST);
+			throw new WsException(`Invalid direction`);
+			// throw new HttpException(`Invalid direction`, HttpStatus.BAD_REQUEST);
 
 		actualPlayer.paddlePosition = actualPlayerPosition;
 
@@ -450,7 +453,8 @@ export class GameService {
 			},
 		});
 		if (!player)
-			throw new HttpException(`No player found`, HttpStatus.BAD_REQUEST);
+			throw new WsException(`No player found`);
+			// throw new HttpException(`No player found`, HttpStatus.BAD_REQUEST);
 
 		let actualPlayer = null;
 		let opponentPlayer = null;
