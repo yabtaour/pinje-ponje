@@ -1,17 +1,22 @@
 version: '3.8'
 
 services:
-  # frontend:
-  #   build:
-  #     context: ${FRONT_DIR_PATH}
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "3001:3001"
-  #   container_name: frontend_container
-  #   environment:
-  #     - NEXTJS_API_URL=${NEXTJS_API_URL}
-  #   depends_on:
-  #     - frontend
+  frontend:
+    build:
+      context: ${FRONT_DIR_PATH}
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    container_name: frontend_container
+    env_file: 
+      ./frontend/ponje/.env
+    # environment:
+    #   - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+    depends_on:
+      - backend
+    networks:
+      - frontend
+      - backend
 
   postgres:
     build:
@@ -19,26 +24,13 @@ services:
       dockerfile: Dockerfile
     image: postgres_image
     container_name: postgres_container
-    environment:
-      - POSTGRES_DB=dev_db
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=changeme
-      - POSTGRES_PORT=5432
-      - PGPASSWORD=changeme
     ports:
       - "5432:5432"
-    expose:
-      - 5432
-    # env_file:
-    #   - .env
+    env_file:
+      - .env
     networks:
       - backend
     restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h localhost -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   backend:
     build:
@@ -48,17 +40,14 @@ services:
       - "3000:3000"
     image: backend_image
     container_name: backend_container
-    environment:
-      - POSTGRES_DB=dev_db
-
-    env_file: .env
+    env_file: 
+      ./backend/.env
     depends_on:
       - postgres
       - adminer
     networks:
       - backend
       - frontend
-    # command: sh -c "npx prisma migrate deploy && npm run start:dev"
 
   adminer:
     image: adminer
