@@ -5,14 +5,14 @@ import {
   OnGatewayConnection, OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Namespace, Server, Socket } from 'socket.io'
-import { Logger, UseFilters, UsePipes, ValidationPipe, WsExceptionFilter } from '@nestjs/common';
+import { ExecutionContext, Logger, UseFilters, UsePipes, ValidationPipe, WsExceptionFilter, createParamDecorator } from '@nestjs/common';
 import { ChatService, PaginationLimitDto, joinRoomDto } from './chat.service';
 import { CreateChatDmRoomDto } from './dto/create-chat.dto';
 import { ChatRoom } from '@prisma/client';
 import { AllExceptionsFilter } from '../all.exception.filter';
 import { AuthWithWs, UserWsDto } from './dto/user-ws-dto';
-
-
+import { chatActionsDto } from './dto/actions-dto';
+import { plainToClass } from 'class-transformer';
 
 /**
  * WebSocket Gateway for handling chat-related events.
@@ -187,6 +187,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.server.to(payload.name).emit('roomBroadcast', "User Muted");
   }
 
+
+  @SubscribeMessage('unmute')
+  async handleunMute(client: AuthWithWs, payload: any) {
+    const room = await this.chatService.unMuteUser(parseInt(client.id), payload);
+    this.server.to(payload.name).emit('roomBroadcast', "User Muted");
+  }
+
   /**
    * Ban a user from a room.
    * @param client The WebSocket client [ Socket ].
@@ -197,14 +204,14 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
    */
 
   @SubscribeMessage('ban')
-  async handleBan(client: AuthWithWs, payload: any) {
+  async handleBan(client: AuthWithWs, payload: chatActionsDto) {
     const room = await this.chatService.BanUserFromRoom(parseInt(client.id), payload);
     this.server.emit('roomBroadcast', "User Banned");
     this.server.to(String(payload.id)).emit('roomBroadcast', "User Banned");
   }
 
   @SubscribeMessage('unban')
-  async handleUnban(client: AuthWithWs, payload: any) {
+  async handleUnban(client: AuthWithWs, payload: chatActionsDto){
     const room = await this.chatService.UnBanUserFromRoom(parseInt(client.id), payload);
     this.server.to(String(payload.id)).emit('roomBroadcast', "User Unbanned");
   }
@@ -224,7 +231,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('sendMessage')
   async handleMessage(client: AuthWithWs, payload: any){
-    const message = await this.chatService.createMessage(parseInt(client.id) , payload.name, payload.message);
+    const message = await this.chatService.createMessage(parseInt(client.id) , parseInt(payload.id), payload);
     if (message)
       this.server.to(payload.name).emit('message', message);
   }
@@ -243,7 +250,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('getMessages')
   async handleGetMessages(client: AuthWithWs, payload: any){
-    const messages = await this.chatService.getMessages(parseInt(client.id), payload, client.handshake.query);
+    const messages = await this.chatService.getMessages(parseInt(client.id), parseInt(payload.id), client.handshake.query);
     this.server.to(client.id).emit('listOfMessages', messages);
   }
 

@@ -1,4 +1,4 @@
-import { Injectable, Logger, Patch, Query } from '@nestjs/common';
+import { BadRequestException, ExecutionContext, HttpException, HttpStatus, Injectable, Logger, Param, ParseIntPipe, Patch, Query, createParamDecorator } from '@nestjs/common';
 import { CreateChatDmRoomDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import * as crypto from 'crypto';
@@ -13,8 +13,27 @@ import { WsException } from '@nestjs/websockets';
 import { AuthWithWs } from './dto/user-ws-dto';
 import { skip } from 'node:test';
 import { IsIn, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { Transform, plainToClass } from 'class-transformer';
 import { chatActionsDto } from './dto/actions-dto';
+import { error } from 'console';
+
+
+export const ChatActions = createParamDecorator(
+  (data: unknown, ctx: ExecutionContext): chatActionsDto => {
+    const webSocketServer = ctx.switchToWs();
+    
+    if (!webSocketServer) {
+      throw new WsException('Invalid WebSocket context');
+    }
+    const dataFromContext = webSocketServer.getData();
+    
+    if (!dataFromContext) {
+      throw new WsException('No data found in WebSocket context');
+    }
+    return plainToClass(chatActionsDto, dataFromContext);
+  },
+);
+
 
 
 export class PaginationLimitDto {
@@ -275,6 +294,11 @@ export class ChatService {
   // idea : insetead of delete the user from the room we can just change the state to kicked  
   async kickUserFromRoom(user_id : number, payload: chatActionsDto){
 
+    const roomid = parseInt(String(payload.id))
+    const peer_id= parseInt(String(payload.userId)) 
+    if (Number.isNaN(roomid) || Number.isNaN(peer_id))
+      throw new BadRequestException();
+
       const room = await this.prisma.chatRoom.findUnique({
         where: {
           id: payload.id,
@@ -282,13 +306,24 @@ export class ChatService {
         select: {
           members: {
             where: {
-              userId: payload.userId,
+              userId: peer_id,
+              state: {
+                in : ['ACTIVE', 'MUTED']
+              }
+            },
+            select: {
+              id: true,
+              role: true
             }
           }
         }
       });
 
-      if (await this.isUserAdminInRoom(room.members[0].roomId, user_id) === false) {
+      if (
+        !room ||
+        room.members.length == 0 ||
+        await this.isUserAdminInRoom(roomid, user_id, room.members[0].role) === false
+      ){
         throw new WsException(`Not Allowed`);
       }
 
@@ -318,20 +353,41 @@ export class ChatService {
   
 
   async MuteUserFromRoom(user_id : number, payload: chatActionsDto){
+
+    const roomid = parseInt(String(payload.id))
+    const peer_id= parseInt(String(payload.userId)) 
+    if (Number.isNaN(roomid) || Number.isNaN(peer_id))
+      throw new BadRequestException();
+
     const room = await this.prisma.chatRoom.findUnique({
       where: {
-        id: payload.id,
+        id: roomid
       },
       select: {
         members: {
           where: {
-            userId: payload.userId,
+            userId: peer_id,
+            state: {
+              in : ['ACTIVE', 'MUTED']
+            }
+          },
+          select: {
+            id: true,
+            role: true
           }
         }
       }
     });
 
-    const muteDurationInMilliseconds = 300 * 1000; // Drt 5 minutes
+    if (
+      !room ||
+      room.members.length == 0 ||
+      await this.isUserAdminInRoom(roomid, user_id, room.members[0].role) === false
+    ){
+      throw new WsException(`Not Allowed`);
+    }
+
+    const muteDurationInMilliseconds = 60 * 1000; // 1 minute
     const unmuteTime = new Date(Date.now() + muteDurationInMilliseconds);
   
     await this.prisma.roomMembership.update({
@@ -343,37 +399,96 @@ export class ChatService {
         unmuteTime: unmuteTime,
       }
     })
-
-    // i need a middleware to check if the user is muted or not to update the state
   }
 
-  async unMuteUser(user_id : number, payload: chatActionsDto){
+  async unMuteUser(user_id: number, payload: chatActionsDto) {
 
+    const roomid = parseInt(String(payload.id))
+    const peer_id= parseInt(String(payload.userId)) 
+    if (Number.isNaN(roomid) || Number.isNaN(peer_id))
+      throw new BadRequestException();
 
-    
-  }
-  
-  async BanUserFromRoom(user_id : number, payload: chatActionsDto){
     const room = await this.prisma.chatRoom.findUnique({
       where: {
-        id: payload.id,
+        id: roomid,
       },
       select: {
         members: {
           where: {
-            userId: payload.userId,
+            userId: peer_id,
+            state: {
+              in : ['ACTIVE', 'MUTED']
+            }
+          },
+          select: {
+            id: true,
+            role: true
+          }
+        }
+      },
+    });
+  
+    if (
+      !room ||
+      room.members.length == 0 ||
+      await this.isUserAdminInRoom(roomid, user_id, room.members[0].role) === false
+    ){
+      throw new WsException(`Not Allowed`);
+    }
+  
+    const member = room.members[0];
+  
+    await this.prisma.roomMembership.update({
+      where: {
+        id: member.id,
+      },
+      data: {
+        state: 'ACTIVE',
+        unmuteTime: null,
+      },
+    });
+  }
+  
+  
+  
+  async BanUserFromRoom(user_id : number, @ChatActions() payload: chatActionsDto) {
+
+    const roomid = parseInt(String(payload.id))
+    const peer_id= parseInt(String(payload.userId)) 
+    if (Number.isNaN(roomid) || Number.isNaN(peer_id))
+      throw new BadRequestException();
+
+    const room = await this.prisma.chatRoom.findFirst({
+      where: {
+        id: roomid
+      },
+      select: {
+        id: true,
+        members: {
+          where: {
+            userId: peer_id,
+            state: {
+              in : ['ACTIVE', 'MUTED']
+            }
+          },
+          select: {
+            id: true,
+            role: true
           }
         }
       }
     });
 
-    if (await this.isUserAdminInRoom(room.members[0].roomId, user_id) === false) {
+    if (
+      !room ||
+      room.members.length == 0 ||
+      await this.isUserAdminInRoom(roomid, user_id, room.members[0].role) === false
+    ){
       throw new WsException(`Not Allowed`);
     }
-
     await this.prisma.roomMembership.update({
       where: {
-        id : room.members[0].id,
+        id : room.members[0].id
       },
       data: {
         state: 'BANNED',
@@ -381,21 +496,38 @@ export class ChatService {
     })
   }
 
-  async UnBanUserFromRoom(user_id : number, payload: chatActionsDto){
-    const room = await this.prisma.chatRoom.findUnique({
+  async UnBanUserFromRoom(user_id : number, @ChatActions() payload: chatActionsDto){
+    const roomid = String(payload.id)
+    const peer_id= String(payload.userId) 
+    if (Number.isNaN(+roomid) || Number.isNaN(+peer_id))
+      throw new BadRequestException();
+
+    const room = await this.prisma.chatRoom.findFirst({
       where: {
-        id: payload.id,
+        id: parseInt(String(roomid))
       },
       select: {
+        id: true,
         members: {
           where: {
-            userId: payload.userId,
+            userId: parseInt(peer_id),
+            state: {
+              in : ['ACTIVE', 'MUTED']
+            }
+          },
+          select: {
+            id: true,
+            role: true
           }
         }
       }
     });
 
-    if (await this.isUserAdminInRoom(room.members[0].roomId, user_id) === false) {
+    if (
+      !room ||
+      room.members.length == 0 ||
+      await this.isUserAdminInRoom(parseInt(roomid), user_id, room.members[0].role) === false
+    ){
       throw new WsException(`Not Allowed`);
     }
 
@@ -410,6 +542,9 @@ export class ChatService {
   }
 
   async createMessage(user_id : number, room_id: number, payload: MessageDto) {
+    
+    if (Number.isNaN(user_id) || Number.isNaN(room_id) || payload.message == undefined)
+      throw new BadRequestException()
     const room = await this.prisma.chatRoom.findUnique({
       where: {
         id : room_id,
@@ -421,6 +556,7 @@ export class ChatService {
             userId: user_id,
           },
           select: {
+            unmuteTime: true,
             state: true,
             user : {
               select: {
@@ -437,10 +573,13 @@ export class ChatService {
       }
     }
   });
+
     if (!room || !room.members[0])
       throw new WsException(`You are not a member of this room or the room doesn't exist`);
-    if (room.members[0].state === 'MUTED' )
+    if (room.members[0].state === 'MUTED'  && room.members[0].unmuteTime > new Date())
       throw new WsException(`You are muted from this room`);
+    else
+      await this.updateUserState(user_id, 'ACTIVE');
     if (room.members[0].state === 'BANNED')
       throw new WsException(`You are banned from this room`);
 
@@ -470,47 +609,52 @@ export class ChatService {
     return messageWithUser;
   }
 
-  async getMessages(user_id : number, room_id: number, params: PaginationLimitDto) {
-    const room = await this.prisma.chatRoom.findUnique({
+  async getMessages(user_id : number, @Param('room_id', ParseIntPipe) room_id: number, params: PaginationLimitDto) {
+
+    if (Number.isNaN(user_id) || Number.isNaN(room_id))
+      throw new BadRequestException();
+    const room = await this.prisma.chatRoom.findMany({
       where: {
-        id : room_id,
+        id: room_id,
+        members: {
+          some: {
+            userId: user_id,
+          },
+        },
       },
       select: {
         id: true,
         members: {
           where: {
             userId: user_id,
-          }
-        }
-      }
+          },
+        },
+        messages: {
+          select: {
+            content: true,
+            createdAt: true,
+            user: {
+              select: {
+                id: true,
+                username: true,
+                profile: {
+                  select: {
+                    avatar: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
-    if (!room || !room.members[0]) {
-      // change the event name to ErrorEvent
+    
+    if (room.length === 0 || room[0].members.length === 0) {
       throw new WsException(`You are not a member of this room or the room doesn't exist`);
     }
-    const messages = await this.prisma.chatMessage.findMany({
-      where: {
-        roomId: room.id,
-      },
-      select: {
-        content: true,
-        createdAt: true,
-        user: {
-          select: {
-            username: true,
-            profile: {
-              select: {
-                avatar: true,
-              }
-            }
-          }
-        }
-      },
-      skip : params.skip,
-      take : params.take,
-    })
-    return messages;
-  }
+    
+    return room;
+  }    
 
 
   // leave here and move it later to extr file
@@ -541,15 +685,35 @@ export class ChatService {
     return !!roomMembership;
   }
 
-  async isUserAdminInRoom(roomId: number, userId: number): Promise<boolean> {
+  async isUserAdminInRoom(roomId: number, userId: number, peer_role: string): Promise<boolean> {
     const roomMembership = await this.prisma.roomMembership.findFirst({
       where: {
-        userId: userId,
-        roomId: roomId,
+        userId: parseInt(String(userId)),
+        roomId: parseInt(String(roomId)),
         role: 'OWNER' || 'ADMIN',
       }
     });
+    if (roomMembership && peer_role == 'OWNER' && roomMembership.role == 'ADMIN')
+      return false
+    if (roomMembership && peer_role == 'ADMIN' && roomMembership.role == 'ADMIN')
+      return false
     return !!roomMembership;
+  }
+
+  async updateUserState(userId: number, newState: 'ACTIVE' | 'MUTED'): Promise<void> {
+    await this.prisma.roomMembership.updateMany({
+      where: {
+        userId: userId,
+        state: 'MUTED',
+        unmuteTime: {
+          lte: new Date(), // Check for users whose unmuteTime has passed
+        },
+      },
+      data: {
+        state: newState,
+        unmuteTime: null,
+      },
+    });
   }
   // Class END.
   }
