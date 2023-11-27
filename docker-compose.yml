@@ -1,17 +1,44 @@
 version: '3.8'
 
 services:
-  frontend:
+  # frontend:
+  #   build:
+  #     context: ${FRONT_DIR_PATH}
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "3001:3001"
+  #   container_name: frontend_container
+  #   environment:
+  #     - NEXTJS_API_URL=${NEXTJS_API_URL}
+  #   depends_on:
+  #     - frontend
+
+  postgres:
     build:
-      context: ${FRONT_DIR_PATH}
+      context: ${DB_DUMP_DIR}
       dockerfile: Dockerfile
-    ports:
-      - "3001:3001"
-    container_name: frontend_container
+    image: postgres_image
+    container_name: postgres_container
     environment:
-      - NEXTJS_API_URL=${NEXTJS_API_URL}
-    depends_on:
-      - frontend
+      - POSTGRES_DB=dev_db
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=changeme
+      - POSTGRES_PORT=5432
+      - PGPASSWORD=changeme
+    ports:
+      - "5432:5432"
+    expose:
+      - 5432
+    # env_file:
+    #   - .env
+    networks:
+      - backend
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
@@ -19,33 +46,19 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    image: backend_image
     container_name: backend_container
     environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_DB=dev_db
 
     env_file: .env
     depends_on:
       - postgres
+      - adminer
     networks:
       - backend
+      - frontend
     # command: sh -c "npx prisma migrate deploy && npm run start:dev"
-
-  postgres:
-    build:
-      context: ${DB_DUMP_DIR}
-      dockerfile: Dockerfile
-    container_name: postgres_container
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "5432:5432"
-    env_file:
-      - .env
-    networks:
-      - backend
 
   adminer:
     image: adminer
@@ -55,6 +68,8 @@ services:
       - 8080:8080
     networks:
       - backend
+    depends_on:
+      - postgres
 
 networks:
   backend:

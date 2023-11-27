@@ -1,14 +1,27 @@
 FROM node:20.6-alpine as base
 
-
 WORKDIR /app
+# Create a non-root user and group
+RUN addgroup -g 1001 appgroup && \
+    adduser -u 1001 -G appgroup -s /bin/sh -D appuser
+
+# Set app directory ownership to the non-root user
+RUN chown -R appuser:appgroup /app
 
 COPY package*.json ./
 
 RUN npm install && npm install --dev
 
+# ENV DATABASE_URL = "postgresql://changeme:changeme@postgres:5432/db?schema=public"
+
+
 COPY . .
 
-RUN npx prisma migrate dev
+# RUN npx prisma db pull
 
+# RUN npx prisma generate
+RUN chmod 777 ./run.sh
+RUN ls
+RUN sh ./run.sh
+# RUN echo "Done"
 CMD ["npm", "run", "start"]
