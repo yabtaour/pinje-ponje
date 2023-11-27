@@ -1,7 +1,8 @@
 'use client'
 import { ScrollShadow } from "@nextui-org/react";
 import { LayoutProps, motion, useAnimation } from "framer-motion";
-import React, { createContext, useEffect, useState } from "react";
+import React, { Suspense, createContext, useEffect, useState } from "react";
+import Loader from '../../components/loader';
 import Conversation from "./components/conversation";
 
 
@@ -59,7 +60,9 @@ const Layout: React.FC<LayoutProps> = ({ children }: any) => {
                         transition={{ duration: 0.1 }}
                     >
                         <ScrollShadow hideScrollBar className=" h-[90vh]">
-                            <Conversation collapsed={collapsed} />
+                            <Suspense fallback={<Loader />}>
+                                <Conversation collapsed={collapsed} />
+                            </Suspense>
                         </ScrollShadow>
                     </motion.div>
                 </aside>

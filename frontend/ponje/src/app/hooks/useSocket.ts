@@ -1,6 +1,7 @@
 import { getCookie } from "cookies-next";
 import { useEffect, useState } from "react";
 import { Socket, io } from "socket.io-client";
+import { useAppSelector } from "../globalRedux/store";
 
 type EventType = "notifications" | "newMessage";
 
@@ -14,30 +15,30 @@ const useSocket = () => {
     null
   );
 
+  const chat = useAppSelector((state) => state.chatReducer);
+
   const token = getCookie("token");
 
   useEffect(() => {
     const newChatSocket = io(`${SOCKET_SERVER_URL}/chat`, {
       auth: { token: token },
-      // autoConnect: false,
     });
     const newGameSocket = io(`${SOCKET_SERVER_URL}/chat`, {
       auth: { token: token },
-      autoConnect: false,
     });
     const newStatusSocket = io(`${SOCKET_SERVER_URL}/chat`, {
       auth: { token: token },
-      autoConnect: false,
     });
     const newNotificationSocket = io(`${SOCKET_SERVER_URL}/chat`, {
       auth: { token: token },
-      autoConnect: false,
     });
 
     setChatSocket(newChatSocket);
     setGameSocket(newGameSocket);
     setStatusSocket(newStatusSocket);
     setNotificationSocket(newNotificationSocket);
+
+
 
     return () => {
       newChatSocket.close();
@@ -50,7 +51,7 @@ const useSocket = () => {
   //chatSocket
   const sendMessage = (message: string) => {
     if (chatSocket) {
-      chatSocket.emit("sendMessage", message);
+      chatSocket.emit("sendMessage", message, (res: any) => {});
     }
   };
 

@@ -3,7 +3,7 @@ import { login } from '@/app/globalRedux/features/authSlice';
 import { useAppSelector } from '@/app/globalRedux/store';
 import { fetchUserData, setSession, verifyToken } from '@/app/utils/auth';
 import { getCookie } from 'cookies-next';
-import { useRouter } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import axios from '../utils/axios';
@@ -25,6 +25,11 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
 
 
     useEffect(() => {
+
+
+        console.log("testing the intra login ");
+
+
         let tokenFromCookie = getCookie('token')
         if (tokenFromCookie)
             localStorage.setItem('access_token', tokenFromCookie);
@@ -44,7 +49,8 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
         }
 
         if (!isAithenticated && !accessToken && !verifyToken(accessToken)) {
-            router.push('/sign-in');
+            redirect('/sign-in');
+            // router.push('/sign-in');
         }
     }, [isAithenticated, router]);
 
