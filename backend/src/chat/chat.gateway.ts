@@ -184,14 +184,14 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('mute')
   async handleMute(client: AuthWithWs, payload: any) {
     const room = await this.chatService.MuteUserFromRoom(parseInt(client.id), payload);
-    this.server.to(payload.name).emit('roomBroadcast', "User Muted");
+    this.server.to(payload.id).emit('roomBroadcast', "User Muted");
   }
 
 
   @SubscribeMessage('unmute')
   async handleunMute(client: AuthWithWs, payload: any) {
     const room = await this.chatService.unMuteUser(parseInt(client.id), payload);
-    this.server.to(payload.name).emit('roomBroadcast', "User Muted");
+    this.server.to(payload.id).emit('roomBroadcast', "User unmuted");
   }
 
   /**
@@ -233,7 +233,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleMessage(client: AuthWithWs, payload: any){
     const message = await this.chatService.createMessage(parseInt(client.id) , parseInt(payload.id), payload);
     if (message)
-      this.server.to(payload.name).emit('message', message);
+      this.server.to(payload.id).emit('message', message);
   }
 
 
