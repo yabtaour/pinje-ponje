@@ -1,8 +1,7 @@
-import { UserService } from "src/user/user.service";
-import { CreateGameDto } from "./dto/create.dto";
-import { GameService } from "./game.service";
-import { Controller, Get, Post, Patch, Body, Req, Query, ParseIntPipe, Param, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Req, UseGuards } from "@nestjs/common";
 import { JWTGuard } from "src/auth/guards/jwt.guard";
+import { UserService } from "src/user/user.service";
+import { GameService } from "./game.service";
 
 @UseGuards(JWTGuard)
 @Controller("game")
@@ -15,6 +14,13 @@ export class GameController {
 	@Get()
 	async getGames() {
 		return this.gameService.getGames();
+	}
+	
+	@Get(":id")
+	async getGameById(
+		@Param('id', ParseIntPipe) id: number,
+	) {
+		return this.gameService.getGameById(id);
 	}
 
 	@Get('user/winrate/:id')
@@ -30,21 +36,6 @@ export class GameController {
 	) {
 		console.log(id);
 		return this.gameService.getGamesByUserId(id);
-	}
-
-
-	@Get(":id")
-	async getGameById(
-		@Param('id', ParseIntPipe) id: number,
-	) {
-		return this.gameService.getGameById(id);
-	}
-
-	@Get("winrate/:id")
-	async getWinrate(
-		@Param('id', ParseIntPipe) id: number,
-	) {
-		return this.gameService.getWinRate(id);
 	}
 
 	@Post("queue")

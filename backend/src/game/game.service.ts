@@ -45,41 +45,8 @@ export class GameService {
 				},
 			},
 		});
-		const winRate = wonGamesCount / (wonGamesCount + lostGamesCount);
+		const winRate = (wonGamesCount / (wonGamesCount + lostGamesCount)) * 100;
 		return ({wonGamesCount: wonGamesCount, lostGamesCount: lostGamesCount, winRate: winRate});
-	}
-
-	async getWinRate(id: number) {
-		const user = await this.prisma.user.findUnique({
-			where: {
-				id: id,
-			},
-		});
-		if (!user)
-			throw new HttpException(`No user found`, HttpStatus.BAD_REQUEST);
-
-		const wonGames = await this.prisma.game.findMany({
-			where: {
-				players: {
-					some: {
-						userId: id,
-						status: "WINNER",
-					},
-				},
-			},
-		});
-		const lostGames = await this.prisma.game.findMany({
-			where: {
-				players: {
-					some: {
-						userId: id,
-						status: "LOSER",
-					},
-				},
-			},
-		});
-		const winRate = (wonGames.length / (wonGames.length + lostGames.length)) * 100;
-		return {wonGames: wonGames.length, lostGames: lostGames.length, winRate: winRate};
 	}
 
 	async getGamesByUserId(id: number) {
@@ -157,7 +124,7 @@ export class GameService {
 	}
 
 	async invitePlayer(data: {userId: number}, user: any) {
-		if (user.id == Status.INGAME || user.id == Status.OFFLINE)
+		if (user.status == Status.INGAME || user.status == Status.OFFLINE)
 			throw new HttpException(`User is not available`, HttpStatus.BAD_REQUEST);
 		if (user.id === data.userId)
 			throw new HttpException(`You can't invite yourself`, HttpStatus.BAD_REQUEST);
@@ -298,27 +265,52 @@ export class GameService {
 						{ status: 'LOSER', user: { connect: { id: opponent.id } } },
 					]
 				}
-			}
+			},
+			// in case front want to add something before transferring to the game
+			// select: {
+			// 	id: true,
+			// 	players: {
+			// 		select: {
+			// 			id: true,
+			// 			userId: true,
+			// 			user: {
+			// 				select: {
+			// 					id: true,
+			// 					username: true,
+			// 					profile: {
+			// 						select: {
+			// 							avatar: true,
+			// 						},
+			// 					},
+			// 				},
+			// 			},
+			// 		},
+			// 	},
+			// },
 		});
 		if (!game)
 			throw new HttpException(`Error creating game`, HttpStatus.BAD_REQUEST);
 
-		const player = await this.prisma.player.findFirst({
+		const player = await this.prisma.player.findUnique({
 			where: {
-				userId: user.id,
-				gameId: game.id,
+				userId_gameId: {
+					userId: user.id,
+					gameId: game.id,
+				},
 			},
-		});
+		})
 		if (!player)
-			throw new HttpException(`No player found`, HttpStatus.BAD_REQUEST);
-		const opponentPlayer = await this.prisma.player.findFirst({
+			throw new HttpException(`Error creating players`, HttpStatus.BAD_REQUEST);
+		const opponentPlayer = await this.prisma.player.findUnique({
 			where: {
-				userId: opponent.id,
-				gameId: game.id,
+				userId_gameId: {
+					userId: opponent.id,
+					gameId: game.id,
+				},
 			},
 		});
 		if (!opponentPlayer)
-			throw new HttpException(`No opponent player found`, HttpStatus.BAD_REQUEST);
+			throw new HttpException(`Error creating players`, HttpStatus.BAD_REQUEST);
 
 		await this.prisma.user.updateMany({
 			where: {
@@ -338,9 +330,11 @@ export class GameService {
 			{x: 0, y: 0},
 		)
 		this.gameGateway.currentGames[game.id] = gameState;
-		await this.gameGateway.server.to(String(opponentPlayer.userId)).emit('queue', game);
+		await this.gameGateway.server.to(String(opponentPlayer.userId)).emit('queue', gameState);
 		await this.gameGateway.server.to(String(player.userId)).emit('gameStart', gameState);
 		await this.gameGateway.server.to(String(opponentPlayer.userId)).emit('gameStart', gameState);
+
+		console.log(this.gameGateway.currentGames);
 	}
 
 	async updatePlayerPosition(client: number, payload: UpdatePaddlePositionDto) {
