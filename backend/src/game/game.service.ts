@@ -138,6 +138,14 @@ export class GameService {
 		});
 		if (!opponent)
 			throw new HttpException(`No user with id ${data.userId} is available`, HttpStatus.BAD_REQUEST);
+		await this.prisma.user.update({
+			where: {
+				id: user.id,
+			},
+			data: {
+				gameInvitesSent: data.userId,
+			}
+		});
 		this.notificationGateway.sendNotificationToUser(
 			String(opponent.id),
 			{
@@ -153,12 +161,25 @@ export class GameService {
 			throw new HttpException(`You are not available`, HttpStatus.BAD_REQUEST);
 		if (user.id === data.userId)
 			throw new HttpException(`You can't play with yourself`, HttpStatus.BAD_REQUEST);
+
 		const opponent = await this.prisma.user.findFirst({
 			where: {
 				id: data.userId,
 				status: {
 				 in: ["ONLINE", "INQUEUE"]
 			 	}
+			}
+		});
+		if (!opponent)
+			throw new HttpException(`No user with id ${data.userId} is available`, HttpStatus.BAD_REQUEST);
+		if (opponent.gameInvitesSent !== user.id)
+			throw new HttpException(`No invite found`, HttpStatus.BAD_REQUEST);
+		await this.prisma.user.update({
+			where: {
+				id: opponent.id,
+			},
+			data: {
+				gameInvitesSent: null,
 			}
 		});
 		const game = await this.prisma.game.create({
@@ -206,14 +227,15 @@ export class GameService {
 			{id: player.userId, paddlePosition: 5, score: 0},
 			{id: player.userId, paddlePosition: 5, score: 0},
 			{x: 0, y: 0},
-			{x: 0, y: 0},
+			{x: 0, y: 0}, 
 		)
 		this.gameGateway.currentGames[game.id] = gameState
 		this.gameGateway.server.to(String(player.userId)).emit('gameStart', gameState);
 		this.gameGateway.server.to(String(opponentPlayer.userId)).emit('gameStart', gameState);
+		console.log(this.gameGateway.currentGames);
 	}
 
-	async declineInvite(data: {userId: number}, user: any) {
+	async declineInvite(data: {userId: number}, currentUser: any) {
 		const opponent = await this.prisma.user.findFirst({
 			where: {
 				id: data.userId,
@@ -224,10 +246,19 @@ export class GameService {
 		});
 		if (!opponent)
 			throw new HttpException(`No user with id ${data.userId} is available`, HttpStatus.BAD_REQUEST);
-
+		if (opponent.gameInvitesSent !== currentUser.id)
+			throw new HttpException(`No invite found`, HttpStatus.BAD_REQUEST);
+		await this.prisma.user.update({
+			where: {
+				id: opponent.id,
+			},
+			data: {
+				gameInvitesSent: null,
+			}
+		});
 		this.notificationService.create({
-			senderId: data.userId,
-			receiverId:	user.id,
+			senderId: currentUser.id,
+			receiverId:	opponent.id,
 			type: NotificationType.GAME_INVITE_REJECTED,
 		})
 	}
