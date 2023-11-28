@@ -48,8 +48,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const userRooms = await this.chatService.getRoomsByUserId(parseInt(client.id), {skip: 0});
   
     userRooms.forEach((rooms) => {
+      console.log(rooms)
       this.logger.debug(`Client ${client.id} joined room ${rooms.room.name}`);
-      client.join(String(rooms.id));
+      client.join(String(rooms.room.id));
     });
   
     this.logger.debug(`Number of connected sockets: ${sockets.size}`);
@@ -71,7 +72,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   
     userRooms.forEach((rooms) => {
       this.logger.debug(`Client ${client.id} leave room ${rooms.room.name}`);
-      client.leave(String(rooms.id));
+      client.leave(String(rooms.room.id));
     });
 
   }
@@ -104,7 +105,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleGetRooms(client: AuthWithWs, payload: any) {
     console.log("The User ID Requesting Rooms : ", client.id)
     const rooms = await this.chatService.getRoomsByUserId(parseInt(client.id), client.handshake.query);
-    this.server.to(client.id).emit('listOfRooms', rooms);
+    this.server.to(String(payload.id)).emit('listOfRooms', rooms);
   }
   
   /**
@@ -120,7 +121,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleGetRoom(client: AuthWithWs, payload: any) {
     const room = await this.chatService.getRoomByNames(payload.id);
     console.log("room : ", room);
-    this.server.to(client.id).emit('roomDetails', room);
+    this.server.to(String(payload.id)).emit('roomDetails', room);
   }
 
 
@@ -154,7 +155,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('getRoomUsers')
   async handleGetRoomUsers(client: any, payload: any) {
     const users = await this.chatService.getRoomUsers(client, payload.id, client.handshake.query);
-    this.server.to(client.id).emit('listOfRoomMembers', users);
+    this.server.to(String(payload.id)).emit('listOfRoomMembers', users);
   }
 
   /**
@@ -169,7 +170,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('kick')
   async handleKick(client: AuthWithWs, payload: any) {
     const room = await this.chatService.kickUserFromRoom(parseInt(client.id), payload);
-    this.server.to(payload.id).emit('roomBroadcast', "User Kicked");
+    this.server.to(String(payload.id)).emit('roomBroadcast', "User Kicked");
   }
 
   /**
@@ -184,14 +185,14 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('mute')
   async handleMute(client: AuthWithWs, payload: any) {
     const room = await this.chatService.MuteUserFromRoom(parseInt(client.id), payload);
-    this.server.to(payload.id).emit('roomBroadcast', "User Muted");
+    this.server.to(String(payload.id)).emit('roomBroadcast', "User Muted");
   }
 
 
   @SubscribeMessage('unmute')
   async handleunMute(client: AuthWithWs, payload: any) {
     const room = await this.chatService.unMuteUser(parseInt(client.id), payload);
-    this.server.to(payload.id).emit('roomBroadcast', "User unmuted");
+    this.server.to(String(payload.id)).emit('roomBroadcast', "User unmuted");
   }
 
   /**
@@ -233,7 +234,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleMessage(client: AuthWithWs, payload: any){
     const message = await this.chatService.createMessage(parseInt(client.id) , parseInt(payload.id), payload);
     if (message)
-      this.server.to(payload.id).emit('message', message);
+      this.server.to(String(payload.id)).emit('message', message);
   }
 
 
@@ -251,7 +252,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('getMessages')
   async handleGetMessages(client: AuthWithWs, payload: any){
     const messages = await this.chatService.getMessages(parseInt(client.id), parseInt(payload.id), client.handshake.query);
-    this.server.to(client.id).emit('listOfMessages', messages);
+    this.server.to(String(client.id)).emit('listOfMessages', messages);
   }
 
 }
