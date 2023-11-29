@@ -1,14 +1,65 @@
-# this is the docker-compose.yml file for the backend service
+version: '3.8'
+
 services:
-  db:
-    container_name: ppdatabase
-    image: postgres:latest
-    env_file: .env
+  frontend:
+    build:
+      context: ${FRONT_DIR_PATH}
+      dockerfile: Dockerfile
     ports:
-      - '5432:5432'
+      - "3001:3001"
+    container_name: frontend_container
+    env_file: 
+      ./frontend/ponje/.env
+    # environment:
+    #   - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+    depends_on:
+      - backend
+    networks:
+      - frontend
+      - backend
+
+  postgres:
+    build:
+      context: ${DB_DUMP_DIR}
+      dockerfile: Dockerfile
+    image: postgres_image
+    container_name: postgres_container
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    networks:
+      - backend
+    restart: always
+
+  backend:
+    build:
+      context: ${BACK_DIR_PATH}
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    image: backend_image
+    container_name: backend_container
+    env_file: 
+      ./backend/.env
+    depends_on:
+      - postgres
+      - adminer
+    networks:
+      - backend
+      - frontend
+
   adminer:
-    container_name: adminer
     image: adminer
+    container_name: adminer
+    restart: always
     ports:
-      - '8080:8080'
-# end of backend service.
+      - 8080:8080
+    networks:
+      - backend
+    depends_on:
+      - postgres
+
+networks:
+  backend:
+  frontend:

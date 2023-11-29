@@ -1,8 +1,7 @@
-import { UserService } from "src/user/user.service";
-import { CreateGameDto } from "./dto/create.dto";
-import { GameService } from "./game.service";
-import { Controller, Get, Post, Patch, Body, Req, Query, ParseIntPipe, Param, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Req, UseGuards } from "@nestjs/common";
 import { JWTGuard } from "src/auth/guards/jwt.guard";
+import { UserService } from "src/user/user.service";
+import { GameService } from "./game.service";
 
 @UseGuards(JWTGuard)
 @Controller("game")

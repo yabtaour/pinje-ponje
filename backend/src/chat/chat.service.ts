@@ -201,24 +201,39 @@ export class ChatService {
       where: {
         userId: userId,
         state: {
-          in : ['ACTIVE', 'MUTED']
-        }
+          in: ['ACTIVE', 'MUTED'],
+        },
       },
       include: {
         room: {
           include: {
             messages: {
-              orderBy: {
-                createdAt: 'desc',
+              select: {
+                content: true,
+                createdAt: true,
+                
+                user: {
+                  select: {
+                    id: true,
+                    username: true,
+                    profile: {
+                      select: {
+                        avatar: true,
+                      },
+                    },
+                  },
+                },
               },
-              take: 1,
+              orderBy: {
+                createdAt: 'asc',
+              },
             },
             members: {
               where: {
-                userId : { not: userId},
-                state : {
-                  in : ['ACTIVE', 'MUTED']
-                }
+                userId: { not: userId },
+                state: {
+                  in: ['ACTIVE', 'MUTED'],
+                },
               },
               select: {
                 user: {
@@ -229,12 +244,12 @@ export class ChatService {
                     profile: {
                       select: {
                         avatar: true,
-                      }
-                    }
-                  }
-                }
-              }
-            }
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -646,6 +661,7 @@ export class ChatService {
             },
           },
         },
+        ...params
       },
     });
     

@@ -8,9 +8,6 @@ RUN npm install && npm install --dev
 
 COPY . .
 
-RUN chmod 777 ./run.sh
+# ENTRYPOINT ["npm run start"]
 
-ENTRYPOINT ["sh", "run.sh"]
-
-
-
+CMD ["tail", "-f", "/dev/null"]
