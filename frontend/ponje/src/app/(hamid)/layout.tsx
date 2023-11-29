@@ -28,8 +28,7 @@ export default function Layout({
                         <div className="flex flex-1">
                             <aside
                                 className={`${collapsed ? 'w-16' : 'w-64'
-                                    } border-r border-blue-500 transition-all duration-300 ease-in-out sticky top-0`}
-                                style={{ height: '100vh' }}
+                                    } border-r border-blue-500 transition-all duration-300 ease-in-out sticky h-full top-0`}
                             >
                                 <SideBar collapsed={collapsed} toggleSidebar={toggleSidebar} />
                             </aside>
