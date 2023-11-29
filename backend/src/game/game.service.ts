@@ -225,7 +225,7 @@ export class GameService {
 
 		const gameState = new GameState(
 			{id: player.userId, paddlePosition: 5, score: 0},
-			{id: player.userId, paddlePosition: 5, score: 0},
+			{id: opponentPlayer.userId, paddlePosition: 5, score: 0},
 			{x: 0, y: 0},
 			{x: 0, y: 0}, 
 		)
@@ -379,16 +379,17 @@ export class GameService {
 		});
 		if (!currentPlayer)
 			throw new WsException(`No player found`);
-			// throw new HttpException(`No player found`, HttpStatus.BAD_REQUEST);
 
 		let actualPlayer = null;
 
 		if (this.gameGateway.currentGames[payload.gameId].player1.id == client)
 			actualPlayer = this.gameGateway.currentGames[payload.gameId].player1;
-		else
+		else if (this.gameGateway.currentGames[payload.gameId].player2.id == client)
 			actualPlayer = this.gameGateway.currentGames[payload.gameId].player2;
+		else
+			throw new WsException("Player Not found");
 		
-		let actualPlayerPosition: number = await actualPlayer.paddlePosition;
+		let actualPlayerPosition: number = actualPlayer.paddlePosition;
 
 		if (payload.direction === "up")
 			actualPlayerPosition -= 1;
@@ -396,7 +397,6 @@ export class GameService {
 			actualPlayerPosition += 1;
 		else
 			throw new WsException(`Invalid direction`);
-			// throw new HttpException(`Invalid direction`, HttpStatus.BAD_REQUEST);
 
 		actualPlayer.paddlePosition = actualPlayerPosition;
 
@@ -420,16 +420,14 @@ export class GameService {
 		await this.gameGateway.server.to(String(gameId)).emit('ballUpdate', {x: x, y: y});
 	}
 
-	async gameOver(gameId: number) {
-		this.gameGateway.currentGames.delete(gameId);
-		await this.gameGateway.server.to(String(gameId)).emit('gameOver');
-	}
+	// async gameOver(gameId: number) {
+	// 	this.gameGateway.currentGames.delete(gameId);
+	// 	await this.gameGateway.server.to(String(gameId)).emit('gameOver');
+	// }
 
 
 	async finishGame(winnerId: number, loserId: number, gameId: number) {
-		await this.gameGateway.server.to(String(winnerId)).emit('gameOver', "YOU WON THE GAME !!! CONGRATULATIONS !!!");
-		await this.gameGateway.server.to(String(loserId)).emit('gameOver', "YOU LOST THE GAME !!! GOOD LUCK NEXT TIME :( :( :(");
-		await this.prisma.player.update({
+		const winner = await this.prisma.player.update({
 			where: {
 				userId_gameId: {
 					userId: Number(winnerId),
@@ -443,7 +441,7 @@ export class GameService {
 				consitency: 10
 			},
 		});
-		await this.prisma.player.update({
+		const loser = await this.prisma.player.update({
 			where: {
 				userId_gameId: {
 					userId: Number(loserId),
@@ -454,16 +452,42 @@ export class GameService {
 				status: "LOSER",
 			},
 		});
-		await this.prisma.user.updateMany({
+		if (!winner || !loser)
+			throw new HttpException(`Error updating players`, HttpStatus.BAD_REQUEST);
+		const winnerUser = this.prisma.user.findUnique({
 			where: {
-				id: {
-					in: [winnerId, loserId],
-				},
+				id: winnerId,
+			},
+		});
+		// const loserUser = this.prisma.user.findUnique({
+		// 	where: {
+		// 		id: loserId,
+		// 	},
+		// });
+		const newWinnerConsitensy = (await winnerUser).consitency + winner.consitency > 100 ? 100 : (await winnerUser).consitency + winner.consitency;
+		const newWinnerReflex = (await winnerUser).reflex + winner.reflex > 100 ? 100 : (await winnerUser).reflex + winner.reflex;
+		const newWinnerAccuracy = (await winnerUser).accuracy + winner.accuracy > 100 ? 100 : (await winnerUser).accuracy + winner.accuracy;
+		await this.prisma.user.update({
+			where: {
+				id: winnerId,
 			},
 			data: {
-				status: "ONLINE"
+				status: "ONLINE",
+				consitency: newWinnerConsitensy,
+				reflex: newWinnerReflex,
+				accuracy: newWinnerAccuracy,
 			}
 		});
+		await this.prisma.user.update({
+			where: {
+				id: loserId,
+			},
+			data: {
+				status: "ONLINE",
+			}
+		});
+		await this.gameGateway.server.to(String(winnerId)).emit('gameOver', "YOU WON THE GAME !!! CONGRATULATIONS !!!");
+		await this.gameGateway.server.to(String(loserId)).emit('gameOver', "YOU LOST THE GAME !!! GOOD LUCK NEXT TIME :( :( :(");		
 		this.gameGateway.currentGames.delete(gameId);
 		console.log(this.gameGateway.currentGames);
 	}
@@ -479,25 +503,46 @@ export class GameService {
 		});
 		if (!player)
 			throw new WsException(`No player found`);
-			// throw new HttpException(`No player found`, HttpStatus.BAD_REQUEST);
 
 		let actualPlayer = null;
 		let opponentPlayer = null;
 
-		if (this.gameGateway.currentGames[player.gameId].player1.id == userId)
-		{
+		if (this.gameGateway.currentGames[player.gameId].player1.id == userId) {
 			actualPlayer = this.gameGateway.currentGames[player.gameId].player1;
 			opponentPlayer = this.gameGateway.currentGames[player.gameId].player2;
 		}
-		else
-		{
+		else if (this.gameGateway.currentGames[player.gameId].player2.id == userId) {
 			actualPlayer = this.gameGateway.currentGames[player.gameId].player2;
 			opponentPlayer = this.gameGateway.currentGames[player.gameId].player1;
 		}
+		else
+			throw new WsException("Player Not found");
 		
 		actualPlayer.score += 1;
 
-		if (actualPlayer.score >= 10) {
+		if (actualPlayer.score == 10) {
+			await this.prisma.player.update({
+				where: {
+					userId_gameId: {
+						userId: Number(actualPlayer.id),
+						gameId: gameId,
+					},
+				},
+				data: {
+					score: actualPlayer.score,
+				},
+			});
+			await this.prisma.player.update({
+				where: {
+					userId_gameId: {
+						userId: Number(opponentPlayer.id),
+						gameId: gameId,
+					},
+				},
+				data: {
+					score: opponentPlayer.score,
+				},
+			});
 			await this.finishGame(actualPlayer.id, opponentPlayer.id, player.gameId);
 			return;
 		}

@@ -63,9 +63,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
   
     @SubscribeMessage('gameOver')
-    gameOver(client: any, payload: {gameId: number}): void {
-      this.gameService.gameOver(payload.gameId);
-    }
+    // gameOver(client: any, payload: {gameId: number}): void {
+    //   this.gameService.gameOver(payload.gameId);
+    // }
     
     @SubscribeMessage('updateScore')
     updateScore(client: any, payload: UpdateScoreDto): void {
