@@ -20,7 +20,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
     const router = useRouter();
     const isAithenticated = useAppSelector((state) => state.authReducer.value.isAuthenticated);
     const tokenFromSlice = useAppSelector((state) => state.authReducer.value.token);
-    const dipatch = useDispatch();
+    const dispatch = useDispatch();
 
 
 
@@ -35,13 +35,13 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
             localStorage.setItem('access_token', tokenFromCookie);
 
         if (!tokenFromSlice)
-            dipatch(login({ token: tokenFromCookie }));
+            dispatch(login({ token: tokenFromCookie }));
 
         const accessToken: string | null = localStorage.getItem('access_token');
         if (accessToken && !isAithenticated) {
             fetchUserData(accessToken).then((data) => {
 
-                dipatch(login({ user: data, token: accessToken }));
+                dispatch(login({ user: data, token: accessToken }));
                 setSession(accessToken);
                 console.log(axios.defaults.headers.common.Authorization);
 

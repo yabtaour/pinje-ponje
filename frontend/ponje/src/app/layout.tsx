@@ -6,7 +6,10 @@ import { ChakraProvider } from '@chakra-ui/react'
 import { NextUIProvider } from '@nextui-org/system'
 import { CookiesProvider } from 'react-cookie'
 import { AuthProvider } from './globalRedux/provider'
+import { useAppSelector } from './globalRedux/store'
 const inter = Inter({ subsets: ['latin'] })
+
+
 
 
 
@@ -15,6 +18,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+
+
   return (
 
     <html lang="en">
@@ -24,7 +29,9 @@ export default function RootLayout({
           <NextUIProvider>
             <ChakraProvider>
               <CookiesProvider>
+
                 {children}
+
               </CookiesProvider>
             </ChakraProvider>
           </NextUIProvider>

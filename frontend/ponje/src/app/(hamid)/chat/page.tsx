@@ -1,7 +1,10 @@
 'use client';
 import { useAppSelector } from "@/app/globalRedux/store";
-import useSocket from "@/app/hooks/useSocket";
 import { ScrollShadow, User } from "@nextui-org/react";
+
+
+
+
 import ChatInput from "./components/chatInput";
 import { formatMessageDate } from "./components/conversation";
 
@@ -38,45 +41,16 @@ export function OtherMessage({ message }: any) {
 
 export default function Chat() {
 
-    const token = useAppSelector(state => state?.authReducer?.value?.token)?.replace('Bearer ', '');
-    const socket = useSocket();
-
-    // const { activeConversation, setActiveConversation } = useContext(ChatContext);
+    // const globalSocket = useSocketContext();
     const activeConversation = useAppSelector(state => state?.chatReducer?.activeConversation);
+    const roooms = useAppSelector(state => state?.chatReducer?.rooms);
     const me = useAppSelector(state => state?.authReducer?.value?.user);
-    const messages = activeConversation?.room?.messages;
-    console.log();
-    console.log("messages: ", messages);
-
-    // useEffect(() => {
-    //     console.log("from Chat: ", activeConversation);
-    // }, [activeConversation?.id]);
+    let messages = activeConversation?.room?.messages;
 
 
 
-    // useEffect(() => {
-    //     console.log("activeConversation: ", activeConversation);
-    //     // if (activeConversation) {
-    //     socket.chatSocket?.emit('getMessages', {
-    //         id: activeConversation?.room?.id,
-    //     }, (res: any) => {
-    //         console.log("res: ", res);
-
-    //         setMessages(res);
-    //     });
-
-    //     socket.chatSocket?.on('listOfMessages', (message: any) => {
-    //         console.log("newMessage: ", message);
-    //         setMessages((messages: any) => [...messages, message]);
-    //     });
-    //     // }
-
-    // }, [activeConversation?.id, messages])
-
-
-
-
-
+    // const globalSocket = useSocketIO();
+    // console.log("from chat globalSock: ", globalSocket );
 
 
     return (
@@ -84,7 +58,7 @@ export default function Chat() {
             <div className="">
 
                 <>
-                    <ScrollShadow hideScrollBar className=" h-[80vh]">
+                    <ScrollShadow hideScrollBar className=" h-[75vh]">
                         {
                             // activeConversation?.rooms?.messages?.length === 0 || !activeConversation ? (
                             messages?.length === 0 || !activeConversation ? (
@@ -102,42 +76,23 @@ export default function Chat() {
                                             name={activeConversation?.room?.roomType !== "DM" ? activeConversation?.room?.name : activeConversation?.room?.members[0]?.user?.username}
                                             avatarProps={
                                                 activeConversation?.room?.roomType !== "DM"
-                                                    ? { src: "https://i.redd.it/ow1iazp3ob351.jpg" }
-                                                    : { src: activeConversation?.room?.members[0]?.user?.profile?.avatar }
+                                                    ?
+                                                    { src: activeConversation?.room?.members[0]?.user?.profile?.avatar }
+                                                    :
+                                                    { src: "https://i.redd.it/ow1iazp3ob351.jpg" }
                                             }
                                         />
                                     </div>
 
-
-
-                                    <Mymessage message={messages?.[3]} />
-                                    <Mymessage message={messages?.[3]} />
-                                    <Mymessage message={messages?.[3]} />
-                                    <OtherMessage message={messages?.[3]} />
-                                    <Mymessage message={messages?.[3]} />
-                                    <Mymessage message={messages?.[3]} />
-                                    <OtherMessage message={messages?.[3]} />
-                                    <OtherMessage message={messages?.[3]} />
-                                    <OtherMessage message={messages?.[3]} />
-                                    <OtherMessage message={messages?.[3]} />
-                                    <Mymessage message={messages?.[3]} />
-                                    <OtherMessage message={messages?.[1]} />
-                                    <OtherMessage message={messages?.[1]} />
-                                    <Mymessage message={messages?.[0]} />
-                                    <Mymessage message={messages?.[0]} />
-
-
-
-                                    {/* 
                                     {
                                         (messages ?? []).map((message: any) => (
                                             message?.user?.id === me?.id ? (
-                                                <Mymessage message={message} />
-                                            ) : (
                                                 <OtherMessage message={message} />
+                                            ) : (
+                                                <Mymessage message={message} />
                                             )
                                         ))
-                                    } */}
+                                    }
 
                                 </>
                             )

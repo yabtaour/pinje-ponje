@@ -1,9 +1,13 @@
 'use client'
+
+
 import { ScrollShadow } from "@nextui-org/react";
+import { getCookie } from "cookies-next";
 import { LayoutProps, motion, useAnimation } from "framer-motion";
 import React, { Suspense, createContext, useEffect, useState } from "react";
 import Loader from '../../components/loader';
 import Conversation from "./components/conversation";
+
 
 
 type ChatContextType = {
@@ -19,15 +23,24 @@ export const ChatContext = createContext<ChatContextType>({
 
 
 
+
+
 const Layout: React.FC<LayoutProps> = ({ children }: any) => {
+    // const SocketContext = useAppSelector(state => state?.socket);
     const [collapsed, setCollapsed] = useState(false);
     const controls = useAnimation();
     const [activeConversation, setActiveConversation] = useState<any>(null);
-
+    const token = getCookie("token");
 
     // useEffect(() => {
     //     console.log("from layout: ", activeConversation);
     // }, [activeConversation?.id]);
+
+    // const globalSocket = useSocketIO();
+    // console.log("from layout globalSock: ", globalSocket.chatSocket );
+
+
+
 
     useEffect(() => {
         const handleResize = () => {
@@ -71,6 +84,7 @@ const Layout: React.FC<LayoutProps> = ({ children }: any) => {
                 </main>
             </div>
         </ChatContext.Provider>
+
     );
 };
 

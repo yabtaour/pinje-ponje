@@ -2,14 +2,14 @@
 
 
 
+import { useSocketIO } from "@/app/contexts/socketContext";
 import { setActiveConversation, setRooms } from "@/app/globalRedux/features/chatSlice";
 import { useAppSelector } from "@/app/globalRedux/store";
-import useSocket from "@/app/hooks/useSocket";
 import { Button, useDisclosure } from "@nextui-org/react";
+import { getCookie } from "cookies-next";
 import moment from 'moment';
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { Socket } from "socket.io-client";
 import CreateConversation from "./createConversation";
 
 export type conversationType = {
@@ -18,21 +18,6 @@ export type conversationType = {
     password?: string,
     roomType: string
 }
-
-
-// socket initialization
-const socketInit = (socket: Socket) => {
-    socket.connect();
-    socket.on("connect", () => {
-        console.log("socket connected");
-    }
-    );
-
-    socket.on("disconnect", () => {
-        console.log("socket disconnected");
-    });
-}
-
 
 
 
@@ -56,49 +41,80 @@ export const formatMessageDate = (createdAt: any) => {
 };
 
 
+
+
+
+
+
+
+
 export default function Conversation({ collapsed }: any) {
 
     const conversations = useAppSelector(state => state?.chatReducer?.rooms);
     const activeConversation = useAppSelector(state => state?.chatReducer?.activeConversation);
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const dispatch = useDispatch();
-    const globalSocket = useSocket();
+    const { chatSocket } = useSocketIO();
+
+    const token = getCookie("token");
 
 
 
     useEffect(() => {
-
-
-        globalSocket?.chatSocket?.on("connect", () => {
-            console.log("socket connected", globalSocket?.chatSocket);
-            globalSocket?.chatSocket?.emit("getRooms", (rooms: any) => {
+        if (!chatSocket?.connected) chatSocket?.connect();
+        console.log("from conversation: ", chatSocket);
+        chatSocket?.on("connect", () => {
+            console.log("socket connected", chatSocket);
+            chatSocket?.emit("getRooms", (rooms: any) => {
                 console.log("rooms: ", rooms);
                 if (conversations.length === 0)
                     dispatch(setRooms(rooms));
                 // setConversations(rooms);
+
             });
-            // if (!globalSocket?.chatSocket?.connected)
-            //     socketInit(globalSocket?.chatSocket);
+
+
+
+
 
         });
 
-        if (globalSocket?.chatSocket) {
-            return () => {
-                globalSocket?.chatSocket?.disconnect();
-            };
-        }
-    },);
+        // if (newChatSocket) {
+        //     return () => {
+        //         newChatSocket?.disconnect();
+        //     };
+        // }
+    }, [chatSocket, conversations]);
 
+
+
+
+    // newChatSocket?.on('connect', () => {
+
+    //     console.log("socket connected", newChatSocket);
 
     useEffect(() => {
-        globalSocket?.chatSocket?.on("connect", () => {
-            globalSocket?.chatSocket?.on("message", (message) => {
-                console.log("message: ", message);
-            })
+        if (!chatSocket?.connected) chatSocket?.connect();
+      
+        chatSocket?.on('connect', () => {
+          console.log('Socket connected');
+          chatSocket?.on('message', (message) => {
+            console.log('Received message:', message);
+            // Handle the received message logic here...
+          });
         });
+      
+        return () => {
+          chatSocket?.off('message'); // Clean up the listener when component unmounts
+        };
+      }, [chatSocket]);
 
-    }, [conversations])
+    // })
 
+    // console.log("has event listteners: ", newChatSocket?.hasListeners('message'));
+    // newChatSocket?.on('disconnect', () => {
+    //     console.log("socket disconnected");
+    // });
 
 
     return (
@@ -163,9 +179,9 @@ export default function Conversation({ collapsed }: any) {
                                                 <p className="text-gray-400 mt-5 ml-3 text-xs font-light">
                                                     {
                                                         collapsed ? "" : (
-                                                            conversation?.room?.messages?.[0]?.content?.length > 10
-                                                                ? conversation?.room?.messages?.[0]?.content.slice(0, 10) + "..."
-                                                                : conversation?.room?.messages?.[0]?.content
+                                                            conversation?.room?.messages?.slice(-1)[0]?.content?.length > 10
+                                                                ? conversation?.room?.messages?.slice(-1)[0]?.content.slice(0, 10) + "..."
+                                                                : conversation?.room?.messages?.slice(-1)[0]?.content
                                                         )
                                                     }
                                                 </p>

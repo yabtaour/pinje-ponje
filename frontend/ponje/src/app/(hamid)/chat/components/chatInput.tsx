@@ -1,18 +1,39 @@
 'use client';
 
+import { useSocketIO } from "@/app/contexts/socketContext";
+import { addMessage } from "@/app/globalRedux/features/chatSlice";
 import { useAppSelector } from "@/app/globalRedux/store";
-import useSocket from "@/app/hooks/useSocket";
+
+
 import { Input } from "@nextui-org/react";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+
+
 
 export default function ChatInput() {
 
+    const { chatSocket } = useSocketIO()
+
+    const newMessage =
+    {
+        id: 389,
+        content: 'd',
+        roomId: 1,
+        userId: 131,
+        createdAt: 'now'
+    }
+
+
+    const dispatch = useDispatch();
     const [value, setValue] = useState("")
-    const globalSocket = useSocket();
+
     const activeConversation = useAppSelector(state => state?.chatReducer?.activeConversation);
+    const me = useAppSelector(state => state?.authReducer?.value?.user);
+
 
     const handleSend = () => {
-        globalSocket.chatSocket?.emit('sendMessage', {
+        chatSocket?.emit('sendMessage', {
             message: value,
             id: activeConversation?.room?.id
         });
@@ -22,8 +43,17 @@ export default function ChatInput() {
     const handleOnClick = () => {
         if (value.trim() !== '') {
             console.log('Sending message:', value);
+            //append message to messages
+            dispatch(addMessage({
+                id: 9000,
+                content: value,
+                roomId: activeConversation?.room?.id,
+                userId: me?.id,
+                createdAt: 'now'
+            }));
             handleSend();
             setValue('');
+
         }
     }
 

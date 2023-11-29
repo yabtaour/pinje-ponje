@@ -66,16 +66,16 @@ export const chat = createSlice({
     },
 
     addMessage: (state, action) => {
-      const { message } = action.payload;
-      const room = state.rooms.find(
-        (room) => room.id === message.roomId
+      const { message } = action?.payload;
+      const room = state?.rooms?.find(
+        (room) => room?.id === message?.roomId
       ) as Room;
-      room.room.messages.push(message);
+      room?.room?.messages?.push(message);
       return state;
     },
     addConversation: (state, action) => {
-      const { conversation } = action.payload;
-      state.rooms.push(conversation);
+      const { conversation } = action?.payload;
+      state?.rooms?.push(conversation);
       return state;
     },
   },
