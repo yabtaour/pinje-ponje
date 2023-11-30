@@ -1,4 +1,4 @@
-// Pinjponj is a game where you can play with your friends and have fun
+ // Pinjponj is a game where you can play with your friends and have fun
 // this is the schema of the database
 
 generator client {
@@ -43,8 +43,7 @@ model User {
   notificationsSent     Notification[]  @relation("sender")
   notificationsReceived Notification[]  @relation("receiver")
 
-
-
+  gameInvitesSent       Int?            @default(0)
 
   createdAt             DateTime        @default(now())
   updatedAt             DateTime        @default(now()) @updatedAt

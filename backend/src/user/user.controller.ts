@@ -91,6 +91,8 @@ export class UserController {
     @Body() data: updateUserDto
   ){
     const user = await this.userService.getCurrentUser(request);
+    console.log(user);
+    console.log(data);
     return this.userService.UpdateUser(user.id, data);
   }
 
@@ -111,7 +113,7 @@ export class UserController {
   async FindAllUsers(
     @Req() request: any, 
     @Query() query: PaginationLimitDto,
-    @Query('search') search: string
+    @Query('search') search?: string
   ){
     const user = await this.userService.getCurrentUser(request);
     return this.userService.FindAllUsers(user.id, query, search);

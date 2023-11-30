@@ -1,8 +1,12 @@
-import { Inject, Injectable, forwardRef } from "@nestjs/common";
+import { Inject, Injectable, UseFilters, UsePipes, ValidationPipe, forwardRef } from "@nestjs/common";
 import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server } from "socket.io";
+import { GlobalExceptionFilter } from "src/global-exception.filter";
 import { UserService } from "./user.service";
 
+
+@UsePipes(new ValidationPipe())
+@UseFilters(new GlobalExceptionFilter())
 @WebSocketGateway({
     namespace: 'status',
     cors: {

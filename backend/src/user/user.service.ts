@@ -139,18 +139,9 @@ export class UserService {
       secret = authenticator.generateSecret();
       // const otpauth = authenticator.keyuri(user.email, 'pinje-ponge', secret);
       // const generatedQR = await toDataURL(otpauth);
-    } else if (data.twoFactor && data.twoFactor == false) {
+    } else {
       secret = null;
     }
-      // await this.prisma.user.update({
-      //   where: {
-      //     id: user_id,
-      //   },
-      //   data: {
-      //     twoFactor: true,
-      //     twoFactorSecret: secret,
-      //   },
-      // });
       const updatedUser = await this.prisma.user.update({
         where: {
           id: user_id,
@@ -249,6 +240,15 @@ export class UserService {
     delete user.password;
     delete user.twoFactorSecret;
     return user;
+  }
+  
+  giveRandomAvatar() {
+    const avatar = [
+      "path://shinra.png",
+      "path://stewie.png",
+      "path://escanor.png",
+    ];
+    return avatar[Math.floor(Math.random() * avatar.length)];
   }
 
 
