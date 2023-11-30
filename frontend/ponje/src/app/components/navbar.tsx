@@ -13,8 +13,12 @@ import {
 import Image from "next/image";
 import Notification from "./notification";
 import SearchInput from "./search";
-
+import { useRouter } from "next/navigation";
 export default function NavBar() {
+    const router = useRouter();
+    const handleSettingsClick = () => {
+        router.push('/settings');
+    };
   return (
     <Navbar maxWidth="full" className="bg-[#151424] border-b-[#1A3070]">
       <NavbarContent className="flex justify-between">
@@ -82,7 +86,7 @@ export default function NavBar() {
                 <p className="font-semibold">Signed in as</p>
                 <p className="font-semibold">hamid@jimayl.com</p>
               </DropdownItem>
-              <DropdownItem className="hover:bg-[#504e89]" key="settings">
+              <DropdownItem className="hover:bg-[#504e89]" key="settings" onClick={() => handleSettingsClick()} textValue="Settings">
                 Settings
               </DropdownItem>
               <DropdownItem

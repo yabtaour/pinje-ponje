@@ -23,8 +23,8 @@
   "dependencies": {
     "@compodoc/compodoc": "^1.1.21",
     "@golevelup/ts-jest": "^0.4.0",
-    "@nestjs-modules/mailer": "^1.9.1",
-    "@nestjs/common": "^10.0.0",
+    "@nestjs-modules/mailer": "^1.7.1",
+    "@nestjs/common": "^10.2.10",
     "@nestjs/core": "^10.0.0",
     "@nestjs/jwt": "^10.1.0",
     "@nestjs/mapped-types": "^2.0.2",
@@ -54,7 +54,8 @@
     "rxjs": "^7.8.1",
     "socket.io": "^4.7.1",
     "swagger-ui-express": "^5.0.0",
-    "vue": "^3.3.4"
+    "vue": "^3.3.4",
+    "winston": "^3.11.0"
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-methods": "^7.18.6",

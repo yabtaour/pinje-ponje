@@ -4,9 +4,11 @@ import { UserService } from 'src/user/user.service';
 import { JWTGuard } from '../auth/guards/jwt.guard';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { NotificationService } from './notification.service';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @UseGuards(JWTGuard)
 @Controller('notification')
+@ApiBearerAuth()
 export class NotificationController {
   constructor(
 		private readonly notificationService: NotificationService,

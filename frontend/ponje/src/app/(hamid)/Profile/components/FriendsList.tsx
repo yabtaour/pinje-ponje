@@ -185,7 +185,6 @@ export const users = [
 
 export default function FriendsList() {
     const [isOpen, setIsOpen] = useState(false);
-
     const toggleDropdown = () => {
         setIsOpen(!isOpen);
     };
@@ -193,10 +192,8 @@ export default function FriendsList() {
 
     const [page, setPage] = React.useState(1);
     const rowsPerPage = 4;
-
     //? :the users.length should be the count of the users in the backend
     const pages = Math.ceil(users.length / rowsPerPage);
-
     const items = React.useMemo(() => {
         const start = (page - 1) * rowsPerPage;
         const end = start + rowsPerPage;
