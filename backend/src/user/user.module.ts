@@ -6,6 +6,7 @@ import { ProfilesModule } from '../profiles/profiles.module';
 import { JwtAuthService } from '../auth/jwt.service';
 import { JwtService } from '@nestjs/jwt';
 import { NotificationModule } from 'src/notification/notification.module';
+import { ChatModule } from 'src/chat/chat.module';
 
 @Module({
   imports: [PrismaModule, ProfilesModule, NotificationModule],
