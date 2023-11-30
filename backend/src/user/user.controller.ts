@@ -91,6 +91,8 @@ export class UserController {
     @Body() data: updateUserDto
   ){
     const user = await this.userService.getCurrentUser(request);
+    console.log(user);
+    console.log(data);
     return this.userService.UpdateUser(user.id, data);
   }
 
@@ -113,7 +115,7 @@ export class UserController {
     @Query() query: PaginationLimitDto
   ){
     const user = await this.userService.getCurrentUser(request);
-    return this.userService.FindAllUsers(user.id, query);
+    return this.userService.FindAllUsers();
   }
 
   @Get('/blocked-users')
@@ -244,6 +246,6 @@ export class UserController {
     @Param('id', ParseIntPipe) id: number,
   ){
     const user = await this.userService.getCurrentUser(request);
-    return this.userService.FindUserByID(user.id, id);
+    return this.userService.FindUserByID(id);
   }
 }
