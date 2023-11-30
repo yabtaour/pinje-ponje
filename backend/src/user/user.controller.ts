@@ -110,10 +110,11 @@ export class UserController {
   })
   async FindAllUsers(
     @Req() request: any, 
-    @Query() query: PaginationLimitDto
+    @Query() query: PaginationLimitDto,
+    @Query('search') search: string
   ){
     const user = await this.userService.getCurrentUser(request);
-    return this.userService.FindAllUsers(user.id, query);
+    return this.userService.FindAllUsers(user.id, query, search);
   }
 
   @Get('/blocked-users')

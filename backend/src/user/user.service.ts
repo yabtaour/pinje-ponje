@@ -1,16 +1,18 @@
 import {
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   Param,
   ParseIntPipe,
+  forwardRef,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { config } from 'dotenv';
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
 import { SignUpDto } from 'src/auth/dto/signUp.dto';
-import { PaginationLimitDto } from 'src/chat/chat.service';
+import { ChatService, PaginationLimitDto } from 'src/chat/chat.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ProfilesService } from '../profiles/profiles.service';
 import { FriendsActionsDto } from './dto/FriendsActions-user.dto';
@@ -30,6 +32,7 @@ export class UserService {
     private readonly profile: ProfilesService,
 		private readonly notificationService: NotificationService,
 		private readonly notificationGateway: NotificationGateway,
+    // private readonly chatservice: ChatService
   ) {}
 
   async resetPassword(user: any, old: string, newPass: string) {
@@ -196,8 +199,17 @@ export class UserService {
   async FindAllUsers(
     @Param('id', ParseIntPipe) id: number,
     params: PaginationLimitDto,
+    search: string
   ) {
     const users = await this.prisma.user.findMany({
+      where : {
+        AND : [{
+            OR : search ? [
+              { username : { contains : search  , mode : 'insensitive'} },
+            ] : {}
+          }
+        ]
+      },
       include : {
         profile: true,
       },
@@ -556,6 +568,15 @@ export class UserService {
         },
       },
     });
+
+    // this.chatservice.createRoom(
+    //   user_id, 
+    //   {
+    //     name: "Friend Room",
+    //     peer_id: data.id,
+    //     type: "DM",
+    //     role: ''
+    //   })
     this.notificationService.create({
       senderId: user_id,
       receiverId: data.id,
