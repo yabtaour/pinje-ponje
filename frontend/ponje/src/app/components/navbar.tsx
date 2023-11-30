@@ -2,10 +2,16 @@
 import { Avatar, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Navbar, NavbarContent, NavbarItem } from "@nextui-org/react";
 import Image from 'next/image';
 import Notification from "./notification";
-
-
+import { useRouter } from "next/navigation";
 
 export default function NavBar() {
+
+
+    const router = useRouter();
+    const handleSettingsClick = () => {
+        router.push('/settings');
+    };
+
     return (
         <Navbar maxWidth="full" className="bg-[#151424] border-b-[#1A3070]" >
             <NavbarContent className="flex justify-between">
@@ -55,7 +61,7 @@ export default function NavBar() {
                                 </g>
                             </svg>
                         </DropdownTrigger>
-                        <DropdownMenu className="bg-[#323054] text-white" aria-label="Profile Actions" variant="flat">
+                        <DropdownMenu className="bg-[#151424] text-white" aria-label="Profile Actions" variant="flat">
                             <DropdownItem>
                                 <Notification />
                             </DropdownItem>
@@ -78,12 +84,14 @@ export default function NavBar() {
                             />
                         </DropdownTrigger>
                         <DropdownMenu className="bg-[#323054] text-white" aria-label="Profile Actions" variant="flat">
-                            <DropdownItem key="profile" className="h-14 gap-2 hover:bg-[#504e89]">
+                            <DropdownItem key="profile" className="h-14 gap-2 hover:bg-[#504e89]" textValue="Signed in as">
                                 <p className="font-semibold">Signed in as</p>
                                 <p className="font-semibold">hamid@jimayl.com</p>
                             </DropdownItem>
-                            <DropdownItem className="hover:bg-[#504e89]" key="settings">Settings</DropdownItem>
-                            <DropdownItem className="hover:bg-[#504e89]" key="logout" color="danger">
+                            <DropdownItem className="hover:bg-[#504e89]" key="settings" onClick={() => handleSettingsClick()} textValue="Settings">
+                                Settings
+                            </DropdownItem>
+                            <DropdownItem className="hover:bg-[#504e89]" key="logout" color="danger" textValue="Log Out">
                                 Log Out
                             </DropdownItem>
                         </DropdownMenu>

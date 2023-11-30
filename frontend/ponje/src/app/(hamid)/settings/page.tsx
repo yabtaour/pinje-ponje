@@ -3,9 +3,7 @@ import UploadAvatar from '@/app/components/avatarUpload';
 import { UpdateUser } from '@/app/globalRedux/features/authSlice';
 import { useAppSelector } from '@/app/globalRedux/store';
 import { fetchUserData } from '@/app/utils/auth';
-
 import Loader from '@/app/components/loader';
-
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
 import { Switch } from '@nextui-org/react';
 import axios from '../../utils/axios';
@@ -16,48 +14,80 @@ import { useDispatch } from 'react-redux';
 import * as Yup from 'yup';
 import { resetPassword, updateUser, fetchQRCode } from "../../utils/update";
 import QRCode from 'react-qr-code';
+import Image from 'next/image';
+
 
 export default function UserSettings() {
+    const [isSelected, setIsSelected] = useState(true);
     const [showSuccessBadge, setShowSuccessBadge] = useState(false);
     const [resetPasswordError, setResetPasswordError] = useState("");
+    const [TwoFactorNewState, setTwoFactorNewState] = useState(false);
     const user = useAppSelector((state) => state.authReducer.value.user);
     const userToken = useAppSelector((state) => state.authReducer.value.token);
     const dispatch = useDispatch();
-    const [twoFactorAuth, setTwoFactorAuth] = useState(user?.twofactor);
     const [qrCodeData, setQrCodeData] = useState('');
+    const [twoFactorAuth, setTwoFactorAuth] = useState(false);
 
 
-    console.log("user?.twofactor:", user?.twofactor);
-    // console.log("twoFactorAuth value : ", twoFactorAuth);
-    useEffect(() => {
-        if (twoFactorAuth) {
-            fetchQRCode(userToken).then(data => {
-                setQrCodeData(data);
-            });
-        }
-    }, [twoFactorAuth, userToken]);
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         if (!user) {
+    //             const accessToken: string | null = localStorage.getItem('access_token');
+    //             if (accessToken) {
+    //                 const userData = await fetchUserData(accessToken);
+    //                 //print the value of twoFactor from the UserData
+    //                 dispatch(UpdateUser(userData));
+    //                 setTwoFactorAuth(userData?.twoFactor);
+    //                 console.log("CHECK THIS VALUE ",userData?.twoFactor);
+    //             }
+    //         }
+    //     };
+
+    //     fetchData();
+    // }, [user]);
 
     useEffect(() => {
         const fetchData = async () => {
-            if (!user) {
-                const accessToken: string | null = localStorage.getItem('access_token');
-                if (accessToken) {
+            try {
+                let accessToken: string | null = localStorage.getItem('access_token');
+                if (accessToken)
+                {
                     const userData = await fetchUserData(accessToken);
-                    dispatch(UpdateUser(userData));
+                    const userChanged = JSON.stringify(user) !== JSON.stringify(userData);
+                    if (userChanged) {
+                        dispatch(UpdateUser(userData));
+                        setTwoFactorAuth(userData?.twoFactor);
+                        if (userData?.twoFactor) {
+                            const data = await fetchQRCode(accessToken);
+                            setQrCodeData(data);
+                        } else {
+                            setQrCodeData('');
+                        }
+                    }
                 }
+
+            } catch (error) {
+                console.error("Error fetching user data:", error);
             }
         };
 
         fetchData();
     }, [user]);
 
+
     const [passwordShown, setPasswordShown] = useState(false);
+
+    // useEffect(() => {
+    //     if (twoFactorAuth) {
+    //         fetchQRCode(userToken).then(data => {
+    //             setQrCodeData(data);
+    //         });
+    //     }
+    // }, [twoFactorAuth, userToken]);
 
     const togglePasswordVisibility = () => {
         setPasswordShown(!passwordShown);
     };
-
-
 
     const initialValues = {
         username: user?.profile?.username ? user?.profile?.username : "",
@@ -67,8 +97,6 @@ export default function UserSettings() {
         newpassword: "",
         confirmnewpassword: "",
     };
-
-
 
     const validationSchema = Yup.object().shape({
         username: Yup.string(),
@@ -86,40 +114,58 @@ export default function UserSettings() {
 
     });
 
-
-
     const handleTwoFactorAuth = async () => {
         try {
+            console.log('twoFactorAuth value (handle 2fa function) :', twoFactorAuth);
             const newStatus = !twoFactorAuth;
-            console.log("newStatus : ", newStatus);
-    
-            const response =  await axios.patch("/users", { twoFactor: newStatus }, {
+            console.log('newStatus:', newStatus);
+
+            const response = await axios.patch("/users", { twoFactor: newStatus }, {
                 headers: {
-                  Authorization: userToken,
+                    Authorization: userToken,
                 },
-              });
-              console.log("Response from server:", response);
-    
-            if (response.data.success) {
-                setTwoFactorAuth(newStatus);
-    
-                if (newStatus && response.data.qrCode) {
-                    setQrCodeData(response.data.qrCode);
-                }
+            });
+            setTwoFactorAuth(newStatus); 
+
+            if (newStatus && response.data && response.data.qrCode) {
+                setQrCodeData(response.data.qrCode);
             } else {
-                console.error("Failed to update user 2FA:", response.data.message);
-                throw new Error(response.data.message);
+                setQrCodeData(''); 
             }
+            // if (response.data) {
+            //     setTwoFactorAuth(newStatus);    
+            //     if (newStatus && response.data.qrCode) {
+            //         setQrCodeData(response.data.qrCode);
+            //     }
+            // } else {
+            //     console.error("Failed to update user 2FA:", response.data.message);
+            //     throw new Error(response.data.message);
+            // }
         } catch (error) {
-            console.error("Failed to update user 2FA:", error);
-             throw error;
+            console.error("Failed to update user 2FA (caught actual error :p):", error);
+            throw error;
         }
 
     };
-
     const onSubmit = async (values: any, { setSubmitting }: any) => {
         const { username, bio, oldpassword, newpassword, email } = values;
         let userProfileData = { username, bio, email };
+        // let userProfileData = { username, bio, email , TwoFactorNewState: twoFactorAuth};
+
+        // console.log('twoFactorAuth value (handle 2fa function) :', twoFactorAuth);
+        // // const newStatus = !twoFactorAuth;
+        // console.log('newStatus:', TwoFactorNewState);
+
+        // if (twoFactorAuth !== TwoFactorNewState) {
+        try {
+            await handleTwoFactorAuth();
+            setTwoFactorAuth(TwoFactorNewState); 
+
+        } catch (error) {
+            console.error('Failed to update Two Factor Authentication:', error);
+        }
+        // }
+
         try {
             if (username || bio || email) {
                 if (username === user?.profile?.username)
@@ -130,12 +176,21 @@ export default function UserSettings() {
 
                 console.log("bio" + bio);
                 const response = await updateUser(userProfileData, userToken);
+                // setTwoFactorAuth(TwoFactorNewState); 
+                // console.log('twoFactorAuth value (handle 2fa function) :', twoFactorAuth);
+
+                // if (TwoFactorNewState && response.data && response.data.qrCode) {
+                //     setQrCodeData(response.data.qrCode);
+                // } else {
+                //     setQrCodeData(''); 
+                // }
 
                 const updatedUser = {
                     ...user,
                     profile: {
                         ...user?.profile,
                         avatar: response.data.avatar,
+                        twoFactor: twoFactorAuth,
                     },
                 };
 
@@ -159,14 +214,9 @@ export default function UserSettings() {
                 }
             }
         }
+
         setSubmitting(false);
     };
-
-
-
-
-    
-
 
     return (
 
@@ -176,10 +226,11 @@ export default function UserSettings() {
                     <Loader />
                 ) : (
 
-                    <div className="max-w-4xl w-full mx-auto">
+                    <div className="max-w-3xl w-full mx-auto">
                         <h3 className="text-3xl font-semibold text-center text-[#4E40F4] mb-4">
                             Profile Settings
                         </h3>
+
 
                         <div className="bg-[#1B1A2D] p-8 rounded-lg h-full w-fill">
                             <Formik
@@ -323,24 +374,29 @@ export default function UserSettings() {
                                                 </button>
                                             </div>
                                         </div>
+
                                         <div className="hidden lg:inline-block h-[450px] min-h-[1em] w-0.5 self-stretch bg-violet-950 opacity-100 dark:opacity-50"></div>
                                         <div className="relative text-[#73d3ff] m-5">
                                             <h2 className="p-2" >Activate 2FAuth</h2>
-                                            <Switch {
+                                            <Switch 
+                                            {
                                                 ...{
-                                                    checked: twoFactorAuth,
+                                                    //if i add this line the switch's state cant be changed 
+                                                    // isSelected: twoFactorAuth,
                                                     onChange: () => {
-                                                        // console.log("twoFactorAuth value : ", twoFactorAuth);
-                                                        handleTwoFactorAuth();
-                                                    },
+                                                        setTwoFactorNewState(!twoFactorAuth);
+                                                        setIsSelected(twoFactorAuth);
+                                                },
                                                 }
                                             } aria-label="Automatic updates" />
-                                        </div>
-                                        <div>
+                                            <p>current value of checked : {twoFactorAuth ? "Yes" : "No"}   </p>
+                                        <div className=''>
                                             {twoFactorAuth && qrCodeData && (
-                                                <img src={qrCodeData} alt="QR Code" />
+                                                <Image src={qrCodeData} alt="QR Code" width={200} height={200} className=' ' />
                                             )}
                                         </div>
+                                        </div>
+                                        {/* display the image under the switch */}
                                     </Form>
                                 )}
                             </Formik>
@@ -357,6 +413,6 @@ export default function UserSettings() {
                 )
             }
         </div >
-
     );
 }
+

@@ -4,11 +4,12 @@ interface userData {
   username?: string | undefined;
   bio?: string | undefined;
   email?: string | undefined;
+  // twoFactor?: boolean | undefined;
 }
 
 export const updateUser = async (userData: userData, token: string | null) => {
   
-
+  console.log("the user is getting updated B)");
   try {
     const response = await axios.patch("/profiles", userData, {
       headers: {
@@ -22,6 +23,23 @@ export const updateUser = async (userData: userData, token: string | null) => {
     throw error;
   }
 };
+
+export const fetchTwoFactorStatus = async (token: string | null) => {
+  try {
+    const response = await axios.get('/users', {
+      headers: {
+        Authorization: token,
+      },
+    });
+    console.log("the value of twofa from db", response.data.twoFactor);
+    return response.data.twoFactor;
+  } catch (error) {
+    console.error('Error fetching 2FA status:', error);
+    throw error;
+  }
+};
+
+
 
 export const fetchQRCode = async (token: string | null) => {
   try {
