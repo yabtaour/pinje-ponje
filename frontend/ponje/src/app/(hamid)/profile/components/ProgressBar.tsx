@@ -2,8 +2,8 @@ import { User } from '../../../types/user';
 
 export default function ProgressBar({ user }: { user: User | null | undefined }) {
 
-    let level = user?.profile?.level ?? 0;
-    let xp = user?.profile?.experience ?? 0;
+    let level = user?.level ?? 0;
+    let xp = user?.experience ?? 0;
     xp = 102;
     level = 4;
     const xpPercentage = xp / (level * 100) * 100;

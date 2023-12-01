@@ -9,6 +9,14 @@ const nextConfig = {
   images: {
     remotePatterns: [{ hostname: "**" }],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/(p|P)(r|R)(o|O)(f|F)(i|I)(l|L)(e|E)',
+        destination: '/profile',
+      },
+    ]
+  },
 };
 
 module.exports = nextConfig;
