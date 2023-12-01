@@ -4,12 +4,13 @@ import { useAppSelector } from "@/app/globalRedux/store";
 import Image from "next/image";
 import { User } from '../../../types/user';
 // import bg from '/Users/anasshouari/1337/pinje-ponje/frontend/ponje/public/PlayerBanner.png';
-import bg from '/mnt/c/Users/jackf/1337stuff/pongg/frontend/ponje/public/PlayerBanner.png';
+// import bg from '../frontend/ponje/public/PlayerBanner.png';
+import bg from '../../../../../public/PlayerBanner.png'
 
 export default function PlayerBanner({ user }: { user: User | null | undefined }) {
 
     const logedUserId = useAppSelector((state) => state.authReducer.value.user?.id);
-    const username = user?.profile?.username;
+    const username = user?.username;
     const bio = user?.profile?.bio;
     const Avatar = user?.profile?.avatar;
 
@@ -46,7 +47,7 @@ export default function PlayerBanner({ user }: { user: User | null | undefined }
                 }
                 <p className="font-medium text-[#77DFF8] mb-2">{username}</p>
                 <p className=" font-light text-sm text-[#8C8CDA] mb-4">
-                    {bio} | joined {user?.createdAt?.slice(0, 10)}
+                    {bio} | joined {user?.createdAt?.toString().slice(0, 10)}
                 </p>
                 <div>
 
