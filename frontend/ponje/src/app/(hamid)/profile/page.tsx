@@ -8,19 +8,16 @@ import Performance from "./components/Performance";
 import PlayerBanner from "./components/PlayerBanner";
 import ProgressBar from "./components/ProgressBar";
 import SkillAnalytics from "./components/SkillAnalytics";
-import { useAppSelector } from "@/app/globalRedux/store";
 
 export default function Profile() {
-    const loggedUserId = useAppSelector((state) => state.authReducer.value.user?.id);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     
     useEffect(() => {
         const fetchData = async () => {
             try {
-                if (loggedUserId === undefined)
-                    return <Loader/>
-                    const data = await axios.get(`/users/${loggedUserId}`, {
+                    // const data = await axios.get(`/users/${loggedUserId}`, {
+                    const data = await axios.get(`/users/me`, {
                         headers: {
                             Authorization: `${localStorage.getItem('access_token')}`,
                         },
@@ -35,7 +32,7 @@ export default function Profile() {
         };
 
         fetchData();
-    }, [loggedUserId]);
+    }, []);
 
     if (loading)
         return <Loader/>
