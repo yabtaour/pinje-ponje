@@ -72,3 +72,36 @@ export const resetPassword = async (old: string, newpass: string) => {
   }
 };
 
+
+
+// {
+//   "id": 93,
+//   "username": "Soukaina",
+//   "email": "sabbajisoukaina@gmail.com",
+//   "intraid": null,
+//   "googleId": "106733394767828313508",
+//   "twoFactor": true,
+//   "twoFactorSecret": "HZWBCGRNOBLTIQCE",
+//   "status": "ONLINE",
+//   "winRate": 0,
+//   "accuracy": 0,
+//   "consitency": 0,
+//   "reflex": 0,
+//   "gamePoints": 0,
+//   "rank": "UNRANKED",
+//   "level": 0,
+//   "experience": 0,
+//   "gameInvitesSent": 0,
+//   "createdAt": "2023-11-29T12:16:13.377Z",
+//   "updatedAt": "2023-11-29T13:30:53.411Z",
+//   "profile": {
+//     "id": 93,
+//     "bio": "I am a new player",
+//     "avatar": null,
+//     "userid": 93,
+//     "createdAt": "2023-11-29T12:16:13.377Z",
+//     "updatedAt": "2023-11-29T13:30:54.405Z"
+//   }
+// }
+
+// some fields moved from profile to user

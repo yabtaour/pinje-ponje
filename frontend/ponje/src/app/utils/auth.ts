@@ -24,6 +24,20 @@ export const fetchUserData = async (token: string ) => {
   }
 };  
 
+export const fetchUserProfile = async (token: string ) => {
+  try {
+    const response = await axios.get("/profiles/93", {
+      headers: {
+        Authorization: `${token}`,
+      },
+    });
+    console.log(response.data);
+    return response.data;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
 export const Handle42Auth = async () => {
   window.location.href = "http://localhost:3000/auth/api";
 };
