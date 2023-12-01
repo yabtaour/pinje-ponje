@@ -13,7 +13,6 @@ import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import * as Yup from 'yup';
 import { resetPassword, updateUser, fetchQRCode } from "../../utils/update";
-import { fetchUserProfile } from '@/app/utils/auth';
 import QRCode from 'react-qr-code';
 import Image from 'next/image';
 
@@ -91,7 +90,7 @@ export default function UserSettings() {
     };
 
     const initialValues = {
-        username: user?.profile?.username ? user?.profile?.username : "",
+        username: user?.profile.username ? user?.profile?.username : "",
         email: user?.email ? user?.email : "",
         bio: user?.profile?.bio ? user?.profile?.bio : "",
         oldpassword: "",
@@ -228,12 +227,6 @@ export default function UserSettings() {
                 ) : (
 
                     <div className="max-w-3xl w-full mx-auto">
-                        <button
-                            className="text-sm font-light text-[#73d3ff] mb-8"
-                            onClick={() => fetchUserProfile(userToken)}
-                        >
-                            Back
-                        </button>
                         <h3 className="text-3xl font-semibold text-center text-[#4E40F4] mb-4">
                             Profile Settings
                         </h3>
