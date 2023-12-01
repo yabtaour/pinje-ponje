@@ -1,16 +1,18 @@
 import {
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   Param,
   ParseIntPipe,
+  forwardRef,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { config } from 'dotenv';
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
 import { SignUpDto } from 'src/auth/dto/signUp.dto';
-import { PaginationLimitDto } from 'src/chat/chat.service';
+import { ChatService, PaginationLimitDto } from 'src/chat/chat.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ProfilesService } from '../profiles/profiles.service';
 import { FriendsActionsDto } from './dto/FriendsActions-user.dto';
@@ -30,6 +32,7 @@ export class UserService {
     private readonly profile: ProfilesService,
 		private readonly notificationService: NotificationService,
 		private readonly notificationGateway: NotificationGateway,
+    // private readonly chatservice: ChatService
   ) {}
 
   async resetPassword(user: any, old: string, newPass: string) {
@@ -184,7 +187,61 @@ export class UserService {
       return user;
 }
 
+  async FindAllUsers(
+    @Param('id', ParseIntPipe) id: number,
+    params: PaginationLimitDto,
+    search: string
+  ) {
+    const users = await this.prisma.user.findMany({
+      where : {
+        AND : [{
+            OR : search ? [
+              { username : { contains : search  , mode : 'insensitive'} },
+            ] : {}
+          }
+        ]
+      },
+      include : {
+        profile: true,
+      },
+      ...params,
+    });
+    if (!users)
+      throw new HttpException('Users not found', HttpStatus.NOT_FOUND);
+    // Remove sensitive information using map and object destructuring
+    const sanitizedUsers = users.map(({ password, twoFactorSecret, ...user }) => user);
+    return sanitizedUsers;
+  }
 
+  async FindUserByID(@Param('user_id', ParseIntPipe) user_id: number, searchid: number) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        AND: [
+          {
+            id: searchid,
+          },
+          {
+            NOT: {
+              OR: [
+                { blockedBy: { some: { blockerId: user_id, blockedId: searchid }  } },
+                { blocking: { some: { blockerId: searchid, blockedId: user_id} }  },
+              ],
+            },
+          },
+        ],
+      },
+      include: {
+        profile: true,
+      },
+    });
+    if (user == null) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    delete user.password;
+    delete user.twoFactorSecret;
+    return user;
+  }
+  
   giveRandomAvatar() {
     const avatar = [
       "path://shinra.png",
@@ -193,62 +250,7 @@ export class UserService {
     ];
     return avatar[Math.floor(Math.random() * avatar.length)];
   }
-// this only update User Level : Email : Hashpassword : twofactor
 
-  async FindAllUsers() {
-		// try {
-    	const users = await this.prisma.user.findMany({
-      	include: {
-       		profile: true,
-      	},
-    	});
-			if (!users)
-				throw new HttpException('Users not found', HttpStatus.NOT_FOUND);
-    	return users;
-		// } catch (error) {
-		// 	throw new InternalServerErrorException(error);
-		// }
-  }
-
-async FindUserByID(id: number) {
-	// try {
-  	const user = await this.prisma.user.findUnique({
-    	where: { id: id },
-		include: {
-			profile: true,
-		},
-    	// select: {
-      // 	id: true,
-      // 	email: true,
-      // 	twofactor: true,
-      // 	twoFactorSecret: true,
-      // 	profile: {
-      // 	  select: {
-      // 	    id : true,
-      // 	    username: true,
-      // 	    avatar: true,
-      // 	    login: true,
-      // 	    Rank: true,
-      // 	    level: true,
-      // 	    sentRequest: true,
-      // 	    pendingRequest: true,
-      // 	    blocking: true,
-      // 	    createdAt: true,
-      // 	  },
-      // 	},
-    	// },
-  	});
-  	if (!user) {
-    	throw new HttpException("User not found", HttpStatus.NOT_FOUND);
-  	}
-	delete user.password;
-	delete user.twoFactorSecret;
-	
-  	return user;
-	// } catch (error) {
-	// 	throw new InternalServerErrorException(error);
-	// }
-}
 
   async FindUserByIntraId(id: number) {
     const user = await this.prisma.user.findFirst({
@@ -566,6 +568,15 @@ async FindUserByID(id: number) {
         },
       },
     });
+
+    // this.chatservice.createRoom(
+    //   user_id, 
+    //   {
+    //     name: "Friend Room",
+    //     peer_id: data.id,
+    //     type: "DM",
+    //     role: ''
+    //   })
     this.notificationService.create({
       senderId: user_id,
       receiverId: data.id,

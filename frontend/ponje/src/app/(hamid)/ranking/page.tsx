@@ -56,10 +56,10 @@ export const Podium = ({ users }: { users: DisplayedInfo[] }) => {
   }
 
   return (
-    <div className="flex flex-row">
+    <div className="flex flex-row mt-16">
       {rankedUsers.map((user, index) => (
         <div key={user.id}>
-          <div className={`relative max-w-[150px] mx-auto min-w-0 break-words bg-[#1B1A2D] w-full mb-6 shadow-lg rounded-xl mt-${index === 1 ? "20" : "28"}`}>
+          <div className={`relative max-w-[150px] mx-auto min-w-0 break-words bg-[#1B1A2D] w-full mb-6 shadow-lg rounded-xl mt-${index === 1 ? "28" : "20"}`}>
             <div className="px-6">
               <div className="flex flex-wrap justify-center">
                 <div className="w-full flex justify-center">

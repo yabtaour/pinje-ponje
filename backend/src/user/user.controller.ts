@@ -112,10 +112,11 @@ export class UserController {
   })
   async FindAllUsers(
     @Req() request: any, 
-    @Query() query: PaginationLimitDto
+    @Query() query: PaginationLimitDto,
+    @Query('search') search?: string
   ){
     const user = await this.userService.getCurrentUser(request);
-    return this.userService.FindAllUsers();
+    return this.userService.FindAllUsers(user.id, query, search);
   }
 
   @Get('/blocked-users')
@@ -246,6 +247,6 @@ export class UserController {
     @Param('id', ParseIntPipe) id: number,
   ){
     const user = await this.userService.getCurrentUser(request);
-    return this.userService.FindUserByID(id);
+    return this.userService.FindUserByID(user.id, id);
   }
 }
