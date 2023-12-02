@@ -41,6 +41,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   server: Server;
 
   currentGames: Map<number, GameState> = new Map(); // key: gameId, value: GameState
+  intializeArray: number[];
+  
   constructor(
 		@Inject(forwardRef(() => GameService))
 		private gameService: GameService,
@@ -49,11 +51,21 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     afterInit(server: Server) {
       console.log('GameGateway initialized');
     }
+
     
     @SubscribeMessage('queue')
     handleMessage(client: any, payload: any): string {
       client.emit('queue', 'Hello world!');
       return 'Hello world!';
+    }
+
+    @SubscribeMessage('initialize')
+    initializeGame(client: any, payload: any) {
+      this.intializeArray.push(payload.gameId);
+      const firstIndex = this.intializeArray.findIndex(payload.gameId);
+      const lastIndex = this.intializeArray.lastIndexOf(payload.gameId);
+      if (firstIndex != lastIndex)
+        this.gameService.initializeGame(Number(client.id), payload)
     }
 
     @SubscribeMessage('updatePlayerPosition')

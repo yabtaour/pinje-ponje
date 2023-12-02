@@ -227,7 +227,6 @@ export class GameService {
 			{id: player.userId, paddlePosition: 5, score: 0},
 			{id: opponentPlayer.userId, paddlePosition: 5, score: 0},
 			{x: 0, y: 0},
-			{x: 0, y: 0}, 
 		)
 		this.gameGateway.currentGames[game.id] = gameState
 		this.gameGateway.server.to(String(player.userId)).emit('gameStart', gameState);
@@ -263,6 +262,9 @@ export class GameService {
 		})
 	}
 
+
+
+	// game queue
 	async findGame(user: any) {
 		if (user.status == Status.INGAME || user.status == Status.OFFLINE)
 			throw new HttpException(`User is not available`, HttpStatus.BAD_REQUEST);
@@ -297,27 +299,26 @@ export class GameService {
 					]
 				}
 			},
-			// in case front want to add something before transferring to the game
-			// select: {
-			// 	id: true,
-			// 	players: {
-			// 		select: {
-			// 			id: true,
-			// 			userId: true,
-			// 			user: {
-			// 				select: {
-			// 					id: true,
-			// 					username: true,
-			// 					profile: {
-			// 						select: {
-			// 							avatar: true,
-			// 						},
-			// 					},
-			// 				},
-			// 			},
-			// 		},
-			// 	},
-			// },
+			select: {
+				id: true,
+				players: {
+					select: {
+						id: true,
+						userId: true,
+						user: {
+							select: {
+								id: true,
+								username: true,
+								profile: {
+									select: {
+										avatar: true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		});
 		if (!game)
 			throw new HttpException(`Error creating game`, HttpStatus.BAD_REQUEST);
@@ -353,17 +354,33 @@ export class GameService {
 				status: "INGAME"
 			}
 		});
+		await this.gameGateway.server.to(String(player.userId)).emit('gameFound', game);
+		await this.gameGateway.server.to(String(opponentPlayer.userId)).emit('gameFound', game);
+	}
 
+	async initializeGame(client: number, payload: any) {
+		const opponentPlayer = await this.prisma.user.findFirst({
+			where: {
+				id: {
+					not: client,
+				}
+			},
+			include: {
+				players: {
+					where: {
+						gameId: payload.gameId
+					}
+				}
+			}
+		})
 		const gameState = new GameState(
-			{id: player.userId, paddlePosition: 5, score: 0},
-			{id: opponentPlayer.userId, paddlePosition: 5, score: 0},
-			{x: 0, y: 0},
+			{id: client, paddlePosition: payload.playerPos, score: 0},
+			{id: opponentPlayer.id, paddlePosition: payload.playerPos, score: 0},
 			{x: 0, y: 0},
 		)
-		this.gameGateway.currentGames[game.id] = gameState;
-		await this.gameGateway.server.to(String(opponentPlayer.userId)).emit('queue', gameState);
-		await this.gameGateway.server.to(String(player.userId)).emit('gameStart', gameState);
-		await this.gameGateway.server.to(String(opponentPlayer.userId)).emit('gameStart', gameState);
+		this.gameGateway.currentGames[payload.gameId] = gameState;
+		await this.gameGateway.server.to(String(client)).emit('startGame', gameState);
+		await this.gameGateway.server.to(String(opponentPlayer.id)).emit('startGame', gameState);
 
 		console.log(this.gameGateway.currentGames);
 	}
