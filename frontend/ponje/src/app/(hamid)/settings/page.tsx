@@ -90,7 +90,7 @@ export default function UserSettings() {
     };
 
     const initialValues = {
-        username: user?.profile?.username ? user?.profile?.username : "",
+        username: user?.profile.username ? user?.profile?.username : "",
         email: user?.email ? user?.email : "",
         bio: user?.profile?.bio ? user?.profile?.bio : "",
         oldpassword: "",
