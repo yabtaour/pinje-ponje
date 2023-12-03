@@ -1,4 +1,5 @@
 'use client';
+'use strict';
 import { login } from '@/app/globalRedux/features/authSlice';
 import { useAppSelector } from '@/app/globalRedux/store';
 import { fetchUserData, setSession, verifyToken } from '@/app/utils/auth';
@@ -6,7 +7,9 @@ import { getCookie } from 'cookies-next';
 import { redirect, useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import { setRooms } from '../globalRedux/features/chatSlice';
 import axios from '../utils/axios';
+import SocketManager from '../utils/socketManager';
 
 
 
@@ -39,13 +42,24 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
 
         const accessToken: string | null = localStorage.getItem('access_token');
         if (accessToken && !isAithenticated) {
+            const socketManager = SocketManager.getInstance('http://localhost:3000', accessToken);
             fetchUserData(accessToken).then((data) => {
-
                 dispatch(login({ user: data, token: accessToken }));
                 setSession(accessToken);
-                console.log(axios.defaults.headers.common.Authorization);
 
+                console.log(axios.defaults.headers.common.Authorization);
+                console.log("socketManager: ", socketManager);
             })
+            socketManager.waitForConnection(async () => {
+                console.log("socketManager: ", socketManager);
+                try {
+                    const rooms = await socketManager.getConversations();
+                    console.log("rooms: ", rooms);
+                    dispatch(setRooms(rooms));
+                } catch (error) {
+                    console.error("Error fetching rooms:", error);
+                }
+            });
         }
 
         if (!isAithenticated && !accessToken && !verifyToken(accessToken)) {

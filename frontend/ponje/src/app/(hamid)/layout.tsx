@@ -1,9 +1,9 @@
+'use strict';
 'use client';
 import { NextUIProvider } from "@nextui-org/system";
 import { useEffect, useState } from "react";
 import NavBar from '../components/navbar';
 import SideBar from '../components/sidebar';
-import { SocketIOProvider } from "../contexts/socketContext";
 import { AuthProvider } from "../globalRedux/provider";
 import { useAppSelector } from "../globalRedux/store";
 import AuthGuard from "../guards/AuthGuard";
@@ -37,29 +37,29 @@ export default function Layout({
         <AuthProvider>
             <AuthGuard>
 
-                <SocketIOProvider>
-                    {/* <OnboardingGuard> */}
-                    <NextUIProvider>
-                        <div className="flex flex-col h-full bg-gray-100">
-                            <div className="w-full border-b border-blue-500">
-                                <NavBar />
-                            </div>
-                            <div className="flex flex-1 sticky top-0">
-                                <aside
-                                    className={`${collapsed ? 'w-16' : 'w-64'
-                                        } border-r border-blue-500 transition-all duration-300 ease-in-out `}
+                {/* <SocketIOProvider> */}
+                {/* <OnboardingGuard> */}
+                <NextUIProvider>
+                    <div className="flex flex-col h-full bg-gray-100">
+                        <div className="w-full border-b border-blue-500">
+                            <NavBar />
+                        </div>
+                        <div className="flex flex-1 sticky top-0">
+                            <aside
+                                className={`${collapsed ? 'w-16' : 'w-64'
+                                    } border-r border-blue-500 transition-all duration-300 ease-in-out `}
 
-                                >
-                                    <SideBar collapsed={collapsed} toggleSidebar={toggleSidebar} />
-                                </aside>
-                                <div className="flex-1 ml-0 transition-all duration-300 ease-in-out relative z-0">
-                                    {children}
-                                </div>
+                            >
+                                <SideBar collapsed={collapsed} toggleSidebar={toggleSidebar} />
+                            </aside>
+                            <div className="flex-1 ml-0 transition-all duration-300 ease-in-out relative z-0">
+                                {children}
                             </div>
                         </div>
-                    </NextUIProvider>
-                    {/* </OnboardingGuard> */}
-                </SocketIOProvider>
+                    </div>
+                </NextUIProvider>
+                {/* </OnboardingGuard> */}
+                {/* </SocketIOProvider> */}
             </AuthGuard>
         </AuthProvider>
     );

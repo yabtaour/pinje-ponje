@@ -1,3 +1,4 @@
+'use strict';
 'use client';
 import { useAppSelector } from "@/app/globalRedux/store";
 import { ScrollShadow, User } from "@nextui-org/react";
@@ -5,13 +6,18 @@ import { ScrollShadow, User } from "@nextui-org/react";
 
 
 
+// import ChatInput from "./components/chatInput";
+import SocketManager from "@/app/utils/socketManager";
+import { getCookie } from "cookies-next";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import { useDispatch } from "react-redux";
 import ChatInput from "./components/chatInput";
 import { formatMessageDate } from "./components/conversation";
 
 
 export function Mymessage({ message }: any) {
 
-    console.log("message: ", message);
+    // console.log("message: ", message);
 
     return (
         <div className="flex flex-row justify-end">
@@ -41,16 +47,44 @@ export function OtherMessage({ message }: any) {
 
 export default function Chat() {
 
-    // const globalSocket = useSocketContext();
-    const activeConversation = useAppSelector(state => state?.chatReducer?.activeConversation);
-    const roooms = useAppSelector(state => state?.chatReducer?.rooms);
+
+
+    const activeConversationId = useAppSelector(state => state?.chatReducer?.activeConversationId);
+    const activeConversation = useAppSelector(state => state?.chatReducer?.rooms?.find((room: any) => room?.id === activeConversationId));
     const me = useAppSelector(state => state?.authReducer?.value?.user);
     let messages = activeConversation?.room?.messages;
+    const conversations = useAppSelector(state => state?.chatReducer?.rooms);
+    const dispatch = useDispatch();
+    const token = getCookie("token");
+
+    const socketManager = SocketManager.getInstance("http://localhost:3000", token);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+
+    console.log("activeConversationId: ", activeConversationId);
+    console.log("activeConversation: ", activeConversation);
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
+
+    useLayoutEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' });
+    };
+
+
+    useEffect(() => {
+        
+        console.log("latest message from chat Page", messages?.slice(-1)[0]);
+    }, [conversations, dispatch, socketManager, activeConversation]);
 
 
 
-    // const globalSocket = useSocketIO();
-    // console.log("from chat globalSock: ", globalSocket );
 
 
     return (
@@ -87,9 +121,9 @@ export default function Chat() {
                                     {
                                         (messages ?? []).map((message: any) => (
                                             message?.user?.id === me?.id ? (
-                                                <OtherMessage message={message} />
-                                            ) : (
                                                 <Mymessage message={message} />
+                                            ) : (
+                                                <OtherMessage message={message} />
                                             )
                                         ))
                                     }
@@ -99,7 +133,9 @@ export default function Chat() {
 
                         }
 
+                        <div ref={messagesEndRef} />
                     </ScrollShadow>
+
                 </>
                 {
                     messages?.length === 0 || !activeConversation ? (
