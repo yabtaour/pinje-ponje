@@ -1,15 +1,18 @@
-import { OnGatewayInit, OnGatewayDisconnect,
-	OnGatewayConnection, WebSocketGateway,
-	WebSocketServer, SubscribeMessage,
+import { Inject, UseFilters, UsePipes, ValidationPipe, forwardRef } from "@nestjs/common";
+import {
+	OnGatewayConnection,
+	OnGatewayDisconnect,
+	OnGatewayInit,
+	SubscribeMessage,
+	WebSocketGateway,
+	WebSocketServer,
 } from "@nestjs/websockets";
 import { Namespace } from "socket.io";
+import { GlobalExceptionFilter } from "src/global-exception.filter";
 import { NotificationService } from "./notification.service";
-import { Inject, UseFilters, UsePipes, ValidationPipe } from "@nestjs/common";
-import { AllExceptionsFilter } from "src/all.exception.filter";
-import { forwardRef } from "@nestjs/common";
 
 @UsePipes(new ValidationPipe())
-@UseFilters(new AllExceptionsFilter())
+@UseFilters(new GlobalExceptionFilter())
 @WebSocketGateway({
 	namespace: 'notification',
 	cors: {

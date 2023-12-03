@@ -9,33 +9,33 @@ import PlayerBanner from "./components/PlayerBanner";
 import ProgressBar from "./components/ProgressBar";
 import SkillAnalytics from "./components/SkillAnalytics";
 
-export default function Profile({ params }: { params: { id: number } }) {
+export default function Profile() {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-
+    
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const data = await axios.get(`/users/${params.id}`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                    },
-                });
-                setUser(data.data);
-                setLoading(false);
-                console.log(data.data);
+                    // const data = await axios.get(`/users/${loggedUserId}`, {
+                    const data = await axios.get(`/users/me`, {
+                        headers: {
+                            Authorization: `${localStorage.getItem('access_token')}`,
+                        },
+                    });
+                    setUser(data.data);
+                    setLoading(false);
+                    console.log(data.data);
             } catch (err) {
                 console.error(err);
                 setLoading(false);
             }
         };
+
         fetchData();
     }, []);
 
-    if (loading) {
-        return <Loader />;
-    }
-
+    if (loading)
+        return <Loader/>
     return (
         <div className="bg-[#151424] relative flex-grow min-h-screen p-0">
             <div>

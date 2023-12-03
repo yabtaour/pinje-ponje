@@ -1,18 +1,16 @@
+import { Logger, UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
 import {
-  WebSocketGateway, WebSocketServer, 
-  SubscribeMessage, MessageBody, 
-  OnGatewayInit, WsResponse,
   OnGatewayConnection, OnGatewayDisconnect,
+  OnGatewayInit,
+  SubscribeMessage,
+  WebSocketGateway, WebSocketServer
 } from '@nestjs/websockets';
-import { Namespace, Server, Socket } from 'socket.io'
-import { ExecutionContext, Logger, UseFilters, UsePipes, ValidationPipe, WsExceptionFilter, createParamDecorator } from '@nestjs/common';
-import { ChatService, PaginationLimitDto, joinRoomDto } from './chat.service';
-import { CreateChatDmRoomDto } from './dto/create-chat.dto';
-import { ChatRoom } from '@prisma/client';
-import { AllExceptionsFilter } from '../all.exception.filter';
-import { AuthWithWs, UserWsDto } from './dto/user-ws-dto';
+import { Namespace, Server } from 'socket.io';
+import { GlobalExceptionFilter } from 'src/global-exception.filter';
+import { ChatService, joinRoomDto } from './chat.service';
 import { chatActionsDto } from './dto/actions-dto';
-import { plainToClass } from 'class-transformer';
+import { CreateChatDmRoomDto } from './dto/create-chat.dto';
+import { AuthWithWs } from './dto/user-ws-dto';
 
 /**
  * WebSocket Gateway for handling chat-related events.
@@ -20,7 +18,7 @@ import { plainToClass } from 'class-transformer';
  */
 
 @UsePipes(new ValidationPipe())
-@UseFilters(new AllExceptionsFilter())
+@UseFilters(new GlobalExceptionFilter())
 @WebSocketGateway({
   namespace: 'chat',
   cors: {

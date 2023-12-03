@@ -1,16 +1,18 @@
 import {
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   Param,
   ParseIntPipe,
+  forwardRef,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { config } from 'dotenv';
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
 import { SignUpDto } from 'src/auth/dto/signUp.dto';
-import { PaginationLimitDto } from 'src/chat/chat.service';
+import { ChatService, PaginationLimitDto } from 'src/chat/chat.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ProfilesService } from '../profiles/profiles.service';
 import { FriendsActionsDto } from './dto/FriendsActions-user.dto';
@@ -30,6 +32,7 @@ export class UserService {
     private readonly profile: ProfilesService,
 		private readonly notificationService: NotificationService,
 		private readonly notificationGateway: NotificationGateway,
+    // private readonly chatservice: ChatService
   ) {}
 
   async resetPassword(user: any, old: string, newPass: string) {
@@ -136,18 +139,9 @@ export class UserService {
       secret = authenticator.generateSecret();
       // const otpauth = authenticator.keyuri(user.email, 'pinje-ponge', secret);
       // const generatedQR = await toDataURL(otpauth);
-    } else if (data.twoFactor && data.twoFactor == false) {
+    } else {
       secret = null;
     }
-      // await this.prisma.user.update({
-      //   where: {
-      //     id: user_id,
-      //   },
-      //   data: {
-      //     twoFactor: true,
-      //     twoFactorSecret: secret,
-      //   },
-      // });
       const updatedUser = await this.prisma.user.update({
         where: {
           id: user_id,
@@ -196,8 +190,17 @@ export class UserService {
   async FindAllUsers(
     @Param('id', ParseIntPipe) id: number,
     params: PaginationLimitDto,
+    search: string
   ) {
     const users = await this.prisma.user.findMany({
+      where : {
+        AND : [{
+            OR : search ? [
+              { username : { contains : search  , mode : 'insensitive'} },
+            ] : {}
+          }
+        ]
+      },
       include : {
         profile: true,
       },
@@ -237,6 +240,15 @@ export class UserService {
     delete user.password;
     delete user.twoFactorSecret;
     return user;
+  }
+  
+  giveRandomAvatar() {
+    const avatar = [
+      "path://shinra.png",
+      "path://stewie.png",
+      "path://escanor.png",
+    ];
+    return avatar[Math.floor(Math.random() * avatar.length)];
   }
 
 
@@ -556,6 +568,15 @@ export class UserService {
         },
       },
     });
+
+    // this.chatservice.createRoom(
+    //   user_id, 
+    //   {
+    //     name: "Friend Room",
+    //     peer_id: data.id,
+    //     type: "DM",
+    //     role: ''
+    //   })
     this.notificationService.create({
       senderId: user_id,
       receiverId: data.id,

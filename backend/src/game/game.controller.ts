@@ -15,14 +15,7 @@ export class GameController {
 	async getGames() {
 		return this.gameService.getGames();
 	}
-
-	@Get('user/:id')
-	async getGamesByUserId(
-		@Param('id', ParseIntPipe) id: number,
-	) {
-		return this.gameService.getGamesByUserId(id);
-	}
-
+	
 	@Get(":id")
 	async getGameById(
 		@Param('id', ParseIntPipe) id: number,
@@ -30,11 +23,19 @@ export class GameController {
 		return this.gameService.getGameById(id);
 	}
 
-	@Get("winrate/:id")
-	async getWinrate(
+	@Get('user/winrate/:id')
+	async getWinrateByUserId(
 		@Param('id', ParseIntPipe) id: number,
 	) {
-		return this.gameService.getWinRate(id);
+		return this.gameService.getWinRateByUserId(id);
+	}
+	
+	@Get('user/:id')
+	async getGamesByUserId(
+		@Param('id', ParseIntPipe) id: number,
+	) {
+		console.log(id);
+		return this.gameService.getGamesByUserId(id);
 	}
 
 	@Post("queue")
