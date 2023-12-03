@@ -1,5 +1,6 @@
 'use client';
 
+import { addMessage, replaceMessage } from "@/app/globalRedux/features/chatSlice";
 import { useAppSelector } from "@/app/globalRedux/store";
 import SocketManager from "@/app/utils/socketManager";
 import { Input } from "@nextui-org/react";
@@ -14,6 +15,20 @@ const spinner = <svg width="512" height="512" viewBox="0 0 24 24" xmlns="http://
     </path>
 </svg>
 
+const generateUniqueId = (flag = '_') => flag + Math.random().toString(36).substr(2, 9);
+const replace = (array: any[], index: number, element: any) => [...array.slice(0, index), element, ...array.slice(index + 1)];
+
+// message :  {
+//     id: 287,
+//     content: 'asd',
+//     roomId: 10,
+//     userId: 83,
+//     createdAt: 2023-12-03T19:05:22.973Z,
+//     user: { id: 83, username: 'ahouari', avatar: null }
+//   }
+
+
+
 
 
 
@@ -21,27 +36,47 @@ export default function ChatInput() {
 
     const dispatch = useDispatch();
     const [value, setValue] = useState("")
-
     const activeConversationId = useAppSelector(state => state?.chatReducer?.activeConversationId);
     const activeConversation = useAppSelector(state => state?.chatReducer?.rooms?.find((room: any) => room?.id === activeConversationId));
-
     const me = useAppSelector(state => state?.authReducer?.value?.user);
-
     const accessToken = getCookie('token');
     const socketManager = SocketManager.getInstance('http://localhost:3000', accessToken);
 
 
 
-
-
-
+    // const draftNewMessage = (status: any) => ({
+    //     id: generateUniqueId('newMessage_'),
+    //     roomId: activeConversation?.room?.id,
+    //     userId: me?.id,
+    //     content: value,
+    //     createdAt: new Date(),
+    //     status
+    // })
 
 
     const handleSend = async () => {
         if (activeConversation?.room?.id) {
+            const messageId = generateUniqueId('_new_message__');
+            const draftNewMessage = (status: any) => ({
+                id: messageId,
+                roomId: activeConversation?.room?.id,
+                userId: me?.id,
+                content: value,
+                createdAt: new Date(),
+                status
+            })
+            dispatch(addMessage(draftNewMessage('pending')))
+
+            setValue('');
+
             try {
                 socketManager.sendMessage(value, activeConversation?.room?.id);
-                setValue('');
+                //find the message with the messageId 
+                const foundIndex = activeConversation?.room?.messages.findIndex((message: any) => message.id === messageId);
+                //replace here 
+                dispatch(replaceMessage(draftNewMessage('pending')))
+
+
             } catch (error) {
                 console.error("Error sending message:", error);
             }

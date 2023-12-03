@@ -125,6 +125,52 @@ export const chat = createSlice({
 
       return state;
     },
+
+    replaceMessage: (state, action) => {
+      const { roomId, id, content } = action.payload;
+      const roomIndex = state.rooms.findIndex(
+        (room) => room?.room?.id === roomId
+      );
+
+      if (roomIndex !== -1) {
+        const messageIndex = state.rooms[roomIndex].room.messages.findIndex(
+          (message) => message.id === id
+        );
+
+        if (messageIndex !== -1) {
+          const updatedMessage = {
+            ...state.rooms[roomIndex].room.messages[messageIndex],
+            content,
+          };
+
+          const updatedRoom = {
+            ...state.rooms[roomIndex],
+            room: {
+              ...state.rooms[roomIndex].room,
+              messages: [
+                ...state.rooms[roomIndex].room.messages.slice(0, messageIndex),
+                updatedMessage,
+                ...state.rooms[roomIndex].room.messages.slice(messageIndex + 1),
+              ],
+            },
+          };
+
+          const updatedRooms = [
+            ...state.rooms.slice(0, roomIndex),
+            updatedRoom,
+            ...state.rooms.slice(roomIndex + 1),
+          ];
+
+          return {
+            ...state,
+            rooms: updatedRooms,
+          };
+        }
+      }
+
+      return state;
+    },
+
     addConversation: (state, action) => {
       const { conversation } = action.payload;
       state.rooms.push(conversation);
@@ -132,6 +178,11 @@ export const chat = createSlice({
   },
 });
 
-export const { setActiveConversation, setRooms, addMessage, addConversation } =
-  chat.actions;
+export const {
+  replaceMessage,
+  setActiveConversation,
+  setRooms,
+  addMessage,
+  addConversation,
+} = chat.actions;
 export default chat.reducer;

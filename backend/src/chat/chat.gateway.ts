@@ -103,7 +103,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleGetRooms(client: AuthWithWs, payload: any) {
     console.log("The User ID Requesting Rooms : ", client.id)
     const rooms = await this.chatService.getRoomsByUserId(parseInt(client.id), client.handshake.query);
-    this.server.to(String(payload.id)).emit('listOfRooms', rooms);
+    // this.server.to(String(payload.id)).emit('listOfRooms', rooms););
+    return rooms;
   }
   
   /**
@@ -231,6 +232,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('sendMessage')
   async handleMessage(client: AuthWithWs, payload: any){
     const message = await this.chatService.createMessage(parseInt(client.id) , parseInt(payload.id), payload);
+    console.log("message : ", message);
     if (message)
       this.server.to(String(payload.id)).emit('message', message);
   }
@@ -252,7 +254,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const messages = await this.chatService.getMessages(parseInt(client.id), parseInt(payload.id), client.handshake.query);
     this.server.to(String(client.id)).emit('listOfMessages', messages);
   }
-
 }
 
 
