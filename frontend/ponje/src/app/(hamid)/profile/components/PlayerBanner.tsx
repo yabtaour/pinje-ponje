@@ -4,7 +4,8 @@ import { useAppSelector } from "@/app/globalRedux/store";
 import Image from "next/image";
 import { User } from '../../../types/user';
 // import bg from '/Users/anasshouari/1337/pinje-ponje/frontend/ponje/public/PlayerBanner.png';
-import bg from '../../../../../public/PlayerBanner.png'
+import bg from '../../../../../public/PlayerBanner.png';
+import { formatMessageDate } from "../../chat/components/conversation";
 
 export default function PlayerBanner({ user }: { user: User | null | undefined }) {
 
@@ -46,9 +47,7 @@ export default function PlayerBanner({ user }: { user: User | null | undefined }
                 }
                 <p className="font-medium text-[#77DFF8] mb-2">{username}</p>
                 <p className=" font-light text-sm text-[#8C8CDA] mb-4">
-                {bio} | joined {user?.createdAt && user.createdAt.toISOString().slice(0, 10)}
-                    {/* {bio} | joined {user?.createdAt?.slice(0, 10)} */}
-                    {/* {bio} | joined {user?.createdAt && user.createdAt.slice(0, 10)} */}
+                    {bio} | joined {formatMessageDate(user?.createdAt)}
                 </p>
                 <div>
 

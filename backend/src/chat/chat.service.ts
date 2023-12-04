@@ -78,6 +78,23 @@ export class ChatService {
   constructor(private readonly prisma: PrismaService) {}
 
 
+  async updateConversationRead(user_id: number, payload: any, status: boolean){
+    const roomid = parseInt(String(payload.id))
+    if (Number.isNaN(roomid))
+      throw new BadRequestException();
+
+      await this.prisma.roomMembership.update({
+        where: {
+          userId_roomId: {
+            userId: user_id,
+            roomId: roomid
+          }
+        },
+        data: {
+          read: status
+        }
+      });
+  }
 
   async createRoom(userid: number, payload: CreateChatDmRoomDto) {
     const roomId = await this.generateUniqueRoomId();
@@ -572,18 +589,7 @@ export class ChatService {
           },
           select: {
             unmuteTime: true,
-            state: true,
-            user : {
-              select: {
-                id: true,
-                username: true,
-                profile: {
-                  select: {
-                    avatar: true,
-                  }
-                }
-              }
-            }
+            state: true,  
         }
       }
     }
@@ -611,17 +617,28 @@ export class ChatService {
             id: user_id,
           },
         }
+      },
+      include: {
+        user: {
+          select: {
+            username: true,
+            profile: true
+          }
+        }
       }
     })
-    const messageWithUser = {
-      ...message,
-      user: {
-        id: user_id,
-        username: room.members[0].user.username,
-        avatar: room.members[0].user.profile.avatar,
+    // update many so there memebership would be false
+    await this.prisma.roomMembership.updateMany({
+      where: {
+        roomId: room.id
+      },
+      data: {
+        read: false
       }
-    }
-    return messageWithUser;
+    })
+    console.log("gere");
+    this.updateConversationRead(user_id, {id: room.id}, true)
+    return message;
   }
 
   async getMessages(user_id : number, @Param('room_id', ParseIntPipe) room_id: number, params: PaginationLimitDto) {
