@@ -15,6 +15,7 @@ import { chatActionsDto } from './dto/actions-dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { RoomDto } from './dto/room-dto';
 import { updateRoomDto } from './dto/update-room.dto';
+import { FriendsActionsDto } from 'src/user/dto/FriendsActions-user.dto';
 
 @UseGuards(JWTGuard)
 @ApiBearerAuth()
@@ -68,7 +69,11 @@ export class ChatController {
     @Param('id', ParseIntPipe) room_id: number,
     @Req() request: Request,
     @Body() payload: updateRoomDto
-  ){}
+  ){
+    const user = await this.userService.getCurrentUser(request);
+    const room = await this.chatService.updateRoomData(user.id, room_id, payload);
+    return room
+  }
 
   @Post('rooms/:id/join')
   async joinRoom(
@@ -81,6 +86,19 @@ export class ChatController {
     this.chatgateway.server.to(String(user.id)).emit('joinedRoom', room);
     return room;
   }
+
+  @Post('rooms/:id/invite')
+  async invite(
+      @Param('id' , ParseIntPipe) room_id: number,
+      @Req() request: Request,
+      @Body() payload: FriendsActionsDto
+  ){
+    const user = await this.userService.getCurrentUser(request);
+    const room = await this.chatService.inviteToPrivateRoom(user.id, room_id , payload);
+    this.chatgateway.server.to(String(payload.id)).emit('You Have Been Invited to this room', room);
+    return room;
+  }
+
 
   @Post('rooms/:id/leave')
   async leave(
