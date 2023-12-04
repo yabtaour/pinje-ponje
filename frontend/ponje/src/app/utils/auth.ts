@@ -7,9 +7,7 @@ export type KeyedObject = {
   [key: string]: string | number | KeyedObject | any;
 };
 
-export function getCookie(key: string) {}
-
-export const fetchUserData = async (token: string ) => {
+export const fetchUserData = async (token: string) => {
   try {
     const response = await axios.get("/users/me", {
       headers: {
@@ -22,7 +20,7 @@ export const fetchUserData = async (token: string ) => {
     console.log(error);
     return null;
   }
-};  
+};
 
 export const Handle42Auth = async () => {
   window.location.href = "http://localhost:3000/auth/api";
@@ -44,7 +42,7 @@ export const verifyToken = (access_token?: string | null): boolean => {
 export const setSession = (access_token?: string | null) => {
   if (access_token) {
     localStorage.setItem("access_token", access_token);
-    axios.defaults.headers.common.Authorization =  `Bearer ${access_token}`;
+    axios.defaults.headers.common.Authorization = `Bearer ${access_token}`;
   } else {
     localStorage.removeItem("access_token");
     delete axios.defaults.headers.common.Authorization;
