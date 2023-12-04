@@ -44,23 +44,19 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     @SubscribeMessage('initialize')
     initializeGame(client: any, payload: any) {
       try {
-        console.log(payload);
         if (!parseInt(payload.gameId) || !parseFloat(payload.playerPos))
           throw new WsException("Bad request");
         } catch {
           throw new WsException("Bad request");
       }
-      console.log(this.intializeArray)
       this.intializeArray.push(payload.gameId);
-      console.log(this.intializeArray);
-      console.log("meh")
       const firstIndex = this.intializeArray.findIndex((element) => {
         element === parseInt(payload.gameId);
       });
-      console.log("first index : ", firstIndex);
       const lastIndex = this.intializeArray.lastIndexOf(parseInt(payload.gameId));
-      console.log(firstIndex, lastIndex);
-      if (firstIndex != lastIndex)
+      if (firstIndex != lastIndex && firstIndex != -1 && lastIndex != -1)
+        this.intializeArray.splice(firstIndex, 1);
+        this.intializeArray.splice(lastIndex, 1);
         this.gameService.initializeGame(Number(client.id), payload)
     }
 
@@ -70,7 +66,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.gameService.updatePlayerPosition(client.id, payload);
     }
   
-    @SubscribeMessage('gameOver')
+    // @SubscribeMessage('gameOver')
     // gameOver(client: any, payload: {gameId: number}): void {
     //   this.gameService.gameOver(payload.gameId);
     // }
