@@ -22,17 +22,16 @@ let rightPaddle: Matter.Body;
 let leftPaddle: Matter.Body;
 let gameId: number;
 
-// const socket = io('ws://localhost:3000/game', {
-//   extraHeaders: {
-//     Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzAxNDI4OTM3LCJleHAiOjE3MDQwMjA5Mzd9.Sec9reKgBs1igF3mI-RrlRDs0XatAPBc8f9actBtWhE`,
-//   },
-// });
 
 const sock =  io('ws://localhost:3000/game', {
   extraHeaders: {
     Authorization: `${token}`,
   },
 });
+
+sock?.on('startGame', (data) => {
+  console.log(data);
+})
 
 const keys: any = {
   ArrowUp: false,
@@ -73,10 +72,10 @@ export function createBodies(canvaWidth: number, canvaHeight: number) {
   return ([rightPaddle, leftPaddle, ball, floor, ceiling])
 }
 
+
 export function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matter.Body) {
 
   if (bodyA == ball || bodyB == ball) {
-    // console.log("BAAAAAALL !! ", ball.speed)
     let otherBody = bodyA === ball ? bodyB : bodyA;
     if (otherBody === floor || otherBody === ceiling) {
       Body.setVelocity(ball, {
@@ -85,7 +84,6 @@ export function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matter.Body
       })
     }
     else if (otherBody === leftPaddle || otherBody === rightPaddle) {
-      // console.log("paddle touched !!!!!!!!!!!! ")
       Body.setVelocity(ball, {
         x: -ball.velocity.x,
         y: ball.velocity.y
@@ -111,17 +109,8 @@ export function updatePaddles(canvaHeight: number, canvaWidth: number) {
 export default function Game() {
   const boxRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  // let sock  : Socket | null = null;
 
   useEffect(() => {
-
-
-    // sock =  io('ws://localhost:3000/game', {
-    //   extraHeaders: {
-    //     Authorization: `${token}`,
-    //   },
-    // });
-
     sock?.on('connect' , () =>  {  
       sock?.on('message', (data) => {
         console.log('messages received : ', data);
@@ -198,8 +187,8 @@ export default function Game() {
   }, []);
 
   return (
-    <div className='w-full h-full flex items-center justify-center'>
-      <div  className='w-2/3 h-2/3 border-2 border-black z-30' ref={boxRef}>
+    <div className='w-full h-screen flex items-center justify-center'>
+      <div  className='w-2/3 h-2/4 border-2 border-black z-30' ref={boxRef}>
         <canvas className='w-full h-full border-2 border-black z-30 ' id="myCanva" ref={canvasRef} />
 
         {/* <img ref={imgRef}  src="https://w7.pngwing.com/pngs/108/741/png-transparent-ping-pong-ball-table-amazon-com-craft-ping-pong-sphere-sports-business.png" style={{ position: 'absolute', display:'none' , top: 0, left: 0, width: 40, height: 40 }} alt="paddle" /> */}
