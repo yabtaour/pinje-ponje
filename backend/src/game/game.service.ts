@@ -329,10 +329,11 @@ export class GameService {
 					userId: user.id,
 					gameId: game.id,
 				},
-			},
+			}
 		})
 		if (!player)
 			throw new HttpException(`Error creating players`, HttpStatus.BAD_REQUEST);
+
 		const opponentPlayer = await this.prisma.player.findUnique({
 			where: {
 				userId_gameId: {
@@ -359,6 +360,7 @@ export class GameService {
 	}
 
 	async initializeGame(client: number, payload: any) {
+		console.log("trying to initialize game");
 		const opponentPlayer = await this.prisma.user.findFirst({
 			where: {
 				id: {
@@ -379,10 +381,10 @@ export class GameService {
 			{x: 0, y: 0},
 		)
 		this.gameGateway.currentGames[payload.gameId] = gameState;
+		console.log(this.gameGateway.currentGames);
 		await this.gameGateway.server.to(String(client)).emit('startGame', gameState);
 		await this.gameGateway.server.to(String(opponentPlayer.id)).emit('startGame', gameState);
 
-		console.log(this.gameGateway.currentGames);
 	}
 
 	async updatePlayerPosition(client: number, payload: UpdatePaddlePositionDto) {

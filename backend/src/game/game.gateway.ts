@@ -1,32 +1,12 @@
+import { Inject, Injectable, UseFilters, forwardRef } from '@nestjs/common';
 import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer, WsException } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 import { AuthWithWs } from 'src/chat/dto/user-ws-dto';
-import { GameState } from './gameState';
-import { GameService } from './game.service';
-import { ArgumentMetadata, Inject, Injectable, PipeTransform, UseFilters, UsePipes, forwardRef } from '@nestjs/common';
-import { IsNotEmpty, IsNumber } from 'class-validator';
-import { UpdateBallPositionDto, UpdatePaddlePositionDto, UpdateScoreDto } from './dto/game.dto';
 import { GlobalExceptionFilter } from 'src/global-exception.filter';
+import { UpdatePaddlePositionDto, UpdateScoreDto } from './dto/game.dto';
+import { GameService } from './game.service';
+import { GameState } from './gameState';
 
-// export class PayloadValidationPipe implements PipeTransform<any> {
-//   transform(value: any, metadata: ArgumentMetadata): any {
-//     if (!this.isValidPayload(value)) {
-//       throw new WsException('Invalid payload');
-//     }
-//     return value;
-//   }
-
-// 	private isValidPayload(payload: UpdatePaddlePositionDto): boolean {
-//     if (!payload) {
-// 			return false;
-// 		}
-// 		if (payload.gameId === undefined || payload.gameId === null
-// 			|| payload.direction === undefined || payload.direction === null) {
-// 			return false;
-// 		}
-//     return true;
-// 	}
-// }
 @UseFilters(new GlobalExceptionFilter())
 @WebSocketGateway({
   namespace: 'game',
@@ -46,7 +26,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   constructor(
 		@Inject(forwardRef(() => GameService))
 		private gameService: GameService,
-  ) {}
+  ) {
+    this.intializeArray = [];
+  }
   
     afterInit(server: Server) {
       console.log('GameGateway initialized');
@@ -61,9 +43,23 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     @SubscribeMessage('initialize')
     initializeGame(client: any, payload: any) {
+      try {
+        console.log(payload);
+        if (!parseInt(payload.gameId) || !parseFloat(payload.playerPos))
+          throw new WsException("Bad request");
+        } catch {
+          throw new WsException("Bad request");
+      }
+      console.log(this.intializeArray)
       this.intializeArray.push(payload.gameId);
-      const firstIndex = this.intializeArray.findIndex(payload.gameId);
-      const lastIndex = this.intializeArray.lastIndexOf(payload.gameId);
+      console.log(this.intializeArray);
+      console.log("meh")
+      const firstIndex = this.intializeArray.findIndex((element) => {
+        element === parseInt(payload.gameId);
+      });
+      console.log("first index : ", firstIndex);
+      const lastIndex = this.intializeArray.lastIndexOf(parseInt(payload.gameId));
+      console.log(firstIndex, lastIndex);
       if (firstIndex != lastIndex)
         this.gameService.initializeGame(Number(client.id), payload)
     }
