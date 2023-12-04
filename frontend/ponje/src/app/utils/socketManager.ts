@@ -62,6 +62,7 @@ class SocketManager {
     //////////////////////////////
     this.gameSocket.on("connect", () => {
       console.log("Connected to game namespace");
+      console.log("rani mconnecteeeeeeer");
       // Handle further logic here
     });
 
@@ -137,10 +138,28 @@ class SocketManager {
     });
   }
 
+  public onStartGame(): Promise<any> {
+    return new Promise((resolve, reject) => {
+
+      
+      console.log(this.gameSocket)
+      if (this.gameSocket && this.gameSocket.connected) {
+        console.log("Socket is connected.", this.chatSocket);
+        this.chatSocket?.on("startGame", (data: any) => {
+          resolve(data);
+        });
+      } else {
+        console.log("Socket is not connected yet.");
+        reject("Socket is not connected");
+      }
+    });
+  }
+
   public waitForConnection(callback: () => void) {
     const checkConnection = () => {
       if (
-        this.chatSocket?.connected
+        this.chatSocket?.connected &&
+        this.gameSocket?.connected
         // this.gameSocket?.connected &&
         // this.notificationSocket?.connected &&
         // this.statusSocket?.connected

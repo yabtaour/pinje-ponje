@@ -1,10 +1,11 @@
 'use strict';
 'use client';
-import { background } from '@chakra-ui/react';
+import SocketManager from '@/app/utils/socketManager';
 import { getCookie } from 'cookies-next';
 import Matter, { Body, Events } from 'matter-js';
-import { useEffect, useRef } from 'react';
-import io, { Socket } from 'socket.io-client'
+import { useEffect, useRef, useState } from 'react';
+import { ClimbingBoxLoader } from 'react-spinners';
+import io from 'socket.io-client';
 
 
 const token = getCookie("token")
@@ -23,15 +24,16 @@ let leftPaddle: Matter.Body;
 let gameId: number;
 
 
-const sock =  io('ws://localhost:3000/game', {
-  extraHeaders: {
-    Authorization: `${token}`,
-  },
-});
+// const sock =  io('ws://localhost:3000/game', {
+//   extraHeaders: {
+//     Authorization: `${token}`,
+//   },
+// });
 
-sock?.on('startGame', (data) => {
-  console.log(data);
-})
+// sock?.on('startGame', (data) => {
+//   console.log("gameState initialized let's start the game !!", data);
+
+// })
 
 const keys: any = {
   ArrowUp: false,
@@ -97,7 +99,7 @@ export function updatePaddles(canvaHeight: number, canvaWidth: number) {
   // console.log(keys);
   if (keys['ArrowUp'] && leftPaddle.position.y - 100 / 2 > 30) {
     // console.log("lfo9");
-    sock.emit('updatePlayerPosition', )
+    // sock.emit('updatePlayerPosition', )
     Body.translate(leftPaddle, { x: 0, y: -5 });
   }
   if (keys['ArrowDown'] && leftPaddle.position.y + 100 / 2 < canvaHeight - 30) {
@@ -107,21 +109,32 @@ export function updatePaddles(canvaHeight: number, canvaWidth: number) {
 }
 
 export default function Game() {
+
+
   const boxRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [gameStarted, setGameStarted] = useState(false);
+
+  const socketManager = SocketManager.getInstance();
+
 
   useEffect(() => {
-    sock?.on('connect' , () =>  {  
-      sock?.on('message', (data) => {
-        console.log('messages received : ', data);
-      })
-    })
+    const hamid = async() => {
+      try {
+        socketManager.waitForConnection(async () => {
+        
+        const res = await  socketManager.onStartGame()
+        console.log(res);
+        setGameStarted(true);
+        return res
+        });
+      }
+      catch (e){
+          console.log (e)
+      }
 
-    sock?.on('startGame', (data) => {
-      console.log("gameState initialized !! ", data);
-      
-    })
-
+    }
+    hamid()
     const worldWidth = canvasRef.current?.width! * 2;
     const worldHeight = canvasRef.current?.height! * 2;
     const engine = Engine.create({
@@ -173,11 +186,9 @@ export default function Game() {
         handleColision(pair, bodyA, bodyB)
       });
     });
-    // console.log("hamd");
 
-    // Engine.update(engine, delta)
     return() => {
-      sock?.disconnect()
+      // sock?.disconnect()
       Render.stop(render);
       World.clear(engine.world , false);
       Engine.clear(engine);
@@ -186,13 +197,11 @@ export default function Game() {
 
   }, []);
 
-  return (
+  return gameStarted ? (
     <div className='w-full h-screen flex items-center justify-center'>
-      <div  className='w-2/3 h-2/4 border-2 border-black z-30' ref={boxRef}>
+      <div className='w-2/3 h-2/4 border-2 border-black z-30' ref={boxRef}>
         <canvas className='w-full h-full border-2 border-black z-30 ' id="myCanva" ref={canvasRef} />
-
-        {/* <img ref={imgRef}  src="https://w7.pngwing.com/pngs/108/741/png-transparent-ping-pong-ball-table-amazon-com-craft-ping-pong-sphere-sports-business.png" style={{ position: 'absolute', display:'none' , top: 0, left: 0, width: 40, height: 40 }} alt="paddle" /> */}
       </div>
     </div>
-  );
+  ) : null;
 }
