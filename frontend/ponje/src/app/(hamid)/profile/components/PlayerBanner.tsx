@@ -3,13 +3,15 @@
 import { useAppSelector } from "@/app/globalRedux/store";
 import Image from "next/image";
 import { User } from '../../../types/user';
-import bg from '../../../../../public/PlayerBanner.png'
+import bg from '../../../../../public/PlayerBanner.png';
+import { formatMessageDate } from "../../chat/components/conversation";
 
 export default function PlayerBanner({ user }: { user: User | null | undefined }) {
 
     const logedUserId = useAppSelector((state) => state.authReducer.value.user?.id);
     const username = user?.username;
     const bio = user?.profile?.bio;
+    // const Avatar = null;
     const Avatar = user?.profile?.avatar;
 
     return (
@@ -45,7 +47,7 @@ export default function PlayerBanner({ user }: { user: User | null | undefined }
                 }
                 <p className="font-medium text-[#77DFF8] mb-2">{username}</p>
                 <p className=" font-light text-sm text-[#8C8CDA] mb-4">
-                    {bio} | joined {user?.createdAt?.slice(0, 10)}
+                    {bio} | joined {formatMessageDate(user?.createdAt)}
                 </p>
                 <div>
 

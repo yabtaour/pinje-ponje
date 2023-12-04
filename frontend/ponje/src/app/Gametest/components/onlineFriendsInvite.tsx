@@ -1,9 +1,9 @@
 import React from "react";
-import { DisplayedInfo } from "../page";
+import  {User} from "../../../app/types/user";
 
 
   
-  export default function OnlineFriendsInvite({ users }: { users :DisplayedInfo[]}) {
+  export default function OnlineFriendsInvite({ users }: { users : User[]}) {
     return (
         <div>
             <div className="flex flex-col items-center justify-center">
@@ -18,7 +18,7 @@ import { DisplayedInfo } from "../page";
                         {users.length === 0 ? (
                             <tr>
                                 <td className="text-center text-gray-500 text-2xl pb-8">
-                                    None of your friends are online :( <span className="text-lg text-gray-600"> (do you even have any ?) </span> .
+                                    None of your friends are online :( <span className="text-lg text-gray-600"> (do you even have any ?) </span>
                                 </td>
                             </tr>
                         ) : (

@@ -121,11 +121,13 @@ model RoomMembership {
   id         Int         @id @default(autoincrement())
   role       ChatRole
   state      MemberState @default(ACTIVE)
+  read       Boolean     @default(false)
   unmuteTime DateTime?
   user       User        @relation(fields: [userId], references: [id])
   userId     Int
   room       ChatRoom    @relation(fields: [roomId], references: [id], onDelete: Cascade)
   roomId     Int
+  @@unique([userId, roomId])
 }
 
 model ChatMessage {
