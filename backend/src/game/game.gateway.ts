@@ -49,15 +49,20 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         } catch {
           throw new WsException("Bad request");
       }
+      console.log("BEFORE : ", this.intializeArray);
       this.intializeArray.push(payload.gameId);
+      console.log("AFTER : ", this.intializeArray);
       const firstIndex = this.intializeArray.findIndex((element) => {
         element === parseInt(payload.gameId);
       });
       const lastIndex = this.intializeArray.lastIndexOf(parseInt(payload.gameId));
-      if (firstIndex != lastIndex && firstIndex != -1 && lastIndex != -1)
+      console.log("FIRST | LAST ", firstIndex, lastIndex)
+      if (firstIndex != lastIndex && firstIndex != -1 && lastIndex != -1) {
+        console.log("JAW 2 PLAYER !!!!!!!");
         this.intializeArray.splice(firstIndex, 1);
         this.intializeArray.splice(lastIndex, 1);
         this.gameService.initializeGame(Number(client.id), payload)
+      }
     }
 
     @SubscribeMessage('updatePlayerPosition')

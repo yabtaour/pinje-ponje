@@ -62,7 +62,6 @@ class SocketManager {
     //////////////////////////////
     this.gameSocket.on("connect", () => {
       console.log("Connected to game namespace");
-      console.log("rani mconnecteeeeeeer");
       // Handle further logic here
     });
 
@@ -140,8 +139,6 @@ class SocketManager {
 
   public onStartGame(): Promise<any> {
     return new Promise((resolve, reject) => {
-
-      
       console.log(this.gameSocket)
       if (this.gameSocket && this.gameSocket.connected) {
         console.log("Socket is connected.", this.chatSocket);

@@ -4,8 +4,6 @@ import SocketManager from '@/app/utils/socketManager';
 import { getCookie } from 'cookies-next';
 import Matter, { Body, Events } from 'matter-js';
 import { useEffect, useRef, useState } from 'react';
-import { ClimbingBoxLoader } from 'react-spinners';
-import io from 'socket.io-client';
 
 
 const token = getCookie("token")
@@ -22,18 +20,6 @@ let ceiling: Matter.Body;
 let rightPaddle: Matter.Body;
 let leftPaddle: Matter.Body;
 let gameId: number;
-
-
-// const sock =  io('ws://localhost:3000/game', {
-//   extraHeaders: {
-//     Authorization: `${token}`,
-//   },
-// });
-
-// sock?.on('startGame', (data) => {
-//   console.log("gameState initialized let's start the game !!", data);
-
-// })
 
 const keys: any = {
   ArrowUp: false,
@@ -96,14 +82,10 @@ export function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matter.Body
 
 
 export function updatePaddles(canvaHeight: number, canvaWidth: number) {
-  // console.log(keys);
   if (keys['ArrowUp'] && leftPaddle.position.y - 100 / 2 > 30) {
-    // console.log("lfo9");
-    // sock.emit('updatePlayerPosition', )
     Body.translate(leftPaddle, { x: 0, y: -5 });
   }
   if (keys['ArrowDown'] && leftPaddle.position.y + 100 / 2 < canvaHeight - 30) {
-    // console.log("lte7t");
     Body.translate(leftPaddle, { x: 0, y: 5 });
   }
 }
@@ -114,27 +96,26 @@ export default function Game() {
   const boxRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameStarted, setGameStarted] = useState(false);
+  const [initialGameData, setInitialGameData] = useState<any>(null);
 
   const socketManager = SocketManager.getInstance();
 
 
   useEffect(() => {
-    const hamid = async() => {
-      try {
-        socketManager.waitForConnection(async () => {
-        
-        const res = await  socketManager.onStartGame()
-        console.log(res);
-        setGameStarted(true);
-        return res
-        });
-      }
-      catch (e){
-          console.log (e)
-      }
 
+    const initializeGame = async () => {
+      await new Promise<void>((resolve: () => void) => socketManager.waitForConnection(resolve));
+      try {
+        const initialGameData = await socketManager.onStartGame();
+        console.log("Received initial game data:", initialGameData);
+        setInitialGameData(initialGameData);
+        setGameStarted(true);
+      } catch (error) {
+        console.log(error);
+      }
     }
-    hamid()
+    initializeGame();
+
     const worldWidth = canvasRef.current?.width! * 2;
     const worldHeight = canvasRef.current?.height! * 2;
     const engine = Engine.create({
@@ -156,24 +137,20 @@ export default function Game() {
     });
     const canvaWidth = canvasRef.current?.width!;
     const canvaHeight = canvasRef.current?.height!;
-    const worlBodies = createBodies(canvaWidth, canvaHeight)
     World.add(engine.world, [ball, floor, ceiling, leftPaddle, rightPaddle]);
      
     window.addEventListener('keydown', (event) => {
       if (keys.hasOwnProperty(event.code)) {
-        // console.log("press");
         keys[event.code] = true;
       }
     })
     window.addEventListener('keyup', (event) => {
       if (keys.hasOwnProperty(event.code)) {
-        // console.log("unpress");
         keys[event.code] = false;
       }
     })
 
     Events.on(engine, 'beforeUpdate', () => {
-      // console.log("chi haja trat");
       updatePaddles(canvaHeight, canvaWidth);
     });
 
@@ -188,7 +165,6 @@ export default function Game() {
     });
 
     return() => {
-      // sock?.disconnect()
       Render.stop(render);
       World.clear(engine.world , false);
       Engine.clear(engine);
@@ -197,11 +173,11 @@ export default function Game() {
 
   }, []);
 
-  return gameStarted ? (
+  return (
     <div className='w-full h-screen flex items-center justify-center'>
       <div className='w-2/3 h-2/4 border-2 border-black z-30' ref={boxRef}>
         <canvas className='w-full h-full border-2 border-black z-30 ' id="myCanva" ref={canvasRef} />
       </div>
     </div>
-  ) : null;
+  );
 }
