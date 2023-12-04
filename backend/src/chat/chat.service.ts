@@ -16,6 +16,7 @@ import { IsIn, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-v
 import { Transform, plainToClass } from 'class-transformer';
 import { chatActionsDto } from './dto/actions-dto';
 import { error } from 'console';
+import { updateRoomDto } from './dto/update-room.dto';
 
 
 export const ChatActions = createParamDecorator(
@@ -79,7 +80,7 @@ export class ChatService {
 
 
   async updateConversationRead(user_id: number, payload: any, status: boolean){
-    const roomid = parseInt(String(payload.id))
+    const roomid = parseInt(String(payload.roomId))
     if (Number.isNaN(roomid))
       throw new BadRequestException();
 
@@ -94,6 +95,21 @@ export class ChatService {
           read: status
         }
       });
+  }
+
+  async updateRoomData(user_id: number, payload: updateRoomDto){
+    const roomid = parseInt(String(payload.roomId))
+    if (Number.isNaN(roomid))
+      throw new BadRequestException();
+
+      await this.prisma.chatRoom.update({
+        where : {
+          id: roomid
+        },
+        data : {
+          ...payload
+        }
+      })
   }
 
   async createRoom(userid: number, payload: CreateChatDmRoomDto) {

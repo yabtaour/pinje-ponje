@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query, ParseIntPipe, Put } from '@nestjs/common';
 import { ChatService, MessageDto, PaginationLimitDto, joinRoomDto } from './chat.service';
 import { CreateChatDmRoomDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
@@ -13,6 +13,8 @@ import { UserService } from 'src/user/user.service';
 import { th } from '@faker-js/faker';
 import { chatActionsDto } from './dto/actions-dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { RoomDto } from './dto/room-dto';
+import { updateRoomDto } from './dto/update-room.dto';
 
 @UseGuards(JWTGuard)
 @ApiBearerAuth()
@@ -60,6 +62,13 @@ export class ChatController {
     this.chatgateway.server.to(String(user.id)).emit('roomDetails', room);
     return room;
   }
+
+  @Put('rooms/:id')
+  async updateRoom(
+    @Param('id', ParseIntPipe) room_id: number,
+    @Req() request: Request,
+    @Body() payload: updateRoomDto
+  ){}
 
   @Post('rooms/:id/join')
   async joinRoom(
