@@ -4,22 +4,31 @@ import SocketManager from '@/app/utils/socketManager';
 import { getCookie } from 'cookies-next';
 import Matter, { Body, Events } from 'matter-js';
 import { useEffect, useRef, useState } from 'react';
-
-
-const token = getCookie("token")
+import { io } from 'socket.io-client';
 
 export const Engine = Matter.Engine;
 export const Render = Matter.Render;
 export const World = Matter.World;
 export const Bodies = Matter.Bodies;
-export const Runner = Matter.Runner;
+// export const Runner = Matter.Runner;
+
+const token = getCookie("token")
+const gameSocket = io("http://localhost:3000/game", {
+  extraHeaders: {
+    authorization: `${token}`,
+  }
+});
 
 let ball: Matter.Body;
 let floor: Matter.Body;
 let ceiling: Matter.Body;
 let rightPaddle: Matter.Body;
 let leftPaddle: Matter.Body;
-let gameId: number;
+
+let worldHeight: number;
+let worldWidth: number;
+let canvaHeight: number;
+let canvaWidth: number;
 
 const keys: any = {
   ArrowUp: false,
@@ -28,7 +37,7 @@ const keys: any = {
   KeyS: false,
 };
 
-export function createBodies(canvaWidth: number, canvaHeight: number) {
+export function createBodies() {
   ball = Bodies.circle(canvaWidth / 2, canvaHeight / 2, 15, { 
     restitution: 1,
     frictionAir: 0,
@@ -41,14 +50,14 @@ export function createBodies(canvaWidth: number, canvaHeight: number) {
     x: 3,
     y: 3,
   })
-  rightPaddle = Bodies.rectangle(canvaWidth - 20, canvaHeight / 2, 20, 150, {
+  rightPaddle = Bodies.rectangle(canvaWidth - 20, canvaHeight / 2, 20, 100, {
     isStatic: true,
     render: {
       fillStyle: "#4E40F4",
       
     }
   });
-  leftPaddle = Bodies.rectangle(20, canvaHeight / 2, 20, 150, {
+  leftPaddle = Bodies.rectangle(20, canvaHeight / 2, 20, 100, {
     isStatic: true,
     render: {
       fillStyle: "#4E40F4"
@@ -81,11 +90,11 @@ export function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matter.Body
 }
 
 
-export function updatePaddles(canvaHeight: number, canvaWidth: number) {
-  if (keys['ArrowUp'] && leftPaddle.position.y - 100 / 2 > 30) {
+export function updatePaddles() {
+  if (keys['ArrowUp'] && leftPaddle.position.y - 100 / 2 > 10) {
     Body.translate(leftPaddle, { x: 0, y: -5 });
   }
-  if (keys['ArrowDown'] && leftPaddle.position.y + 100 / 2 < canvaHeight - 30) {
+  if (keys['ArrowDown'] && leftPaddle.position.y + 100 / 2 < canvaHeight - 10) {
     Body.translate(leftPaddle, { x: 0, y: 5 });
   }
 }
@@ -100,24 +109,49 @@ export default function Game() {
 
   const socketManager = SocketManager.getInstance();
 
+  console.log(gameSocket);
 
+  gameSocket.emit('khouyaSawbLgame');
+  
   useEffect(() => {
+    // socketManager.sendInitialRequest();
 
+    
     const initializeGame = async () => {
-      await new Promise<void>((resolve: () => void) => socketManager.waitForConnection(resolve));
+      // await new Promise<void>((resolve: () => void) => socketManager.waitForConnection(resolve));
       try {
-        const initialGameData = await socketManager.onStartGame();
+        // const initialGameData = await socketManager.onStartGame();
+        // console.log(initialGameData)
+        gameSocket.on('startGame', (data) => {
+        //   // initialGameData÷ = data÷;
+          setInitialGameData(data);
+          // setInitialGameData(initialGameData);
+          setGameStarted(true);
+          console.log(data);
+        })
         console.log("Received initial game data:", initialGameData);
-        setInitialGameData(initialGameData);
-        setGameStarted(true);
+
+        createBodies();
+
+        leftPaddle.position.y = initialGameData.player1.y;
+        rightPaddle.position.y = initialGameData.player2.y;
+        Body.setVelocity(ball, {
+          x: initialGameData.ball.velocity.x,
+          y: initialGameData.ball.velocity.y,
+        })
+
+        World.add(engine.world, [ball, floor, ceiling, leftPaddle, rightPaddle]);
       } catch (error) {
         console.log(error);
       }
     }
     initializeGame();
 
-    const worldWidth = canvasRef.current?.width! * 2;
-    const worldHeight = canvasRef.current?.height! * 2;
+    worldWidth = canvasRef.current?.width! * 2;
+    worldHeight = canvasRef.current?.height! * 2;
+    canvaWidth = canvasRef.current?.width!;
+    canvaHeight = canvasRef.current?.height!;
+
     const engine = Engine.create({
       gravity: {
         x: 0,
@@ -135,9 +169,11 @@ export default function Game() {
         background: '#C2D9FF',
       },
     });
-    const canvaWidth = canvasRef.current?.width!;
-    const canvaHeight = canvasRef.current?.height!;
-    World.add(engine.world, [ball, floor, ceiling, leftPaddle, rightPaddle]);
+    // canvaWidth = canvasRef.current?.width!;
+    // canvaHeight = canvasRef.current?.height!;
+    // console.log(canvaWidth, canvaHeight);
+    // createBodies();
+    // World.add(engine.world, [ball, floor, ceiling, leftPaddle, rightPaddle]);
      
     window.addEventListener('keydown', (event) => {
       if (keys.hasOwnProperty(event.code)) {
@@ -151,7 +187,7 @@ export default function Game() {
     })
 
     Events.on(engine, 'beforeUpdate', () => {
-      updatePaddles(canvaHeight, canvaWidth);
+      updatePaddles();
     });
 
     Engine.run(engine);
@@ -165,19 +201,33 @@ export default function Game() {
     });
 
     return() => {
+      window.removeEventListener('keydown', (event) => {
+        if (keys.hasOwnProperty(event.code)) {
+          keys[event.code] = true;
+        }
+      });
+  
+      window.removeEventListener('keyup', (event) => {
+        if (keys.hasOwnProperty(event.code)) {
+          keys[event.code] = false;
+        }
+      });
       Render.stop(render);
       World.clear(engine.world , false);
       Engine.clear(engine);
-
     }
 
-  }, []);
+  }, [initialGameData, gameStarted]);
 
   return (
     <div className='w-full h-screen flex items-center justify-center'>
-      <div className='w-2/3 h-2/4 border-2 border-black z-30' ref={boxRef}>
-        <canvas className='w-full h-full border-2 border-black z-30 ' id="myCanva" ref={canvasRef} />
-      </div>
+      {gameStarted ? (
+        <div className='w-2/3 h-2/4 border-2 border-black z-30' ref={boxRef}>
+          <canvas className='w-full h-full border-2 border-black z-30' id="myCanva" ref={canvasRef} />
+        </div>
+      ) : (
+        <p>Loading...</p>
+      )}
     </div>
   );
 }

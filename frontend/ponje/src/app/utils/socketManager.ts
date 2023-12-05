@@ -152,6 +152,21 @@ class SocketManager {
     });
   }
 
+  public sendInitialRequest(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (this.gameSocket && this.gameSocket.connected) {
+        console.log("Socket is connected.", this.chatSocket);
+        console.log("Connected to chat namespace");
+        this.chatSocket?.emit(
+          "khouyaSawbLgame",
+        );
+      } else {
+        console.log("Socket is not connected yet.");
+        reject("Socket is not connected");
+      }
+    });   
+  }
+
   public waitForConnection(callback: () => void) {
     const checkConnection = () => {
       if (
