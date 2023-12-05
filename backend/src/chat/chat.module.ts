@@ -9,11 +9,12 @@ import { AuthModule } from 'src/auth/auth.module';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { JwtAuthService } from 'src/auth/jwt.service';
 import { UserModule } from 'src/user/user.module';
+import { NotificationModule } from 'src/notification/notification.module';
 // import { MuteCheckMiddleware } from './middlewares/MuteCheckMiddleware';
 
 @Module({
   controllers: [ChatController],
-  imports: [PrismaModule, AuthModule, UserModule],
+  imports: [PrismaModule, AuthModule, UserModule, NotificationModule],
   providers: [ ChatGateway, ChatService, PrismaService],
   exports: [ChatGateway],
 })
