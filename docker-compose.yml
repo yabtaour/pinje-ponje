@@ -6,14 +6,17 @@ services:
       context: ${FRONT_DIR_PATH}
       dockerfile: Dockerfile
     ports:
-      - "3001:3001"
+      - "3001:3000"
     container_name: frontend_container
     env_file: 
-      ./frontend/ponje/.env
+      .env
     # environment:
     #   - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     depends_on:
       - backend
+    volumes:
+      - front_public_dir:/app/public
+      - avatars_volume:/app/public/avatars
     networks:
       - frontend
       - backend
@@ -30,6 +33,8 @@ services:
       - .env
     networks:
       - backend
+    volumes:
+      - postgres_db_data:/var/lib/postgresql/data
     restart: always
 
   backend:
@@ -41,10 +46,12 @@ services:
     image: backend_image
     container_name: backend_container
     env_file: 
-      ./backend/.env
+      .env
     depends_on:
       - postgres
       - adminer
+    volumes:
+      - avatars_volume:/app/uploads/Avatars
     networks:
       - backend
       - frontend
@@ -63,3 +70,39 @@ services:
 networks:
   backend:
   frontend:
+
+volumes :
+  postgres_db_data:
+    name: postgres_db_data
+
+  backend_volume:
+    name: backend_volume
+    driver: local
+    driver_opts:
+      o: bind
+      device: ${BACK_DIR_PATH:-/tmp/back_vol}
+      type: none
+  
+  avatars_volume:
+    name: avatars_volume
+    driver: local
+    driver_opts:
+      o: bind
+      device: ${MAIN_UPLOADS_PATH:-/tmp/avatars_vol}
+      type: none
+
+  frontend_volume:
+    name: frontend_volume
+    driver: local
+    driver_opts:
+      o: bind
+      device: ${FRONT_DIR_PATH:-/tmp/frontend_vol}
+      type: none
+
+  front_public_dir:
+    name: front_public_dir
+    driver: local
+    driver_opts:
+      o: bind
+      device: ${FRONTEND_PUBLIC_DIR:-/tmp/front_public_dir_vol}
+      type: none

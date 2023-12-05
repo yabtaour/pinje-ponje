@@ -1,5 +1,7 @@
 FROM postgres:16
 
+COPY init/ppDB_backup.sql docker-entrypoint-initdb.d/db_dev
+
 EXPOSE 5432
 
 CMD ["postgres"]
