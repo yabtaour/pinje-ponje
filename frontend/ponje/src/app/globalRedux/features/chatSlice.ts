@@ -27,6 +27,7 @@ type Room = {
   unmuteTime: string;
   userId: number;
   roomId: number;
+  read: boolean;
   room: {
     id: number;
     name: string;
@@ -60,6 +61,33 @@ export const chat = createSlice({
     },
     setActiveConversation: (state, action) => {
       state.activeConversationId = action.payload?.id || null;
+      const roomIndex = state.rooms.findIndex(
+        (room) => room?.room?.id === action.payload?.id
+      );
+
+      console.log("room Index:" , roomIndex);
+      console.log("action.payload?.id:" , action.payload?.id);
+      console.log("state.rooms:" , state.rooms);
+      if (roomIndex !== -1) {
+        const updatedRoom = {
+          ...state.rooms[roomIndex],
+          room: {
+            ...state.rooms[roomIndex].room,
+            read: true,
+          },
+        };
+
+        const updatedRooms = [
+          ...state.rooms.slice(0, roomIndex),
+          updatedRoom,
+          ...state.rooms.slice(roomIndex + 1),
+        ];
+
+        return {
+          ...state,
+          rooms: updatedRooms,
+        };
+      }
     },
     addMessage: (state, action) => {
       const { roomId } = action.payload;

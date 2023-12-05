@@ -1,6 +1,5 @@
 'use client';
 
-import { addMessage, replaceMessage } from "@/app/globalRedux/features/chatSlice";
 import { useAppSelector } from "@/app/globalRedux/store";
 import SocketManager from "@/app/utils/socketManager";
 import { Input } from "@nextui-org/react";
@@ -56,25 +55,23 @@ export default function ChatInput() {
 
     const handleSend = async () => {
         if (activeConversation?.room?.id) {
-            const messageId = generateUniqueId('_new_message__');
-            const draftNewMessage = (status: any) => ({
-                id: messageId,
-                roomId: activeConversation?.room?.id,
-                userId: me?.id,
-                content: value,
-                createdAt: new Date(),
-                status
-            })
-            dispatch(addMessage(draftNewMessage('pending')))
+            // const messageId = generateUniqueId('_new_message__');
+            // const draftNewMessage = (status: any) => ({
+            //     id: messageId,
+            //     roomId: activeConversation?.room?.id,
+            //     userId: me?.id,
+            //     content: value,
+            //     createdAt: new Date(),
+            //     status
+            // })
+            // dispatch(addMessage(draftNewMessage('pending')))
 
             setValue('');
 
             try {
                 socketManager.sendMessage(value, activeConversation?.room?.id);
-                //find the message with the messageId 
-                const foundIndex = activeConversation?.room?.messages.findIndex((message: any) => message.id === messageId);
-                //replace here 
-                dispatch(replaceMessage(draftNewMessage('pending')))
+                // const foundIndex = activeConversation?.room?.messages.findIndex((message: any) => message.id === messageId);
+                // dispatch(replaceMessage(draftNewMessage('pending')))
 
 
             } catch (error) {

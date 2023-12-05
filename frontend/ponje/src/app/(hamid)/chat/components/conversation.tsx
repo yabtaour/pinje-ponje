@@ -3,7 +3,7 @@
 
 
 
-import { addMessage, setActiveConversation } from "@/app/globalRedux/features/chatSlice";
+import { setActiveConversation, setRooms } from "@/app/globalRedux/features/chatSlice";
 import { useAppSelector } from "@/app/globalRedux/store";
 import SocketManager from "@/app/utils/socketManager";
 import { Button, useDisclosure } from "@nextui-org/react";
@@ -54,9 +54,9 @@ export default function Conversation({ collapsed }: any) {
         const fetchNewMessages = async () => {
             try {
                 const newMessage = await socketManager.getNewMessages();
-                console.log("newMessage: ", newMessage);
-                console.log(conversations);
-                dispatch(addMessage(newMessage));
+                const rooms = await socketManager.getConversations();
+                console.log("rooms: ", rooms);
+                dispatch(setRooms(rooms));
             } catch (error) {
                 console.error("Error fetching new messages:", error);
             }
@@ -64,7 +64,9 @@ export default function Conversation({ collapsed }: any) {
 
         fetchNewMessages();
 
-    }, [socketManager, conversations]);
+        console.log("conversations: ", conversations.map((conversation: any) => conversation));
+
+    }, [socketManager, conversations, dispatch, activeConversationId]);
 
 
     return (
@@ -83,70 +85,87 @@ export default function Conversation({ collapsed }: any) {
                             <CreateConversation isOpen={isOpen} onOpenChange={onOpenChange} />
                         </div>
                         {
-                            conversations?.map((conversation: any) => (
-                                <button onClick={() => {
-                                    // TODO : it should be just the id but rsaf has another idea
 
-                                    console.log("conversation: ", conversation);
-                                    dispatch(setActiveConversation(conversation));
-                                    // setActiveConversation(conversation);
-                                }} className={`sticky w-full p-2 m-1 top-0 rounded-full ${activeConversationId === conversation?.id ? 'bg-[#252341]' : 'hover:bg-[#252341]'
-                                    }`} key={conversation.id}>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-start ">
+                            conversations
+                                ?.filter(conversation => conversation?.room?.messages?.length > 0) // Filter conversations with messages
+                                .sort((a: any, b: any) => {
+                                    const lastMessageA = a.room?.messages?.[a.room?.messages?.length - 1]?.createdAt;
+                                    const lastMessageB = b.room?.messages?.[b.room?.messages?.length - 1]?.createdAt;
 
-                                            {
-                                                conversation?.roomType
-                                                    !== "DM" ? (
-                                                    <img
-                                                        src="https://i.redd.it/ow1iazp3ob351.jpg"
-                                                        alt="avatar"
-                                                        className="w-12 h-12 rounded-full"
-                                                    />
-                                                ) : (
-                                                    <img
-                                                        src={`${conversation?.members[0]?.user?.profile?.avatar}`}
-                                                        alt="avatar"
-                                                        className="w-12 h-12 rounded-full"
-                                                    />
-                                                )
-                                            }
-                                            <div className="flex justify-start flex-row">
-                                                <h2 className=" p-0">
-                                                    {
-                                                        conversation?.roomType !== "DM" ? (
-                                                            <p className="text-white text-sm font-semibold">
-                                                                {collapsed ? "" : conversation?.name}
-                                                            </p>
-                                                        ) : (
-                                                            <p className="text-white text-sm font-semibold">
-                                                                {collapsed ? "" : conversation?.members[0]?.user?.username}
-                                                            </p>
-                                                        )
-                                                    }
-                                                </h2>
+                                    if (lastMessageA && lastMessageB) {
+                                        return new Date(lastMessageB).getTime() - new Date(lastMessageA).getTime();
+                                    }
+                                    return 0;
+                                })?.map((conversation: any) => (
+                                    <button onClick={() => {
+                                        console.log("conversation: ", conversation);
+                                        socketManager.makeConversationRead(conversation?.roomId);
+                                        // dispatch(setRooms(socketManager.getConversations()));
+                                        dispatch(setActiveConversation(conversation));
 
-                                                <p className="text-gray-400 mt-5 ml-3 text-xs font-light">
-                                                    {
-                                                        collapsed ? "" : (
-                                                            conversation?.room?.messages?.slice(-1)[0]?.content?.length > 10
-                                                                ? conversation?.room?.messages?.slice(-1)[0]?.content.slice(0, 10) + "..."
-                                                                : conversation?.room?.messages?.slice(-1)[0]?.content
-                                                        )
-                                                    }
-                                                </p>
+                                    }} className={`sticky w-full p-2 m-1 top-0 rounded-full ${activeConversationId === conversation?.id ? 'bg-[#252341]' : 'hover:bg-[#252341]'
+                                        }`} key={conversation.id}>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-start ">
+
+                                                {
+                                                    conversation?.roomType
+                                                        !== "DM" ? (
+                                                        <img
+                                                            src="https://i.redd.it/ow1iazp3ob351.jpg"
+                                                            alt="avatar"
+                                                            className="w-12 h-12 rounded-full"
+                                                        />
+                                                    ) : (
+                                                        <img
+                                                            src={`${conversation?.members[0]?.user?.profile?.avatar}`}
+                                                            alt="avatar"
+                                                            className="w-12 h-12 rounded-full"
+                                                        />
+                                                    )
+                                                }
+                                                <div className="flex justify-start flex-row">
+                                                    <h2 className=" p-0">
+                                                        {
+                                                            conversation?.roomType !== "DM" ? (
+                                                                <p className="text-white text-sm font-semibold">
+                                                                    {collapsed ? "" : conversation?.name}
+                                                                </p>
+                                                            ) : (
+                                                                <p className="text-white text-sm font-semibold">
+                                                                    {collapsed ? "" : conversation?.members[0]?.user?.username}
+                                                                </p>
+                                                            )
+                                                        }
+                                                    </h2>
+
+                                                    {/* <p className="text-gray-400 mt-5 ml-3 text-xs font-light  "> */}
+                                                    <p className={`text-gray-400 mt-5 ml-3 text-xs font-light ${conversation?.read === false ? 'text-[#3574FF]' : ''}`}>
+                                                        {
+
+                                                            collapsed ? "" : (
+                                                                conversation?.room?.messages?.slice(-1)[0]?.content?.length > 10
+                                                                    ? conversation?.room?.messages?.slice(-1)[0]?.content.slice(0, 10) + "..."
+                                                                    : conversation?.room?.messages?.slice(-1)[0]?.content
+                                                            )
+                                                        }
+                                                    </p>
+                                                </div>
                                             </div>
+                                            <div className="text-gray-400 text-xs ml-70 font-light">
+                                                {
+                                                    collapsed ? "" : (
+                                                        formatMessageDate(conversation?.messages?.[0]?.createdAt)
+                                                    )
+                                                }
+
+
+                                            </div>
+
+
                                         </div>
-                                        <div className="text-gray-400 text-xs ml-70 font-light">
-                                            {
-                                                collapsed ? "" : (
-                                                    formatMessageDate(conversation?.messages?.[0]?.createdAt)
-                                                )
-                                            }
-                                        </div>
-                                    </div>
-                                </button>
-                            ))
+                                    </button>
+                                ))
                         }
                     </>
                 }

@@ -123,6 +123,20 @@ class SocketManager {
     });
   }
 
+  // make conversation read true
+  public makeConversationRead(roomId: number): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (this.chatSocket && this.chatSocket.connected) {
+        console.log("Socket is connected.", this.chatSocket);
+        console.log("Connected to chat namespace");
+        this.chatSocket?.emit("readMessages", { roomId });
+      } else {
+        console.log("Socket is not connected yet.");
+        reject("Socket is not connected");
+      }
+    });
+  }
+
   public getNewMessages(): Promise<any> {
     return new Promise((resolve, reject) => {
       if (this.chatSocket && this.chatSocket.connected) {
