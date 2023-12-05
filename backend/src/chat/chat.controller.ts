@@ -87,6 +87,18 @@ export class ChatController {
     return room;
   }
 
+  @Post('rooms/:id/admin')
+  async add_admin(
+      @Param('id' , ParseIntPipe) room_id: number,
+      @Req() request: Request,
+      @Body() payload: FriendsActionsDto
+  ){
+    const user = await this.userService.getCurrentUser(request);
+    const room = await this.chatService.addAdmin(user.id, room_id , payload);
+    this.chatgateway.server.to(String(payload.id)).emit('you have been promoted to admin', room);
+    return room;
+  }
+
   @Post('rooms/:id/invite')
   async invite(
       @Param('id' , ParseIntPipe) room_id: number,
@@ -136,21 +148,8 @@ export class ChatController {
     return roomMessages;
   }
 
-  @Post('rooms/:room_id/message')
-  async sendMessage(
-      @Param('room_id' , ParseIntPipe) room_id: number,
-      @Req() request: Request,
-      @Body() payload: MessageDto
-  ){
-    const user = await this.userService.getCurrentUser(request);
-    const message = await this.chatService.createMessage(user.id, room_id, payload);
-    this.chatgateway.server.to(String(user.id)).emit('message', message);
-    return message;
-  }
-
   @Post('kick')
   async kick(
-    @Param('room_id' , ParseIntPipe) room_id: number,
     @Req() request: Request,
     @Body() payload: chatActionsDto
   ){
@@ -161,7 +160,6 @@ export class ChatController {
 
   @Post('ban')
   async ban(
-    @Param('room_id' , ParseIntPipe) room_id: number,
     @Req() request: Request,
     @Body() payload: chatActionsDto
   ){
@@ -172,7 +170,6 @@ export class ChatController {
 
   @Post('unban')
   async unban(
-    @Param('room_id' , ParseIntPipe) room_id: number,
     @Req() request: Request,
     @Body() payload: chatActionsDto
   ){
