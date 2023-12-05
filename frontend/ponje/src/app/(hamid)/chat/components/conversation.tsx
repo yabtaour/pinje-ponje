@@ -171,6 +171,25 @@ export default function Conversation({ collapsed }: any) {
                 }
             </div>
         </div>
+        // <div className=" flex justify-center   sticky top-0">
+        //     <div className="lg:w-1/3 md:2/3 bg-[#1B1A2D] sm:w-full text-white  rounded-b-full hover:bg-[#252341] flex justify-center ">
+        //         <Button onPress={onOpen} >
+        //             open 
+        //             {/* <User
+        //                 className="text-white my-2 p-4"
+        //                 name={activeConversation?.room?.roomType !== "DM" ? activeConversation?.room?.name : activeConversation?.room?.members[0]?.user?.username}
+        //                 avatarProps={
+        //                     activeConversation?.room?.roomType !== "DM"
+        //                         ?
+        //                         { src: activeConversation?.room?.members[0]?.user?.profile?.avatar }
+        //                         :
+        //                         { src: "https://i.redd.it/ow1iazp3ob351.jpg" }
+        //                 }
+        //             /> */}
+        //         </Button>
+        //         <RoomOptions isOpen={isOpen} onOpenChange={onOpenChange} />
+        //     </div>
+        // </div>
 
     )
 }
