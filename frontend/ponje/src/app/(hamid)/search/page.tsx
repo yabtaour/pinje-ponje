@@ -6,6 +6,7 @@ import useSWR from "swr";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Loader from "@/app/components/loader";
+import Image from "next/image";
 
 // import Spinner from "./Spinner";
 // import Posts from "../Posts";
@@ -175,13 +176,15 @@ const SearchPage = () => {
           <Link key={user.id} href={`/profile/${user.id}`}>
             <div className="bg-white p-4 rounded shadow-md cursor-pointer transition-transform transform hover:scale-105">
               <div className="flex items-center flex-wrap justify-center mb-4">
-                <img
+                <Image
                   src={
                     user.profile?.avatar ||
                     "https://upload.wikimedia.org/wikipedia/commons/1/1e/Default-avatar.jpg"
                   }
                   alt={`${user.username}'s avatar`}
                   className="w-16 h-16 rounded-full object-cover"
+                  width={64}
+                  height={64}
                 />
               </div>
               <p className="text-lg font-semibold text-center">

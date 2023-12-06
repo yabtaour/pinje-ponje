@@ -1,9 +1,10 @@
 import React from "react";
-import  {User} from "../../../app/types/user";
+import { User } from "../../../app/types/user";
+import Image from "next/image";
 
 
-  
-  export default function OnlineFriendsInvite({ users }: { users : User[]}) {
+
+export default function OnlineFriendsInvite({ users }: { users: User[] }) {
     return (
         <div>
             <div className="flex flex-col items-center justify-center">
@@ -22,13 +23,20 @@ import  {User} from "../../../app/types/user";
                                 </td>
                             </tr>
                         ) : (
-                            users.map((user, index : number) => (
+                            users.map((user, index: number) => (
                                 <tr key={index}>
                                     <td>
                                         <div className="flex items-center gap-3">
                                             <div className="avatar">
                                                 <div className="mask mask-squircle w-12 h-12">
-                                                    <img src={user.profile.avatar} alt={`Avatar of ${user.username}`} className="avatar online" />
+                                                    <Image
+                                                        src={user.profile.avatar}
+                                                        alt={`Avatar of ${user.username}`}
+                                                        className="avatar online" 
+                                                        width={48}
+                                                        height={48}
+                                                        />
+                                                    
                                                 </div>
                                             </div>
                                             <div>
