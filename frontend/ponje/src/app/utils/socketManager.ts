@@ -3,6 +3,7 @@ import { Socket, io } from "socket.io-client";
 
 class SocketManager {
   private static instance: SocketManager | null = null;
+  private mainSocket: Socket | null = null;
   private chatSocket: Socket | null = null;
   private gameSocket: Socket | null = null;
   private notificationSocket: Socket | null = null;
@@ -15,23 +16,33 @@ class SocketManager {
     dispatch?: Dispatch
   ) {
     this.dispatchFunction = dispatch;
-    if (!this.chatSocket) {
+
+    this.mainSocket = io(url, {
+      auth: {
+        token: token,
+      },
+    });
+
+    if (this.mainSocket && !this.chatSocket) {
       this.chatSocket = io(`${url}/chat`, {
         auth: {
           token: token,
         },
       });
-    }
 
-    if (!this.gameSocket) {
+      console.log("Socket is connected.", this.chatSocket);
+    }
+    if (this.mainSocket && !this.gameSocket) {
       this.gameSocket = io(`${url}/game`, {
         auth: {
           token: token,
         },
       });
+      console.log(" is connected.", this.chatSocket);
     }
 
-    if (!this.notificationSocket) {
+    if (this.mainSocket && !this.notificationSocket) {
+      console.log("Socket is connected.", this.chatSocket);
       this.notificationSocket = io(`${url}/notification`, {
         auth: {
           token: token,
@@ -39,7 +50,8 @@ class SocketManager {
       });
     }
 
-    if (!this.statusSocket) {
+    if (this.mainSocket && !this.statusSocket) {
+      console.log("Socket is connected.", this.chatSocket);
       this.statusSocket = io(`${url}/status`, {
         auth: {
           token: token,
@@ -47,30 +59,31 @@ class SocketManager {
       });
     }
 
-    // Connect to each socket
-    this.chatSocket.connect();
-    this.gameSocket.connect();
-    this.notificationSocket.connect();
-    this.statusSocket.connect();
+    console.log("Socket is connected.", this.mainSocket);
+    this.mainSocket?.connect();
+    this.chatSocket?.connect();
+    this.gameSocket?.connect();
+    this.notificationSocket?.connect();
+    this.statusSocket?.connect();
 
     // Example: Add listeners to each socket
-    this.chatSocket.on("connect", () => {
+    this.chatSocket?.on("connect", () => {
       console.log("Connected to chat namespace");
       // Handle further logic here
     });
 
     //////////////////////////////
-    this.gameSocket.on("connect", () => {
+    this.gameSocket?.on("connect", () => {
       console.log("Connected to game namespace");
       // Handle further logic here
     });
 
-    this.notificationSocket.on("connect", () => {
+    this.notificationSocket?.on("connect", () => {
       console.log("Connected to notification namespace");
       // Handle further logic here
     });
 
-    this.statusSocket.on("connect", () => {
+    this.statusSocket?.on("connect", () => {
       console.log("Connected to status namespace");
       // Handle further logic here
     });
@@ -85,6 +98,23 @@ class SocketManager {
       SocketManager.instance = new SocketManager(url, token, dispatch);
     }
     return SocketManager.instance;
+  }
+
+  //getters
+  public getChatSocket(): Socket | null {
+    return this.chatSocket;
+  }
+
+  public getGameSocket(): Socket | null {
+    return this.gameSocket;
+  }
+
+  public getNotificationSocket(): Socket | null {
+    return this.notificationSocket;
+  }
+
+  public getStatusSocket(): Socket | null {
+    return this.statusSocket;
   }
 
   public getConversations(): Promise<any[]> {
@@ -123,6 +153,19 @@ class SocketManager {
     });
   }
 
+  public makeConversationRead(roomId: number): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (this.chatSocket && this.chatSocket.connected) {
+        console.log("Socket is connected.", this.chatSocket);
+        console.log("Connected to chat namespace");
+        this.chatSocket?.emit("readMessages", { roomId });
+      } else {
+        console.log("Socket is not connected yet.");
+        reject("Socket is not connected");
+      }
+    });
+  }
+
   public getNewMessages(): Promise<any> {
     return new Promise((resolve, reject) => {
       if (this.chatSocket && this.chatSocket.connected) {
@@ -137,24 +180,50 @@ class SocketManager {
     });
   }
 
+  //check game connection
+  public khouyaSawbLgame(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (this.gameSocket && this.gameSocket.connected) {
+        console.log("Socket is connected.", this.gameSocket);
+        this.gameSocket?.emit("khouyaSawbLgame");
+      } else {
+        console.log("Socket is not connected yet.");
+        reject("Socket is not connected");
+      }
+    });
+  }
+
+  public onstartGame(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (this.gameSocket && this.gameSocket.connected) {
+        console.log("Socket is connected.", this.gameSocket);
+        this.gameSocket?.on("startGame", (data: any) => {
+          console.log("startGame", data);
+          resolve(data);
+        });
+      } else {
+        console.log("Socket is not connected yet.");
+        reject("Socket is not connected");
+      }
+    });
+  }
+
   public waitForConnection(callback: () => void) {
     const checkConnection = () => {
       if (
-        this.chatSocket?.connected
-        // this.gameSocket?.connected &&
-        // this.notificationSocket?.connected &&
-        // this.statusSocket?.connected
+        this.mainSocket?.connected &&
+        this.chatSocket?.connected &&
+        this.gameSocket?.connected &&
+        this.notificationSocket?.connected
       ) {
+        console.log(" All sockets connected ", this.mainSocket);
         callback();
       } else {
-        setTimeout(checkConnection, 1000);
+        setTimeout(checkConnection, 100);
       }
     };
-
     checkConnection();
   }
-
-  // Add methods to interact with each socket if needed
 }
 
 export default SocketManager;
