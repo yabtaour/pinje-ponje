@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import { useDispatch } from "react-redux";
 import * as Yup from 'yup';
+import Image from "next/image";
 
 
 export default function SignUp() {
@@ -66,7 +67,7 @@ export default function SignUp() {
     return (
         <div className="flex h-screen bg-gray-900">
             <div className="w-1/2">
-                <img
+                <Image
                     src="/login_illust.png"
                     alt="Sample image"
                     className="w-[100%] h-full object-cover"

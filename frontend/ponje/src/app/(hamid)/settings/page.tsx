@@ -72,7 +72,7 @@ export default function UserSettings() {
         };
 
         fetchData();
-    }, [user]);
+    }, [user, dispatch]);
 
 
     const [passwordShown, setPasswordShown] = useState(false);
@@ -264,7 +264,7 @@ export default function UserSettings() {
                                                     className="peer block w-full rounded border text-white bg-[#1B1A2D] border-[#73d3ff] px-3 py-2 leading-6 outline-none transition-all duration-200 ease-linear focus:placeholder-opacity-100 dark:text-neutral-200 dark:placeholder:text-[#9AA0AD] placeholder:text-xs placeholder:font-light"
                                                     rows="4"
                                                 />
-                                                <p className='font-light text-xs text-slate-300'> we're sure you're special but keep it down to 60 characters</p>
+                                                <p className='font-light text-xs text-slate-300'> we&apos;re sure you&apos;re special but keep it down to 60 characters</p>
                                                 <ErrorMessage name="bio" component="div" className="text-red-500 text-sm" />
                                             </div>
 

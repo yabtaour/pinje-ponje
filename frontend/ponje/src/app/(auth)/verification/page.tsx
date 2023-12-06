@@ -3,6 +3,7 @@ import InputCode from '@/app/components/inputCode';
 import axios from '@/app/utils/axios';
 import { Toast } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export default function VerificationPage() {
     const router  = useRouter();
@@ -27,10 +28,12 @@ export default function VerificationPage() {
 
     return (
         <div className='flex h-screen w-screen shadow'>
-            <img
+            <Image
                 src="/edited_background.png"
                 alt="Sample image"
                 className="w-full h-full object-cover"
+                width={1920}
+                height={1080}
             />
 
 

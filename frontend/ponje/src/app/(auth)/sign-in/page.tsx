@@ -10,6 +10,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import * as Yup from 'yup';
 import { handleLogin } from '../../utils/auth';
+import Image from "next/image";
 
 
 
@@ -49,10 +50,23 @@ export default function SignIn() {
 
       router.push('/dashboard');
     }
+    // catch (error) {
+    //   toast({
+    //     title: 'Error',
+    //     // description: errorMessage,
+    //     status: 'error',
+    //     duration: 9000,
+    //     isClosable: true,
+    //     position: "bottom-right",
+    //     variant: "solid",
+    //     colorScheme: "red",
+    //   });
+    // }
     catch (error) {
+      const errorMessage = typeof error === 'object' && error && 'message' in error ? (error as Error).message : 'An error occurred';
       toast({
         title: 'Error',
-        // description: errorMessage,
+        description: errorMessage,
         status: 'error',
         duration: 9000,
         isClosable: true,
@@ -69,10 +83,12 @@ export default function SignIn() {
   return (
     <div className="flex h-screen bg-gray-900">
       <div className="w-1/2">
-        <img
+        <Image
           src="/login_illust.png"
           alt="Sample image"
           className="w-full h-full object-cover"
+          width={1920}
+          height={1080}
         />
       </div>
       <div className="flex-1 flex flex-col justify-center items-center p-8">

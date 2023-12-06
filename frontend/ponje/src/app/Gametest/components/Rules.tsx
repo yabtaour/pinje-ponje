@@ -29,8 +29,9 @@ export default function Rules() {
                 <div className="badge badge-secondary badge-outline">Rules</div>
                 <div className="flex items-center justify-between">
                   <p className="flex-1">
-                    Move your paddle to hit the ball back and forth. Score when the ball passes your opponent's paddle. First to 11 points wins!
+                    Move your paddle to hit the ball back and forth. Score when the ball passes your opponent&apos;s paddle. First to 11 points wins!
                   </p>
+
                   <Image
                     src="/pong.gif"
                     alt="pong gif"

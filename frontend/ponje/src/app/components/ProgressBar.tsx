@@ -1,10 +1,17 @@
 'use client';
+import Image from "next/image";
 
 export default function ProgressBar() {
     return (
         <div className='bg-[#1B1A2D] rounded-box  pt-8 pb-8 w-fit pr-6 pl-6 h-fit '>
         <div className="flex lg:flex-row">
-            <img src="/rank_icon.svg" alt="hero" className="w-24 h-24 rounded-full" />
+            <Image 
+            src="/rank_icon.svg" 
+            alt="hero" 
+            className="w-24 h-24 rounded-full" 
+            width={100}
+            height={100}
+            />
             <div className="divider lg:divider-horizontal before:bg-[#464671] after:bg-[#464671]"></div> 
             <div className='pl-4'>
                 <p className='text-[#77DFF8] text-xs'>LEVEL</p>
