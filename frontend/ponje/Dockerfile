@@ -8,6 +8,8 @@ RUN npm install && npm install --dev
 
 COPY . .
 
-# ENTRYPOINT ["npm run start"]
+EXPOSE 3000
 
-CMD ["tail", "-f", "/dev/null"]
+ENTRYPOINT ["npm", "run", "dev"]
+
+# CMD ["tail", "-f", "/dev/null"]
