@@ -1,6 +1,5 @@
 'use strict';
 'use client';
-import SocketManager from '@/app/utils/socketManager';
 import { getCookie } from 'cookies-next';
 import Matter, { Body, Events } from 'matter-js';
 import { useEffect, useRef, useState } from 'react';
@@ -27,8 +26,8 @@ let leftPaddle: Matter.Body;
 
 let worldHeight: number;
 let worldWidth: number;
-let canvaHeight: number;
-let canvaWidth: number;
+// let canvaHeight: number;
+// let canvaWidth: number;
 
 const keys: any = {
   ArrowUp: false,
@@ -76,12 +75,12 @@ export function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matter.Body
     if (otherBody === floor || otherBody === ceiling) {
       Body.setVelocity(ball, {
         x: ball.velocity.x,
-        y: -ball.velocity.y
+        y: -ball.velocity.y - 1,
       })
     }
     else if (otherBody === leftPaddle || otherBody === rightPaddle) {
       Body.setVelocity(ball, {
-        x: -ball.velocity.x,
+        x: -ball.velocity.x - 1,
         y: ball.velocity.y
       })
     }
@@ -110,20 +109,16 @@ export default function Game() {
   
   // console.log(gameSocket);
   
-  
   useEffect(() => {
-    console.log(canvasRef.current?.width)
+    worldWidth = canvasRef.current?.width! * 4;
+    worldHeight = canvasRef.current?.height! * 4;
+    // canvaWidth = canvasRef.current?.width!;
+    // canvaHeight = canvasRef.current?.height!;
+
     gameSocket.emit('khouyaSawbLgame');
     const initializeGame = async () => {
       gameSocket.on('startGame', (data) => {
-        console.log("DATA WSLAAT");
         if (!gameStarted) {
-          worldWidth = canvasRef.current?.width! * 4;
-          worldHeight = canvasRef.current?.height! * 4;
-          canvaWidth = canvasRef.current?.width!;
-          canvaHeight = canvasRef.current?.height!;
-          console.log(worldWidth, worldHeight, canvaWidth, canvaHeight)
-          console.log("state updated")
           setInitialGameData(data);
           setGameStarted(true);
           gameStarted = true;
@@ -135,7 +130,6 @@ export default function Game() {
             y: 0,
           }
         });
-        
         const render = Render.create({
           element: boxRef.current!,
           canvas: canvasRef.current!,
