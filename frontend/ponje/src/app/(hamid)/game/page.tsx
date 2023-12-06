@@ -38,7 +38,7 @@ const keys: any = {
 };
 
 export function createBodies() {
-  ball = Bodies.circle(canvaWidth / 2, canvaHeight / 2, 15, { 
+  ball = Bodies.circle(worldWidth / 2, worldHeight / 2, 15, { 
     restitution: 1,
     frictionAir: 0,
     friction: 0,
@@ -50,21 +50,20 @@ export function createBodies() {
     x: 3,
     y: 3,
   })
-  rightPaddle = Bodies.rectangle(canvaWidth - 20, canvaHeight / 2, 20, 100, {
+  rightPaddle = Bodies.rectangle(worldWidth - 20, worldHeight / 2, 20, 100, {
     isStatic: true,
     render: {
       fillStyle: "#4E40F4",
-      
     }
   });
-  leftPaddle = Bodies.rectangle(20, canvaHeight / 2, 20, 100, {
+  leftPaddle = Bodies.rectangle(20, worldHeight / 2, 20, 100, {
     isStatic: true,
     render: {
       fillStyle: "#4E40F4"
     }
   });
-  floor = Bodies.rectangle(0, canvaHeight, canvaWidth * 2, 5, { isStatic: true });
-  ceiling = Bodies.rectangle(0, 0, canvaWidth * 2, 5, { isStatic: true });
+  floor = Bodies.rectangle(0, worldHeight, worldWidth * 2, 5, { isStatic: true });
+  ceiling = Bodies.rectangle(0, 0, worldWidth * 2, 5, { isStatic: true });
 
   return ([rightPaddle, leftPaddle, ball, floor, ceiling])
 }
@@ -92,10 +91,10 @@ export function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matter.Body
 
 export function updatePaddles() {
   if (keys['ArrowUp'] && leftPaddle.position.y - 100 / 2 > 10) {
-    Body.translate(leftPaddle, { x: 0, y: -5 });
+    Body.translate(leftPaddle, { x: 0, y: -2 });
   }
-  if (keys['ArrowDown'] && leftPaddle.position.y + 100 / 2 < canvaHeight - 10) {
-    Body.translate(leftPaddle, { x: 0, y: 5 });
+  if (keys['ArrowDown'] && leftPaddle.position.y + 100 / 2 < worldHeight - 10) {
+    Body.translate(leftPaddle, { x: 0, y: 2 });
   }
 }
 
@@ -104,130 +103,98 @@ export default function Game() {
 
   const boxRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [gameStarted, setGameStarted] = useState(false);
-  const [initialGameData, setInitialGameData] = useState<any>(null);
-
-  const socketManager = SocketManager.getInstance();
-
-  console.log(gameSocket);
-
-  gameSocket.emit('khouyaSawbLgame');
+  let [gameStarted, setGameStarted] = useState(false);
+  let [initialGameData, setInitialGameData] = useState<any>(null);
+  
+  // const socketManager = SocketManager.getInstance();
+  
+  // console.log(gameSocket);
+  
   
   useEffect(() => {
-    // socketManager.sendInitialRequest();
-
-    
+    console.log(canvasRef.current?.width)
+    gameSocket.emit('khouyaSawbLgame');
     const initializeGame = async () => {
-      // await new Promise<void>((resolve: () => void) => socketManager.waitForConnection(resolve));
-      try {
-        // const initialGameData = await socketManager.onStartGame();
-        // console.log(initialGameData)
-        gameSocket.on('startGame', (data) => {
-        //   // initialGameData÷ = data÷;
+      gameSocket.on('startGame', (data) => {
+        console.log("DATA WSLAAT");
+        if (!gameStarted) {
+          worldWidth = canvasRef.current?.width! * 4;
+          worldHeight = canvasRef.current?.height! * 4;
+          canvaWidth = canvasRef.current?.width!;
+          canvaHeight = canvasRef.current?.height!;
+          console.log(worldWidth, worldHeight, canvaWidth, canvaHeight)
+          console.log("state updated")
           setInitialGameData(data);
-          // setInitialGameData(initialGameData);
           setGameStarted(true);
-          console.log(data);
-        })
-        console.log("Received initial game data:", initialGameData);
-
+          gameStarted = true;
+          initialGameData = data;
+        }
+        const engine = Engine.create({
+          gravity: {
+            x: 0,
+            y: 0,
+          }
+        });
+        
+        const render = Render.create({
+          element: boxRef.current!,
+          canvas: canvasRef.current!,
+          engine: engine,
+          options: {
+            width: worldWidth,
+            height: worldHeight,
+            wireframes: false,
+            background: '#C2D9FF',
+          },
+        });
         createBodies();
-
-        leftPaddle.position.y = initialGameData.player1.y;
-        rightPaddle.position.y = initialGameData.player2.y;
-        Body.setVelocity(ball, {
-          x: initialGameData.ball.velocity.x,
-          y: initialGameData.ball.velocity.y,
-        })
-
         World.add(engine.world, [ball, floor, ceiling, leftPaddle, rightPaddle]);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    initializeGame();
-
-    worldWidth = canvasRef.current?.width! * 2;
-    worldHeight = canvasRef.current?.height! * 2;
-    canvaWidth = canvasRef.current?.width!;
-    canvaHeight = canvasRef.current?.height!;
-
-    const engine = Engine.create({
-      gravity: {
-        x: 0,
-        y: 0,
-      }
-    });
-    const render = Render.create({
-      element: boxRef.current!,
-      canvas: canvasRef.current!,
-      engine: engine,
-      options: {
-        width: worldWidth,
-        height: worldHeight,
-        wireframes: false,
-        background: '#C2D9FF',
-      },
-    });
-    // canvaWidth = canvasRef.current?.width!;
-    // canvaHeight = canvasRef.current?.height!;
-    // console.log(canvaWidth, canvaHeight);
-    // createBodies();
-    // World.add(engine.world, [ball, floor, ceiling, leftPaddle, rightPaddle]);
-     
-    window.addEventListener('keydown', (event) => {
-      if (keys.hasOwnProperty(event.code)) {
-        keys[event.code] = true;
-      }
-    })
-    window.addEventListener('keyup', (event) => {
-      if (keys.hasOwnProperty(event.code)) {
-        keys[event.code] = false;
-      }
-    })
-
-    Events.on(engine, 'beforeUpdate', () => {
-      updatePaddles();
-    });
-
-    Engine.run(engine);
-    Render.run(render);
-
-    Events.on(engine, 'collisionStart', (event) => {
-      event.pairs.forEach((pair) => {
-        const { bodyA, bodyB } = pair;
-        handleColision(pair, bodyA, bodyB)
-      });
-    });
-
-    return() => {
-      window.removeEventListener('keydown', (event) => {
-        if (keys.hasOwnProperty(event.code)) {
-          keys[event.code] = true;
-        }
-      });
+        window.addEventListener('keydown', (event) => {
+          event.preventDefault();
+          if (keys.hasOwnProperty(event.code)) {
+            keys[event.code] = true;
+          }
+        })
+        window.addEventListener('keyup', (event) => {
+          if (keys.hasOwnProperty(event.code)) {
+            event.preventDefault();
+            keys[event.code] = false;
+          }
+        })
+    
+        Events.on(engine, 'beforeUpdate', () => {
+          updatePaddles();
+        });
   
-      window.removeEventListener('keyup', (event) => {
-        if (keys.hasOwnProperty(event.code)) {
-          keys[event.code] = false;
-        }
-      });
-      Render.stop(render);
-      World.clear(engine.world , false);
-      Engine.clear(engine);
-    }
 
-  }, [initialGameData, gameStarted]);
+        Engine.run(engine);
+        Render.run(render);
+    
+        Events.on(engine, 'collisionStart', (event) => {
+          event.pairs.forEach((pair) => {
+            const { bodyA, bodyB } = pair;
+            handleColision(pair, bodyA, bodyB)
+          });
+        });
+        return() => {
+          Render.stop(render);
+          World.clear(engine.world , false);
+          Engine.clear(engine);
+        }
+      })
+    }
+    initializeGame()
+  }, [gameStarted, initialGameData]);
 
   return (
     <div className='w-full h-screen flex items-center justify-center'>
       {gameStarted ? (
-        <div className='w-2/3 h-2/4 border-2 border-black z-30' ref={boxRef}>
+        <div className='w-2/3 h-2/3 border-2 border-black z-30' ref={boxRef}>
           <canvas className='w-full h-full border-2 border-black z-30' id="myCanva" ref={canvasRef} />
         </div>
-      ) : (
-        <p>Loading...</p>
-      )}
+       ) : (
+         <p>Loading...</p>
+       )}
     </div>
   );
 }

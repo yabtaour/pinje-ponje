@@ -74,10 +74,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       console.log("sm7liya m trying");
       const payload = {
         player1: {
-          y: 200,
+          y: 500,
         },
         player2: {
-          y: 200,
+          y: 500,
         },
         ball: {
           x: 3,
