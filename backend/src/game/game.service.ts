@@ -393,8 +393,8 @@ export class GameService {
 		this.gameGateway.currentGames[payload.gameId] = gameState;
 		console.log("ALL GAMES !! ", this.gameGateway.currentGames);
 		console.log("CURRENT GAME !! ", this.gameGateway.currentGames[payload.gameId]);
-		await this.gameGateway.server.to(String(client)).emit('startGame', gameState);
-		await this.gameGateway.server.to(String(opponentPlayer.id)).emit('startGame', gameState);
+		await this.gameGateway.server.emit('startGame', gameState);
+		// await this.gameGateway.server.emit('startGame', gameState);
 	}
 
 	async updatePlayerPosition(client: number, payload: UpdatePaddlePositionDto) {

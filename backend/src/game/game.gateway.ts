@@ -43,21 +43,24 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     @SubscribeMessage('initialize')
     initializeGame(client: any, payload: any) {
-      try {
-        if (!parseInt(payload.gameId) || !parseFloat(payload.playerPos))
-          throw new WsException("Bad request");
-        } catch {
-          throw new WsException("Bad request");
-      }
+      const gameId = parseInt(payload.gameId);
+      const playerPos = parseFloat(payload.playerPos);
+      if (isNaN(gameId) || isNaN(playerPos))
+        throw new WsException("Bad request")
+  
       this.intializeArray.push(payload.gameId);
       const firstIndex = this.intializeArray.findIndex((element) => {
         element === parseInt(payload.gameId);
       });
       const lastIndex = this.intializeArray.lastIndexOf(parseInt(payload.gameId));
-      if (firstIndex != lastIndex && firstIndex != -1 && lastIndex != -1)
+  
+      console.log("FIRST | LAST ", firstIndex, lastIndex)
+      if (firstIndex != lastIndex && firstIndex != -1 && lastIndex != -1) {
+        console.log("JAW 2 PLAYER !!!!!!!");
         this.intializeArray.splice(firstIndex, 1);
         this.intializeArray.splice(lastIndex, 1);
         this.gameService.initializeGame(Number(client.id), payload)
+      }
     }
 
     @SubscribeMessage('updatePlayerPosition')
@@ -66,10 +69,23 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.gameService.updatePlayerPosition(client.id, payload);
     }
   
-    // @SubscribeMessage('gameOver')
-    // gameOver(client: any, payload: {gameId: number}): void {
-    //   this.gameService.gameOver(payload.gameId);
-    // }
+    @SubscribeMessage('khouyaSawbLgame')
+    khouyaSawbLgame() {
+      console.log("sm7liya m trying");
+      const payload = {
+        player1: {
+          y: 500,
+        },
+        player2: {
+          y: 500,
+        },
+        ball: {
+          x: 3,
+          y: 3.
+        }
+      }
+      this.server.emit('startGame', payload);
+    }
     
     @SubscribeMessage('updateScore')
     updateScore(client: any, payload: UpdateScoreDto): void {
