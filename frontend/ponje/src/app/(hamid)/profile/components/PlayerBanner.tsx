@@ -3,7 +3,6 @@
 import { useAppSelector } from "@/app/globalRedux/store";
 import Image from "next/image";
 import { User } from '../../../types/user';
-// import bg from '/Users/anasshouari/1337/pinje-ponje/frontend/ponje/public/PlayerBanner.png';
 import bg from '../../../../../public/PlayerBanner.png';
 import { formatMessageDate } from "../../chat/components/conversation";
 
@@ -12,6 +11,7 @@ export default function PlayerBanner({ user }: { user: User | null | undefined }
     const logedUserId = useAppSelector((state) => state.authReducer.value.user?.id);
     const username = user?.username;
     const bio = user?.profile?.bio;
+    // const Avatar = null;
     const Avatar = user?.profile?.avatar;
 
     return (
