@@ -21,7 +21,8 @@ import { CreateUserDtoIntra } from './dto/create-user.dto';
 import { updateUserDto } from './dto/update-user.dto';
 import { NotificationService } from 'src/notification/notification.service';
 import { NotificationGateway } from 'src/notification/notification.gateway';
-import { NotificationType } from '@prisma/client';
+import { ChatRole, NotificationType, RoomType } from '@prisma/client';
+import { RoomDto } from 'src/chat/dto/room-dto';
 
 config();
 
@@ -323,6 +324,10 @@ export class UserService {
         id: parseInt(request.user.sub),
       },
       include: {
+        friendOf: true,
+        blocking: true,
+        pendingRequest: true,
+        sentRequest: true,
         profile: true,
       },
     });
@@ -569,14 +574,25 @@ export class UserService {
       },
     });
 
-    // this.chatservice.createRoom(
-    //   user_id, 
-    //   {
-    //     name: "Friend Room",
-    //     peer_id: data.id,
-    //     type: "DM",
-    //     role: ''
-    //   })
+    await this.prisma.chatRoom.create({
+      data: {
+        name: "",
+        roomType: RoomType.DM,
+        members: {
+          create: [
+            {
+              user: { connect: { id: data.id } },
+              role: ChatRole.MEMBER,
+            },
+            {
+              user: { connect: { id: user_id } },
+              role: ChatRole.MEMBER,
+            },
+          ],
+        },
+      },
+    });
+
     this.notificationService.create({
       senderId: user_id,
       receiverId: data.id,

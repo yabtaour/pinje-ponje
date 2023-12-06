@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, Query, ParseIntPipe, Put } from '@nestjs/common';
 import { ChatService, MessageDto, PaginationLimitDto, joinRoomDto } from './chat.service';
 import { CreateChatDmRoomDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
@@ -13,6 +13,9 @@ import { UserService } from 'src/user/user.service';
 import { th } from '@faker-js/faker';
 import { chatActionsDto } from './dto/actions-dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { RoomDto } from './dto/room-dto';
+import { updateRoomDto } from './dto/update-room.dto';
+import { FriendsActionsDto } from 'src/user/dto/FriendsActions-user.dto';
 
 @UseGuards(JWTGuard)
 @ApiBearerAuth()
@@ -61,6 +64,17 @@ export class ChatController {
     return room;
   }
 
+  @Put('rooms/:id')
+  async updateRoom(
+    @Param('id', ParseIntPipe) room_id: number,
+    @Req() request: Request,
+    @Body() payload: updateRoomDto
+  ){
+    const user = await this.userService.getCurrentUser(request);
+    const room = await this.chatService.updateRoomData(user.id, room_id, payload);
+    return room
+  }
+
   @Post('rooms/:id/join')
   async joinRoom(
       @Param('id' , ParseIntPipe) room_id: number,
@@ -72,6 +86,31 @@ export class ChatController {
     this.chatgateway.server.to(String(user.id)).emit('joinedRoom', room);
     return room;
   }
+
+  @Post('rooms/:id/admin')
+  async add_admin(
+      @Param('id' , ParseIntPipe) room_id: number,
+      @Req() request: Request,
+      @Body() payload: FriendsActionsDto
+  ){
+    const user = await this.userService.getCurrentUser(request);
+    const room = await this.chatService.addAdmin(user.id, room_id , payload);
+    this.chatgateway.server.to(String(payload.id)).emit('you have been promoted to admin', room);
+    return room;
+  }
+
+  @Post('rooms/:id/invite')
+  async invite(
+      @Param('id' , ParseIntPipe) room_id: number,
+      @Req() request: Request,
+      @Body() payload: FriendsActionsDto
+  ){
+    const user = await this.userService.getCurrentUser(request);
+    const room = await this.chatService.inviteToPrivateRoom(user.id, room_id , payload);
+    this.chatgateway.server.to(String(payload.id)).emit('You Have Been Invited to this room', room);
+    return room;
+  }
+
 
   @Post('rooms/:id/leave')
   async leave(
@@ -109,21 +148,8 @@ export class ChatController {
     return roomMessages;
   }
 
-  @Post('rooms/:room_id/message')
-  async sendMessage(
-      @Param('room_id' , ParseIntPipe) room_id: number,
-      @Req() request: Request,
-      @Body() payload: MessageDto
-  ){
-    const user = await this.userService.getCurrentUser(request);
-    const message = await this.chatService.createMessage(user.id, room_id, payload);
-    this.chatgateway.server.to(String(user.id)).emit('message', message);
-    return message;
-  }
-
   @Post('kick')
   async kick(
-    @Param('room_id' , ParseIntPipe) room_id: number,
     @Req() request: Request,
     @Body() payload: chatActionsDto
   ){
@@ -134,7 +160,6 @@ export class ChatController {
 
   @Post('ban')
   async ban(
-    @Param('room_id' , ParseIntPipe) room_id: number,
     @Req() request: Request,
     @Body() payload: chatActionsDto
   ){
@@ -145,7 +170,6 @@ export class ChatController {
 
   @Post('unban')
   async unban(
-    @Param('room_id' , ParseIntPipe) room_id: number,
     @Req() request: Request,
     @Body() payload: chatActionsDto
   ){

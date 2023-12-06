@@ -16,7 +16,6 @@ export default function Profile() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                    // const data = await axios.get(`/users/${loggedUserId}`, {
                     const data = await axios.get(`/users/me`, {
                         headers: {
                             Authorization: `${localStorage.getItem('access_token')}`,
