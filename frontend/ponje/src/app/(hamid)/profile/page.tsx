@@ -12,6 +12,8 @@ import SkillAnalytics from "./components/SkillAnalytics";
 export default function Profile() {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [Friends, setFriends] = useState([]);
+
     
     useEffect(() => {
         const fetchData = async () => {
@@ -21,6 +23,8 @@ export default function Profile() {
                             Authorization: `${localStorage.getItem('access_token')}`,
                         },
                     });
+                    const userId = data.data.id;
+                    fetchFriends(userId);
                     setUser(data.data);
                     setLoading(false);
                     console.log(data.data);
@@ -32,6 +36,23 @@ export default function Profile() {
 
         fetchData();
     }, []);
+
+    const fetchFriends = async (userId: number) => {
+        try {
+          const data = await axios.get(`/users/${userId}/friends`, {
+            headers: {
+              Authorization: `${localStorage.getItem('access_token')}`,
+            },
+          });
+          const friends = data.data;
+          setFriends(friends);
+          setLoading(false);
+          console.log(data.data);
+        } catch (err) {
+          console.error(err);
+          setLoading(false);
+        }
+      };
 
     if (loading)
         return <Loader/>
@@ -56,7 +77,7 @@ export default function Profile() {
                         <MatchHistory />
                     </div>
                     <div className="w-full lg:w-1/2">
-                        <FriendsList />
+                        <FriendsList users={Friends} />
                     </div>
                 </div>
             </div>
