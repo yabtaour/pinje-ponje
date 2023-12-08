@@ -2,12 +2,15 @@
 import { useState } from 'react';
 import Image from 'next/image';
 
+
 export default function FriendsList() {
     const [isOpen, setIsOpen] = useState(false);
-
+   
     const toggleDropdown = () => {
         setIsOpen(!isOpen);
     };
+
+    
 
     return (
         <div className="w-96 max-w-2xl mx-auto bg-[#1B1A2D] rounded-sm">
