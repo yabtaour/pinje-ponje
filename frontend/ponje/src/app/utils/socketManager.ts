@@ -180,6 +180,20 @@ class SocketManager {
     });
   }
 
+  public onNewGame(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (this.gameSocket && this.gameSocket) {
+        console.log("Socket is connected", this.gameSocket);
+        this.gameSocket?.on("gameFound", (data: any) => {
+          console.log("gameFound", data);
+          resolve(data);
+        });
+      } else {
+        console.log("Socket is not conected yet.");
+        reject("Socket is not connected");
+      }
+    })
+  }
   //check game connection
   public khouyaSawbLgame(): Promise<any> {
     return new Promise((resolve, reject) => {
