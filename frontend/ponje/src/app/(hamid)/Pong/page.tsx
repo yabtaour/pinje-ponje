@@ -7,7 +7,6 @@ import { useEffect, useState } from 'react'
 import Loader from '../../components/loader'
 import { User } from '../../../app/types/user';
 import { useRouter } from 'next/navigation';
-import SocketManager from "@/app/utils/socketManager";
 
 
 
@@ -56,45 +55,6 @@ export default function Pong() {
     } catch (err) {
       console.error(err);
       setLoading(false);
-    }
-  };
-
-  const [socketManagerGame, setSocketManager] = useState<SocketManager | null>(null);
-
-  useEffect(() => {
-    const initializeSocketManager = async () => {
-      await getGameData(); 
-
-      if (socketManagerGame) {
-        socketManagerGame.waitForConnection(async () => {
-          let data = await socketManagerGame.onstartGame();
-          console.log("DATA WSLAAT");
-          console.log(data);
-        });
-      }
-    };
-
-    initializeSocketManager();
-  }, [socketManagerGame]); 
-
-  const getGameData = async () => {
-    try {
-      const token = localStorage.getItem('access_token');
-      if (!token) {
-        console.error('Access token not found in local storage');
-        return;
-      }
-
-      const res = await axios.post(`/game/queue`, {}, {
-        headers: {
-          Authorization: `${token}`,
-        },
-      });
-
-      const manager = SocketManager.getInstance("http://localhost:3000", token);
-      setSocketManager(manager);
-    } catch (err) {
-      console.error(err);
     }
   };
 
