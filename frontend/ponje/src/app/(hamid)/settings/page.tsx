@@ -218,6 +218,33 @@ export default function UserSettings() {
         setSubmitting(false);
     };
 
+    const removeImage = async () => {
+        try {
+            const response = await axios.patch("/users", { avatar: null }, {
+                headers: {
+                    Authorization: userToken,
+                },
+            });
+            if (response.data) {
+                const updatedUser = {
+                    ...user,
+                    profile: {
+                        ...user?.profile,
+                        avatar: null,
+                    },
+                };
+                dispatch(UpdateUser(updatedUser));
+            } else {
+                console.error("Failed to update user avatar:", response.data.message);
+                throw new Error(response.data.message);
+            }
+        } catch (error) {
+            console.error("Failed to update user avatar:", error);
+            throw error;
+        }
+
+    };
+
     return (
 
         <div className="min-h-screen bg-[#151424] flex flex-col justify-center" style={{}}>
@@ -230,6 +257,13 @@ export default function UserSettings() {
                         <h3 className="text-3xl font-semibold text-center text-[#4E40F4] mb-4">
                             Profile Settings
                         </h3>
+                        <button
+                            type="button"
+                            className="text-sm font-regular text-[#73d3ff] mb-8"
+                            onClick={() => removeImage()}
+                        >
+                            remove profile picture
+                        </button>
 
 
                         <div className="bg-[#1B1A2D] p-8 rounded-lg h-full w-fill">

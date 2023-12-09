@@ -36,7 +36,7 @@ export default function Performance({ user }: { user: User | null | undefined })
       <h2 className=" text-2xl font-light text-[#4E40F4] mb-6"> Performance </h2>
       <div className='bg-[#1B1A2D] h-full flex justify-center flex-col'>
 
-      <div className=" p-2 w-96 h-48 rounded flex justify-center">
+      <div className=" p-2 w-72 h-48 rounded flex justify-center">
         <Doughnut data={data} />;
       </div>
       </div>
