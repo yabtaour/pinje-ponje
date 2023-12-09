@@ -19,6 +19,9 @@ import { useAppSelector } from "@/app/globalRedux/store";
 export default function NavBar() {
   const currentuser = useAppSelector((state) => state.authReducer.value.user);
   const router = useRouter();
+
+  const Avatar = null;
+  // const Avatar = '/avatars' + currentuser?.profile?.avatar;
   const handleSettingsClick = () => {
     router.push('/settings');
   };
@@ -74,7 +77,8 @@ export default function NavBar() {
                 color="secondary"
                 name="Jason Hughes"
                 size="sm"
-                src={currentuser?.profile.avatar ?? undefined}
+                src={Avatar}
+                // src={currentuser?.profile.avatar ?? undefined}
               />
             </DropdownTrigger>
             <DropdownMenu

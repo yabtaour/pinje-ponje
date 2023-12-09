@@ -2,9 +2,12 @@ import { Body, Controller, Get, Param, ParseIntPipe, Post, Req, UseGuards } from
 import { JWTGuard } from "src/auth/guards/jwt.guard";
 import { UserService } from "src/user/user.service";
 import { GameService } from "./game.service";
-
+import {
+	ApiBearerAuth,
+  } from '@nestjs/swagger';
 @UseGuards(JWTGuard)
 @Controller("game")
+@ApiBearerAuth()
 export class GameController {
 	constructor(
 		private readonly gameService: GameService,
