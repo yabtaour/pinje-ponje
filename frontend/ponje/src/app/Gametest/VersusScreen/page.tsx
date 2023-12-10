@@ -1,12 +1,8 @@
 'use client'
-import React from "react";
-import { PlayerSkeleton } from "../components/PlayerCard";
-import PlayerCard from '../components/PlayerCard'
-import { useState, useEffect } from "react";
 import axios from "@/app/utils/axios";
 import Image from 'next/image';
-import Loader from '../../components/loader'
-import { ClassNames } from "@emotion/react";
+import { useEffect, useState } from "react";
+import PlayerCard, { PlayerSkeleton } from '../components/PlayerCard';
 
 
 

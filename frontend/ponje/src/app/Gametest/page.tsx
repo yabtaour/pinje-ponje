@@ -1,11 +1,10 @@
 'use client'
-import Rules from './components/Rules'
-import OnlineFriendsInvite from './components/onlineFriendsInvite'
-import PlayerCard from './components/PlayerCard'
 import axios from "@/app/utils/axios";
-import { useEffect, useState } from 'react'
-import Loader from '../components/loader'
+import { useEffect, useState } from 'react';
 import { User } from '../../app/types/user';
+import Loader from '../components/loader';
+import PlayerCard from './components/PlayerCard';
+import OnlineFriendsInvite from './components/onlineFriendsInvite';
 
 export default function Gametest() {
   const [user, setUser] = useState(null);
@@ -20,9 +19,9 @@ export default function Gametest() {
             Authorization: `${localStorage.getItem('access_token')}`,
           },
         });
+        console.log(data.data);
         setUser(data.data);
         setLoading(false);
-        console.log(data.data);
         const loggedUserId = data.data.id;
         fetchOnlineFriends(loggedUserId);
       } catch (err) {

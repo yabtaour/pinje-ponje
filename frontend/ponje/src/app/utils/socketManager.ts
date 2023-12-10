@@ -207,6 +207,8 @@ class SocketManager {
     });
   }
 
+  
+
   public onstartGame(): Promise<any> {
     return new Promise((resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
@@ -220,6 +222,21 @@ class SocketManager {
         reject("Socket is not connected");
       }
     });
+  }
+
+  public initializeGame(payload: any) {
+    return new Promise((resolve, reject) => {
+      if (this.gameSocket && this.gameSocket.connected) {
+        console.log("Socket is connected.", this.gameSocket);
+        this.gameSocket?.on("startGame", (data: any) => {
+          console.log("startGame", data);
+          resolve(data);
+        });
+      } else {
+        console.log("Socket is not connected yet.");
+        reject("Socket is not connected");
+      }
+    })
   }
 
   public waitForConnection(callback: () => void) {
