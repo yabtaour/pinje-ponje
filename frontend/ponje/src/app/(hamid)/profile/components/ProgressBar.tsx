@@ -1,4 +1,5 @@
 import { User } from '../../../types/user';
+import Image from 'next/image';
 
 export default function ProgressBar({ user }: { user: User | null | undefined }) {
 
@@ -13,7 +14,14 @@ export default function ProgressBar({ user }: { user: User | null | undefined })
         <>
             <div className='bg-[#1B1A2D] rounded-box w-[27rem] h-[12rem] mt-20 p-8 m-0'>
                 <div className="flex lg:flex-row">
-                    <img src="/rank_icon.svg" alt="hero" className="w-24 h-24 rounded-full" />
+                    <Image
+                     src="/rank_icon.svg"
+                      alt="hero" 
+                      className="w-24 h-24 rounded-full" 
+                      width={100}
+                      height={100}
+                      />
+
                     <div className="divider lg:divider-horizontal before:bg-[#464671] after:bg-[#464671]"></div>
                     <div className='pl-4'>
                         <p className='text-[#77DFF8] text-xs'>LEVEL</p>

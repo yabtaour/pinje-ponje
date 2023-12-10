@@ -163,7 +163,7 @@ export const Leaderboard = ({ users }: { users: DisplayedInfo[] }) => {
       default:
         return cellValue;
     }
-  }, [1]);
+  }, []);
 
 
   return (
@@ -260,7 +260,7 @@ export default function RankPage() {
 
     fetchUsers()
 
-  }, []);
+  }, [users]);
 
 
   console.log("Fake Users:", fakeUsers);

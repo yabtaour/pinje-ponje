@@ -1,7 +1,6 @@
-"use client";
-
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from 'react';
+// import { useSearchParams } from 'react-router-dom';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const SearchInput = () => {
   const search = useSearchParams();
@@ -10,24 +9,44 @@ const SearchInput = () => {
   );
   const router = useRouter();
 
+  useEffect(() => {
+    if (!searchQuery || typeof searchQuery !== "string") {
+      router.push('/dashboard');
+    } else {
+      const encodedSearchQuery = encodeURI(searchQuery);
+      router.push(`/search?q=${encodedSearchQuery}`);
+    }
+  }, [searchQuery, router]);
+
   const onSearch = (event: React.FormEvent) => {
     event.preventDefault();
+    // Trim leading and trailing spaces
+    const trimmedQuery = searchQuery?.trim();
 
-    if (typeof searchQuery !== "string") {
-      return;
+    if (trimmedQuery) {
+      setSearchQuery(trimmedQuery);
+
+      const encodedSearchQuery = encodeURI(trimmedQuery);
+      router.push(`/search?q=${encodedSearchQuery}`);
     }
+  };
 
-    const encodedSearchQuery = encodeURI(searchQuery);
-    router.push(`/search?q=${encodedSearchQuery}`);
+  const onInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
   };
 
   return (
-    <form onSubmit={onSearch} className="flex justify-center w-2/3">
+    <form onSubmit={onSearch} className="flex justify-center">
       <input
         value={searchQuery || ""}
-        onChange={(event) => setSearchQuery(event.target.value)}
-        className="px-5 py-1 w-2/3 sm:px-5 sm:py-3 flex-1 text-zinc-200 bg-zinc-800 focus:bg-black rounded-full focus:outline-none focus:ring-[1px] focus:ring-blue-700 placeholder:text-zinc-400"
-        placeholder="Who are you looking for?"
+        onChange={onInputChange}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            onSearch(event);
+          }
+        }}
+        className="px-3 py-1 sm:px-4 sm:py-2 flex-1 text-white bg-gray-800 focus:bg-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400"
+        placeholder="Search..."
       />
     </form>
   );

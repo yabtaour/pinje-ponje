@@ -59,6 +59,7 @@ export default function Notification() {
             <div style={{ maxHeight: '400px', overflow: 'auto', margin: '0 rem' }} className="mb-0.5 p-0">
                 {notifications.map((notification) => (
                     <NotificationComponent
+                        key={notification.id}
                         id={notification.id}
                         name={notification.name}
                         type={notification.type}

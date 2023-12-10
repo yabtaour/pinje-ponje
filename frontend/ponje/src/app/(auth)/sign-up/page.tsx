@@ -7,26 +7,44 @@ import { handleSignup } from "@/app/utils/auth";
 import { Toast } from "@chakra-ui/react";
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import Link from "next/link";
-
+import { useState } from "react";
 import { useRouter } from 'next/navigation';
 import { useDispatch } from "react-redux";
 import * as Yup from 'yup';
+import Image from "next/image";
+import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
+import { AxiosError } from "axios";
+
+
 
 
 export default function SignUp() {
 
-    const dispath = useDispatch();
+    const dispatch = useDispatch();
     const authState = useAppSelector((state) => state.authReducer.value)
     const router = useRouter();
+    const [passwordShown, setPasswordShown] = useState(false);
+    const [confirmPasswordShown, setConfirmPasswordShown] = useState(false);
+    const [userExistsError, setUserExistsError] = useState(false)
+
+
+
+    const togglePasswordVisibility = () => {
+        setPasswordShown(!passwordShown);
+    };
+    const toggleConfirmPasswordVisibility = () => {
+        setConfirmPasswordShown(!confirmPasswordShown);
+    };
 
     const initialValues = {
+        username: "",
         email: "",
         password: "",
         confirmPassword: "",
     };
 
     const validationSchema = Yup.object().shape({
-        // usename: Yup.string().required("Username is required"),
+        username: Yup.string().required("Username is required"),
         email: Yup.string().email("Invalid email address").required("Email is required"),
         password: Yup.string()
             .matches(
@@ -42,35 +60,46 @@ export default function SignUp() {
 
 
 
-    const handleSubmit = async (values: any) => {
+    const onSubmit = async (values: any) => {
         try {
-            const data = await handleSignup(values.email, values.password);
-            console.log("this is the data from the signup : ", data);
-            dispath(login(data));
+            console.log(values);
+            const data = await handleSignup(values.email, values.password, values.username);
+            dispatch(login(data));
             router.push('/dashboard');
-
-        }
-        catch (error) {
-            Toast({
-                title: 'Error',
-                status: 'error',
-                duration: 9000,
-                isClosable: true,
-                position: "bottom-right",
-                variant: "solid",
-                colorScheme: "red",
-            });
+        } catch (error) {
+            const err = error as AxiosError;
+            if (err.message === "User already exists") {
+                console.log("conflict error !!!!!!!!!!!!");
+                setUserExistsError(true);
+                setTimeout(() => {
+                    setUserExistsError(false);
+                  }, 4000);
+            } else {
+                Toast({
+                    title: 'Error',
+                    status: 'error',
+                    duration: 9000,
+                    isClosable: true,
+                    position: "bottom-right",
+                    variant: "solid",
+                    colorScheme: "red",
+                });
+            }
         }
     };
+
 
     return (
         <div className="flex h-screen bg-gray-900">
             <div className="w-1/2">
-                <img
+                <Image
                     src="/login_illust.png"
                     alt="Sample image"
                     className="w-[100%] h-full object-cover"
                     style={{ zIndex: 0 }}
+                    width={1920}
+                    height={1080}
+                    priority={true}
                 />
             </div>
             <div className="flex-1 flex flex-col justify-center items-center p-8">
@@ -78,38 +107,70 @@ export default function SignUp() {
                 <Formik
                     initialValues={initialValues}
                     validationSchema={validationSchema}
-                    onSubmit={handleSubmit}
+                    onSubmit={onSubmit}
                 >
                     <Form>
                         <div className="flex flex-col relative mb-8">
+                            <div className="absolute top-[-2rem] text-slate-200 text-sm mb-8">Username</div>
+                            <Field
+                                name="username"
+                                type="text"
+                                placeholder="username"
+                                className="text-sm font-light w-80 px-4 py-3 text-white bg-gray-900 border border-solid placeholder-slate-500 border-slate-700 rounded"
+                            />
+                            <ErrorMessage name="email" component="div" className="text-red-500 text-sm" />
+                        </div>
+                        <div className="flex flex-col relative mb-8 mt-[3rem]">
                             <div className="absolute top-[-2rem] text-slate-200 text-sm mb-8">Email</div>
                             <Field
                                 name="email"
                                 type="text"
                                 placeholder="Email Address"
-                                className="text-sm font-light w-80 px-4 py-3 text-white bg-gray-900 border border-solid placeholder-slate-600 border-slate-700 rounded pl-10"
+                                className="text-sm font-light w-80 px-4 py-3 text-white bg-gray-900 border border-solid placeholder-slate-500 border-slate-700 rounded"
                             />
                             <ErrorMessage name="email" component="div" className="text-red-500 text-sm" />
                         </div>
-                        <div className="flex flex-col relative mb-8">
-                            <div className="absolute top-[-1rem] text-slate-300 text-sm mb-8">Password</div>
+                        <div className="flex flex-col relative mb-8 mt-[3rem]">
+                            <div className="absolute top-[-2rem] text-slate-300 text-sm mb-8">Password</div>
                             <Field
                                 name="password"
-                                type="password"
+                                type={passwordShown ? "text" : "password"}
                                 placeholder=". . . . . . . ."
-                                className="text-sm w-80 px-4 py-3 border bg-gray-900 border-solid border-slate-700 placeholder-slate-600 rounded"
+                                className="text-sm w-80 px-4 py-3 border bg-gray-900 border-solid border-slate-700 placeholder-slate-500 text-slate-200  rounded"
                             />
-                            <ErrorMessage name="password" component="div" className="text-red-500 text-sm" />
+                            <ErrorMessage name="password" component="div" className="text-red-500 text-xs" />
+                            <button
+                                onClick={togglePasswordVisibility}
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm"
+                                type="button"
+                            >
+                                {passwordShown ? (
+                                    <EyeOffIcon className="h-5 w-5 text-gray-400" />
+                                ) : (
+                                    <EyeIcon className="h-5 w-5 text-gray-400" />
+                                )}
+                            </button>
                         </div>
-                        <div className="flex flex-col relative mb-8">
-                            <div className="absolute top-[-1rem] text-slate-300 text-sm mb-8">Confirm password</div>
+                        <div className="flex flex-col relative mb-8 mt-[3rem]">
+                            <div className="absolute top-[-2rem] text-slate-300 text-sm mb-8">Confirm password</div>
                             <Field
                                 name="confirmPassword"
-                                type="password"
+                                type={confirmPasswordShown ? "text" : "password"}
                                 placeholder=". . . . . . . ."
-                                className="text-sm w-80 px-4 py-3 border bg-gray-900 border-solid border-slate-700 placeholder-slate-600 rounded"
+                                className="text-sm w-80 px-4 py-3 border bg-gray-900 border-solid border-slate-700 placeholder-slate-500 text-slate-200  rounded"
                             />
-                            <ErrorMessage name="confirmPassword" component="div" className="text-red-500 text-sm" />
+                            <ErrorMessage name="confirmPassword" component="div" className="text-red-500 text-xs" />
+                            <button
+                                onClick={toggleConfirmPasswordVisibility}
+                                type="button"
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm"
+                            >
+                                {confirmPasswordShown ? (
+                                    <EyeOffIcon className="h-5 w-5 text-gray-400" />
+                                ) : (
+                                    <EyeIcon className="h-5 w-5 text-gray-400" />
+                                )}
+                            </button>
                         </div>
                         <div className="text-center md:text-left">
                             <button className="mt-4 bg-indigo-600 w-80 hover:bg-blue-700 px-4 py-3 text-white rounded font-medium text-sm" type="submit">
@@ -121,11 +182,17 @@ export default function SignUp() {
                         </div>
                     </Form>
                 </Formik>
-                <Auth42Button />
-                <AuthGoogleButton />
+                <Auth42Button type="signup" />
+                <AuthGoogleButton type="signup" />
                 <div className="mt-4 font-semibold text-sm text-slate-500 mr-[100px] text-center md:text-left">
                     Already have an account? <Link className="text-cyan-200 hover:underline hover:underline-offset-4" href="/sign-in">Login</Link>
                 </div>
+                {userExistsError ? 
+                <div role="alert" className="alert alert-error w-92 mt-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span>Error! A user with those infos already exists</span>
+                </div> 
+                : null}
             </div>
         </div>
 

@@ -72,7 +72,7 @@ export default function UserSettings() {
         };
 
         fetchData();
-    }, [user]);
+    }, [user, dispatch]);
 
 
     const [passwordShown, setPasswordShown] = useState(false);
@@ -218,6 +218,33 @@ export default function UserSettings() {
         setSubmitting(false);
     };
 
+    const removeImage = async () => {
+        try {
+            const response = await axios.patch("/users", { avatar: null }, {
+                headers: {
+                    Authorization: userToken,
+                },
+            });
+            if (response.data) {
+                const updatedUser = {
+                    ...user,
+                    profile: {
+                        ...user?.profile,
+                        avatar: null,
+                    },
+                };
+                dispatch(UpdateUser(updatedUser));
+            } else {
+                console.error("Failed to update user avatar:", response.data.message);
+                throw new Error(response.data.message);
+            }
+        } catch (error) {
+            console.error("Failed to update user avatar:", error);
+            throw error;
+        }
+
+    };
+
     return (
 
         <div className="min-h-screen bg-[#151424] flex flex-col justify-center" style={{}}>
@@ -230,6 +257,13 @@ export default function UserSettings() {
                         <h3 className="text-3xl font-semibold text-center text-[#4E40F4] mb-4">
                             Profile Settings
                         </h3>
+                        <button
+                            type="button"
+                            className="text-sm font-regular text-[#73d3ff] mb-8"
+                            onClick={() => removeImage()}
+                        >
+                            remove profile picture
+                        </button>
 
 
                         <div className="bg-[#1B1A2D] p-8 rounded-lg h-full w-fill">
@@ -264,7 +298,7 @@ export default function UserSettings() {
                                                     className="peer block w-full rounded border text-white bg-[#1B1A2D] border-[#73d3ff] px-3 py-2 leading-6 outline-none transition-all duration-200 ease-linear focus:placeholder-opacity-100 dark:text-neutral-200 dark:placeholder:text-[#9AA0AD] placeholder:text-xs placeholder:font-light"
                                                     rows="4"
                                                 />
-                                                <p className='font-light text-xs text-slate-300'> we're sure you're special but keep it down to 60 characters</p>
+                                                <p className='font-light text-xs text-slate-300'> we&apos;re sure you&apos;re special but keep it down to 60 characters</p>
                                                 <ErrorMessage name="bio" component="div" className="text-red-500 text-sm" />
                                             </div>
 

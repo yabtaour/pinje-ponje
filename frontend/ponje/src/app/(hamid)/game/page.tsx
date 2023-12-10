@@ -176,7 +176,7 @@ export default function Game() {
         });
 
 
-        Engine.run(engine);
+        Matter.Runner.run(engine)
         Render.run(render);
 
         Events.on(engine, 'collisionStart', (event) => {

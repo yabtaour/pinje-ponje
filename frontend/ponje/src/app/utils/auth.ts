@@ -2,7 +2,7 @@
 import axios from "@/app/utils/axios";
 import { JwtPayload, jwtDecode } from "jwt-decode";
 import { useDispatch } from "react-redux";
-
+import  { AxiosError } from 'axios';
 export type KeyedObject = {
   [key: string]: string | number | KeyedObject | any;
 };
@@ -49,37 +49,81 @@ export const setSession = (access_token?: string | null) => {
   }
 };
 
-export const handleSignup = async (email: string, password: string) => {
+export class ConflictError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ConflictError';
+  }
+}
+
+export const handleSignup = async (email: string, password: string, username: string) => {
   try {
-    await axios.post("/auth/signup", {
-      username: "hamid22",
+    await axios.post("/auth/signUp", {
+      username,
       email,
       password,
+    },{
+      withCredentials: true,
     });
     return await handleLogin(email, password);
   } catch (error) {
-    console.log(error);
+    const err = error as AxiosError;
+    if (err.response && err.response.status === 409) {
+      throw new ConflictError("User already exists");
+    } else {
+      console.log("Signup error:", error);
+      throw error;
+    }
   }
 };
 
+
+
+
+
+// export const handleLogin = async (email: string, password: string) => {
+//   console.log("this got called :p");
+//   try {
+//     const Response = await axios.post("/auth/login", {
+//       email,
+//       password,
+//     });
+
+//     const { token } = Response.data;
+
+//     const user = await fetchUserData(token);
+//     if (Response.status === 201) {
+//       setSession(token);
+//       return { token, user };
+//     }
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
+
 export const handleLogin = async (email: string, password: string) => {
   try {
-    const Response = await axios.post("/auth/login", {
+    const response = await axios.post("/auth/login", {
       email,
       password,
     });
 
-    const { token } = Response.data;
+    const { token } = response.data;
 
-    const user = await fetchUserData(token);
-    if (Response.status === 201) {
-      setSession(token);
-      return { token, user };
+    if (response.status === 201) {
+      const user = await fetchUserData(token);
+      if (user) {
+        setSession(token);
+        return { token, user };
+      } else {
+        console.log("User is undefined !!");
+      }
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };
+
 
 export const handleLogout = () => {
   const dispatch = useDispatch();

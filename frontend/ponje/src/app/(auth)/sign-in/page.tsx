@@ -10,6 +10,8 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import * as Yup from 'yup';
 import { handleLogin } from '../../utils/auth';
+import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
+import Image from "next/image";
 
 
 
@@ -17,12 +19,15 @@ export default function SignIn() {
   //styling for toast
   const toast = useToast()
 
-
+  const [passwordShown, setPasswordShown] = useState(false);
   const AuthState = useAppSelector((state) => state.authReducer.value)
   const dispatch = useDispatch();
   const router = useRouter();
   const [errorerrorMessage, setErrorMessage] = useState(null as any)
 
+  const togglePasswordVisibility = () => {
+    setPasswordShown(!passwordShown);
+  };
 
   const initialValues = {
     rememberMe: false,
@@ -49,10 +54,23 @@ export default function SignIn() {
 
       router.push('/dashboard');
     }
+    // catch (error) {
+    //   toast({
+    //     title: 'Error',
+    //     // description: errorMessage,
+    //     status: 'error',
+    //     duration: 9000,
+    //     isClosable: true,
+    //     position: "bottom-right",
+    //     variant: "solid",
+    //     colorScheme: "red",
+    //   });
+    // }
     catch (error) {
+      const errorMessage = typeof error === 'object' && error && 'message' in error ? (error as Error).message : 'An error occurred';
       toast({
         title: 'Error',
-        // description: errorMessage,
+        description: errorMessage,
         status: 'error',
         duration: 9000,
         isClosable: true,
@@ -69,10 +87,12 @@ export default function SignIn() {
   return (
     <div className="flex h-screen bg-gray-900">
       <div className="w-1/2">
-        <img
+        <Image
           src="/login_illust.png"
           alt="Sample image"
           className="w-full h-full object-cover"
+          width={1920}
+          height={1080}
         />
       </div>
       <div className="flex-1 flex flex-col justify-center items-center p-8">
@@ -91,34 +111,32 @@ export default function SignIn() {
                 name="email"
                 type="text"
                 placeholder="Email Address"
-                className="text-sm font-light w-80 px-4 py-3 text-white bg-gray-900 border border-solid placeholder-slate-600 border-slate-700  rounded pl-10"
+                className="text-sm font-light w-80 px-4 py-3 text-white bg-gray-900 border border-solid placeholder-slate-600 border-slate-700  rounded"
               />
-              <ErrorMessage name="email" component="div" className="text-red-500 text-sm" />
+              <ErrorMessage name="email" component="div" className="text-red-500 text-xs" />
             </div>
             <div className="flex flex-col relative mb-8">
               <div className="absolute top-[-1rem] text-slate-300 text-sm">Password</div>
               <Field
                 name="password"
-                type="password"
+                type={passwordShown ? "text" : "password"}
                 placeholder=". . . . . . . ."
-                className="text-sm w-80 px-4 py-3 border bg-gray-900 border-solid border-slate-700 placeholder-slate-600 rounded mt-4"
+                className="text-sm w-80 px-4 py-3 border bg-gray-900 border-solid border-slate-700 placeholder-slate-500 rounded mt-4"
               />
-              <ErrorMessage name="password" component="div" className="text-red-500 text-sm" />
+              <ErrorMessage name="password" component="div" className="text-red-500 text-xs" />
+              <button
+                onClick={togglePasswordVisibility}
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm"
+              >
+                {passwordShown ? (
+                  <EyeOffIcon className="h-5 w-5 text-gray-400" />
+                ) : (
+                  <EyeIcon className="h-5 w-5 text-gray-400" />
+                )}
+              </button>
+            </div>
 
-            </div>
-            <div className="mt-4 flex justify-between font-semibold text-sm items-center">
-              <label className="flex text-slate-500 hover:text-slate-600 cursor-pointer mr-20">
-                <Field
-                  name="rememberMe"
-                  type="checkbox"
-                  className="mr-2 items-start"
-                />
-                <span>Remember Me</span>
-              </label>
-              <a className="text-blue-600 hover:text-blue-700 hover:underline hover:underline-offset-4" href="#">
-                Forgot Password?
-              </a>
-            </div>
             <div className="text-center md:text-left">
               <button
                 className="mt-4 bg-indigo-600 w-80 hover:bg-blue-700 px-4 py-3 text-white rounded font-medium text-sm"
