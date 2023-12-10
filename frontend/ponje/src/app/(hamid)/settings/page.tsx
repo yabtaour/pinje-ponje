@@ -250,7 +250,9 @@ export default function UserSettings() {
         <div className="min-h-screen bg-[#151424] flex flex-col justify-center" style={{}}>
             {
                 user === null ? (
-                    <Loader />
+                    <div className='min-h-screen'>
+                    <Loader />;
+                  </div>
                 ) : (
 
                     <div className="max-w-3xl w-full mx-auto">

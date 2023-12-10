@@ -180,6 +180,33 @@ class SocketManager {
     });
   }
 
+  public onNewGame(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (this.gameSocket && this.gameSocket) {
+        console.log("Socket is connected", this.gameSocket);
+        this.gameSocket?.on("gameFound", (data: any) => {
+          console.log("gameFound", data);
+          resolve(data);
+        });
+      } else {
+        console.log("Socket is not conected yet.");
+        reject("Socket is not connected");
+      }
+    })
+  }
+
+  public sendIntialization(payload: {gameId: number, playerPos: number, ballVel: number}): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (this.gameSocket && this.gameSocket.connected) {
+        console.log("Socket is connected.", this.gameSocket);
+        console.log("Connected to game namespace");
+        this.gameSocket?.emit("initialize", payload);
+      } else {
+        console.log("Socket is not connected yet.");
+        reject("Socket is not connected");
+      }
+    }); 
+  }
   //check game connection
   public khouyaSawbLgame(): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -192,6 +219,8 @@ class SocketManager {
       }
     });
   }
+
+  
 
   public onstartGame(): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -207,6 +236,21 @@ class SocketManager {
       }
     });
   }
+
+  // public initializeGame(payload: any) {
+  //   return new Promise((resolve, reject) => {
+  //     if (this.gameSocket && this.gameSocket.connected) {
+  //       console.log("Socket is connected.", this.gameSocket);
+  //       this.gameSocket?.on("startGame", (data: any) => {
+  //         console.log("startGame", data);
+  //         resolve(data);
+  //       });
+  //     } else {
+  //       console.log("Socket is not connected yet.");
+  //       reject("Socket is not connected");
+  //     }
+  //   })
+  // }
 
   public waitForConnection(callback: () => void) {
     const checkConnection = () => {

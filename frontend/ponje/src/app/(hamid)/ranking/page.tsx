@@ -65,7 +65,7 @@ export const Podium = ({ users }: { users: DisplayedInfo[] }) => {
                 <div className="w-full flex justify-center">
                   <div className="relative">
                     <Image
-                      src={user.avatar}  
+                      src={user.avatar}
                       alt="Team member"
                       className="align-middle absolute -m-10 -ml-10 lg:-ml-9 max-w-[70px] border-2 border-[#c5c5c2] rounded-full"
                       width={70}
@@ -85,7 +85,7 @@ export const Podium = ({ users }: { users: DisplayedInfo[] }) => {
               </div>
               <div className="mt-2 py-2 text-center">
                 <div className="flex flex-wrap justify-center">
-                <Link href={`/profile/${user.id}`}>
+                  <Link href={`/profile/${user.id}`}>
                     <button className="btn btn-ghost btn-xs text-[#4E40F4]">visit profile</button>
                   </Link>
                 </div>
@@ -170,7 +170,9 @@ export const Leaderboard = ({ users }: { users: DisplayedInfo[] }) => {
     <div className="p-0 m-0 w-2/3 flex " >
       {
         users.length === 0 ? (
-          <Loader />
+          <div className='min-h-screen'>
+            <Loader />;
+          </div>
         ) : (
           <>
             <Table
@@ -268,7 +270,9 @@ export default function RankPage() {
     <>
       {
         users.length === 0 ? (
-          <Loader />
+          <div className='min-h-screen'>
+            <Loader />;
+          </div>
         ) : (
           <>
             <div className='w-full  flex justify-center bg-[#151424] '>

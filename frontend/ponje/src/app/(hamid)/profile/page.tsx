@@ -54,8 +54,15 @@ export default function Profile() {
         }
       };
 
-    if (loading)
-        return <Loader/>
+      if (loading) {
+
+        return (
+          <div className='min-h-screen'>
+            <Loader />;
+          </div>
+        );
+      }
+      
     return (
         <div className="bg-[#151424] relative flex-grow min-h-screen p-0">
             <div>

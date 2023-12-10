@@ -44,6 +44,7 @@ export class GameController {
 	@Post("queue")
 	async findGame(@Req() request: Request) {
 		const user = await this.userService.getCurrentUser(request);
+		console.log("request made by user",user);
 		return this.gameService.findGame(user);
 	}
 
