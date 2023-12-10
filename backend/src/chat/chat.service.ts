@@ -377,10 +377,18 @@ export class ChatService {
           in : ['PROTECTED', 'PUBLIC']
         }
       },
+      select: {
+        id: true,
+        name: true,
+        createdAt: true,
+        updatedAt: true,
+        roomType: true,
+      },
       skip: skip,
       take: take,
     });
   
+
     return unjoinedRooms;
   }
   
