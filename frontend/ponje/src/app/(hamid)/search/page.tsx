@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import axios from "axios";
+import axios from "@/app/utils/axios"
 import useSWR from "swr";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -34,7 +34,7 @@ const SearchPage = () => {
   const router = useRouter();
 
   const { data, error, isLoading, isValidating } = useSWR(
-    `http://localhost:3000/users?search=${encodedSearchQuery}&take=9&skip=${
+    `/users?search=${encodedSearchQuery}&take=9&skip=${
       (page - 1) * 9
     }`,
     fetchUsers,
