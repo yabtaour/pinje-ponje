@@ -388,20 +388,22 @@ export class GameService {
 		const gameState = new GameState(
 			{id: client, paddlePosition: payload.playerPos, score: 0},
 			{id: opponentPlayer.id, paddlePosition: payload.playerPos, score: 0},
-			{x: 0, y: 0},
+			{x: payload.ballVel, y: payload.ballVel},
 		)
 		this.gameGateway.currentGames[payload.gameId] = gameState;
 		console.log("ALL GAMES !! ", this.gameGateway.currentGames);
 		console.log("CURRENT GAME !! ", this.gameGateway.currentGames[payload.gameId]);
-		await this.gameGateway.server.emit('startGame', gameState);
+		await this.gameGateway.server.to(String(client)).emit('startGame', gameState);
+		await this.gameGateway.server.to(String(opponentPlayer.id)).emit('startGame', gameState);
+		// await this.gameGateway.server.emit('startGame', gameState);
 		// await this.gameGateway.server.emit('startGame', gameState);
 	}
 
-	async updatePlayerPosition(client: number, payload: UpdatePaddlePositionDto) {
+	async updatePlayerPosition(client: number, payload: any) {
 		const currentPlayer = await this.prisma.player.findUnique({
 			where: {
 				userId_gameId: {
-					userId: Number(client),
+					userId: client,
 					gameId: payload.gameId,
 				},
 			},
@@ -414,24 +416,18 @@ export class GameService {
 			this.gameGateway.currentGames[payload.gameId].player1.paddlePosition += newY;
 			await this.gameGateway.server
 				.to(String(client))
-				.emit('updateFrame', this.gameGateway.currentGames[payload.gameId]);
-			const temp = this.gameGateway.currentGames[payload.gameId].player1;
-			this.gameGateway.currentGames[payload.gameId].player1 = this.gameGateway.currentGames[payload.gameId].player2;
-			this.gameGateway.currentGames[payload.gameId].player2 = temp;
+				.emit('updatePaddle', {playerId: client, newPos: this.gameGateway.currentGames[payload.gameId].player1.paddlePosition});
 			await this.gameGateway.server
-				.to(String(this.gameGateway.currentGames[payload.gameId].player1.id))
-				.emit('updateFrame', this.gameGateway.currentGames[payload.gameId]);
+				.to(String(this.gameGateway.currentGames[payload.gameId].player2.id))
+				.emit('updatePaddle', {playerId: client, newPos: this.gameGateway.currentGames[payload.gameId].player1.paddlePosition});
 		} else if (client === this.gameGateway.currentGames[payload.gameId].player2.id) {
 			this.gameGateway.currentGames[payload.gameId].player2.paddlePosition += newY;
 			await this.gameGateway.server
-				.to(String(this.gameGateway.currentGames[payload.gameId].player1.id))
-				.emit('updateFrame', this.gameGateway.currentGames[payload.gameId]);
-			const temp = this.gameGateway.currentGames[payload.gameId].player1;
-			this.gameGateway.currentGames[payload.gameId].player1 = this.gameGateway.currentGames[payload.gameId].player2;
-			this.gameGateway.currentGames[payload.gameId].player2 = temp;
-			await this.gameGateway.server
 				.to(String(client))
-				.emit('updateFrame', this.gameGateway.currentGames[payload.gameId]);
+				.emit('updatePaddle', {playerId: client, newPos: this.gameGateway.currentGames[payload.gameId].player2.paddlePosition});
+			await this.gameGateway.server
+				.to(String(this.gameGateway.currentGames[payload.gameId].player1.id))
+				.emit('updatePaddle', {playerId: client, newPos: this.gameGateway.currentGames[payload.gameId].player2.paddlePosition});
 		} else {
 			throw new WsException("No player found");
 		}
@@ -442,12 +438,6 @@ export class GameService {
 		this.gameGateway.currentGames[gameId].ball.y = y;
 		await this.gameGateway.server.to(String(gameId)).emit('ballUpdate', {x: x, y: y});
 	}
-
-	// async gameOver(gameId: number) {
-	// 	this.gameGateway.currentGames.delete(gameId);
-	// 	await this.gameGateway.server.to(String(gameId)).emit('gameOver');
-	// }
-
 
 	async finishGame(winnerId: number, loserId: number, gameId: number) {
 		const winner = await this.prisma.player.update({
@@ -482,11 +472,6 @@ export class GameService {
 				id: winnerId,
 			},
 		});
-		// const loserUser = this.prisma.user.findUnique({
-		// 	where: {
-		// 		id: loserId,
-		// 	},
-		// });
 		const newWinnerConsitensy = (await winnerUser).consitency + winner.consitency > 100 ? 100 : (await winnerUser).consitency + winner.consitency;
 		const newWinnerReflex = (await winnerUser).reflex + winner.reflex > 100 ? 100 : (await winnerUser).reflex + winner.reflex;
 		const newWinnerAccuracy = (await winnerUser).accuracy + winner.accuracy > 100 ? 100 : (await winnerUser).accuracy + winner.accuracy;
@@ -516,66 +501,43 @@ export class GameService {
 	}
 
 	async updateScore(userId: number, gameId: number) {
-		const player = await this.prisma.player.findUnique({
+		const currentPlayer = await this.prisma.player.findUnique({
 			where: {
 				userId_gameId: {
-					userId: Number(userId),
+					userId: userId,
 					gameId: gameId,
 				},
 			},
 		});
-		if (!player)
+		if (!currentPlayer)
 			throw new WsException(`No player found`);
 
-		let actualPlayer = null;
-		let opponentPlayer = null;
-
-		if (this.gameGateway.currentGames[player.gameId].player1.id == userId) {
-			actualPlayer = this.gameGateway.currentGames[player.gameId].player1;
-			opponentPlayer = this.gameGateway.currentGames[player.gameId].player2;
+		if (userId === this.gameGateway.currentGames[gameId].player1.id) {
+			this.gameGateway.currentGames[gameId].player1.score++ ;
+			if (this.gameGateway.currentGames[gameId].player1.score >= 10) {
+				this.finishGame(userId, this.gameGateway.currentGames[gameId].player2.id, gameId);
+				return;
+			}
+			await this.gameGateway.server
+				.to(String(userId))
+				.emit('updateScore', {player: userId, newScore: this.gameGateway.currentGames[gameId].player1.score});
+			await this.gameGateway.server
+				.to(String(this.gameGateway.currentGames[gameId].player2.id))
+				.emit('updateScore', {player: userId, newScore: this.gameGateway.currentGames[gameId].player1.score});
+		} else if (userId === this.gameGateway.currentGames[gameId].player2.id) {
+			this.gameGateway.currentGames[gameId].player2.score++ ;
+			if (this.gameGateway.currentGames[gameId].player2.score >= 10) {
+				this.finishGame(userId, this.gameGateway.currentGames[gameId].player1.id, gameId);
+				return;
+			}
+			await this.gameGateway.server
+				.to(String(this.gameGateway.currentGames[gameId].player1.id))
+				.emit('updateScore', {player: userId, newScore: this.gameGateway.currentGames[gameId].player2.score});
+			await this.gameGateway.server
+				.to(String(userId))
+				.emit('updateScore', {player: userId, newScore: this.gameGateway.currentGames[gameId].player2.score});
+		} else {
+			throw new WsException("No player found");
 		}
-		else if (this.gameGateway.currentGames[player.gameId].player2.id == userId) {
-			actualPlayer = this.gameGateway.currentGames[player.gameId].player2;
-			opponentPlayer = this.gameGateway.currentGames[player.gameId].player1;
-		}
-		else
-			throw new WsException("Player Not found");
-		
-		actualPlayer.score += 1;
-
-		if (actualPlayer.score == 10) {
-			await this.prisma.player.update({
-				where: {
-					userId_gameId: {
-						userId: Number(actualPlayer.id),
-						gameId: gameId,
-					},
-				},
-				data: {
-					score: actualPlayer.score,
-				},
-			});
-			await this.prisma.player.update({
-				where: {
-					userId_gameId: {
-						userId: Number(opponentPlayer.id),
-						gameId: gameId,
-					},
-				},
-				data: {
-					score: opponentPlayer.score,
-				},
-			});
-			await this.finishGame(actualPlayer.id, opponentPlayer.id, player.gameId);
-			return;
-		}
-
-		if (this.gameGateway.currentGames[player.gameId].player1.id == userId)
-			this.gameGateway.currentGames[player.gameId].player1 = actualPlayer;
-		else
-			this.gameGateway.currentGames[player.gameId].player2 = actualPlayer;
-
-		await this.gameGateway.server.to(String(this.gameGateway.currentGames[gameId].player1.id)).emit('scoreUpdate', this.gameGateway.currentGames[gameId]);
-		await this.gameGateway.server.to(String(this.gameGateway.currentGames[gameId].player2.id)).emit('scoreUpdate', this.gameGateway.currentGames[gameId]);
 	}
 }

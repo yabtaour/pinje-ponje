@@ -1,7 +1,4 @@
 'use client'
-import Rules from './components/Rules'
-import OnlineFriendsInvite from './components/onlineFriendsInvite'
-import PlayerCard from './components/PlayerCard'
 import axios from "@/app/utils/axios";
 import { useEffect, useState } from 'react'
 import Loader from '../../components/loader'
@@ -47,9 +44,9 @@ export default function Pong() {
             Authorization: `${localStorage.getItem('access_token')}`,
           },
         });
+        console.log(data.data);
         setUser(data.data);
         setLoading(false);
-        console.log(data.data);
         const loggedUserId = data.data.id;
         fetchOnlineFriends(loggedUserId);
       } catch (err) {

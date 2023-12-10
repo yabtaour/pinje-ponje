@@ -194,6 +194,7 @@ class SocketManager {
       }
     })
   }
+<<<<<<< HEAD
 
   public sendIntialization(payload: {gameId: number, playerPos: number, ballVel: number}): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -207,6 +208,8 @@ class SocketManager {
       }
     }); 
   }
+=======
+>>>>>>> refs/remotes/origin/dev
   //check game connection
   public khouyaSawbLgame(): Promise<any> {
     return new Promise((resolve, reject) => {
