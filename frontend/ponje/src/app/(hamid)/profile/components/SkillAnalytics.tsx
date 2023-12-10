@@ -10,6 +10,7 @@ import {
   Tooltip,
 } from 'chart.js';
 import { Radar } from 'react-chartjs-2';
+import { User } from '../../../types/user';
 
 ChartJS.register(
   RadialLinearScale,
@@ -20,19 +21,6 @@ ChartJS.register(
   Legend
 );
 
-export const data = {
-  labels: ['Accuracy', 'consistency', 'speed', 'reflex'],
-  datasets: [
-    {
-      label: 'skills',
-      data: [50, 61, 7, 24],
-      backgroundColor: 'rgba(91, 143, 249, 0.5)',
-      borderColor: 'rgba(91, 143, 249, 1)',
-      borderWidth: 2,
-
-    },
-  ],
-};
 
 const options: ChartOptions<'radar'> = {
   scales: {
@@ -51,7 +39,25 @@ const options: ChartOptions<'radar'> = {
 };
 
 
-export default function SkillAnalytics() {
+export default function SkillAnalytics({ user }: { user: User | null | undefined }) {
+  const data = {
+    labels: ['Accuracy', 'Consistency', 'Speed', 'Reflex'],
+    datasets: [
+      {
+        label: 'Skills',
+        data: [
+          user?.accuracy ?? 0,
+          user?.consitency ?? 0,
+          7, //speed goes nyooooooooom
+          user?.reflex ?? 0,
+        ],
+        backgroundColor: 'rgba(91, 143, 249, 0.5)',
+        borderColor: 'rgba(91, 143, 249, 1)',
+        borderWidth: 2,
+      },
+    ],
+  };
+
   return (
     <div className="m-0 p-4 w-[20rem] ">
       <h2 className="text-2xl font-light text-[#4E40F4] mb-6"> Skill Analytics </h2>
