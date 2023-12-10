@@ -399,11 +399,11 @@ export class GameService {
 		// await this.gameGateway.server.emit('startGame', gameState);
 	}
 
-	async updatePlayerPosition(client: number, payload: UpdatePaddlePositionDto) {
+	async updatePlayerPosition(client: number, payload: any) {
 		const currentPlayer = await this.prisma.player.findUnique({
 			where: {
 				userId_gameId: {
-					userId: Number(client),
+					userId: client,
 					gameId: payload.gameId,
 				},
 			},
@@ -416,24 +416,18 @@ export class GameService {
 			this.gameGateway.currentGames[payload.gameId].player1.paddlePosition += newY;
 			await this.gameGateway.server
 				.to(String(client))
-				.emit('updateFrame', this.gameGateway.currentGames[payload.gameId]);
-			const temp = this.gameGateway.currentGames[payload.gameId].player1;
-			this.gameGateway.currentGames[payload.gameId].player1 = this.gameGateway.currentGames[payload.gameId].player2;
-			this.gameGateway.currentGames[payload.gameId].player2 = temp;
+				.emit('updatePaddle', {playerId: client, newPos: this.gameGateway.currentGames[payload.gameId].player1.paddlePosition});
 			await this.gameGateway.server
-				.to(String(this.gameGateway.currentGames[payload.gameId].player1.id))
-				.emit('updateFrame', this.gameGateway.currentGames[payload.gameId]);
+				.to(String(this.gameGateway.currentGames[payload.gameId].player2.id))
+				.emit('updatePaddle', {playerId: client, newPos: this.gameGateway.currentGames[payload.gameId].player1.paddlePosition});
 		} else if (client === this.gameGateway.currentGames[payload.gameId].player2.id) {
 			this.gameGateway.currentGames[payload.gameId].player2.paddlePosition += newY;
 			await this.gameGateway.server
-				.to(String(this.gameGateway.currentGames[payload.gameId].player1.id))
-				.emit('updateFrame', this.gameGateway.currentGames[payload.gameId]);
-			const temp = this.gameGateway.currentGames[payload.gameId].player1;
-			this.gameGateway.currentGames[payload.gameId].player1 = this.gameGateway.currentGames[payload.gameId].player2;
-			this.gameGateway.currentGames[payload.gameId].player2 = temp;
-			await this.gameGateway.server
 				.to(String(client))
-				.emit('updateFrame', this.gameGateway.currentGames[payload.gameId]);
+				.emit('updatePaddle', {playerId: client, newPos: this.gameGateway.currentGames[payload.gameId].player2.paddlePosition});
+			await this.gameGateway.server
+				.to(String(this.gameGateway.currentGames[payload.gameId].player1.id))
+				.emit('updatePaddle', {playerId: client, newPos: this.gameGateway.currentGames[payload.gameId].player2.paddlePosition});
 		} else {
 			throw new WsException("No player found");
 		}

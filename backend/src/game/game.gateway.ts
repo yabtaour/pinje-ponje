@@ -37,7 +37,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
 
     @SubscribeMessage('initialize')
-    initializeGame(client: any, payload: any) {
+    initializeGame(client: any, payload: {gameId: number, ballVel: number, playerPos: number}) {
       if (!payload || !payload.gameId || !payload.playerPos || !payload.ballVel
           || typeof payload.gameId !== "number" || typeof payload.playerPos !== "number"
           || typeof payload.ballVel !== "number") {
@@ -48,9 +48,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         element === payload.gameId;
       });
       const lastIndex = this.intializeArray.lastIndexOf(payload.gameId);
-      console.log("FIRST | LAST ", firstIndex, lastIndex)
       if (firstIndex != lastIndex && firstIndex != -1 && lastIndex != -1) {
-        console.log("JAW 2 PLAYER !!!!!!!");
         this.intializeArray.splice(firstIndex, 1);
         this.intializeArray.splice(lastIndex, 1);
         this.gameService.initializeGame(parseInt(client.id), payload)
@@ -58,34 +56,15 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
     @SubscribeMessage('updatePlayerPosition')
-    updatePlayerPosition(client: any, payload: UpdatePaddlePositionDto): void {
+    updatePlayerPosition(client: any, payload: {gameId: number, direction: string}): void {
       console.log(client);
       this.gameService.updatePlayerPosition(client.id, payload);
     }
-  
-    @SubscribeMessage('khouyaSawbLgame')
-    khouyaSawbLgame() {
-      console.log("sm7liya m trying");
-      const payload = {
-        player1: {
-          y: 500,
-        },
-        player2: {
-          y: 500,
-        },
-        ball: {
-          x: 3,
-          y: 3.
-        }
-      }
-      this.server.emit('startGame', payload);
-    }
     
     @SubscribeMessage('updateScore')
-    updateScore(client: any, payload: UpdateScoreDto): void {
-      console.log(payload);
-      console.log(client);
-      this.gameService.updateScore(payload.userId, payload.gameId);
+    updateScore(client: any, payload: {gameId: number}): void {
+      if (!payload || !payload.gameId || typeof payload.gameId !== "number")
+      this.gameService.updateScore(parseInt(client.id), payload.gameId);
     }
 
     async handleConnection(client: AuthWithWs) {
