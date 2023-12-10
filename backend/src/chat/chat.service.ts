@@ -361,6 +361,32 @@ export class ChatService {
     return roomMemberships;
   }
 
+
+  async getUnjoinedRooms(userId: number, params: PaginationLimitDto) {
+    const { skip, take } = params;
+  
+    // Retrieve rooms that the user has not joined
+    const unjoinedRooms = await this.prisma.chatRoom.findMany({
+      where: {
+        members: {
+          none: {
+            userId: userId,
+          },
+        },
+        roomType: {
+          in : ['PROTECTED', 'PUBLIC']
+        }
+      },
+      skip: skip,
+      take: take,
+    });
+  
+    return unjoinedRooms;
+  }
+  
+  
+
+
   async getRoomUsers(user_id : number, room_id: number, params: PaginationLimitDto) { // Func Scope Start : getRoomUsers
 
     const roomId = await this.prisma.chatRoom.findUnique({
