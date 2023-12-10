@@ -6,7 +6,7 @@
 import { setActiveConversation, setRooms } from "@/app/globalRedux/features/chatSlice";
 import { useAppSelector } from "@/app/globalRedux/store";
 import SocketManager from "@/app/utils/socketManager";
-import { Button, useDisclosure } from "@nextui-org/react";
+import { Button, Image, useDisclosure } from '@nextui-org/react';
 import moment from 'moment';
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
@@ -77,10 +77,17 @@ export default function Conversation({ collapsed }: any) {
                         <div className="flex justify-between ">
                             <h1 className="text-white text-3xl">Inbox</h1>
 
-                            <Button onPress={onOpen} className=" bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <Button onPress={onOpen} className="hover:bg-blue-300/10  text-white font-bold py-2 px-4 rounded-full border border-blue-700">
+                            <Image
+                                alt="Woman listing to music"
+                                className="object-cover"
+                                height={24}
+                                src="/groups.svg"
+                                width={24}
+                            />
+                                {/* <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 12h6m0 0h6m-6 0v6m0-6V6" />
-                                </svg>
+                                </svg> */}
                             </Button>
                             <CreateConversation isOpen={isOpen} onOpenChange={onOpenChange} />
                         </div>
@@ -175,17 +182,17 @@ export default function Conversation({ collapsed }: any) {
         //     <div className="lg:w-1/3 md:2/3 bg-[#1B1A2D] sm:w-full text-white  rounded-b-full hover:bg-[#252341] flex justify-center ">
         //         <Button onPress={onOpen} >
         //             open 
-        //             {/* <User
-        //                 className="text-white my-2 p-4"
-        //                 name={activeConversation?.room?.roomType !== "DM" ? activeConversation?.room?.name : activeConversation?.room?.members[0]?.user?.username}
-        //                 avatarProps={
-        //                     activeConversation?.room?.roomType !== "DM"
-        //                         ?
-        //                         { src: activeConversation?.room?.members[0]?.user?.profile?.avatar }
-        //                         :
-        //                         { src: "https://i.redd.it/ow1iazp3ob351.jpg" }
-        //                 }
-        //             /> */}
+                    // {/* <User
+                    //     className="text-white my-2 p-4"
+                    //     name={activeConversation?.room?.roomType !== "DM" ? activeConversation?.room?.name : activeConversation?.room?.members[0]?.user?.username}
+                    //     avatarProps={
+                    //         activeConversation?.room?.roomType !== "DM"
+                    //             ?
+                    //             { src: activeConversation?.room?.members[0]?.user?.profile?.avatar }
+                    //             :
+                    //             { src: "https://i.redd.it/ow1iazp3ob351.jpg" }
+                    //     }
+                    // /> */}
         //         </Button>
         //         <RoomOptions isOpen={isOpen} onOpenChange={onOpenChange} />
         //     </div>

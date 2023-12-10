@@ -36,6 +36,7 @@ type Room = {
     updatedAt: string;
     createdAt: string;
     messages: Message[];
+    // members: User[];
     members: {
       user: User;
     }[];
@@ -65,9 +66,10 @@ export const chat = createSlice({
         (room) => room?.room?.id === action.payload?.id
       );
 
-      console.log("room Index:" , roomIndex);
-      console.log("action.payload?.id:" , action.payload?.id);
-      console.log("state.rooms:" , state.rooms);
+      console.log("room Index:", roomIndex);
+      console.log("action.payload?.id:", action.payload?.id);
+      console.log("state.rooms:", state.rooms);
+
       if (roomIndex !== -1) {
         const updatedRoom = {
           ...state.rooms[roomIndex],

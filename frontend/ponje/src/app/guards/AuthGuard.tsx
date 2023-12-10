@@ -44,6 +44,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
         if (accessToken && !isAithenticated) {
             const socketManager = SocketManager.getInstance('http://localhost:3000', accessToken);
             fetchUserData(accessToken).then((data) => {
+                console.log("data: ", data);
                 dispatch(login({ user: data, token: accessToken }));
                 setSession(accessToken);
 

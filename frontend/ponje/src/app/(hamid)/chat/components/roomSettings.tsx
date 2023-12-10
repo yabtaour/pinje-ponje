@@ -1,13 +1,152 @@
 
-import { Modal, ModalContent } from '@nextui-org/react';
+import { useAppSelector } from '@/app/globalRedux/store';
+import { Button, Modal, ModalContent, ScrollShadow, User, useDisclosure } from '@nextui-org/react';
 import { ErrorMessage, Field, Form, Formik, FormikProps } from 'formik';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import * as Yup from 'yup';
+import { Ban, Invite, Mute, Play } from './actions';
 
 enum RoomType {
     ROOM = "ROOM",
     DM = "DM"
 }
+
+
+
+
+const handleBan = () => {
+    console.log("banned");
+}
+
+const handleMute = () => {
+    console.log("muted");
+}
+
+const handlePlay = () => {
+    console.log("playing");
+}
+
+
+
+export function InviteFriends() {
+    const activeConversationId = useAppSelector(state => state?.chatReducer?.activeConversationId);
+    const activeConversation = useAppSelector(state => state?.chatReducer?.rooms?.find((room: any) => room?.id === activeConversationId));
+    const me = useAppSelector(state => state?.authReducer?.value?.user);
+
+
+
+
+    return (
+        <div className='flex justify-center flex-col'>
+            <div className='flex align-middle border border-gray-900 rounded-full px-5 justify-around'>
+                {activeConversation?.room?.members.map((member, index) => (
+                    <div key={index} className="flex items-center">
+                        <User
+                            className="text-white my-2"
+                            name={
+                                activeConversation?.room?.roomType !== "DM"
+                                    ? activeConversation?.room?.name
+                                    : member?.user?.username
+                            }
+                            avatarProps={
+                                activeConversation?.room?.roomType !== "DM"
+                                    ? { src: member?.user?.profile?.avatar }
+                                    : { src: "https://i.redd.it/ow1iazp3ob351.jpg" }
+                            }
+                        />
+                        <Invite />
+                    </div>
+                ))}
+            </div>
+        </div>
+    )
+
+}
+
+
+
+
+
+
+
+export function RoomMembers() {
+    const { isOpen, onOpen, onOpenChange } = useDisclosure();
+    const [showInviteFriends, setShowInviteFriends] = useState(false);
+    const activeConversationId = useAppSelector(state => state?.chatReducer?.activeConversationId);
+    const activeConversation = useAppSelector(state => state?.chatReducer?.rooms?.find((room: any) => room?.id === activeConversationId));
+    const muted = true;
+    console.log("activeConversation: ", activeConversation);
+    return (
+        <div className='w-full  p-4'>
+            <h1 className='text-center text-cyan-300'>{
+                showInviteFriends ? (
+                    <h1 className='text-center text-cyan-300'>Invite Friends</h1>
+                ) : (
+                    <h1 className='text-center text-cyan-300'>Room Members</h1>
+                )
+            }</h1>
+            <Button className='text-end hover:text-cyan-100  text-cyan-500' onClick={() => { showInviteFriends ? setShowInviteFriends(false) : setShowInviteFriends(true) }}>
+                {
+                    showInviteFriends ? (
+                        <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path fill="" stroke="cyan" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 18h3.75a5.25 5.25 0 1 0 0-10.5H5M7.5 4L4 7.5L7.5 11" />
+                        </svg>
+                    )
+                        : (
+                            <p>Invite</p>
+                        )
+                }
+            </Button>
+            {/* <InviteFriends isOpen={isOpen} onOpenChange={onOpenChange} /> */}
+
+            <div className=' flex justify-center w-full  p-4'>
+                <ScrollShadow hideScrollBar className="w-full h-[40vh]">
+                    <div className='flex w-full justify-center bg-[#222038]  flex-col'>
+                        {
+                            showInviteFriends ? (
+
+                                <div className='flex justify-center'>
+                                    <InviteFriends />
+                                </div>
+                            ) : (
+                                <div className='flex justify-center hover:bg-[#252341] rounded-full'>
+                                    {activeConversation?.room?.members.map((member, index) => (
+                                        <button key={index} className='' onClick={() => { }}>
+                                            <User
+                                                key={index}
+                                                className="text-white my-2 p-4"
+                                                name={activeConversation?.room?.roomType !== "DM" ? activeConversation?.room?.name : member?.user?.username}
+                                                avatarProps={
+                                                    activeConversation?.room?.roomType !== "DM"
+                                                        ? { src: member?.user?.profile?.avatar }
+                                                        : { src: "https://i.redd.it/ow1iazp3ob351.jpg" }
+                                                }
+                                            />
+                                            {/* //? the ban */}
+                                        </button>
+                                    ))}
+
+                                    <Ban />
+                                    <Mute muted={muted} />
+                                    <Play />
+                                </div>
+
+
+                            )
+
+                        }
+                    </div>
+                </ScrollShadow>
+
+
+
+            </div>
+        </div >
+    );
+}
+
+
 
 
 export default function RoomOptions({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: () => void }) {
@@ -75,21 +214,18 @@ export default function RoomOptions({ isOpen, onOpenChange }: { isOpen: boolean,
                                 Visit Profile
                             </button>
 
-
                         </div>
 
                     ) : (
                         <div className='flex flex-row items-center  justify-around py-12 bg-[#222039]'>
-
-
-                            <div className="flex flex-col items-center justify-center ">
+                            <div className="flex flex-col w-1/2  items-center justify-center ">
                                 <img
                                     src="/groupChat.svg"
                                     alt="groupChat"
                                     className="w-10 h-10 "
                                 ></img>
-                                <h1 className="mb-10 text-2xl text-cyan-300 font-semibold ">
-                                    Create a new conversation
+                                <h1 className="my-10 text-2xl text-cyan-300 font-semibold ">
+                                    Room Settings
                                 </h1>
                                 <Formik
                                     initialValues={initialValues}
@@ -127,10 +263,6 @@ export default function RoomOptions({ isOpen, onOpenChange }: { isOpen: boolean,
                                                 </Field>
                                                 <ErrorMessage name="roomType" component="div" className="text-red-500 text-sm" />
                                             </div>
-
-
-
-
                                             {values.roomType === 'protected' && (
                                                 <div className="flex flex-col relative mb-8 p-1">
                                                     <div className="absolute top-[-2rem] text-slate-200 text-sm mb-8">Password</div>
@@ -152,7 +284,7 @@ export default function RoomOptions({ isOpen, onOpenChange }: { isOpen: boolean,
                                                     className="mt-4 bg-indigo-600 w-40 hover:bg-blue-700 px-4 py-3 text-white rounded font-medium text-sm"
                                                     type="submit"
                                                 >
-                                                    submit
+                                                    Update
                                                 </button>
                                             </div>
                                         </Form>
@@ -161,8 +293,8 @@ export default function RoomOptions({ isOpen, onOpenChange }: { isOpen: boolean,
                             </div>
 
 
-                            <div className='text-white '>
-                                Members
+                            <div className='text-white w-1/2 '>
+                                <RoomMembers />
                             </div>
                         </div>
 

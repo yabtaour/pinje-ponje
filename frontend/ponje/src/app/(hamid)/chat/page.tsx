@@ -156,7 +156,7 @@ export default function Chat() {
                                                     }
                                                 />
                                             </Button>
-                                            <RoomOptions isOpen={isOpen} onOpenChange={onOpenChange} />
+                                            <RoomOptions  isOpen={isOpen} onOpenChange={onOpenChange} />
                                         </div>
                                     </div>
 

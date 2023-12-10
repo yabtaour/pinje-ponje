@@ -124,6 +124,11 @@ class SocketManager {
         console.log("Connected to chat namespace");
         this.chatSocket?.emit("getRooms", (rooms: any) => {
           console.log("Rooms:", rooms);
+
+
+          //get rooms members
+
+
           resolve(rooms);
         });
       } else {
