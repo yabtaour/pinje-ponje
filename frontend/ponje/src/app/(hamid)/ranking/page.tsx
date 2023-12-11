@@ -13,38 +13,10 @@ import React, { useEffect } from 'react';
 const columns = [
   { name: "User", uid: "user" },
   { name: "XP", uid: "xp" },
-  { name: "Games Won", uid: "games Won" },
   { name: "Rank", uid: "rank" },
   { name: "Profile", uid: "profile" },
 
 ]
-
-const fakeUsers: DisplayedInfo[] = [
-  {
-    id: 78,
-    username: "Soukaina",
-    ex: 7500,
-    rank: "UNRANKED",
-    avatar: "https://example.com/avatar1.jpg",
-    gamesWon: 0,
-  },
-  {
-    id: 79,
-    username: "JohnDoe",
-    ex: 12000,
-    rank: "SILVER",
-    avatar: "https://example.com/avatar2.jpg",
-    gamesWon: 100,
-  },
-  {
-    id: 80,
-    username: "JaneDoe",
-    ex: 8000,
-    rank: "GOLD",
-    avatar: "https://example.com/avatar3.jpg",
-    gamesWon: 50,
-  },
-];
 
 export const Podium = ({ users }: { users: DisplayedInfo[] }) => {
   const rankedUsers = users.slice().sort((a, b) => b.ex - a.ex);
@@ -55,6 +27,15 @@ export const Podium = ({ users }: { users: DisplayedInfo[] }) => {
     rankedUsers[1] = temp;
   }
 
+
+
+  const getImagedimensions = (user: any) => {
+    var sizeOf = require('image-size');
+    var dimensions = sizeOf(user?.avatar);
+    console.log(dimensions.width, dimensions.height);
+    return dimensions;
+  };
+
   return (
     <div className="flex flex-row mt-16">
       {rankedUsers.map((user, index) => (
@@ -63,14 +44,18 @@ export const Podium = ({ users }: { users: DisplayedInfo[] }) => {
             <div className="px-6">
               <div className="flex flex-wrap justify-center">
                 <div className="w-full flex justify-center">
-                  <div className="relative">
-                    <Image
-                      src={user.avatar}  
-                      alt="Team member"
-                      className="align-middle absolute -m-10 -ml-10 lg:-ml-9 max-w-[70px] border-2 border-[#c5c5c2] rounded-full"
-                      width={70}
-                      height={70}
-                    />
+                  <div className="relative mb-[-3rem]">
+                    <div className="avatar">
+                      <div className="w-24 rounded-full">
+                        <Image
+                          src={user.avatar}
+                          alt="user image"
+                          fill
+                          style={{ objectFit: "cover" }}
+                          className='rounded-full'
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="w-full text-center mt-9">
@@ -85,7 +70,7 @@ export const Podium = ({ users }: { users: DisplayedInfo[] }) => {
               </div>
               <div className="mt-2 py-2 text-center">
                 <div className="flex flex-wrap justify-center">
-                <Link href={`/profile/${user.id}`}>
+                  <Link href={`/profile/${user.id}`}>
                     <button className="btn btn-ghost btn-xs text-[#4E40F4]">visit profile</button>
                   </Link>
                 </div>
@@ -107,7 +92,6 @@ export type DisplayedInfo = {
   ex: number,
   rank: string,
   avatar: string,
-  gamesWon: number
 }
 
 
@@ -139,17 +123,17 @@ export const Leaderboard = ({ users }: { users: DisplayedInfo[] }) => {
     switch (columnKey) {
       case "user":
         return (
-          <button className="hover:bg-[#333153] p-1 rounded-lg ">
+          <button className="text-[#77DFF8] p-1 rounded-lg space-x-6">
             <NextUIUser
-              avatarProps={{ radius: "lg", src: user?.profile?.avatar }}
+              avatarProps={{ radius: "full", src: user.avatar }}
               description={user.username}
               name={cellValue}
             >
             </NextUIUser>
           </button>
         );
-      case "XP" || "Games Won":
-        return <p className="text-default-400">{cellValue}</p>;
+      case "xp":
+        return <p className="text-white text-regular">{user?.ex}</p>;
       case "Rank":
         return <p>{"IMAGE RANK"}</p>;
       case "profile":
@@ -170,7 +154,9 @@ export const Leaderboard = ({ users }: { users: DisplayedInfo[] }) => {
     <div className="p-0 m-0 w-2/3 flex " >
       {
         users.length === 0 ? (
-          <Loader />
+          <div className='min-h-screen'>
+            <Loader />;
+          </div>
         ) : (
           <>
             <Table
@@ -219,9 +205,6 @@ export const Leaderboard = ({ users }: { users: DisplayedInfo[] }) => {
 
           </>
         )
-
-
-
       }
     </div>
   );
@@ -246,12 +229,10 @@ export default function RankPage() {
           username: user?.username,
           ex: user?.experience,
           rank: user?.rank,
-          gamesWon: user?.gamesWon,
           avatar: user?.profile?.avatar
         }));
 
         setUsers(transformedUsers);
-        console.log("users : ", users);
         return res.data;
       } catch (err) {
         console.log(err);
@@ -263,18 +244,19 @@ export default function RankPage() {
   }, [users]);
 
 
-  console.log("Fake Users:", fakeUsers);
   return (
     <>
       {
         users.length === 0 ? (
-          <Loader />
+          <div className='min-h-screen'>
+            <Loader />;
+          </div>
         ) : (
           <>
             <div className='w-full  flex justify-center bg-[#151424] '>
               {/* users is empty for now so am using an array of fake users */}
-              {/* <Podium users={users.slice(0, 3)} /> */}
-              <Podium users={fakeUsers} />
+              <Podium users={users.slice(0, 3)} />
+              {/* <Podium users={fakeUsers} /> */}
 
             </div>
 

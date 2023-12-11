@@ -1,12 +1,10 @@
 'use client'
-import Rules from './components/Rules'
-import OnlineFriendsInvite from './components/onlineFriendsInvite'
-import PlayerCard from './components/PlayerCard'
 import axios from "@/app/utils/axios";
 import { useEffect, useState } from 'react'
 import Loader from '../../components/loader'
 import { User } from '../../../app/types/user';
 import { useRouter } from 'next/navigation';
+import { getGameData } from '@/app/utils/update';
 
 
 
@@ -14,11 +12,30 @@ export default function Pong() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [onlineFriends, setOnlineFriends] = useState([]);
+  const [gameDataFetched, setGameDataFetched] = useState(false); // Track whether getGameData has been called
   const router = useRouter();
   const handleMMClick = () => {
+    if (!gameDataFetched) {
+      getGameDataHandler();
+    }
     router.push('/Pong/VersusScreen');
   };
 
+
+  const getGameDataHandler = async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      console.error('Access token not found in local storage');
+      return;
+    }
+    setGameDataFetched(true);
+    try {
+      const data = await getGameData(token);
+      console.log('GameData:', data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -27,9 +44,9 @@ export default function Pong() {
             Authorization: `${localStorage.getItem('access_token')}`,
           },
         });
+        console.log(data.data);
         setUser(data.data);
         setLoading(false);
-        console.log(data.data);
         const loggedUserId = data.data.id;
         fetchOnlineFriends(loggedUserId);
       } catch (err) {
@@ -59,7 +76,12 @@ export default function Pong() {
   };
 
   if (loading) {
-    return <Loader />;
+
+    return (
+      <div className='min-h-screen'>
+        <Loader />;
+      </div>
+    );
   }
 
   return (

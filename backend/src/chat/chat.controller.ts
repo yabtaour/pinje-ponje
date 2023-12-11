@@ -52,6 +52,18 @@ export class ChatController {
     return rooms;
   }
 
+  @Get('rooms/list')
+  async getListOfRooms(
+    @Req() request: Request,
+    @Query() query: PaginationLimitDto
+  ){
+    const user = await this.userService.getCurrentUser(request);
+    console.log(user.id);
+    const rooms = await this.chatService.getUnjoinedRooms(user.id, query);
+    // this.chatgateway.server.to(String(user.id)).emit('listOfRooms', rooms);
+    return rooms;
+  }
+
   @Get('rooms/:id')
   async getOneRoom(
       @Req() request: Request,

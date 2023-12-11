@@ -19,8 +19,14 @@ import { useAppSelector } from "@/app/globalRedux/store";
 export default function NavBar() {
   const currentuser = useAppSelector((state) => state.authReducer.value.user);
   const router = useRouter();
+
+  const AvatarImg = null;
+  // const Avatar = '/avatars' + currentuser?.profile?.avatar;
   const handleSettingsClick = () => {
     router.push('/settings');
+  };
+  const handleSignedInAsClick = () => {
+    router.push('/Profile');
   };
   return (
     <Navbar maxWidth="full" className="bg-[#151424] border-b-[#1A3070]">
@@ -74,7 +80,8 @@ export default function NavBar() {
                 color="secondary"
                 name="Jason Hughes"
                 size="sm"
-                src={currentuser?.profile.avatar ?? undefined}
+                src={AvatarImg}
+                // src={currentuser?.profile.avatar ?? undefined}
               />
             </DropdownTrigger>
             <DropdownMenu
@@ -86,6 +93,7 @@ export default function NavBar() {
                 key="profile"
                 className="h-14 gap-2 hover:bg-[#504e89]"
                 textValue={`Signed in as ${currentuser?.email}`}
+                onClick={() => handleSignedInAsClick()}
               >
                 <p className="font-regular text-[#f6e4fb]">Signed in as</p>
                 <p className="font-light text-[#73d3ff] text-sm">{currentuser?.email}</p>

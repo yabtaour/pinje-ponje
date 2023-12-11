@@ -46,7 +46,12 @@ const SearchPage = () => {
   }
 
   if (isLoading) {
-    <Loader />;
+
+    return (
+      <div className='min-h-screen'>
+        <Loader />;
+      </div>
+    );
   }
 
   const handlePrevPage = () => {
@@ -75,7 +80,9 @@ const SearchPage = () => {
 
   if (!data || data.length === 0) {
     return isLoading ? (
-      <Loader/>
+      <div className='min-h-screen'>
+      <Loader />;
+    </div>
   ) : (
       <div className="flex items-center justify-center h-screen">
         <div className="text-red-500">No users found</div>

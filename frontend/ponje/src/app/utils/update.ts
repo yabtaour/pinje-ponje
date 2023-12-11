@@ -40,6 +40,19 @@ export const fetchTwoFactorStatus = async (token: string | null) => {
 };
 
 
+export const getGameData = async (token : string | null) => {
+  try {
+
+      const res = await axios.post(`/game/queue`, {}, {
+          headers: {
+              Authorization: token,
+          },
+      });
+      return res.data;
+  } catch (err) {
+      console.error(err);
+  }
+};
 
 export const fetchQRCode = async (token: string | null) => {
   try {
@@ -71,5 +84,3 @@ export const resetPassword = async (old: string, newpass: string) => {
     throw error;
   }
 };
-
-
