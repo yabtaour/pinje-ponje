@@ -1,7 +1,9 @@
 import { useAppSelector } from "@/app/globalRedux/store";
-import { Button, Card, CardBody, CardHeader, Image, Modal, ModalContent, ScrollShadow, User } from '@nextui-org/react';
+import { Button, Card, CardBody, CardHeader, Image, Modal, ModalContent, User } from '@nextui-org/react';
+import axios from "axios";
+import { getCookie } from "cookies-next";
 import { ErrorMessage, Field, Form, Formik, FormikProps } from "formik";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as Yup from 'yup';
 import { Join } from "./actions";
 
@@ -11,38 +13,46 @@ export function JoinRooms({ onOpenChange, setAction }: { onOpenChange: () => voi
     const activeConversation = useAppSelector(state => state?.chatReducer?.rooms?.find((room: any) => room?.id === activeConversationId));
     const me = useAppSelector(state => state?.authReducer?.value?.user);
 
+    const [rooms, setRooms] = useState<any[]>([]);
+
+
+
+    useEffect(() => {
+
+        const fetchRooms = async () => {
+            const rooms = await axios.get('http://localhost:3000/chatapi/rooms/list', {
+                headers: {
+                    'Authorization': `${getCookie('token')}`
+                }
+            })
+            console.log("rooms: ", rooms.data);
+            setRooms(rooms.data);
+
+        }
+        fetchRooms();
+
+    }, [])
+
 
 
     return (
         <div className="flex flex-col items-center justify-center bg-[#222039] py-8">
             <h1>Rooms your can join</h1>
 
-            <ScrollShadow hideScrollBar className=" h-[10vh]" />
-            <div className="flex items-center">
-                <User
-                    className="text-white my-2"
-                    name={<>hamid</>}
-                    avatarProps={{ src: "https://i.redd.it/ow1iazp3ob351.jpg" }}
-                />
-                <Join />
-            </div>
-            <div className="flex items-center">
-                <User
-                    className="text-white my-2"
-                    name={<>hamid</>}
-                    avatarProps={{ src: "https://i.redd.it/ow1iazp3ob351.jpg" }}
-                />
-                <Join />
-            </div>
-            <div className="flex items-center">
-                <User
-                    className="text-white my-2"
-                    name={<>hamid</>}
-                    avatarProps={{ src: "https://i.redd.it/ow1iazp3ob351.jpg" }}
-                />
-                <Join />
-            </div>
-            <ScrollShadow />
+
+            {rooms.map((room, index) => (
+                // <ScrollShadow hideScrollBar className=" h-[75vh]">
+                // </ScrollShadow>
+                <div key={index} className="flex justify-between  border w-[50%] border-gray-800 m-2 px-5 rounded-full">
+                    <User
+                        className="text-white my-2"
+                        name={room.name}
+                        avatarProps={{ src: "https://i.redd.it/ow1iazp3ob351.jpg" }}
+                    />
+                    <Join />
+                </div>
+            ))}
+
         </div>
     )
 }

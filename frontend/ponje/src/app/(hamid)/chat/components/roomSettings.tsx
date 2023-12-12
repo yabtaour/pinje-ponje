@@ -4,6 +4,7 @@ import { Button, Modal, ModalContent, ScrollShadow, User, useDisclosure } from '
 import { ErrorMessage, Field, Form, Formik, FormikProps } from 'formik';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { HashLoader } from 'react-spinners';
 import * as Yup from 'yup';
 import { Ban, Invite, Mute, Play } from './actions';
 
@@ -34,30 +35,35 @@ export function InviteFriends() {
     const activeConversation = useAppSelector(state => state?.chatReducer?.rooms?.find((room: any) => room?.id === activeConversationId));
     const me = useAppSelector(state => state?.authReducer?.value?.user);
 
-
-
-
     return (
         <div className='flex justify-center flex-col'>
             <div className='flex align-middle border border-gray-900 rounded-full px-5 justify-around'>
-                {activeConversation?.room?.members.map((member, index) => (
-                    <div key={index} className="flex items-center">
-                        <User
-                            className="text-white my-2"
-                            name={
-                                activeConversation?.room?.roomType !== "DM"
-                                    ? activeConversation?.room?.name
-                                    : member?.user?.username
-                            }
-                            avatarProps={
-                                activeConversation?.room?.roomType !== "DM"
-                                    ? { src: member?.user?.profile?.avatar }
-                                    : { src: "https://i.redd.it/ow1iazp3ob351.jpg" }
-                            }
-                        />
-                        <Invite />
-                    </div>
-                ))}
+
+
+                {
+                    activeConversation?.room?.members?.length > 0 ? (
+
+                        activeConversation?.room?.members.map((member, index) => (
+                            <div key={index} className="flex items-center">
+                                <User
+                                    className="text-white my-2"
+                                    name={
+                                        activeConversation?.room?.roomType !== "DM"
+                                            ? activeConversation?.room?.name
+                                            : member?.user?.username
+                                    }
+                                    avatarProps={
+                                        activeConversation?.room?.roomType !== "DM"
+                                            ? { src: member?.user?.profile?.avatar }
+                                            : { src: "https://i.redd.it/ow1iazp3ob351.jpg" }
+                                    }
+                                />
+                                <Invite />
+                            </div>
+                        ))) : (
+                        <>
+                            <HashLoader size={100} color="#2F296E" />
+                        </>)}
             </div>
         </div>
     )
@@ -213,9 +219,7 @@ export default function RoomOptions({ isOpen, onOpenChange }: { isOpen: boolean,
                                 }}>
                                 Visit Profile
                             </button>
-
                         </div>
-
                     ) : (
                         <div className='flex flex-row items-center  justify-around py-12 bg-[#222039]'>
                             <div className="flex flex-col w-1/2  items-center justify-center ">
