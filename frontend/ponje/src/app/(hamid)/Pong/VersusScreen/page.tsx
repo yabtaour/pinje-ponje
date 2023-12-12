@@ -10,17 +10,13 @@ import { ClassNames } from "@emotion/react";
 import SocketManager from '@/app/utils/socketManager';
 
 
-
-
-
-
 export default function VersusScreen() {
     const [playerFound, setPlayerFound] = useState(false);
-    const [ememyPlayer, setEmemyPlayer] = useState(null);
+    const [enemyPlayer, setEnemyPlayer] = useState(null);
     const [selectedMap, setSelectedMap] = useState('');
     const [userToken, setUserToken] = useState(null);  
-    const [socketManagerGame, setSocketManager] = useState<SocketManager | null>(null);
-
+    const [currentUserId, setcurrentUserId] = useState(0);
+    const SocketManagerGame = SocketManager.getInstance("http://localhost:3000",`${localStorage.getItem('access_token')}`);
 
     const [user, setUser] = useState(null);
 
@@ -39,6 +35,7 @@ export default function VersusScreen() {
                 setUser(data.data);
                 console.log(data.data);
                 const loggedUserId = data.data.id;
+                setcurrentUserId(loggedUserId);
             } catch (err) {
                 console.error(err);
             }
@@ -47,53 +44,33 @@ export default function VersusScreen() {
         fetchData();
     }, []);
 
-
-    useEffect(() => {
-        const initializeSocketManager = async () => {
-            await getGameData(); 
-    
-            if (socketManagerGame) {
-                console.log("socketManagerGame is not null");
-                socketManagerGame.waitForConnection(async () => {
+    const initializeSocketManager = async () => {
+            if (SocketManagerGame) {
+                console.log("SocketManagerGame is not null");
+                SocketManagerGame.waitForConnection(async () => {
                     try {
                         console.log("waitForConnection executed");
-                        let data = await socketManagerGame.onstartGame();
+                        let data = await SocketManagerGame.onNewGame();
                         console.log("DATA WSLAAT", data);
+                        if (user) {
+                            console.log(user);
+                            console.log(data.players);
+                            console.log(currentUserId);
+                            const otherUser = data.players.find((player : any) => player.id !== currentUserId);
+                            console.log("this is the enemy player",otherUser);
+                            setEnemyPlayer(otherUser);
+                            setPlayerFound(true);
+                            console.log(enemyPlayer)
+                        }
                     } catch (error) {
                         console.error("Error in onstartGame:", error);
                     }
                 });
-                // socketManagerGame.waitForConnection(async () => {
-                //     let data = await socketManagerGame.onstartGame();
-                //     console.log("DATA WSLAAT");
-                //     console.log("1337 data",data);
-                // });
             }
-        };
-    
+        };    
+    useEffect(() => {
         initializeSocketManager();
-    }, [socketManagerGame]); 
-    
-    const getGameData = async () => {
-        try {
-            const token = localStorage.getItem('access_token');
-            if (!token) {
-                console.error('Access token not found in local storage');
-                return;
-            }
-    
-            const res = await axios.post(`/game/queue`, {}, {
-                headers: {
-                    Authorization: `${token}`,
-                },
-            });
-    
-            const manager = SocketManager.getInstance("http://localhost:3000", token);
-            setSocketManager(manager);
-        } catch (err) {
-            console.error(err);
-        }
-    };
+    }, [user]);
     
     return (
         <div className='min-h-screen bg-gradient-to-t from-[#2b2948] to-[#141321] flex flex-col justify-center items-center'>

@@ -54,8 +54,15 @@ export default function Profile() {
         }
       };
 
-    if (loading)
-        return <Loader/>
+      if (loading) {
+
+        return (
+          <div className='min-h-screen'>
+            <Loader />;
+          </div>
+        );
+      }
+      
     return (
         <div className="bg-[#151424] relative flex-grow min-h-screen p-0">
             <div>
@@ -64,8 +71,8 @@ export default function Profile() {
 
             <div id="biggest wrapper" className="flex flex-col items-center justify-center">
                 <div className="flex justify-center flex-wrap">
-                    <div className="flex justify-center">
-                        <SkillAnalytics />
+                    <div className="flex justify-center pl-[-8rem]">
+                        <SkillAnalytics user={user} />
                         <div className="flex justify-center">
                             <Performance user={user} />
                             <ProgressBar user={user} />
@@ -73,10 +80,10 @@ export default function Profile() {
                     </div>
                 </div>
                 <div className="flex justify-center flex-wrap">
-                    <div className="w-full lg:w-1/2">
+                    <div className="lg:w-3/5">
                         <MatchHistory />
                     </div>
-                    <div className="w-full lg:w-1/2">
+                    <div className="w-full lg:w-1/3">
                         <FriendsList users={Friends} />
                     </div>
                 </div>

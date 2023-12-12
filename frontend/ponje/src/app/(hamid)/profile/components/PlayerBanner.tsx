@@ -11,9 +11,9 @@ export default function PlayerBanner({ user }: { user: User | null | undefined }
     const logedUserId = useAppSelector((state) => state.authReducer.value.user?.id);
     const username = user?.username;
     const bio = user?.profile?.bio;
-    // const Avatar = null;
-    const Avatar = user?.profile?.avatar;
-
+    const Avatar = null;
+    // const Avatar = '/avatars' + user?.profile?.avatar;
+    // console.log("THIS IS AVATAR",Avatar);
     return (
         <div className="p-5 flex justify-center flex-row text-center" style={{
 
