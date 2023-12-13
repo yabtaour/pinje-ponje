@@ -1,78 +1,120 @@
 'use client'
-import React from "react";
-import { PlayerSkeleton } from "../components/PlayerCard";
-import PlayerCard from '../components/PlayerCard'
-import { useState, useEffect } from "react";
 import axios from "@/app/utils/axios";
-import Image from 'next/image';
-import Loader from '../../../components/loader';
-import { ClassNames } from "@emotion/react";
 import SocketManager from '@/app/utils/socketManager';
+import Image from 'next/image';
+import { useEffect, useState } from "react";
+import PlayerCard, { PlayerSkeleton } from '../components/PlayerCard';
+import { useRouter } from 'next/navigation';
 
 
 export default function VersusScreen() {
     const [playerFound, setPlayerFound] = useState(false);
-    const [enemyPlayer, setEnemyPlayer] = useState(null);
+    const [enemyPlayer, setEnemyPlayer] = useState<any>(null);
     const [selectedMap, setSelectedMap] = useState('');
-    const [userToken, setUserToken] = useState(null);  
     const [currentUserId, setcurrentUserId] = useState(0);
+    const [gameId, setGameId] = useState(0);
+    const [user, setUser] = useState(null);
+    const [startGame, setStartGame] = useState(false);
+    const [sentInitialize, setSentInitialize] = useState(false);
+    const [readyToInitialize, setReadyToInitialize] = useState(false);
+    const router = useRouter();
+    
     const SocketManagerGame = SocketManager.getInstance("http://localhost:3000",`${localStorage.getItem('access_token')}`);
 
-    const [user, setUser] = useState(null);
-
-
-    const handleMapClick = (map: string) => {
-        setSelectedMap(map);
-    };
     useEffect(() => {
         const fetchData = async () => {
-            try {
-                const data = await axios.get(`/users/me`, {
-                    headers: {
-                        Authorization: `${localStorage.getItem('access_token')}`,
-                    },
-                });
-                setUser(data.data);
-                console.log(data.data);
-                const loggedUserId = data.data.id;
-                setcurrentUserId(loggedUserId);
-            } catch (err) {
-                console.error(err);
+            if (!user) {
+                try {
+                    const data = await axios.get(`http://localhost:3000/users/me`, {
+                        headers: {
+                            Authorization: `${localStorage.getItem('access_token')}`,
+                        },
+                    });
+                    console.log(data.data);
+                    setUser(data.data);
+                    setcurrentUserId(data.data.id);
+                } catch (err) {
+                    console.error(err);
+                }
             }
         };
-
-        fetchData();
-    }, []);
-
-    const initializeSocketManager = async () => {
-            if (SocketManagerGame) {
-                console.log("SocketManagerGame is not null");
-                SocketManagerGame.waitForConnection(async () => {
-                    try {
-                        console.log("waitForConnection executed");
-                        let data = await SocketManagerGame.onNewGame();
-                        console.log("DATA WSLAAT", data);
-                        if (user) {
-                            console.log(user);
-                            console.log(data.players);
-                            console.log(currentUserId);
-                            const otherUser = data.players.find((player : any) => player.id !== currentUserId);
-                            console.log("this is the enemy player",otherUser);
-                            setEnemyPlayer(otherUser);
-                            setPlayerFound(true);
-                            console.log(enemyPlayer)
-                        }
-                    } catch (error) {
-                        console.error("Error in onstartGame:", error);
-                    }
-                });
-            }
-        };    
-    useEffect(() => {
-        initializeSocketManager();
+        if (!user)
+            fetchData();
     }, [user]);
     
+    useEffect(() => {
+        const waitForNewGame = async () => {
+            console.log("enemyPlayer ", enemyPlayer );
+            console.log("playerFound: ", playerFound);
+            if (!gameId) {
+                if (SocketManagerGame) {
+                    SocketManagerGame.waitForConnection(async () => {
+                        try {
+                            let data = await SocketManagerGame.onNewGame();
+                            if (data) {
+                                setGameId(data.id);
+                                const otherUser = data.players.find((player : any) => player.userId !== currentUserId);
+                                setEnemyPlayer(otherUser);
+                                setPlayerFound(true);
+                            }
+                        } catch (error) {
+                            console.error("Error in onNewGame:", error);
+                        }
+                    });
+                }
+            }
+        };
+        if (user) {
+            waitForNewGame();
+        }
+    }, [user, enemyPlayer]);
+
+    // useEffect(() => {
+    //     if (selectedMap) {
+    //         if (SocketManagerGame) {
+    //             SocketManagerGame.waitForConnection(async() => {
+    //                 console.log("connected");
+    //                 try {
+    //                     let data = await SocketManagerGame.onStartGame();
+    //                     setReadyToInitialize(true);
+    //                     console.log("data:",data);
+    //                     if (data)
+    //                         setStartGame(true);
+    //                     console.log(startGame);
+    //                 } catch (error) {
+    //                     console.error("Error in sendInitialize:", error);
+    //                 }
+    //             })
+    //         }
+    //     }
+    // }, [readyToInitialize, startGame, sentInitialize])
+
+    useEffect(() => {
+        console.log("sentInitialize : ", sentInitialize);
+        if (selectedMap && !sentInitialize) {
+                if (SocketManagerGame) {
+                    SocketManagerGame.waitForConnection(async() => {
+                        console.log("connecteeed");
+                        try {
+                            await SocketManagerGame.sendIntialization({gameId: gameId, playerPos: 30, ballVel: 3});
+                            setSentInitialize(true);
+                        } catch (error) {
+                            console.error("Error in sendInitialize:", error);
+                        }
+                    })
+                }
+        }
+    }, [selectedMap, sentInitialize])
+    
+    const handleMapClick = (map: string) => {
+        console.log("map clicked");
+        setSelectedMap(() => map);
+    };
+
     return (
+        startGame ? (
+            <div>KHOUYA SF TL9 LIYA DIK LGAME</div>
+        ) : (
         <div className='min-h-screen bg-gradient-to-t from-[#2b2948] to-[#141321] flex flex-col justify-center items-center'>
             <div className='grid grid-cols-3'>
                 <PlayerCard user={user} cardColor="#4A40BF" />
@@ -88,8 +130,8 @@ export default function VersusScreen() {
                         <path d="M212.558 260.818C213.933 264.347 218.193 268.98 218.193 272.716" stroke="white" strokeWidth="3" strokeLinecap="round" />
                     </svg>
                 </div>
-                {playerFound ? (
-                    <PlayerCard user={user} cardColor="#CE4242" />
+                {playerFound && enemyPlayer ? (
+                    <PlayerCard user={enemyPlayer.user} cardColor="#CE4242" />
                 ) : (
                     <div className="flex flex-col items-center">
                         <PlayerSkeleton />
@@ -102,7 +144,7 @@ export default function VersusScreen() {
                     </div>
                 )}
             </div>
-            {playerFound ? (
+            {playerFound && enemyPlayer ? (
                 <div className="flex flex-col items-center justify-center mt-12 space-y-4">
                     <p className="text-[#77DFF8] text-xl rounded-lg flex flex-row font-semibold"> PICK A GAME MAP </p>
                     <div className="bg-[#201e34] p-2 rounded-lg flex flex-row space-x-4 items-center w-full mt-12 justify-center">
@@ -144,8 +186,8 @@ export default function VersusScreen() {
                 </div>
             ) : (
                 <p></p>
-
             )}
         </div>
+    )
     );
 }

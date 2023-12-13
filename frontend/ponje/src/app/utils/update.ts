@@ -43,7 +43,7 @@ export const fetchTwoFactorStatus = async (token: string | null) => {
 export const getGameData = async (token : string | null) => {
   try {
 
-      const res = await axios.post(`/game/queue`, {}, {
+      const res = await axios.post(`http://localhost:3000/game/queue`, {}, {
           headers: {
               Authorization: token,
           },

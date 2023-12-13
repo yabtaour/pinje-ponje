@@ -371,32 +371,59 @@ export class GameService {
 
 	async initializeGame(client: number, payload: any) {
 		console.log("trying to initialize game");
-		const opponentPlayer = await this.prisma.user.findFirst({
+		const player = await this.prisma.player.findUnique({
 			where: {
-				id: {
-					not: client,
+				userId_gameId: {
+					userId: client,
+					gameId: payload.gameId
 				}
 			},
 			include: {
-				players: {
-					where: {
-						gameId: payload.gameId
-					}
-				}
-			}
-		})
+				game: { 
+					include: {
+						players: { 
+							where: {
+								userId: { 
+									not: client 
+								} 
+							}, include: {
+								user: true 
+							} 
+						} 
+					} 
+				} 
+			},
+		  });
+		  const opponentPlayer = player.game.players.map((otherPlayer) => otherPlayer.user);
+		  console.log(opponentPlayer);
+		// const opponentPlayer = await this.prisma.user.findFirst({
+		// 	where: {
+		// 		id: {
+		// 			not: client,
+		// 		}
+		// 	},
+		// 	include: {
+		// 		players: {
+		// 			where: {
+		// 				gameId: payload.gameId
+		// 			}
+		// 		}
+		// 	}
+		// })
 		const gameState = new GameState(
 			{id: client, paddlePosition: payload.playerPos, score: 0},
-			{id: opponentPlayer.id, paddlePosition: payload.playerPos, score: 0},
+			{id: opponentPlayer[0].id, paddlePosition: payload.playerPos, score: 0},
 			{x: payload.ballVel, y: payload.ballVel},
 		)
 		this.gameGateway.currentGames[payload.gameId] = gameState;
 		console.log("ALL GAMES !! ", this.gameGateway.currentGames);
 		console.log("CURRENT GAME !! ", this.gameGateway.currentGames[payload.gameId]);
-		await this.gameGateway.server.to(String(client)).emit('startGame', gameState);
-		await this.gameGateway.server.to(String(opponentPlayer.id)).emit('startGame', gameState);
-		// await this.gameGateway.server.emit('startGame', gameState);
-		// await this.gameGateway.server.emit('startGame', gameState);
+		console.log(String(client));
+		console.log(this.gameGateway.currentGames[payload.gameId].player1.id);
+		console.log(String(opponentPlayer[0].id));
+		console.log(this.gameGateway.currentGames[payload.gameId].player2.id)
+		this.gameGateway.server.to(String(this.gameGateway.currentGames[payload.gameId].player1.id)).emit('startGame', "ddddd");
+		this.gameGateway.server.to(String(this.gameGateway.currentGames[payload.gameId].player2.id)).emit('startGame', "dddd");
 	}
 
 	async updatePlayerPosition(client: number, payload: any) {

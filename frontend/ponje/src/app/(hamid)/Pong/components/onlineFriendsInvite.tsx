@@ -1,5 +1,5 @@
 import React from "react";
-import { User } from "../../../app/types/user";
+import { User } from "../../../types/user";
 import Image from "next/image";
 
 

@@ -181,8 +181,8 @@ class SocketManager {
   }
 
   public onNewGame(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (this.gameSocket && this.gameSocket) {
+    return new Promise(async (resolve, reject) => {
+      if (this.gameSocket && this.gameSocket.connected) {
         console.log("Socket is connected", this.gameSocket);
         this.gameSocket?.on("gameFound", (data: any) => {
           console.log("gameFound", data);
@@ -196,10 +196,11 @@ class SocketManager {
   }
 
   public sendIntialization(payload: {gameId: number, playerPos: number, ballVel: number}): Promise<any> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
         console.log("Socket is connected.", this.gameSocket);
         console.log("Connected to game namespace");
+        console.log(payload);
         this.gameSocket?.emit("initialize", payload);
       } else {
         console.log("Socket is not connected yet.");
@@ -207,49 +208,23 @@ class SocketManager {
       }
     }); 
   }
-  //check game connection
-  public khouyaSawbLgame(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (this.gameSocket && this.gameSocket.connected) {
-        console.log("Socket is connected.", this.gameSocket);
-        this.gameSocket?.emit("khouyaSawbLgame");
-      } else {
-        console.log("Socket is not connected yet.");
-        reject("Socket is not connected");
-      }
-    });
-  }
-
   
 
-  public onstartGame(): Promise<any> {
-    return new Promise((resolve, reject) => {
+  public onStartGame(): Promise<any> {
+    return new Promise(async (resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
         console.log("Socket is connected.", this.gameSocket);
-        this.gameSocket?.on("startGame", (data: any) => {
+        await this.gameSocket?.on("startGame", (data: any) => {
+          console.log("data jaaaaaat");
           console.log("startGame", data);
           resolve(data);
+          console.log(data);
         });
       } else {
         console.log("Socket is not connected yet.");
         reject("Socket is not connected");
       }
     });
-  }
-
-  public initializeGame(payload: any) {
-    return new Promise((resolve, reject) => {
-      if (this.gameSocket && this.gameSocket.connected) {
-        console.log("Socket is connected.", this.gameSocket);
-        this.gameSocket?.on("startGame", (data: any) => {
-          console.log("startGame", data);
-          resolve(data);
-        });
-      } else {
-        console.log("Socket is not connected yet.");
-        reject("Socket is not connected");
-      }
-    })
   }
 
   public waitForConnection(callback: () => void) {

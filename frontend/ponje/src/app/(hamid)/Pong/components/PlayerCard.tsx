@@ -32,6 +32,7 @@ export default function PlayerCard({ user, cardColor }: { user: User | null | un
   const rank = user?.rank;
   const experience = user?.experience;
   const avatar = user?.profile?.avatar ?? "https://via.placeholder.com/150";
+  console.log("suer : ", user);
   return (
 
     <div className="flex flex-col items-center ">

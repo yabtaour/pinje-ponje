@@ -5,6 +5,8 @@ import Loader from '../../components/loader'
 import { User } from '../../../app/types/user';
 import { useRouter } from 'next/navigation';
 import { getGameData } from '@/app/utils/update';
+import PlayerCard from "./components/PlayerCard";
+import OnlineFriendsInvite from "./components/onlineFriendsInvite";
 
 
 
@@ -15,10 +17,10 @@ export default function Pong() {
   const [gameDataFetched, setGameDataFetched] = useState(false); // Track whether getGameData has been called
   const router = useRouter();
   const handleMMClick = () => {
+    router.push('/Pong/VersusScreen');
     if (!gameDataFetched) {
       getGameDataHandler();
     }
-    router.push('/Pong/VersusScreen');
   };
 
 
@@ -39,7 +41,7 @@ export default function Pong() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await axios.get(`/users/me`, {
+        const data = await axios.get(`http://localhost:3000/users/me`, {
           headers: {
             Authorization: `${localStorage.getItem('access_token')}`,
           },
@@ -60,7 +62,7 @@ export default function Pong() {
 
   const fetchOnlineFriends = async (userId: number) => {
     try {
-      const data = await axios.get(`/users/${userId}/friends`, {
+      const data = await axios.get(`http://localhost:3000/users/${userId}/friends`, {
         headers: {
           Authorization: `${localStorage.getItem('access_token')}`,
         },
