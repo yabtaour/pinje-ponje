@@ -1,10 +1,116 @@
 'use client'
 import axios from "@/app/utils/axios";
 import SocketManager from '@/app/utils/socketManager';
+import Matter, { Body, Events } from 'matter-js';
 import Image from 'next/image';
-import { useEffect, useState } from "react";
-import PlayerCard, { PlayerSkeleton } from '../components/PlayerCard';
 import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from "react";
+import PlayerCard, { PlayerSkeleton } from '../components/PlayerCard';
+const SocketManagerGame = SocketManager.getInstance("http://localhost:3000",`${localStorage.getItem('access_token')}`);
+
+
+export const Engine = Matter.Engine;
+export const Render = Matter.Render;
+export const World = Matter.World;
+export const Bodies = Matter.Bodies;
+
+let positionUpdate:any  = null;
+
+let ball: Matter.Body;
+let floor: Matter.Body;
+let ceiling: Matter.Body;
+let rightPaddle: Matter.Body;
+let leftPaddle: Matter.Body;
+
+let worldHeight: number;
+let worldWidth: number;
+let canvaHeight: number;
+let canvaWidth: number;
+
+const keys: any = {
+    ArrowUp: false,
+    ArrowDown: false,
+  };
+  
+  const directionChanges: any = {
+    up: 0,
+    down: 0,
+  };
+
+export function createBodies() {
+    ball = Bodies.circle(worldWidth / 2, worldHeight / 2, 15, {
+      restitution: 1,
+      frictionAir: 0,
+      friction: 0,
+      render: {
+        fillStyle: "#73d3ff"
+      }
+    });
+    Body.setVelocity(ball, {
+      x: 3,
+      y: 3,
+    })
+    rightPaddle = Bodies.rectangle(worldWidth - 20, worldHeight / 2, 20, 100, {
+      isStatic: true,
+      render: {
+        fillStyle: "#4E40F4",
+      }
+    });
+    leftPaddle = Bodies.rectangle(20, worldHeight / 2, 20, 100, {
+      isStatic: true,
+      render: {
+        fillStyle: "#4E40F4"
+      }
+    });
+    floor = Bodies.rectangle(0, worldHeight, worldWidth * 2, 5, { isStatic: true });
+    ceiling = Bodies.rectangle(0, 0, worldWidth * 2, 5, { isStatic: true });
+  
+    return ([rightPaddle, leftPaddle, ball, floor, ceiling])
+}
+
+export function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matter.Body) {
+
+    if (bodyA == ball || bodyB == ball) {
+      let otherBody = bodyA === ball ? bodyB : bodyA;
+      if (otherBody === floor || otherBody === ceiling) {
+        Body.setVelocity(ball, {
+          x: ball.velocity.x,
+          y: -ball.velocity.y
+        })
+      }
+      else if (otherBody === leftPaddle || otherBody === rightPaddle) {
+        Body.setVelocity(ball, {
+          x: -ball.velocity.x,
+          y: ball.velocity.y
+        })
+      }
+    }
+}
+
+export function updatePaddlesgame(gameId: number) {
+    if (keys['ArrowUp'] && leftPaddle.position.y - 100 / 2 > 10) {
+        if(SocketManagerGame) {
+            SocketManagerGame.waitForConnection(async() => {
+                await SocketManagerGame.sendPaddlePosition({
+                    gameId: gameId,
+                    direction: "up",
+                })
+            })
+        }
+    //   Body.translate(leftPaddle, { x: 0, y: -2 });
+    }
+    if (keys['ArrowDown'] && leftPaddle.position.y + 100 / 2 < worldHeight - 10) {
+        if(SocketManagerGame) {
+            SocketManagerGame.waitForConnection(async() => {
+                await SocketManagerGame.sendPaddlePosition({
+                    gameId: gameId,
+                    direction: "down",
+                })
+            })
+        }
+    //   Body.translate(leftPaddle, { x: 0, y: 2 });
+    }
+  }
 
 
 export default function VersusScreen() {
@@ -18,24 +124,27 @@ export default function VersusScreen() {
     const [sentInitialize, setSentInitialize] = useState(false);
     const [readyToInitialize, setReadyToInitialize] = useState(false);
     const router = useRouter();
+    const [leftPaddlePosition, setLeftPaddlePosition] = useState(worldHeight / 2);
+    const [rightPaddlePosition, setRightPaddlePosition] = useState(worldHeight / 2);
+
+    const boxRef = useRef<HTMLDivElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
     
-    const SocketManagerGame = SocketManager.getInstance("http://localhost:3000",`${localStorage.getItem('access_token')}`);
+    
 
     useEffect(() => {
         const fetchData = async () => {
-            if (!user) {
-                try {
-                    const data = await axios.get(`http://localhost:3000/users/me`, {
-                        headers: {
-                            Authorization: `${localStorage.getItem('access_token')}`,
-                        },
-                    });
-                    console.log(data.data);
-                    setUser(data.data);
-                    setcurrentUserId(data.data.id);
-                } catch (err) {
-                    console.error(err);
-                }
+            try {
+                const data = await axios.get(`http://localhost:3000/users/me`, {
+                    headers: {
+                        Authorization: `${localStorage.getItem('access_token')}`,
+                    },
+                });
+                console.log(data.data);
+                setUser(data.data);
+                setcurrentUserId(data.data.id);
+            } catch (err) {
+                console.error("Error when fethcing user's data");
             }
         };
         if (!user)
@@ -44,24 +153,22 @@ export default function VersusScreen() {
     
     useEffect(() => {
         const waitForNewGame = async () => {
-            console.log("enemyPlayer ", enemyPlayer );
-            console.log("playerFound: ", playerFound);
-            if (!gameId) {
-                if (SocketManagerGame) {
-                    SocketManagerGame.waitForConnection(async () => {
-                        try {
-                            let data = await SocketManagerGame.onNewGame();
-                            if (data) {
-                                setGameId(data.id);
-                                const otherUser = data.players.find((player : any) => player.userId !== currentUserId);
-                                setEnemyPlayer(otherUser);
-                                setPlayerFound(true);
-                            }
-                        } catch (error) {
-                            console.error("Error in onNewGame:", error);
+            if (SocketManagerGame) {
+                SocketManagerGame.waitForConnection(async () => {
+                    try {
+                        let data = await SocketManagerGame.onNewGame();
+                        if (data) {
+                            setGameId(data.id);
+                            console.log(data.id);
+                            console.log("GAME ID !!!! ", gameId);
+                            const otherUser = data.players.find((player : any) => player.userId !== currentUserId);
+                            setEnemyPlayer(otherUser);
+                            setPlayerFound(true);
                         }
-                    });
-                }
+                    } catch (error) {
+                        console.error("Error in onNewGame:", error);
+                    }
+                });
             }
         };
         if (user) {
@@ -69,42 +176,132 @@ export default function VersusScreen() {
         }
     }, [user, enemyPlayer]);
 
-    // useEffect(() => {
-    //     if (selectedMap) {
-    //         if (SocketManagerGame) {
-    //             SocketManagerGame.waitForConnection(async() => {
-    //                 console.log("connected");
-    //                 try {
-    //                     let data = await SocketManagerGame.onStartGame();
-    //                     setReadyToInitialize(true);
-    //                     console.log("data:",data);
-    //                     if (data)
-    //                         setStartGame(true);
-    //                     console.log(startGame);
-    //                 } catch (error) {
-    //                     console.error("Error in sendInitialize:", error);
-    //                 }
-    //             })
-    //         }
-    //     }
-    // }, [readyToInitialize, startGame, sentInitialize])
+    useEffect(() => {
+        if (selectedMap) {
+            if (SocketManagerGame) {
+                SocketManagerGame.waitForConnection(async() => {
+                    console.log("connected");
+                    try {
+                        setReadyToInitialize(true);
+                        let data = await SocketManagerGame.onStartGame();
+                        console.log("data:",data);
+                        if (data)
+                            setStartGame(true);
+                        console.log(startGame);
+                    } catch (error) {
+                        console.error("Error in sendInitialize:", error);
+                    }
+                })
+            }
+        }
+    }, [selectedMap])
 
     useEffect(() => {
-        console.log("sentInitialize : ", sentInitialize);
         if (selectedMap && !sentInitialize) {
-                if (SocketManagerGame) {
-                    SocketManagerGame.waitForConnection(async() => {
-                        console.log("connecteeed");
-                        try {
-                            await SocketManagerGame.sendIntialization({gameId: gameId, playerPos: 30, ballVel: 3});
-                            setSentInitialize(true);
-                        } catch (error) {
-                            console.error("Error in sendInitialize:", error);
-                        }
-                    })
-                }
+            if (SocketManagerGame) {
+                SocketManagerGame.waitForConnection(async() => {
+                    try {
+                        await SocketManagerGame.sendIntialization({gameId: gameId, playerPos: 30, ballVel: 3});
+                        setSentInitialize(true);
+                    } catch (error) {
+                        console.error("Error in sendInitialize:");
+                    }
+                })
+            }
         }
-    }, [selectedMap, sentInitialize])
+    }, [readyToInitialize])
+
+    useEffect(() => {
+        if (startGame) {
+            worldWidth = canvasRef.current?.width! * 4;
+            worldHeight = canvasRef.current?.height! * 4;
+            canvaWidth = canvasRef.current?.width!;
+            canvaHeight = canvasRef.current?.height!;
+
+            if (SocketManagerGame) {
+                SocketManagerGame.waitForConnection(async () => {
+                    try {
+                        positionUpdate = await SocketManagerGame.onPaddlePosition();
+                        if (positionUpdate) {
+                            console.log("Received Paddle Position Update:", positionUpdate);
+                            const { playerId, newPos } = positionUpdate;
+                            if (playerId == currentUserId) {
+                                setLeftPaddlePosition(() => newPos);
+                            } else {
+                                setRightPaddlePosition(() => newPos);
+                            }
+                        }
+        
+                    } catch (error) {
+                        console.error("Error waiting for paddlePosition:", error);
+                    }
+                });
+            }
+            try {
+                const engine = Engine.create({
+                    gravity: {
+                      x: 0,
+                      y: 0,
+                    }
+                });
+                const render = Render.create({
+                    element: boxRef.current!,
+                    canvas: canvasRef.current!,
+                    engine: engine,
+                    options: {
+                        width: worldWidth,
+                        height: worldHeight,
+                        wireframes: false,
+                        background: '#C2D9FF',
+                    },
+                });
+                createBodies();
+                World.add(engine.world, [ball, floor, ceiling, leftPaddle, rightPaddle]);
+                console.log(leftPaddle);
+                console.log(rightPaddle);
+                window.addEventListener('keydown', (event) => {
+                    if (keys.hasOwnProperty(event.code)) {
+                      event.preventDefault();
+                      keys[event.code] = true;
+                      updatePaddlesgame(gameId); // Update paddles immediately on keydown
+                    }
+                  });
+                  window.addEventListener('keyup', (event) => {
+                    if (keys.hasOwnProperty(event.code)) {
+                      event.preventDefault();
+                      keys[event.code] = false;
+                    }
+                  });
+
+                  Events.on(engine, 'beforeUpdate', () => {
+                    updatePaddlesgame(gameId);
+                  });
+          
+                Matter.Runner.run(engine)
+                Render.run(render);
+                Events.on(engine, 'collisionStart', (event) => {
+                    event.pairs.forEach((pair) => {
+                        const { bodyA, bodyB } = pair;
+                        handleColision(pair, bodyA, bodyB)
+                    });
+                });
+                if (leftPaddlePosition == 0) {
+                    setRightPaddlePosition(worldHeight / 2);
+                    setLeftPaddlePosition(worldHeight / 2);
+                }
+                Body.setPosition(leftPaddle, { x: 20, y: leftPaddlePosition });
+                Body.setPosition(rightPaddle, { x: worldWidth - 20, y: rightPaddlePosition });
+
+                return () => {
+                    Render.stop(render);
+                    World.clear(engine.world, false);
+                    Engine.clear(engine);
+                }
+            } catch (error) {
+                console.error("Error creating game");
+            }
+        }
+    }, [startGame, positionUpdate,leftPaddlePosition, rightPaddlePosition])
     
     const handleMapClick = (map: string) => {
         console.log("map clicked");
@@ -113,7 +310,11 @@ export default function VersusScreen() {
 
     return (
         startGame ? (
-            <div>KHOUYA SF TL9 LIYA DIK LGAME</div>
+            <div className='w-full h-screen flex items-center justify-center'>
+            <div className='w-2/3 h-2/3 border-2 border-black z-30' ref={boxRef}>
+                <canvas className='w-full h-full border-2 border-black z-30' id="myCanva" ref={canvasRef} />
+            </div>
+    </div>
         ) : (
         <div className='min-h-screen bg-gradient-to-t from-[#2b2948] to-[#141321] flex flex-col justify-center items-center'>
             <div className='grid grid-cols-3'>

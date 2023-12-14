@@ -22,6 +22,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   currentGames: Map<number, GameState>;
   intializeArray: number[];
+  initializeClients: string[];
   
   constructor(
 		@Inject(forwardRef(() => GameService))
@@ -29,6 +30,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   ) {
     this.intializeArray = [];
     this.currentGames = new Map();
+    this.initializeClients = [];
   }
   
     afterInit(server: Server) {
@@ -45,10 +47,15 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           || typeof payload.ballVel !== "number") {
         throw new WsException("Bad request");
       }
+      const clientIndex = this.initializeClients.findIndex((element) => {
+        return (element == client.id);
+      })
+      // if (clientIndex != -1)
+      //   return;
+      this.initializeClients.push(client.id);
       if (this.currentGames.has(payload.gameId)) {
         console.log("KHOUYA TA MALK BAGHI TGUEDDED");
-        throw new WsException("Game already initiated");
-        return ;
+          throw new WsException("Game already initiated");
       }
       this.intializeArray.push(payload.gameId);
       console.log(this.intializeArray);
@@ -68,7 +75,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     @SubscribeMessage('updatePlayerPosition')
     updatePlayerPosition(client: any, payload: {gameId: number, direction: string}): void {
       console.log(client);
-      this.gameService.updatePlayerPosition(client.id, payload);
+      console.log(payload);
+      this.gameService.updatePlayerPosition(parseInt(client.id), payload);
     }
     
     @SubscribeMessage('updateScore')
@@ -80,7 +88,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     async handleConnection(client: AuthWithWs) {
       const sockets = this.server.sockets;
 			console.log(`Client connected: ${client.id}`);
-			console.log(this.server);
+			// console.log(this.server);
     }
     
     handleDisconnect(client: AuthWithWs) {
