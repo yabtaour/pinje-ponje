@@ -3,9 +3,9 @@ import axios from "@/app/utils/axios";
 import SocketManager from '@/app/utils/socketManager';
 import Matter, { Body, Events } from 'matter-js';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from "react";
 import PlayerCard, { PlayerSkeleton } from '../components/PlayerCard';
+import { ClimbingBoxLoader } from "react-spinners";
 const SocketManagerGame = SocketManager.getInstance("http://localhost:3000",`${localStorage.getItem('access_token')}`);
 
 
@@ -13,8 +13,6 @@ export const Engine = Matter.Engine;
 export const Render = Matter.Render;
 export const World = Matter.World;
 export const Bodies = Matter.Bodies;
-
-let positionUpdate:any  = null;
 
 let ball: Matter.Body;
 let floor: Matter.Body;
@@ -30,12 +28,9 @@ let canvaWidth: number;
 const keys: any = {
     ArrowUp: false,
     ArrowDown: false,
-  };
-  
-  const directionChanges: any = {
-    up: 0,
-    down: 0,
-  };
+};
+
+let gameId = 0;
 
 export function createBodies() {
     ball = Bodies.circle(worldWidth / 2, worldHeight / 2, 15, {
@@ -87,49 +82,35 @@ export function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matter.Body
     }
 }
 
-export function updatePaddlesgame(gameId: number) {
-    if (keys['ArrowUp'] && leftPaddle.position.y - 100 / 2 > 10) {
-        if(SocketManagerGame) {
-            SocketManagerGame.waitForConnection(async() => {
-                await SocketManagerGame.sendPaddlePosition({
-                    gameId: gameId,
-                    direction: "up",
-                })
-            })
-        }
-    //   Body.translate(leftPaddle, { x: 0, y: -2 });
-    }
-    if (keys['ArrowDown'] && leftPaddle.position.y + 100 / 2 < worldHeight - 10) {
-        if(SocketManagerGame) {
-            SocketManagerGame.waitForConnection(async() => {
-                await SocketManagerGame.sendPaddlePosition({
-                    gameId: gameId,
-                    direction: "down",
-                })
-            })
-        }
-    //   Body.translate(leftPaddle, { x: 0, y: 2 });
-    }
-  }
+let isSent = false;
 
+export function updatePaddlesgame(gameId: number) {
+    if (keys['ArrowUp'] && leftPaddle.position.y - 100 / 2 > 10 && !isSent) {
+        // Body.translate(leftPaddle, {x: 0, y: -3});
+        SocketManagerGame.sendPaddlePosition({gameId: gameId, direction: "up"});
+        isSent = true;
+
+    }
+    if (keys['ArrowDown'] && leftPaddle.position.y + 100 / 2 < worldHeight - 10 && !isSent) {
+        // Body.translate(leftPaddle, {x: 0, y: 3});
+        SocketManagerGame.sendPaddlePosition({gameId: gameId, direction: "down"});
+        isSent = true;
+    }
+}
 
 export default function VersusScreen() {
     const [playerFound, setPlayerFound] = useState(false);
     const [enemyPlayer, setEnemyPlayer] = useState<any>(null);
     const [selectedMap, setSelectedMap] = useState('');
     const [currentUserId, setcurrentUserId] = useState(0);
-    const [gameId, setGameId] = useState(0);
+    // const [gameId, setGameId] = useState(0);
     const [user, setUser] = useState(null);
     const [startGame, setStartGame] = useState(false);
     const [sentInitialize, setSentInitialize] = useState(false);
     const [readyToInitialize, setReadyToInitialize] = useState(false);
-    const router = useRouter();
-    const [leftPaddlePosition, setLeftPaddlePosition] = useState(worldHeight / 2);
-    const [rightPaddlePosition, setRightPaddlePosition] = useState(worldHeight / 2);
-
-    const boxRef = useRef<HTMLDivElement>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
     
+    const boxRef = useRef<HTMLDivElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);    
     
 
     useEffect(() => {
@@ -158,7 +139,8 @@ export default function VersusScreen() {
                     try {
                         let data = await SocketManagerGame.onNewGame();
                         if (data) {
-                            setGameId(data.id);
+                            gameId = data.id;
+                            // setGameId(data.id);
                             console.log(data.id);
                             console.log("GAME ID !!!! ", gameId);
                             const otherUser = data.players.find((player : any) => player.userId !== currentUserId);
@@ -212,31 +194,37 @@ export default function VersusScreen() {
     }, [readyToInitialize])
 
     useEffect(() => {
+
         if (startGame) {
+            if (SocketManagerGame) {
+                SocketManagerGame.waitForConnection(() => {
+                    SocketManagerGame.onPaddlePosition().then((data) => {
+                        console.log(data);
+                        const { playerId, direction } = data;
+                        if (playerId == currentUserId) {
+                            if (direction == "up") {
+                                Body.translate(leftPaddle, {x: 0, y: -3});
+                            } else {
+                                Body.translate(leftPaddle, {x: 0, y: 3});
+                            }
+                        } else {
+                            if (direction == "up") {
+                                Body.translate(rightPaddle, {x: 0, y: -3});
+                            } else {
+                                Body.translate(rightPaddle, {x: 0, y: 3});
+                            }
+                        }
+                    }).catch((error) => {
+                        console.error("Error in onPaddlePosition:", error);
+                    });
+                });
+            }
+        
             worldWidth = canvasRef.current?.width! * 4;
             worldHeight = canvasRef.current?.height! * 4;
             canvaWidth = canvasRef.current?.width!;
             canvaHeight = canvasRef.current?.height!;
 
-            if (SocketManagerGame) {
-                SocketManagerGame.waitForConnection(async () => {
-                    try {
-                        positionUpdate = await SocketManagerGame.onPaddlePosition();
-                        if (positionUpdate) {
-                            console.log("Received Paddle Position Update:", positionUpdate);
-                            const { playerId, newPos } = positionUpdate;
-                            if (playerId == currentUserId) {
-                                setLeftPaddlePosition(() => newPos);
-                            } else {
-                                setRightPaddlePosition(() => newPos);
-                            }
-                        }
-        
-                    } catch (error) {
-                        console.error("Error waiting for paddlePosition:", error);
-                    }
-                });
-            }
             try {
                 const engine = Engine.create({
                     gravity: {
@@ -263,7 +251,7 @@ export default function VersusScreen() {
                     if (keys.hasOwnProperty(event.code)) {
                       event.preventDefault();
                       keys[event.code] = true;
-                      updatePaddlesgame(gameId); // Update paddles immediately on keydown
+                      updatePaddlesgame(gameId);
                     }
                   });
                   window.addEventListener('keyup', (event) => {
@@ -273,9 +261,9 @@ export default function VersusScreen() {
                     }
                   });
 
-                  Events.on(engine, 'beforeUpdate', () => {
-                    updatePaddlesgame(gameId);
-                  });
+                //   Events.on(engine, 'beforeUpdate', () => {
+                //     updatePaddlesgame(gameId);
+                //   });
           
                 Matter.Runner.run(engine)
                 Render.run(render);
@@ -285,12 +273,6 @@ export default function VersusScreen() {
                         handleColision(pair, bodyA, bodyB)
                     });
                 });
-                if (leftPaddlePosition == 0) {
-                    setRightPaddlePosition(worldHeight / 2);
-                    setLeftPaddlePosition(worldHeight / 2);
-                }
-                Body.setPosition(leftPaddle, { x: 20, y: leftPaddlePosition });
-                Body.setPosition(rightPaddle, { x: worldWidth - 20, y: rightPaddlePosition });
 
                 return () => {
                     Render.stop(render);
@@ -301,7 +283,7 @@ export default function VersusScreen() {
                 console.error("Error creating game");
             }
         }
-    }, [startGame, positionUpdate,leftPaddlePosition, rightPaddlePosition])
+    }, [startGame, leftPaddle, rightPaddle])
     
     const handleMapClick = (map: string) => {
         console.log("map clicked");

@@ -20,6 +20,7 @@ export default function Pong() {
     router.push('/Pong/VersusScreen');
     if (!gameDataFetched) {
       getGameDataHandler();
+      
     }
   };
 

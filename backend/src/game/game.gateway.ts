@@ -74,7 +74,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     @SubscribeMessage('updatePlayerPosition')
     updatePlayerPosition(client: any, payload: {gameId: number, direction: string}): void {
-      console.log(client);
+      // console.log(client);
       console.log(payload);
       this.gameService.updatePlayerPosition(parseInt(client.id), payload);
     }

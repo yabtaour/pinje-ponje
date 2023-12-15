@@ -184,16 +184,27 @@ class SocketManager {
     return new Promise(async (resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
         console.log("Socket is connected", this.gameSocket);
-        this.gameSocket?.on("gameFound", (data: any) => {
+  
+        const gameFoundListener = (data: any) => {
+          console.log("data jaat");
           console.log("gameFound", data);
-          resolve(data);
-        });
+          if (data) {
+            resolve(data);
+          }
+          data = null;
+  
+          // Remove the listener after handling the event
+          this.gameSocket?.off("gameFound", gameFoundListener);
+        };
+  
+        this.gameSocket?.on("gameFound", gameFoundListener);
       } else {
-        console.log("Socket is not conected yet.");
+        console.log("Socket is not connected yet.");
         reject("Socket is not connected");
       }
-    })
+    });
   }
+  
 
   public sendIntialization(payload: {gameId: number, playerPos: number, ballVel: number}): Promise<any> {
     return new Promise(async (resolve, reject) => {
@@ -216,6 +227,7 @@ class SocketManager {
         console.log("Connected to game namespace");
         console.log(payload);
         this.gameSocket?.emit("updatePlayerPosition", payload);
+        resolve("done");
       } else {
         console.log("Socket is not connected yet.");
         reject("Socket is not connected");
