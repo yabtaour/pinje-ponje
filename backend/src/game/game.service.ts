@@ -365,13 +365,11 @@ export class GameService {
 				status: "INGAME"
 			}
 		});
-		console.log("jesuuuuuus");
 		await this.gameGateway.server.to(String(player.userId)).emit('gameFound', game);
 		await this.gameGateway.server.to(String(opponentPlayer.userId)).emit('gameFound', game);
 	}
 
 	async initializeGame(client: number, payload: any) {
-		console.log("trying to initialize game");
 		const player = await this.prisma.player.findUnique({
 			where: {
 				userId_gameId: {
@@ -396,7 +394,6 @@ export class GameService {
 			},
 		  });
 		const opponentPlayer = player.game.players.map((otherPlayer) => otherPlayer.user);
-		console.log(opponentPlayer);
 		const gameState = new GameState(
 			{id: client, paddlePosition: payload.playerPos, score: 0},
 			{id: opponentPlayer[0].id, paddlePosition: payload.playerPos, score: 0},
@@ -406,13 +403,11 @@ export class GameService {
 		this.gameGateway.initializeClients.splice(this.gameGateway.initializeClients.findIndex((element) => {
 			return element == String(client)
 		}), 1);
-		console.log(gameState);
-		this.gameGateway.server.to(String(this.gameGateway.currentGames[payload.gameId].player1.id)).emit('startGame', "dd");
-		this.gameGateway.server.to(String(this.gameGateway.currentGames[payload.gameId].player2.id)).emit('startGame', "dd");
+		this.gameGateway.server.to(String(this.gameGateway.currentGames[payload.gameId].player1.id)).emit('startGame', {reversed: true});
+		this.gameGateway.server.to(String(this.gameGateway.currentGames[payload.gameId].player2.id)).emit('startGame', {reversed: false});
 	}
 
 	async updatePlayerPosition(client: number, payload: any) {
-		console.log(client, payload.gameId)
 		const currentPlayer = await this.prisma.player.findUnique({
 			where: {
 				userId_gameId: {
@@ -423,31 +418,24 @@ export class GameService {
 		});
 		if (!currentPlayer)
 			throw new WsException(`No player found`);
-		console.log("currentPlayer", currentPlayer);
-		console.log(this.gameGateway.currentGames[payload.gameId]);
+		
 		let newY = payload.direction === "up" ? -3 : 3;
+	
 		if (client === this.gameGateway.currentGames[payload.gameId].player1.id) {
 			this.gameGateway.currentGames[payload.gameId].player1.paddlePosition += newY;
-			console.log({playerId: client, newPos: this.gameGateway.currentGames[payload.gameId].player1.paddlePosition})
-			await this.gameGateway.server
-				.to(String(client))
-				.emit('updatePaddle', {playerId: client, direction: payload.direction});
-			console.log("SEN T TO THE FIRST USER", String(client));
-			await this.gameGateway.server
-				.to(String(this.gameGateway.currentGames[payload.gameId].player2.id))
-				.emit('updatePaddle', {playerId: client, direction: payload.direction});
-				console.log("SEN T TO THE SECOND USER : ", String(this.gameGateway.currentGames[payload.gameId].player2.id));
 		} else if (client === this.gameGateway.currentGames[payload.gameId].player2.id) {
 			this.gameGateway.currentGames[payload.gameId].player2.paddlePosition += newY;
-			await this.gameGateway.server
-				.to(String(client))
-				.emit('updatePaddle', {playerId: client, direction: payload.direction});
-			await this.gameGateway.server
-				.to(String(this.gameGateway.currentGames[payload.gameId].player1.id))
-				.emit('updatePaddle', {playerId: client, direction: payload.direction});
 		} else {
 			throw new WsException("No player found");
 		}
+
+		await this.gameGateway.server
+			.to(String(this.gameGateway.currentGames[payload.gameId].player1.id))
+			.emit('updatePaddle', {playerId: client, direction: payload.direction});
+	
+		await this.gameGateway.server
+			.to(String(this.gameGateway.currentGames[payload.gameId].player2.id))
+			.emit('updatePaddle', {playerId: client, direction: payload.direction});
 	}
 
 	async updateBallPosition(x: number, y: number, gameId: number) {

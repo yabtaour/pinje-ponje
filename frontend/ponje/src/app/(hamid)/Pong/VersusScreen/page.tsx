@@ -5,9 +5,9 @@ import Matter, { Body, Events } from 'matter-js';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from "react";
 import PlayerCard, { PlayerSkeleton } from '../components/PlayerCard';
-import { ClimbingBoxLoader } from "react-spinners";
-const SocketManagerGame = SocketManager.getInstance("http://localhost:3000",`${localStorage.getItem('access_token')}`);
-
+let token: string | undefined = localStorage.getItem('access_token')!;
+const SocketManagerGame = SocketManager.getInstance("http://localhost:3000", token);
+import _ from 'lodash';
 
 export const Engine = Matter.Engine;
 export const Render = Matter.Render;
@@ -31,6 +31,7 @@ const keys: any = {
 };
 
 let gameId = 0;
+let currentUserId = 0;
 
 export function createBodies() {
     ball = Bodies.circle(worldWidth / 2, worldHeight / 2, 15, {
@@ -84,16 +85,25 @@ export function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matter.Body
 
 let isSent = false;
 
-export function updatePaddlesgame(gameId: number) {
-    if (keys['ArrowUp'] && leftPaddle.position.y - 100 / 2 > 10 && !isSent) {
-        // Body.translate(leftPaddle, {x: 0, y: -3});
-        SocketManagerGame.sendPaddlePosition({gameId: gameId, direction: "up"});
-        isSent = true;
-
+const localPrediction = (direction: string) => {
+    if (direction === 'up' && leftPaddle.position.y - 100 / 2 > 10) {
+        Body.translate(leftPaddle, { x: 0, y: -10 });
+    } else if (direction === 'down' && leftPaddle.position.y + 100 / 2 < worldHeight - 10) {
+        Body.translate(leftPaddle, { x: 0, y: 10 });
     }
-    if (keys['ArrowDown'] && leftPaddle.position.y + 100 / 2 < worldHeight - 10 && !isSent) {
-        // Body.translate(leftPaddle, {x: 0, y: 3});
-        SocketManagerGame.sendPaddlePosition({gameId: gameId, direction: "down"});
+};
+
+export function updatePaddlesgame(gameId: number) {
+    if (keys['ArrowUp'] && leftPaddle.position.y - 100 / 2 > 10) {
+        // Body.translate(leftPaddle, { x: 0, y: -10 });
+        // localPrediction('up');
+        SocketManagerGame.sendPaddlePosition({ gameId: gameId, direction: 'up' });
+        isSent = true;
+    }
+    if (keys['ArrowDown'] && leftPaddle.position.y + 100 / 2 < worldHeight - 10) {
+        // Body.translate(leftPaddle, { x: 0, y: 10 });
+        // localPrediction('down');
+        SocketManagerGame.sendPaddlePosition({ gameId: gameId, direction: 'down' });
         isSent = true;
     }
 }
@@ -102,8 +112,6 @@ export default function VersusScreen() {
     const [playerFound, setPlayerFound] = useState(false);
     const [enemyPlayer, setEnemyPlayer] = useState<any>(null);
     const [selectedMap, setSelectedMap] = useState('');
-    const [currentUserId, setcurrentUserId] = useState(0);
-    // const [gameId, setGameId] = useState(0);
     const [user, setUser] = useState(null);
     const [startGame, setStartGame] = useState(false);
     const [sentInitialize, setSentInitialize] = useState(false);
@@ -121,18 +129,13 @@ export default function VersusScreen() {
                         Authorization: `${localStorage.getItem('access_token')}`,
                     },
                 });
-                console.log(data.data);
                 setUser(data.data);
-                setcurrentUserId(data.data.id);
+                currentUserId = data.data.id;
             } catch (err) {
-                console.error("Error when fethcing user's data");
+                console.error("Error when fetching user's data");
             }
         };
-        if (!user)
-            fetchData();
-    }, [user]);
     
-    useEffect(() => {
         const waitForNewGame = async () => {
             if (SocketManagerGame) {
                 SocketManagerGame.waitForConnection(async () => {
@@ -140,10 +143,7 @@ export default function VersusScreen() {
                         let data = await SocketManagerGame.onNewGame();
                         if (data) {
                             gameId = data.id;
-                            // setGameId(data.id);
-                            console.log(data.id);
-                            console.log("GAME ID !!!! ", gameId);
-                            const otherUser = data.players.find((player : any) => player.userId !== currentUserId);
+                            const otherUser = data.players.find((player: any) => player.userId !== currentUserId);
                             setEnemyPlayer(otherUser);
                             setPlayerFound(true);
                         }
@@ -153,83 +153,103 @@ export default function VersusScreen() {
                 });
             }
         };
-        if (user) {
-            waitForNewGame();
-        }
-    }, [user, enemyPlayer]);
-
-    useEffect(() => {
-        if (selectedMap) {
-            if (SocketManagerGame) {
-                SocketManagerGame.waitForConnection(async() => {
-                    console.log("connected");
+    
+        const initializeGame = async () => {
+            if (selectedMap && SocketManagerGame) {
+                SocketManagerGame.waitForConnection(async () => {
                     try {
                         setReadyToInitialize(true);
                         let data = await SocketManagerGame.onStartGame();
-                        console.log("data:",data);
-                        if (data)
+                        if (data)  {
                             setStartGame(true);
-                        console.log(startGame);
+                        };
                     } catch (error) {
                         console.error("Error in sendInitialize:", error);
                     }
-                })
-            }
-        }
-    }, [selectedMap])
-
-    useEffect(() => {
-        if (selectedMap && !sentInitialize) {
-            if (SocketManagerGame) {
-                SocketManagerGame.waitForConnection(async() => {
-                    try {
-                        await SocketManagerGame.sendIntialization({gameId: gameId, playerPos: 30, ballVel: 3});
-                        setSentInitialize(true);
-                    } catch (error) {
-                        console.error("Error in sendInitialize:");
-                    }
-                })
-            }
-        }
-    }, [readyToInitialize])
-
-    useEffect(() => {
-
-        if (startGame) {
-            if (SocketManagerGame) {
-                SocketManagerGame.waitForConnection(() => {
-                    SocketManagerGame.onPaddlePosition().then((data) => {
-                        console.log(data);
-                        const { playerId, direction } = data;
-                        if (playerId == currentUserId) {
-                            if (direction == "up") {
-                                Body.translate(leftPaddle, {x: 0, y: -3});
-                            } else {
-                                Body.translate(leftPaddle, {x: 0, y: 3});
-                            }
-                        } else {
-                            if (direction == "up") {
-                                Body.translate(rightPaddle, {x: 0, y: -3});
-                            } else {
-                                Body.translate(rightPaddle, {x: 0, y: 3});
-                            }
-                        }
-                    }).catch((error) => {
-                        console.error("Error in onPaddlePosition:", error);
-                    });
                 });
             }
+        };
+    
+        const sendInitialization = async () => {
+            if (selectedMap && !sentInitialize && SocketManagerGame) {
+                SocketManagerGame.waitForConnection(async () => {
+                    try {
+                        await SocketManagerGame.sendIntialization({ gameId: gameId, playerPos: 30, ballVel: 3 });
+                        setSentInitialize(true);
+                    } catch (error) {
+                        console.error("Error in sendInitialize:", error);
+                    }
+                });
+            }
+        };
+    
+        // const handlePaddlePosition = () => {
+        //     if (startGame && SocketManagerGame) {
+        //         SocketManagerGame.waitForConnection(() => {
+        //             SocketManagerGame.onPaddlePosition().then((data) => {
+        //                 console.log("chi haja jaat");
+        //                 console.log(data);
+        //                 isSent = false;
+        //                 const { playerId, direction } = data;
+        //                 if (playerId == currentUserId) {
+        //                     if (direction == "up") {
+        //                         Body.translate(leftPaddle, { x: 0, y: -3 });
+        //                     } else {
+        //                         Body.translate(leftPaddle, { x: 0, y: 3 });
+        //                     }
+        //                 } else {
+        //                     if (direction == "up") {
+        //                         Body.translate(rightPaddle, { x: 0, y: -3 });
+        //                     } else {
+        //                         Body.translate(rightPaddle, { x: 0, y: 3 });
+        //                     }
+        //                 }
+        //                 // Continue processing the data or trigger other actions
+        //             }).catch((error) => {
+        //                 console.error("Error in onPaddlePosition:", error);
+        //             });
+        //         });
+        //     }
+        // };
+        const handlePaddlePosition = () => {
+            if (startGame && SocketManagerGame) {
+              SocketManagerGame.waitForConnection(() => {
+                SocketManagerGame.onPaddlePosition((data) => {
+                  isSent = false;
+                  const { playerId, direction } = data;
+                  if (playerId == currentUserId) {
+                    if (direction == "up") {
+                      Body.setVelocity
+                      Body.translate(leftPaddle, { x: 0, y: -3 });
+                    } else {
+                      Body.translate(leftPaddle, { x: 0, y: 3 });
+                    }
+                  } else {
+                    if (direction == "up") {
+                      Body.translate(rightPaddle, { x: 0, y: -3 });
+                    } else {
+                      Body.translate(rightPaddle, { x: 0, y: 3 });
+                    }
+                  }
+                  // Continue processing the data or trigger other actions
+                });
+              });
+            }
+          };
+          
         
+    
+        const createGame = () => {
             worldWidth = canvasRef.current?.width! * 4;
             worldHeight = canvasRef.current?.height! * 4;
             canvaWidth = canvasRef.current?.width!;
             canvaHeight = canvasRef.current?.height!;
-
+    
             try {
                 const engine = Engine.create({
                     gravity: {
-                      x: 0,
-                      y: 0,
+                        x: 0,
+                        y: 0,
                     }
                 });
                 const render = Render.create({
@@ -247,24 +267,27 @@ export default function VersusScreen() {
                 World.add(engine.world, [ball, floor, ceiling, leftPaddle, rightPaddle]);
                 console.log(leftPaddle);
                 console.log(rightPaddle);
+
+                // const throttledUpdatePaddles = _.throttle(updatePaddlesgame, 100);
                 window.addEventListener('keydown', (event) => {
                     if (keys.hasOwnProperty(event.code)) {
-                      event.preventDefault();
-                      keys[event.code] = true;
-                      updatePaddlesgame(gameId);
+                        event.preventDefault();
+                        keys[event.code] = true;
+                        // updatePaddlesgame(gameId);
+                        // throttledUpdatePaddles(gameId);
                     }
-                  });
-                  window.addEventListener('keyup', (event) => {
+                });
+                window.addEventListener('keyup', (event) => {
                     if (keys.hasOwnProperty(event.code)) {
-                      event.preventDefault();
-                      keys[event.code] = false;
+                        event.preventDefault();
+                        keys[event.code] = false;
                     }
-                  });
+                });
 
-                //   Events.on(engine, 'beforeUpdate', () => {
-                //     updatePaddlesgame(gameId);
-                //   });
-          
+                Events.on(engine, 'beforeUpdate', () => {
+                    updatePaddlesgame(gameId);
+                });               
+    
                 Matter.Runner.run(engine)
                 Render.run(render);
                 Events.on(engine, 'collisionStart', (event) => {
@@ -273,7 +296,7 @@ export default function VersusScreen() {
                         handleColision(pair, bodyA, bodyB)
                     });
                 });
-
+    
                 return () => {
                     Render.stop(render);
                     World.clear(engine.world, false);
@@ -282,8 +305,16 @@ export default function VersusScreen() {
             } catch (error) {
                 console.error("Error creating game");
             }
-        }
-    }, [startGame, leftPaddle, rightPaddle])
+        };
+    
+        if (!user || !currentUserId) fetchData();
+        if (user && currentUserId) waitForNewGame();
+        if (selectedMap && enemyPlayer && playerFound && !startGame) initializeGame();
+        if (selectedMap && readyToInitialize) sendInitialization();
+        if (startGame) handlePaddlePosition();
+        if (startGame) createGame();
+    }, [user, currentUserId, enemyPlayer, selectedMap, readyToInitialize, startGame, sentInitialize, leftPaddle, rightPaddle]);
+    
     
     const handleMapClick = (map: string) => {
         console.log("map clicked");

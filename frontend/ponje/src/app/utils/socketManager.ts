@@ -223,32 +223,32 @@ class SocketManager {
   public sendPaddlePosition(payload: {gameId: number, direction: string}): Promise <any> {
     return new Promise(async (resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
-        console.log("Socket is connected.", this.gameSocket);
-        console.log("Connected to game namespace");
-        console.log(payload);
+        // console.log("Socket is connected.", this.gameSocket);
+        // console.log("Connected to game namespace");
+        // console.log(payload);
         this.gameSocket?.emit("updatePlayerPosition", payload);
         resolve("done");
       } else {
-        console.log("Socket is not connected yet.");
+        // console.log("Socket is not connected yet.");
         reject("Socket is not connected");
       }
     });    
   }
 
-  public onPaddlePosition(): Promise<any> {
-    return new Promise(async (resolve, reject) => {
-      if (this.gameSocket && this.gameSocket.connected) {
-        console.log("sockket connected");
-        this.gameSocket?.on("updatePaddle", (data: any) => {
-          console.log("DATA JAT !! : ", data);
-          resolve(data);
-          console.log("DATA JAT !! : ", data);
-        });
-      } else {
-        reject("Socket is not connected");
-      }
-    });
+  
+  public onPaddlePosition(callback: (data: any) => void): void {
+    if (this.gameSocket && this.gameSocket.connected) {
+      // console.log("Socket connected");
+      this.gameSocket?.on("updatePaddle", (data: any) => {
+        // console.log("DATA JAT !! : ", data);
+        console.log("update the shit : ", data);
+        callback(data);
+      });
+    } else {
+      console.error("Socket is not connected");
+    }
   }
+  
   
 
   public onStartGame(): Promise<any> {

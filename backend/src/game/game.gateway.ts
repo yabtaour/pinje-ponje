@@ -40,8 +40,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     @SubscribeMessage('initialize')
     initializeGame(client: any, payload: {gameId: number, ballVel: number, playerPos: number}) {
-      console.log("chi haja jaaaaat");
-      console.log(payload);
       if (!payload || !payload.gameId || !payload.playerPos || !payload.ballVel
           || typeof payload.gameId !== "number" || typeof payload.playerPos !== "number"
           || typeof payload.ballVel !== "number") {
@@ -50,22 +48,18 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const clientIndex = this.initializeClients.findIndex((element) => {
         return (element == client.id);
       })
-      // if (clientIndex != -1)
-      //   return;
+      if (clientIndex != -1)
+        return;
       this.initializeClients.push(client.id);
       if (this.currentGames.has(payload.gameId)) {
-        console.log("KHOUYA TA MALK BAGHI TGUEDDED");
           throw new WsException("Game already initiated");
       }
       this.intializeArray.push(payload.gameId);
-      console.log(this.intializeArray);
       const firstIndex = this.intializeArray.findIndex((element) => {
         return (element === payload.gameId);
       });
       const lastIndex = this.intializeArray.lastIndexOf(payload.gameId);
-      console.log(firstIndex, "|", lastIndex);
       if (firstIndex != lastIndex && firstIndex != -1 && lastIndex != -1) {
-        console.log("2 players for now");
         this.intializeArray.splice(firstIndex, 1);
         this.intializeArray.splice(lastIndex, 1);
         this.gameService.initializeGame(parseInt(client.id), payload)
@@ -74,8 +68,12 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     @SubscribeMessage('updatePlayerPosition')
     updatePlayerPosition(client: any, payload: {gameId: number, direction: string}): void {
-      // console.log(client);
-      console.log(payload);
+      if (!payload || !payload.gameId || !payload.direction
+        || typeof payload.gameId != "number" || typeof payload.direction != "string") {
+          console.log("payload is not valid !", payload);
+          throw new WsException("invalid payload");
+        }
+      // console.log("khouya updati liya data ", payload);
       this.gameService.updatePlayerPosition(parseInt(client.id), payload);
     }
     
