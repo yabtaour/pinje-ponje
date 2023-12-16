@@ -16,12 +16,19 @@ import SearchInput from "./search";
 import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/app/globalRedux/store";
 
-export default function NavBar() {
+
+interface NavBarProps {
+  onToggleSidebar: () => void;
+}
+
+export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps) {
   const currentuser = useAppSelector((state) => state.authReducer.value.user);
   const router = useRouter();
 
-  const AvatarImg = null;
-  // const Avatar = '/avatars' + currentuser?.profile?.avatar;
+  const defaultAvatarUrl = "/placeholderuser.jpeg";
+  // const AvatarImg = '/avatars' + currentuser?.profile?.avatar || defaultAvatarUrl;
+  const AvatarImg = currentuser?.profile?.avatar || defaultAvatarUrl;
+
   const handleSettingsClick = () => {
     router.push('/settings');
   };
@@ -29,12 +36,19 @@ export default function NavBar() {
     router.push('/Profile');
   };
   return (
-    <Navbar maxWidth="full" className="bg-[#151424] border-b-[#1A3070]">
-      <NavbarContent className="flex justify-between">
-        <NavbarItem className="grow-0">
+<Navbar maxWidth="full" className="bg-[#151424] border-b-[#1A3070]">
+      <NavbarContent className="flex justify-between items-center">
+        <NavbarItem className="lg:block md:block hidden">
           <Image src="/Logo.png" alt="PONG Logo" width={90} height={90}></Image>
         </NavbarItem>
-        <NavbarItem className="grow flex justify-center ">
+        <button className="lg:hidden md:hidden" onClick={onToggleSidebar}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="16" viewBox="0 0 48 36" fill="none">
+            <path d="M3 2.5H45" stroke="#77DFF8" strokeWidth="5" stroke-linecap="round" />
+            <path d="M3 18H45" stroke="#77DFF8" strokeWidth="5" stroke-linecap="round" />
+            <path d="M3 33H45" stroke="#77DFF8" strokeWidth="5" stroke-linecap="round" />
+          </svg>
+        </button>
+        <NavbarItem className="grow flex justify-center items-center">
           <div className="navbar flex justify-center items-center">
             <SearchInput />
           </div>
@@ -81,7 +95,7 @@ export default function NavBar() {
                 name="Jason Hughes"
                 size="sm"
                 src={AvatarImg}
-                // src={currentuser?.profile.avatar ?? undefined}
+              // src={currentuser?.profile.avatar ?? undefined}
               />
             </DropdownTrigger>
             <DropdownMenu
@@ -123,7 +137,7 @@ export default function NavBar() {
               >
                 <div className="flex items-center">
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" className="ml-0.5">
-                    <g clip-path="url(#clip0_1120_353)">
+                    <g clipPath="url(#clip0_1120_353)">
                       <path d="M15 24H1C0.4 24 0 23.6 0 23V1C0 0.4 0.4 0 1 0H15C15.6 0 16 0.4 16 1V8C16 8.6 15.6 9 15 9C14.4 9 14 8.6 14 8V2H2V22H14V16C14 15.4 14.4 15 15 15C15.6 15 16 15.4 16 16V23C16 23.6 15.6 24 15 24Z" fill="#77DFF8" />
                       <path d="M23 13H8C7.4 13 7 12.6 7 12C7 11.4 7.4 11 8 11H23C23.6 11 24 11.4 24 12C24 12.6 23.6 13 23 13Z" fill="#77DFF8" />
                       <path d="M23 13C22.7 13 22.5 12.9 22.3 12.7L18.3 8.7C17.9 8.3 17.9 7.7 18.3 7.3C18.7 6.9 19.3 6.9 19.7 7.3L23.7 11.3C24.1 11.7 24.1 12.3 23.7 12.7C23.5 12.9 23.3 13 23 13Z" fill="#77DFF8" />

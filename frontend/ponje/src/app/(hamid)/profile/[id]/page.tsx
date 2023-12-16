@@ -1,14 +1,15 @@
 'use client';
-
+import Loader from "@/app/components/loader";
 import axios from "@/app/utils/axios";
 import { useEffect, useState } from "react";
-import FriendsList from '../components/FriendsList';
+import FriendsList from "../components/FriendsList";
 import MatchHistory from "../components/MatchHistory";
 import Performance from "../components/Performance";
 import PlayerBanner from "../components/PlayerBanner";
 import ProgressBar from "../components/ProgressBar";
 import SkillAnalytics from "../components/SkillAnalytics";
-import Loader from "@/app/components/loader";
+import { Toast } from '@chakra-ui/react';
+
 
 
 export default function Profile({ params }: { params: { id: number } }) {
@@ -30,6 +31,14 @@ export default function Profile({ params }: { params: { id: number } }) {
                 setLoading(false);
                 console.log(data.data);
             } catch (err) {
+                Toast({
+                    title: 'Error',
+                    status: 'error',
+                    duration: 9000,
+                    isClosable: true,
+                    position: "bottom-right",
+                    variant: "solid",
+                });
                 console.error(err);
                 setLoading(false);
             }
@@ -49,6 +58,14 @@ export default function Profile({ params }: { params: { id: number } }) {
           setLoading(false);
           console.log(data.data);
         } catch (err) {
+            Toast({
+                title: 'Error',
+                status: 'error',
+                duration: 9000,
+                isClosable: true,
+                position: "bottom-right",
+                variant: "solid",
+            });
           console.error(err);
           setLoading(false);
         }

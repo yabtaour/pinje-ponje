@@ -8,27 +8,37 @@ import Performance from "./components/Performance";
 import PlayerBanner from "./components/PlayerBanner";
 import ProgressBar from "./components/ProgressBar";
 import SkillAnalytics from "./components/SkillAnalytics";
+import { Toast } from '@chakra-ui/react';
+
 
 export default function Profile() {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [Friends, setFriends] = useState([]);
 
-    
+
     useEffect(() => {
         const fetchData = async () => {
             try {
-                    const data = await axios.get(`/users/me`, {
-                        headers: {
-                            Authorization: `${localStorage.getItem('access_token')}`,
-                        },
-                    });
-                    const userId = data.data.id;
-                    fetchFriends(userId);
-                    setUser(data.data);
-                    setLoading(false);
-                    console.log(data.data);
+                const data = await axios.get(`/users/me`, {
+                    headers: {
+                        Authorization: `${localStorage.getItem('access_token')}`,
+                    },
+                });
+                const userId = data.data.id;
+                fetchFriends(userId);
+                setUser(data.data);
+                setLoading(false);
+                console.log(data.data);
             } catch (err) {
+                Toast({
+                    title: 'Error',
+                    status: 'error',
+                    duration: 9000,
+                    isClosable: true,
+                    position: "bottom-right",
+                    variant: "solid",
+                });
                 console.error(err);
                 setLoading(false);
             }
@@ -39,55 +49,63 @@ export default function Profile() {
 
     const fetchFriends = async (userId: number) => {
         try {
-          const data = await axios.get(`/users/${userId}/friends`, {
-            headers: {
-              Authorization: `${localStorage.getItem('access_token')}`,
-            },
-          });
-          const friends = data.data;
-          setFriends(friends);
-          setLoading(false);
-          console.log(data.data);
+            const data = await axios.get(`/users/${userId}/friends`, {
+                headers: {
+                    Authorization: `${localStorage.getItem('access_token')}`,
+                },
+            });
+            const friends = data.data;
+            setFriends(friends);
+            setLoading(false);
+            console.log(data.data);
         } catch (err) {
-          console.error(err);
-          setLoading(false);
+            Toast({
+                title: 'Error',
+                status: 'error',
+                duration: 9000,
+                isClosable: true,
+                position: "bottom-right",
+                variant: "solid",
+            });
+            console.error(err);
+            setLoading(false);
         }
-      };
+    };
 
-      if (loading) {
+    if (loading) {
 
         return (
-          <div className='min-h-screen'>
-            <Loader />;
-          </div>
+            <div className='min-h-screen'>
+                <Loader />;
+            </div>
         );
-      }
-      
+    }
+
     return (
         <div className="bg-[#151424] relative flex-grow min-h-screen p-0">
-            <div>
-                <PlayerBanner user={user} />
-            </div>
+  <div>
+    <PlayerBanner user={user} />
+  </div>
 
-            <div id="biggest wrapper" className="flex flex-col items-center justify-center">
-                <div className="flex justify-center flex-wrap">
-                    <div className="flex justify-center pl-[-8rem]">
-                        <SkillAnalytics user={user} />
-                        <div className="flex justify-center">
-                            <Performance user={user} />
-                            <ProgressBar user={user} />
-                        </div>
-                    </div>
-                </div>
-                <div className="flex justify-center flex-wrap">
-                    <div className="lg:w-3/5">
-                        <MatchHistory />
-                    </div>
-                    <div className="w-full lg:w-1/3">
-                        <FriendsList users={Friends} />
-                    </div>
-                </div>
-            </div>
-        </div>
+  <div id="biggest wrapper" className="flex flex-col items-center justify-center">
+    <div className="flex-auto mb-4 md:mb-0">
+      <div className="flex flex-col md:flex-row ">
+        <SkillAnalytics user={user} />
+          <Performance user={user} />
+          <ProgressBar user={user} />
+      </div>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="mb-4 md:mb-0">
+        <FriendsList users={Friends} />
+      </div>
+      <div>
+        <MatchHistory user={user} />
+      </div>
+    </div>
+  </div>
+</div>
+
     );
 }

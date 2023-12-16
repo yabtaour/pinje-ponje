@@ -11,6 +11,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import * as Yup from 'yup';
+import { Toast } from '@chakra-ui/react';
+
 
 
 
@@ -43,6 +45,14 @@ export default function Onboarding() {
                 router.push("/dashboard");
             }
         } catch (error) {
+            Toast({
+                title: 'Error',
+                status: 'error',
+                duration: 9000,
+                isClosable: true,
+                position: "bottom-right",
+                variant: "solid",
+            });
             console.log(error);
         }
     }
