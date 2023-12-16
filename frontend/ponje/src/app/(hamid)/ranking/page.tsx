@@ -9,6 +9,8 @@ import { User as NextUIUser, Pagination, Table, TableBody, TableCell, TableColum
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useEffect } from 'react';
+import { Toast } from '@chakra-ui/react';
+
 
 const columns = [
   { name: "User", uid: "user" },
@@ -17,40 +19,29 @@ const columns = [
   { name: "Profile", uid: "profile" },
 
 ]
-
 export const Podium = ({ users }: { users: DisplayedInfo[] }) => {
-  const rankedUsers = users.slice().sort((a, b) => b.ex - a.ex);
-
-  if (rankedUsers.length >= 2) {
-    const temp = rankedUsers[0];
-    rankedUsers[0] = rankedUsers[1];
-    rankedUsers[1] = temp;
-  }
-
-
-
-  const getImagedimensions = (user: any) => {
-    var sizeOf = require('image-size');
-    var dimensions = sizeOf(user?.avatar);
-    console.log(dimensions.width, dimensions.height);
-    return dimensions;
-  };
+  const rankedUsers = users;
+  const updatedUsers = rankedUsers.slice();
+  updatedUsers.splice(1, 0, updatedUsers.splice(0, 1)[0]);
 
   return (
-    <div className="flex flex-row mt-16">
-      {rankedUsers.map((user, index) => (
+    <div className="flex flex-row mt-16 space-x-6">
+      {updatedUsers.map((user, index) => (
         <div key={user.id}>
-          <div className={`relative max-w-[150px] mx-auto min-w-0 break-words bg-[#1B1A2D] w-full mb-6 shadow-lg rounded-xl mt-${index === 1 ? "28" : "20"}`}>
+          <div className={`relativemx-auto min-w-0 break-words bg-[#1B1A2D] w-fit lg:w-fit md:w-full mb-6 shadow-lg rounded-xl mt-${index === 1 ? "28" : "20"}`}>
             <div className="px-6">
               <div className="flex flex-wrap justify-center">
-                <div className="w-full flex justify-center">
+                <div className=" flex justify-center">
                   <div className="relative mb-[-3rem]">
                     <div className="avatar">
-                      <div className="w-24 rounded-full">
+                      <div className="w-16 lg:w-24 md:w-32 rounded-full">
                         <Image
-                          src={user.avatar}
-                          alt="user image"
+                          src={user?.avatar ?? '/placeholderuser.jpeg'}
+                           alt="user image"
                           fill
+                          sizes='(max-width: 768px) 100vw,
+                          (max-width: 1200px) 50vw,
+                          33vw'
                           style={{ objectFit: "cover" }}
                           className='rounded-full'
                         />
@@ -64,9 +55,9 @@ export const Podium = ({ users }: { users: DisplayedInfo[] }) => {
                 </div>
               </div>
               <div className="text-center ">
-                <p className={`text-3xl text-white font-bold leading-normal mb-1`}>#{index === 0 ? 2 : index === 1 ? 1 : 3}</p>
-                <p className={`text-lg text-white font-regular leading-normal mb-1`}>{user.username}</p>
-                <p className={`text-xl font-bold leading-normal mb-1`} style={{ color: index === 1 ? "#f4e240" : index === 2 ? "#d18c3d" : "#c5c5c2" }}>{user.ex}</p>
+                <p className={`text-lg lg:text-3xl md:text-3xl text-white font-bold leading-normal mb-1`}>#{index === 0 ? 2 : index === 1 ? 1 : 3}</p>
+                <p className={`text-sm text-[#77DFF8] font-semibold leading-normal mb-1`}>{user.username}</p>
+                <p className={`text-lg lg:text-xl font-bold leading-normal mb-1`} style={{ color: index === 1 ? "#f4e240" : index === 2 ? "#d18c3d" : "#c5c5c2" }}>{user.ex}</p>
               </div>
               <div className="mt-2 py-2 text-center">
                 <div className="flex flex-wrap justify-center">
@@ -83,6 +74,7 @@ export const Podium = ({ users }: { users: DisplayedInfo[] }) => {
     </div>
   );
 }
+
 
 
 
@@ -133,14 +125,14 @@ export const Leaderboard = ({ users }: { users: DisplayedInfo[] }) => {
           </button>
         );
       case "xp":
-        return <p className="text-white text-regular">{user?.ex}</p>;
+        return <p className="text-white text-regular text-sm md:text-base lg:text-lg">{user?.ex}</p>;
       case "Rank":
-        return <p>{"IMAGE RANK"}</p>;
+        return <p className='text-xs md:text-base lg:text-lg'>{"IMAGE RANK"}</p>;
       case "profile":
         return (
           <Link href={`/profile/${user.id}`}>
             <h1 className="text-indigo-600">
-              <span className="text-sm">Visit Profile</span>
+              <span className="text-xs md:text-sm lg:text-base">Visit Profile</span>
             </h1>
           </Link>
         );
@@ -151,7 +143,7 @@ export const Leaderboard = ({ users }: { users: DisplayedInfo[] }) => {
 
 
   return (
-    <div className="p-0 m-0 w-2/3 flex " >
+    <div className="p-0 m-0 w-full lg:w-2/3 flex " >
       {
         users.length === 0 ? (
           <div className='min-h-screen'>
@@ -227,14 +219,22 @@ export default function RankPage() {
         const transformedUsers = res.data.map((user: any) => ({
           id: user?.id,
           username: user?.username,
-          ex: user?.experience,
+          ex: user?.experience ?? 0,
           rank: user?.rank,
           avatar: user?.profile?.avatar
         }));
-
+        
         setUsers(transformedUsers);
         return res.data;
       } catch (err) {
+        Toast({
+          title: 'Error',
+          status: 'error',
+          duration: 9000,
+          isClosable: true,
+          position: "bottom-right",
+          variant: "solid",
+      });
         console.log(err);
       }
     };
@@ -245,7 +245,7 @@ export default function RankPage() {
 
 
   return (
-    <>
+    <div className=''>
       {
         users.length === 0 ? (
           <div className='min-h-screen'>
@@ -253,19 +253,17 @@ export default function RankPage() {
           </div>
         ) : (
           <>
-            <div className='w-full  flex justify-center bg-[#151424] '>
-              {/* users is empty for now so am using an array of fake users */}
-              <Podium users={users.slice(0, 3)} />
-              {/* <Podium users={fakeUsers} /> */}
-
+            <div className='w-full min-[320px]:text-center flex justify-center bg-[#151424] '>
+              <Podium users={users.filter(user => user.ex !== undefined && user.ex !== null).slice().sort((a, b) => (b.ex || 0) - (a.ex || 0)).slice(0, 3)} />
             </div>
-
+  
             <div className='bg-[#151424]  w-full flex justify-center'>
-              <Leaderboard users={users.slice(3)} />
+              <Leaderboard users={users.filter(user => user.ex !== undefined && user.ex !== null).slice().sort((a, b) => (b.ex || 0) - (a.ex || 0)).slice(3)} />
             </div>
           </>
         )
       }
-    </>
+    </div>
   );
+  
 }

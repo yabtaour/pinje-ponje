@@ -7,6 +7,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import Loader from "@/app/components/loader";
 import Image from "next/image";
+import { Toast } from '@chakra-ui/react';
+
 
 const fetchUsers = async (url: string) => {
   console.log(url);
@@ -21,6 +23,14 @@ const fetchUsers = async (url: string) => {
     }    
     return response.data;
   } catch (error: any) {
+    Toast({
+      title: 'Error',
+      status: 'error',
+      duration: 9000,
+      isClosable: true,
+      position: "bottom-right",
+      variant: "solid",
+  });
     throw new Error(`Failed to fetch posts: ${error.message}`);
   }
 };
