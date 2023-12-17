@@ -207,6 +207,7 @@ export default function UserSettings() {
         }
         catch (error) {
             console.log(error);
+            
             if (axios.isAxiosError(error)) {
                 const err = error as AxiosError;
                 if (err.response?.status === 401) {

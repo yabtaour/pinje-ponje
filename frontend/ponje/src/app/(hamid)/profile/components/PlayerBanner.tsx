@@ -12,9 +12,8 @@ export default function PlayerBanner({ user }: { user: User | null | undefined }
     const logedUserId = useAppSelector((state) => state.authReducer.value.user?.id);
     const username = user?.username;
     const bio = user?.profile?.bio;
-    const Avatar = null;
+    const Avatar = user?.profile?.avatar;
     // const Avatar = '/avatars' + user?.profile?.avatar;
-    // console.log("THIS IS AVATAR",Avatar);
     return (
         <div className="p-5 flex justify-center flex-row text-center" style={{
 
@@ -33,7 +32,7 @@ export default function PlayerBanner({ user }: { user: User | null | undefined }
                             alt="user image"
                             width={50}
                             height={50}
-                            className="w-[100px] h-[100px] mx-auto m-10 md:mb-0 rounded"
+                            className="w-[50px] h-[50px] md:w-[100px] md:h-[100px] mx-auto m-10 rounded mb-4"
 
                         />
                     ) : (
@@ -42,12 +41,13 @@ export default function PlayerBanner({ user }: { user: User | null | undefined }
                             alt="user image"
                             width={50}
                             height={50}
-                            className="w-[100px] h-[100px] mx-auto m-10 md:mb-0  rounded-full"
+                            className="w-[50px] h-[50px] md:w-[100px] md:h-[100px] mx-auto m-10  rounded-full mb-4"
                         />
                     )
-                }                <p className="font-medium text-[#77DFF8] mb-2">{username}</p>
-                <p className=" font-light text-sm text-[#8C8CDA] mb-4">
-                    {bio} | joined {formatMessageDate(user?.createdAt)}
+                }
+                <p className="font-medium text-[#77DFF8] mb-2 mt-2">{username}</p>
+                <p className=" font-light text-xs md:text-sm text-[#8C8CDA] mb-4">
+                    {bio} <span className="text-white"> | </span> <span className="text-[#5b4cff]"> joined {formatMessageDate(user?.createdAt)} </span>
                 </p>
                 <div>
 
