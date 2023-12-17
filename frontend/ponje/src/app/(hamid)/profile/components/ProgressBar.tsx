@@ -5,7 +5,7 @@ export default function ProgressBar({ user }: { user: User | null | undefined })
   
   let level = user?.level ?? 0;
   let xp = user?.experience ?? 0;
-  xp = 100;
+  // xp = 100;
   xp = (xp % 100 + 100) % 100;
   
   const xpToNextLevel = level !== 0 ? Math.min(100 - xp, 100) : 100;

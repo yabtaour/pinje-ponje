@@ -34,7 +34,7 @@ const SearchPage = () => {
   const router = useRouter();
 
   const { data, error, isLoading, isValidating } = useSWR(
-    `/users?search=${encodedSearchQuery}&take=9&skip=${
+    `http://localhost:3000/users?search=${encodedSearchQuery}&take=9&skip=${
       (page - 1) * 9
     }`,
     fetchUsers,
@@ -45,14 +45,6 @@ const SearchPage = () => {
     router.push("/");
   }
 
-  if (isLoading) {
-
-    return (
-      <div className='min-h-screen'>
-        <Loader />;
-      </div>
-    );
-  }
 
   const handlePrevPage = () => {
     if (page > 1) {
@@ -66,17 +58,6 @@ const SearchPage = () => {
     }
   };
 
-  const [showNoUsersMessage, setShowNoUsersMessage] = useState(false);
-
-  // useEffect(() => {
-  //   // Set a timeout to show the message after 2 seconds (adjust the time as needed)
-  //   const timeoutId = setTimeout(() => {
-  //     setShowNoUsersMessage(true);
-  //   }, 200);
-  
-    // Clear the timeout when the component unmounts to avoid memory leaks
-  //   return () => clearTimeout(timeoutId);
-  // }, []);
 
   if (!data || data.length === 0) {
     return isLoading ? (

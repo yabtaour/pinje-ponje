@@ -37,8 +37,8 @@ export default function FriendsList({ users }: { users: User[] }) {
                     color: "#77DFF8",
                 }} className=" hover:bg-[#333153] p-1 rounded-lg w-full  flex justify-start">
                     <NextUser
-                        avatarProps={{ radius: "lg", src: user.avatar }}
-                        description={user.email}
+                        avatarProps={{ radius: "lg", src: user.profile.avatar }}
+                        description={user.username}
                         name={cellValue}
                     >
                         {user.email}
