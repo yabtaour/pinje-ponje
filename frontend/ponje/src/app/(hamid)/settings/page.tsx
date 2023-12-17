@@ -50,8 +50,7 @@ export default function UserSettings() {
         const fetchData = async () => {
             try {
                 let accessToken: string | null = localStorage.getItem('access_token');
-                if (accessToken)
-                {
+                if (accessToken) {
                     const userData = await fetchUserData(accessToken);
                     const userChanged = JSON.stringify(user) !== JSON.stringify(userData);
                     if (userChanged) {
@@ -76,15 +75,6 @@ export default function UserSettings() {
 
 
     const [passwordShown, setPasswordShown] = useState(false);
-
-    // useEffect(() => {
-    //     if (twoFactorAuth) {
-    //         fetchQRCode(userToken).then(data => {
-    //             setQrCodeData(data);
-    //         });
-    //     }
-    // }, [twoFactorAuth, userToken]);
-
     const togglePasswordVisibility = () => {
         setPasswordShown(!passwordShown);
     };
@@ -114,57 +104,9 @@ export default function UserSettings() {
 
     });
 
-    const handleTwoFactorAuth = async () => {
-        try {
-            console.log('twoFactorAuth value (handle 2fa function) :', twoFactorAuth);
-            const newStatus = !twoFactorAuth;
-            console.log('newStatus:', newStatus);
-
-            const response = await axios.patch("/users", { twoFactor: newStatus }, {
-                headers: {
-                    Authorization: userToken,
-                },
-            });
-            setTwoFactorAuth(newStatus); 
-
-            if (newStatus && response.data && response.data.qrCode) {
-                setQrCodeData(response.data.qrCode);
-            } else {
-                setQrCodeData(''); 
-            }
-            // if (response.data) {
-            //     setTwoFactorAuth(newStatus);    
-            //     if (newStatus && response.data.qrCode) {
-            //         setQrCodeData(response.data.qrCode);
-            //     }
-            // } else {
-            //     console.error("Failed to update user 2FA:", response.data.message);
-            //     throw new Error(response.data.message);
-            // }
-        } catch (error) {
-            console.error("Failed to update user 2FA (caught actual error :p):", error);
-            throw error;
-        }
-
-    };
     const onSubmit = async (values: any, { setSubmitting }: any) => {
         const { username, bio, oldpassword, newpassword, email } = values;
         let userProfileData = { username, bio, email };
-        // let userProfileData = { username, bio, email , TwoFactorNewState: twoFactorAuth};
-
-        // console.log('twoFactorAuth value (handle 2fa function) :', twoFactorAuth);
-        // // const newStatus = !twoFactorAuth;
-        // console.log('newStatus:', TwoFactorNewState);
-
-        // if (twoFactorAuth !== TwoFactorNewState) {
-        try {
-            await handleTwoFactorAuth();
-            setTwoFactorAuth(TwoFactorNewState); 
-
-        } catch (error) {
-            console.error('Failed to update Two Factor Authentication:', error);
-        }
-        // }
 
         try {
             if (username || bio || email) {
@@ -176,15 +118,6 @@ export default function UserSettings() {
 
                 console.log("bio" + bio);
                 const response = await updateUser(userProfileData, userToken);
-                // setTwoFactorAuth(TwoFactorNewState); 
-                // console.log('twoFactorAuth value (handle 2fa function) :', twoFactorAuth);
-
-                // if (TwoFactorNewState && response.data && response.data.qrCode) {
-                //     setQrCodeData(response.data.qrCode);
-                // } else {
-                //     setQrCodeData(''); 
-                // }
-
                 const updatedUser = {
                     ...user,
                     profile: {
@@ -207,15 +140,11 @@ export default function UserSettings() {
         }
         catch (error) {
             console.log(error);
-            
-            if (axios.isAxiosError(error)) {
-                const err = error as AxiosError;
-                if (err.response?.status === 401) {
-                    setResetPasswordError("Incorrect password");
-                }
+            const err = error as AxiosError;
+            if (err.response?.status === 401) {
+                setResetPasswordError("Incorrect password");
             }
         }
-
         setSubmitting(false);
     };
 
@@ -252,23 +181,14 @@ export default function UserSettings() {
             {
                 user === null ? (
                     <div className='min-h-screen'>
-                    <Loader />;
-                  </div>
+                        <Loader />;
+                    </div>
                 ) : (
 
                     <div className="max-w-3xl w-full mx-auto">
                         <h3 className="text-3xl font-semibold text-center text-[#4E40F4] mb-4">
-                            Profile Settings
+                            User Settings
                         </h3>
-                        <button
-                            type="button"
-                            className="text-sm font-regular text-[#73d3ff] mb-8"
-                            onClick={() => removeImage()}
-                        >
-                            remove profile picture
-                        </button>
-
-
                         <div className="bg-[#1B1A2D] p-8 rounded-lg h-full w-fill">
                             <Formik
                                 initialValues={initialValues}
@@ -279,6 +199,13 @@ export default function UserSettings() {
                                     <Form className="flex flex-col lg:flex-row gap-8">
                                         <div className="flex-1 flex flex-col items-center lg:items-start">
                                             <UploadAvatar />
+                                            <button
+                                                type="button"
+                                                className="text-sm font-regular text-[#73d3ff] mb-8 underline"
+                                                onClick={() => removeImage()}
+                                            >
+                                                remove profile picture
+                                            </button>
                                             <div className="mb-4 w-full">
                                                 <label htmlFor="username" className="text-sm font-regular text-[#73d3ff]">Username</label>
                                                 <Field
@@ -412,32 +339,33 @@ export default function UserSettings() {
                                             </div>
                                         </div>
 
-                                        <div className="hidden lg:inline-block h-[450px] min-h-[1em] w-0.5 self-stretch bg-violet-950 opacity-100 dark:opacity-50"></div>
-                                        <div className="relative text-[#73d3ff] m-5">
+                                        {/* <div className="hidden lg:inline-block h-[450px] min-h-[1em] w-0.5 self-stretch bg-violet-950 opacity-100 dark:opacity-50"></div> */}
+                                        {/* <div className="relative text-[#73d3ff] m-5">
                                             <h2 className="p-2" >Activate 2FAuth</h2>
-                                            <Switch 
-                                            {
+                                            <Switch
+                                                {
                                                 ...{
                                                     //if i add this line the switch's state cant be changed 
                                                     // isSelected: twoFactorAuth,
                                                     onChange: () => {
                                                         setTwoFactorNewState(!twoFactorAuth);
                                                         setIsSelected(twoFactorAuth);
-                                                },
+                                                    },
                                                 }
-                                            } aria-label="Automatic updates" />
+                                                } aria-label="Automatic updates" />
                                             <p>current value of checked : {twoFactorAuth ? "Yes" : "No"}   </p>
-                                        <div className=''>
-                                            {twoFactorAuth && qrCodeData && (
-                                                <Image src={qrCodeData} alt="QR Code" width={200} height={200} className=' ' />
-                                            )}
-                                        </div>
-                                        </div>
+                                            <div className=''>
+                                                {twoFactorAuth && qrCodeData && (
+                                                    <Image src={qrCodeData} alt="QR Code" width={200} height={200} className=' ' />
+                                                )}
+                                            </div>
+                                        </div> */}
                                         {/* display the image under the switch */}
                                     </Form>
                                 )}
                             </Formik>
                         </div>
+
                     </div>
                     // {
                     //     showSuccessBadge && (
@@ -449,6 +377,13 @@ export default function UserSettings() {
                     // }
                 )
             }
+            <div className='flex justify-center mt-6'>
+                                    <button
+                            className="bg-blue-500 w-1/5 text-white justify-center font-bold uppercase text-xs px-6 py-3 rounded shadow hover:bg-blue-600 transition-all duration-150"
+                        >
+                            Activate/Deactivate 2FA
+                        </button>
+        </div>
         </div >
     );
 }

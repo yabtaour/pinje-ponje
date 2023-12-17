@@ -43,9 +43,9 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
         </NavbarItem>
         <button className="lg:hidden md:hidden" onClick={onToggleSidebar}>
           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="16" viewBox="0 0 48 36" fill="none">
-            <path d="M3 2.5H45" stroke="#77DFF8" strokeWidth="5" stroke-linecap="round" />
-            <path d="M3 18H45" stroke="#77DFF8" strokeWidth="5" stroke-linecap="round" />
-            <path d="M3 33H45" stroke="#77DFF8" strokeWidth="5" stroke-linecap="round" />
+            <path d="M3 2.5H45" stroke="#77DFF8" strokeWidth="5" strokeLinecap="round" />
+            <path d="M3 18H45" stroke="#77DFF8" strokeWidth="5" strokeLinecap="round" />
+            <path d="M3 33H45" stroke="#77DFF8" strokeWidth="5" strokeLinecap="round" />
           </svg>
         </button>
         <NavbarItem className="grow flex justify-center items-center">
