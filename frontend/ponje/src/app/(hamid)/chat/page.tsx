@@ -25,7 +25,7 @@ const spinner = <svg width="16" height="16" viewBox="0 0 24 24" xmlns="http://ww
 
 
 const sent = <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-    <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m1.75 9.75l2.5 2.5m3.5-4l2.5-2.5m-4.5 4l2.5 2.5l6-6.5" />
+    <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" strokeWidth="1.5" d="m1.75 9.75l2.5 2.5m3.5-4l2.5-2.5m-4.5 4l2.5 2.5l6-6.5" />
 </svg>
 
 export function Mymessage({ message }: any) {

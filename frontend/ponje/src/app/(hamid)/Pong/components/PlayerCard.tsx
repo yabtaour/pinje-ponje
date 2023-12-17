@@ -6,9 +6,9 @@ import { User } from "@/app/types/user";
 export const PlayerSkeleton = () => {
   return (
     <div className="flex flex-col items-center ">
-      <Card className="relative bg-[#26243f] w-60 flex items-center rounded-lg mb-8 border-double border-8 border-gray-700 " >
+      <Card className="relative bg-[#26243f] w-36 md:w-60 flex items-center rounded-lg mb-8 border-double border-8 border-gray-700 " >
         <div className="absolute mt-12  justify-center shadow animate-pulse z-10">
-          <div className=" h-28 mb-4 mask mask-hexagon bg-gray-300 rounded dark:bg-gray-700">
+          <div className=" h-16 md:h-28 mb-4 mask mask-hexagon bg-gray-300 rounded dark:bg-gray-700">
           </div>
           <div className="h-2.5 bg-gray-200 rounded-full dark:bg-gray-700 w-32 mb-4"></div>
           <div className="h-2 bg-gray-200 rounded-full dark:bg-gray-700 mb-2.5"></div>
@@ -36,19 +36,19 @@ export default function PlayerCard({ user, cardColor }: { user: User | null | un
   return (
 
     <div className="flex flex-col items-center ">
-      <Card className="relative bg-[#26243f] w-60 flex items-center rounded-lg" >
+      <Card className="relative bg-[#26243f] w-36 md:w-60 lg:w-72 flex items-center rounded-lg" >
         <div className="absolute mt-12 flex items-center justify-center z-10">
           <CardHeader className="pb-0 flex-col items-center text-white">
             <Image
               alt="Card background"
-              className="rounded-xl mask mask-hexagon mb-2"
+              className="rounded-xl mb-2 md:h-28 md:w-28 lg:w-32 lg:h-32 mask mask-hexagon"
               src={avatar}
               width={120}
               height={120}
             />
-            <p className="text-tiny uppercase font-bold text-[#81eeee]">{username}</p>
+            <p className="text-xs	md:text-base lg:text-lg uppercase font-bold text-[#81eeee]">{username}</p>
             <div className="badge bg-[#A499BE] border-none text-[#151424]">{rank}</div>
-            <h4 className="font-semibold text-large">{experience} XP</h4>
+            <h4 className="font-semibold text-xs	md:text-base lg:text-lg">{experience} XP</h4>
             <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 64 64" fill="none">
               <g clipPath="url(#clip0_1134_387)">
                 <path d="M31.9995 18.25L35.81 28.2071L46.4573 28.7541L38.165 35.455L40.9348 45.7503L31.9995 39.9346L23.064 45.7503L25.8341 35.455L17.5416 28.7541L28.1891 28.2071L31.9995 18.25Z" fill="#77DFF8" />
@@ -65,7 +65,7 @@ export default function PlayerCard({ user, cardColor }: { user: User | null | un
           </CardHeader>
         </div>
         <div className="flex items-center relative z-0">
-          <svg xmlns="http://www.w3.org/2000/svg" width="195" height="360" viewBox="0 0 295 620" fill="none">
+          <svg xmlns="http://www.w3.org/2000/svg" width="195" height="360" viewBox="0 0 295 620" fill="none" className="md:w-48 md:h-96">
             <path d="M0 611.143V8C0 3.58172 3.58172 0 7.99999 0H287C291.418 0 295 3.58172 295 8V611.143C295 618.205 286.518 621.803 281.44 616.895L153.06 492.822C149.959 489.826 145.041 489.826 141.94 492.822L13.5595 616.895C8.48174 621.803 0 618.205 0 611.143Z" fill={cardColor} />
           </svg>
         </div>
