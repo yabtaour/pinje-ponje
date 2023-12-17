@@ -8,10 +8,6 @@ import PlayerCard, { PlayerSkeleton } from '../components/PlayerCard';
 let token: string | undefined = localStorage.getItem('access_token')!;
 const SocketManagerGame = SocketManager.getInstance("http://localhost:3000", token);
 import _ from 'lodash';
-import { Toast } from '@chakra-ui/react';
-import { getCookie } from "cookies-next";
-
-
 
 export const Engine = Matter.Engine;
 export const Render = Matter.Render;
@@ -37,6 +33,9 @@ const keys: any = {
 let gameId = 0;
 let currentUserId = 0;
 
+let ballX = 3;
+let ballY = 3;
+
 export function createBodies() {
     ball = Bodies.circle(worldWidth / 2, worldHeight / 2, 15, {
       restitution: 1,
@@ -46,10 +45,6 @@ export function createBodies() {
         fillStyle: "#73d3ff"
       }
     });
-    Body.setVelocity(ball, {
-      x: 3,
-      y: 3,
-    })
     rightPaddle = Bodies.rectangle(worldWidth - 20, worldHeight / 2, 20, 100, {
       isStatic: true,
       render: {
@@ -89,24 +84,12 @@ export function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matter.Body
 
 let isSent = false;
 
-const localPrediction = (direction: string) => {
-    if (direction === 'up' && leftPaddle.position.y - 100 / 2 > 10) {
-        Body.translate(leftPaddle, { x: 0, y: -10 });
-    } else if (direction === 'down' && leftPaddle.position.y + 100 / 2 < worldHeight - 10) {
-        Body.translate(leftPaddle, { x: 0, y: 10 });
-    }
-};
-
 export function updatePaddlesgame(gameId: number) {
-    if (keys['ArrowUp'] && leftPaddle.position.y - 100 / 2 > 10) {
-        // Body.translate(leftPaddle, { x: 0, y: -10 });
-        // localPrediction('up');
+    if (!isSent && keys['ArrowUp'] && leftPaddle.position.y - 100 / 2 > 10) {
         SocketManagerGame.sendPaddlePosition({ gameId: gameId, direction: 'up' });
         isSent = true;
     }
-    if (keys['ArrowDown'] && leftPaddle.position.y + 100 / 2 < worldHeight - 10) {
-        // Body.translate(leftPaddle, { x: 0, y: 10 });
-        // localPrediction('down');
+    if (!isSent && keys['ArrowDown'] && leftPaddle.position.y + 100 / 2 < worldHeight - 10) {
         SocketManagerGame.sendPaddlePosition({ gameId: gameId, direction: 'down' });
         isSent = true;
     }
@@ -116,16 +99,11 @@ export default function VersusScreen() {
     const [playerFound, setPlayerFound] = useState(false);
     const [enemyPlayer, setEnemyPlayer] = useState<any>(null);
     const [selectedMap, setSelectedMap] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [currentUserId, setcurrentUserId] = useState(0);
-    const SocketManagerGame = SocketManager.getInstance("http://localhost:3000",`${localStorage.getItem('access_token')}`);
-    const token = getCookie("token");
-    // const SocketManagerGame = SocketManager.getInstance("http://localhost:3000", token);
-
     const [user, setUser] = useState(null);
     const [startGame, setStartGame] = useState(false);
     const [sentInitialize, setSentInitialize] = useState(false);
     const [readyToInitialize, setReadyToInitialize] = useState(false);
+    const [listeningToStartGame, setListeningToStartGame] = useState(false);
     
     const boxRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);    
@@ -137,28 +115,12 @@ export default function VersusScreen() {
                 const data = await axios.get(`http://localhost:3000/users/me`, {
                     headers: {
                         Authorization: `${localStorage.getItem('access_token')}`,
-                        // Authorization: token,
                     },
                 });
                 setUser(data.data);
-                setcurrentUserId(data.data.id)
-            // } catch (err) {
-            //     console.error("Error when fetching user's data");
-            //     setLoading(false);
-            //     // console.log(data.data);
-            //     const loggedUserId = data.data.id;
-            //     setcurrentUserId(loggedUserId);
+                currentUserId = data.data.id;
             } catch (err) {
-                Toast({
-                    title: 'Error',
-                    status: 'error',
-                    duration: 9000,
-                    isClosable: true,
-                    position: "bottom-right",
-                    variant: "solid",
-                });
-                console.error("Error in fetchData:", err);
-                setLoading(false);
+                console.error("Error when fetching user's data");
             }
         };
     
@@ -180,22 +142,47 @@ export default function VersusScreen() {
             }
         };
     
+        // const initializeGame = async () => {
+        //     if (selectedMap && SocketManagerGame) {
+        //         SocketManagerGame.waitForConnection(async () => {
+        //             try {
+        //                 setReadyToInitialize(true);
+        //                 let data = await SocketManagerGame.onStartGame().then();
+        //                 if (data) {
+        //                     if (data.reversed == true) {
+        //                         console.log("true : ", data);
+        //                         ballX *= -1;
+        //                         console.log(ballX);
+        //                     }
+        //                     setStartGame(true);
+        //                 }
+        //             } catch (error) {
+        //                 console.error("Error in sendInitialize:", error);
+        //             }
+        //         });
+        //     }
+        // };
+    
         const initializeGame = async () => {
             if (selectedMap && SocketManagerGame) {
-                SocketManagerGame.waitForConnection(async () => {
-                    try {
-                        setReadyToInitialize(true);
-                        let data = await SocketManagerGame.onStartGame();
-                        if (data)  {
+                SocketManagerGame.waitForConnection(() => {
+                    SocketManagerGame.onStartGame()
+                        .then((data) => {
+                            if (data && data.reversed === true) {
+                                console.log("true : ", data);
+                                ballX *= -1;
+                                console.log(ballX);
+                            }
                             setStartGame(true);
-                        };
-                    } catch (error) {
-                        console.error("Error in sendInitialize:", error);
-                    }
+                        })
+                        .catch((error) => {
+                            console.error("Error in sendInitialize:", error);
+                        });
+                        setReadyToInitialize(true);
                 });
             }
         };
-    
+        
         const sendInitialization = async () => {
             if (selectedMap && !sentInitialize && SocketManagerGame) {
                 SocketManagerGame.waitForConnection(async () => {
@@ -208,44 +195,14 @@ export default function VersusScreen() {
                 });
             }
         };
-    
-        // const handlePaddlePosition = () => {
-        //     if (startGame && SocketManagerGame) {
-        //         SocketManagerGame.waitForConnection(() => {
-        //             SocketManagerGame.onPaddlePosition().then((data) => {
-        //                 console.log("chi haja jaat");
-        //                 console.log(data);
-        //                 isSent = false;
-        //                 const { playerId, direction } = data;
-        //                 if (playerId == currentUserId) {
-        //                     if (direction == "up") {
-        //                         Body.translate(leftPaddle, { x: 0, y: -3 });
-        //                     } else {
-        //                         Body.translate(leftPaddle, { x: 0, y: 3 });
-        //                     }
-        //                 } else {
-        //                     if (direction == "up") {
-        //                         Body.translate(rightPaddle, { x: 0, y: -3 });
-        //                     } else {
-        //                         Body.translate(rightPaddle, { x: 0, y: 3 });
-        //                     }
-        //                 }
-        //                 // Continue processing the data or trigger other actions
-        //             }).catch((error) => {
-        //                 console.error("Error in onPaddlePosition:", error);
-        //             });
-        //         });
-        //     }
-        // };
+
         const handlePaddlePosition = () => {
             if (startGame && SocketManagerGame) {
               SocketManagerGame.waitForConnection(() => {
                 SocketManagerGame.onPaddlePosition((data) => {
-                  isSent = false;
                   const { playerId, direction } = data;
                   if (playerId == currentUserId) {
                     if (direction == "up") {
-                      Body.setVelocity
                       Body.translate(leftPaddle, { x: 0, y: -3 });
                     } else {
                       Body.translate(leftPaddle, { x: 0, y: 3 });
@@ -257,13 +214,11 @@ export default function VersusScreen() {
                       Body.translate(rightPaddle, { x: 0, y: 3 });
                     }
                   }
-                  // Continue processing the data or trigger other actions
+                  isSent = false;
                 });
               });
             }
           };
-          
-        
     
         const createGame = () => {
             worldWidth = canvasRef.current?.width! * 4;
@@ -290,17 +245,19 @@ export default function VersusScreen() {
                     },
                 });
                 createBodies();
+                console.warn("hna : ", ballX, ballY);
+                Body.setVelocity(ball, {
+                    x: ballX,
+                    y: ballY,
+                })
                 World.add(engine.world, [ball, floor, ceiling, leftPaddle, rightPaddle]);
                 console.log(leftPaddle);
                 console.log(rightPaddle);
 
-                // const throttledUpdatePaddles = _.throttle(updatePaddlesgame, 100);
                 window.addEventListener('keydown', (event) => {
                     if (keys.hasOwnProperty(event.code)) {
                         event.preventDefault();
                         keys[event.code] = true;
-                        // updatePaddlesgame(gameId);
-                        // throttledUpdatePaddles(gameId);
                     }
                 });
                 window.addEventListener('keyup', (event) => {
@@ -359,7 +316,7 @@ export default function VersusScreen() {
             <div className='grid grid-cols-3'>
                 <PlayerCard user={user} cardColor="#4A40BF" />
                 <div className="flex items-center justify-center">
-                    <svg width="208" height="189" viewBox="0 0 308 289" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-28 h-24 lg:w-52 lg:h-48">
+                    <svg width="208" height="189" viewBox="0 0 308 289" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M233 9L156 36.5L115.5 176L156 169L127.5 278L166.5 220.5C149 178 161 202.5 157.5 193C154.7 185.4 157.667 184 160 184L188 180.5L226.5 114L182.5 121L233 9Z" fill="#77DFF8" />
                         <path d="M231 58.5008C250.167 56.3341 291.3 63.2008 302.5 108.001L257.5 113C251 100.5 232.2 81.5 209 105.5" stroke="#4A40BF" strokeWidth="5" />
                         <path d="M232.5 128C257.5 128.333 301.289 141.003 305 188.5C310 252.5 167.5 273 156 186.5L199 182.5C205.333 194.833 221.507 213.843 244.5 205C270.5 195 260 166.5 218 165.5" stroke="#4A40BF" strokeWidth="5" />
@@ -375,8 +332,8 @@ export default function VersusScreen() {
                 ) : (
                     <div className="flex flex-col items-center">
                         <PlayerSkeleton />
-                        <p className="text-[#77DFF8] text-xs md:text-sm bg-[#201e34] p-4 rounded-lg flex flex-row animate-pulse font-semibold">Looking for opponent
-                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" className="ml-2 w-3 h-3 md:w-5 md:h-5">
+                        <p className="text-[#77DFF8] text-sm bg-[#201e34] p-4 rounded-lg flex flex-row animate-pulse font-semibold">Looking for opponent
+                            <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" className="ml-2">
                                 <path d="M11.7671 20.7563C16.7316 20.7563 20.7561 16.7318 20.7561 11.7673C20.7561 6.80283 16.7316 2.77832 11.7671 2.77832C6.80259 2.77832 2.77808 6.80283 2.77808 11.7673C2.77808 16.7318 6.80259 20.7563 11.7671 20.7563Z" stroke="#77DFF8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                 <path d="M18.0181 18.4854L21.5421 22.0004" stroke="#77DFF8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>

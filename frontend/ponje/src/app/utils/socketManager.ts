@@ -227,6 +227,7 @@ class SocketManager {
         // console.log("Connected to game namespace");
         // console.log(payload);
         this.gameSocket?.emit("updatePlayerPosition", payload);
+        console.log("mcha : ", payload);
         resolve("done");
       } else {
         // console.log("Socket is not connected yet.");
@@ -234,7 +235,6 @@ class SocketManager {
       }
     });    
   }
-
   
   public onPaddlePosition(callback: (data: any) => void): void {
     if (this.gameSocket && this.gameSocket.connected) {

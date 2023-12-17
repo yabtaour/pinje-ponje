@@ -370,6 +370,7 @@ export class GameService {
 	}
 
 	async initializeGame(client: number, payload: any) {
+		console.log("ha mrra")
 		const player = await this.prisma.player.findUnique({
 			where: {
 				userId_gameId: {
@@ -403,31 +404,31 @@ export class GameService {
 		this.gameGateway.initializeClients.splice(this.gameGateway.initializeClients.findIndex((element) => {
 			return element == String(client)
 		}), 1);
-		this.gameGateway.server.to(String(this.gameGateway.currentGames[payload.gameId].player1.id)).emit('startGame', {reversed: true});
-		this.gameGateway.server.to(String(this.gameGateway.currentGames[payload.gameId].player2.id)).emit('startGame', {reversed: false});
+		this.gameGateway.server.to(String(this.gameGateway.currentGames[payload.gameId].player1.id)).emit('startGame', {reversed: false});
+		this.gameGateway.server.to(String(this.gameGateway.currentGames[payload.gameId].player2.id)).emit('startGame', {revered: true});
 	}
 
 	async updatePlayerPosition(client: number, payload: any) {
-		const currentPlayer = await this.prisma.player.findUnique({
-			where: {
-				userId_gameId: {
-					userId: Number(client),
-					gameId: payload.gameId,
-				},
-			},
-		});
-		if (!currentPlayer)
-			throw new WsException(`No player found`);
+		// const currentPlayer = await this.prisma.player.findUnique(
+		// 	where: {
+		// 		userId_gameId: {
+		// 			userId: Number(client),
+		// 			gameId: payload.gameId,
+		// 		},
+		// 	},
+		// });
+		// if (!currentPlayer)
+		// 	throw new WsException(`No player found`);
 		
-		let newY = payload.direction === "up" ? -3 : 3;
+		// let newY = payload.direction === "up" ? -3 : 3;
 	
-		if (client === this.gameGateway.currentGames[payload.gameId].player1.id) {
-			this.gameGateway.currentGames[payload.gameId].player1.paddlePosition += newY;
-		} else if (client === this.gameGateway.currentGames[payload.gameId].player2.id) {
-			this.gameGateway.currentGames[payload.gameId].player2.paddlePosition += newY;
-		} else {
-			throw new WsException("No player found");
-		}
+		// if (client === this.gameGateway.currentGames[payload.gameId].player1.id) 
+		// 	this.gameGateway.currentGames[payload.gameId].player1.paddlePosition += newY;
+		// } else if (client === this.gameGateway.currentGames[payload.gameId].player2.id) {
+		// 	this.gameGateway.currentGames[payload.gameId].player2.paddlePosition += newY;
+		// } else 
+		// 	throw new WsException("No player found");
+		// }
 
 		await this.gameGateway.server
 			.to(String(this.gameGateway.currentGames[payload.gameId].player1.id))
