@@ -25,6 +25,9 @@ type User = {
     Friends: [];
     createdAt: string;
     updatedAt: string;
+    friendOf: [],
+    pendingRequest: [],
+    sentRequest: [],
     userid: number;
     bio?: string | null;
   };

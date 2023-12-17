@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import axios from "axios";
+import axios from "@/app/utils/axios"
 import useSWR from "swr";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -55,14 +55,6 @@ const SearchPage = () => {
     router.push("/");
   }
 
-  if (isLoading) {
-
-    return (
-      <div className='min-h-screen'>
-        <Loader />;
-      </div>
-    );
-  }
 
   const handlePrevPage = () => {
     if (page > 1) {
@@ -76,17 +68,6 @@ const SearchPage = () => {
     }
   };
 
-  const [showNoUsersMessage, setShowNoUsersMessage] = useState(false);
-
-  // useEffect(() => {
-  //   // Set a timeout to show the message after 2 seconds (adjust the time as needed)
-  //   const timeoutId = setTimeout(() => {
-  //     setShowNoUsersMessage(true);
-  //   }, 200);
-  
-    // Clear the timeout when the component unmounts to avoid memory leaks
-  //   return () => clearTimeout(timeoutId);
-  // }, []);
 
   if (!data || data.length === 0) {
     return isLoading ? (

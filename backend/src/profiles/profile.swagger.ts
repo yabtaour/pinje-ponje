@@ -16,6 +16,7 @@ import {
 
 import { Prisma } from '@prisma/client';
 import { CreateProfileDto } from './dto/create-profile.dto';
+import { updateProfileDto } from './dto/update-profile.dto';
 
 export function SwaggerUpdateProfile() {
   return applyDecorators(
@@ -23,7 +24,7 @@ export function SwaggerUpdateProfile() {
     ApiNotFoundResponse({ description: 'Profile not found' }),
     ApiBearerAuth(),
     ApiBody({
-      type : CreateProfileDto,
+      type : updateProfileDto
     }),
     ApiOkResponse({
       description: 'updated profile',
