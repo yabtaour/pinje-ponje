@@ -64,6 +64,7 @@ export default function SignUp() {
         try {
             console.log(values);
             const data = await handleSignup(values.email, values.password, values.username);
+            console.log("this dispatch got called 3: ");
             dispatch(login(data));
             router.push('/dashboard');
         } catch (error) {
