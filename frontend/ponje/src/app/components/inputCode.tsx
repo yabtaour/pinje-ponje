@@ -12,32 +12,32 @@ import { useRef } from "react";
 const InputCode = ({ onSubmit }: InputCodeProps) => {
     const [code, setCode] = useState<string>("");
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-
+  
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const { value, name } = event.target;
-        const index = parseInt(name);
-
-        if (value.length > 1) {
-            return;
+      const { value, name } = event.target;
+      const index = parseInt(name);
+  
+      if (value.length > 1) {
+        return;
+      }
+  
+      const newCode = code.split("");
+      newCode[index] = value;
+      setCode(newCode.join(""));
+  
+      if (/^\d$/.test(value)) {
+        const nextIndex = index + 1;
+        if (nextIndex < inputRefs.current.length) {
+          inputRefs.current[nextIndex]?.focus();
+        } else if (nextIndex === inputRefs.current.length) {
+          onSubmit(newCode.join(""));
         }
-        const newCode = code.split("");
-        newCode[index] = value;
-        setCode(newCode.join(""));
-
-
-
-        if (/^\d$/.test(value)) {
-            const nextIndex = index + 1;
-            if (nextIndex < inputRefs.current.length) {
-                inputRefs.current[nextIndex]?.focus();
-            }
-        } else if ((value === "") && index > 0) {
-            const prevIndex = index - 1;
-            inputRefs.current[prevIndex]?.focus();
-        } else {
-            inputRefs.current[index]?.focus();
-        }
+      } else if (value === "" && index > 0) {
+        const prevIndex = index - 1;
+        inputRefs.current[prevIndex]?.focus();
+      } else {
+        inputRefs.current[index]?.focus();
+      }
     };
 
     const handleArrowKey = (event: React.KeyboardEvent<HTMLInputElement>, index: number) => {
@@ -99,8 +99,8 @@ const InputCode = ({ onSubmit }: InputCodeProps) => {
                         onKeyDown={(event) => handleArrowKey(event, index)}
                         ref={(el) => (inputRefs.current[index] = el)}
                         style={{
-                            marginRight: "1rem",
-                            width: "4rem",
+                            marginRight: "0.5rem",
+                            width: "3.5rem",
                             height: "5.5rem",
                             textAlign: "center",
                             background: "#1B1A2D",

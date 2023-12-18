@@ -54,11 +54,10 @@ export class AuthController {
 		@Body() body: {twofactorcode: string},
 		@Req() request: Request
 	) {
-		console.log(body);
 		const user = await this.userService.getCurrentUser(request);
     	const isValid = await this.authService.userTwoFaChecker(user, body);
 		if (!isValid)
-			throw new HttpException("invalid code", HttpStatus.BAD_REQUEST);
+			throw new HttpException("invalid verification code", HttpStatus.BAD_REQUEST);
 		return user;
 	}
 

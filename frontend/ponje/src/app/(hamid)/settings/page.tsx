@@ -13,66 +13,43 @@ import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import * as Yup from 'yup';
 import { resetPassword, updateUser, fetchQRCode } from "../../utils/update";
-import QRCode from 'react-qr-code';
-import Image from 'next/image';
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from "@nextui-org/react";
+import { TwoFactorModal, TwoFactorModalDeactivate } from './components/TwoFactorModal';
 
 
 export default function UserSettings() {
-    const [isSelected, setIsSelected] = useState(true);
     const [showSuccessBadge, setShowSuccessBadge] = useState(false);
     const [resetPasswordError, setResetPasswordError] = useState("");
-    const [TwoFactorNewState, setTwoFactorNewState] = useState(false);
     const user = useAppSelector((state) => state.authReducer.value.user);
     const userToken = useAppSelector((state) => state.authReducer.value.token);
     const dispatch = useDispatch();
-    const [qrCodeData, setQrCodeData] = useState('');
     const [twoFactorAuth, setTwoFactorAuth] = useState(false);
+    const { isOpen, onOpen, onClose } = useDisclosure();
+    const [activationComplete, setActivationComplete] = useState(false);
 
-
-    // useEffect(() => {
-    //     const fetchData = async () => {
-    //         if (!user) {
-    //             const accessToken: string | null = localStorage.getItem('access_token');
-    //             if (accessToken) {
-    //                 const userData = await fetchUserData(accessToken);
-    //                 //print the value of twoFactor from the UserData
-    //                 dispatch(UpdateUser(userData));
-    //                 setTwoFactorAuth(userData?.twoFactor);
-    //                 console.log("CHECK THIS VALUE ",userData?.twoFactor);
-    //             }
-    //         }
-    //     };
-
-    //     fetchData();
-    // }, [user]);
 
     useEffect(() => {
         const fetchData = async () => {
-            try {
-                let accessToken: string | null = localStorage.getItem('access_token');
-                if (accessToken) {
-                    const userData = await fetchUserData(accessToken);
-                    const userChanged = JSON.stringify(user) !== JSON.stringify(userData);
-                    if (userChanged) {
-                        dispatch(UpdateUser(userData));
-                        setTwoFactorAuth(userData?.twoFactor);
-                        if (userData?.twoFactor) {
-                            const data = await fetchQRCode(accessToken);
-                            setQrCodeData(data);
-                        } else {
-                            setQrCodeData('');
-                        }
-                    }
-                }
-
-            } catch (error) {
-                console.error("Error fetching user data:", error);
+          try {
+            let accessToken: string | null = localStorage.getItem('access_token');
+            if (accessToken) {
+              const userData = await fetchUserData(accessToken);
+              const userChanged = JSON.stringify(user) !== JSON.stringify(userData);
+              if (userChanged) {
+                dispatch(UpdateUser(userData));
+                setTwoFactorAuth(userData?.twoFactor);
+                console.log("2FA VALUE", userData?.twoFactor);
+                console.log("2FA VALUE in setter", twoFactorAuth);
+              }
             }
+          } catch (error) {
+            console.error("Error fetching user data:", error);
+          }
         };
-
+      
         fetchData();
-    }, [user, dispatch]);
-
+      }, [user, dispatch]);  // Ensure that the dependencies are correct
+      
 
     const [passwordShown, setPasswordShown] = useState(false);
     const togglePasswordVisibility = () => {
@@ -187,8 +164,10 @@ export default function UserSettings() {
 
                     <div className="max-w-3xl w-full mx-auto">
                         <h3 className="text-3xl font-semibold text-center text-[#4E40F4] mb-4">
-                            User Settings
+                            User Settings 
                         </h3>
+                        <p className='text-white font-bold text-center text-7xl mt-6'>{twoFactorAuth}</p>
+
                         <div className="bg-[#1B1A2D] p-8 rounded-lg h-full w-fill">
                             <Formik
                                 initialValues={initialValues}
@@ -231,9 +210,6 @@ export default function UserSettings() {
                                                 <p className='font-light text-xs text-slate-300'> we&apos;re sure you&apos;re special but keep it down to 60 characters</p>
                                                 <ErrorMessage name="bio" component="div" className="text-red-500 text-sm" />
                                             </div>
-
-
-
                                         </div>
                                         <div className="hidden lg:inline-block h-[450px] min-h-[1em] w-0.5 self-stretch bg-violet-950 opacity-100 dark:opacity-50"></div>
                                         <div className="flex-1 flex flex-col items-center lg:items-start">
@@ -338,52 +314,42 @@ export default function UserSettings() {
                                                 </button>
                                             </div>
                                         </div>
-
-                                        {/* <div className="hidden lg:inline-block h-[450px] min-h-[1em] w-0.5 self-stretch bg-violet-950 opacity-100 dark:opacity-50"></div> */}
-                                        {/* <div className="relative text-[#73d3ff] m-5">
-                                            <h2 className="p-2" >Activate 2FAuth</h2>
-                                            <Switch
-                                                {
-                                                ...{
-                                                    //if i add this line the switch's state cant be changed 
-                                                    // isSelected: twoFactorAuth,
-                                                    onChange: () => {
-                                                        setTwoFactorNewState(!twoFactorAuth);
-                                                        setIsSelected(twoFactorAuth);
-                                                    },
-                                                }
-                                                } aria-label="Automatic updates" />
-                                            <p>current value of checked : {twoFactorAuth ? "Yes" : "No"}   </p>
-                                            <div className=''>
-                                                {twoFactorAuth && qrCodeData && (
-                                                    <Image src={qrCodeData} alt="QR Code" width={200} height={200} className=' ' />
-                                                )}
-                                            </div>
-                                        </div> */}
-                                        {/* display the image under the switch */}
                                     </Form>
                                 )}
                             </Formik>
                         </div>
 
                     </div>
-                    // {
-                    //     showSuccessBadge && (
-                    //         <div className="alert alert-success w-1/3">
-                    //             <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    //             <span>Your profile has been updated successfully!</span>
-                    //         </div>
-                    //     )
-                    // }
                 )
             }
             <div className='flex justify-center mt-6'>
-                                    <button
-                            className="bg-blue-500 w-1/5 text-white justify-center font-bold uppercase text-xs px-6 py-3 rounded shadow hover:bg-blue-600 transition-all duration-150"
-                        >
-                            Activate/Deactivate 2FA
-                        </button>
-        </div>
+                <button
+                    className="bg-blue-500 w-1/5 text-white justify-center font-bold uppercase text-xs px-6 py-3 rounded shadow hover:bg-blue-600 transition-all duration-150"
+                    onClick={onOpen}
+                >
+                    {twoFactorAuth ? (
+                        <p>Deactivate 2FA</p>
+
+                    ) : (
+                        <p>Activate 2FA</p>
+                    )}
+                </button>
+                {isOpen && (
+                    <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center z-50">
+                        <div className="absolute top-0 left-0 w-full h-full bg-black opacity-60"></div>
+                        <Modal isOpen={isOpen} onClose={onClose}>
+                            <ModalContent>
+                                {twoFactorAuth ? (
+                                    <TwoFactorModalDeactivate />
+                                ) : (
+                                    // <TwoFactorModal setActivationComplete={setActivationComplete} />
+                                    <TwoFactorModal />
+                                )}
+                            </ModalContent>
+                        </Modal>
+                    </div>
+                )}
+            </div>
         </div >
     );
 }
