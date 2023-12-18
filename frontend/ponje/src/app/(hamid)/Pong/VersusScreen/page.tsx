@@ -33,8 +33,10 @@ const keys: any = {
 let gameId = 0;
 let currentUserId = 0;
 
-let ballX = 3;
-let ballY = 3;
+let ballX = 5;
+let ballY = 5;
+
+  
 
 export function createBodies() {
     ball = Bodies.circle(worldWidth / 2, worldHeight / 2, 15, {
@@ -95,6 +97,28 @@ export function updatePaddlesgame(gameId: number) {
     }
 }
 
+// const ballReachedLeftThreshold = () => {
+//     const leftThreshold = 0; // Adjust this value based on your world setup
+//     return ball.position.x <= leftThreshold;
+//   };
+
+// const ballReachedRightThreshold = () => {
+//     const leftThreshold = worldWidth;
+//     return ball.position.x >= leftThreshold;
+// }
+
+// export function updateScore(gameId: number) {
+//     Body.setPosition(leftPaddle, {x: worldHeight / 2, y: worldHeight / 2})
+//     Body.setPosition(rightPaddle, {x: worldHeight / 2, y: worldHeight / 2})
+//     Body.setPosition(ball, { x: worldWidth / 2, y: worldHeight / 2 });
+//     Body.setVelocity(ball, {
+//         x: ballX,
+//         y: ballY,
+//     })
+//     SocketManagerGame.sendScoreUpdate({gameId: gameId});
+// }
+
+
 export default function VersusScreen() {
     const [playerFound, setPlayerFound] = useState(false);
     const [enemyPlayer, setEnemyPlayer] = useState<any>(null);
@@ -103,11 +127,19 @@ export default function VersusScreen() {
     const [startGame, setStartGame] = useState(false);
     const [sentInitialize, setSentInitialize] = useState(false);
     const [readyToInitialize, setReadyToInitialize] = useState(false);
-    const [listeningToStartGame, setListeningToStartGame] = useState(false);
+    // const [myScore, setMyScore] = useState(0);
+    // const [enemyScore, setEnemyScore] = useState(0);
+    // const [gameStarted, setGameStarted] = useState(false);
     
     const boxRef = useRef<HTMLDivElement>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);    
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    worldWidth = canvasRef.current?.width! * 4;
+    worldHeight = canvasRef.current?.height! * 4;
+    canvaWidth = canvasRef.current?.width!;
+    canvaHeight = canvasRef.current?.height!;
     
+    console.log("canva demesions : ", canvaWidth, " | ", canvaHeight);
+    console.log("world demesions : ", worldWidth, " | ", worldHeight);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -141,39 +173,22 @@ export default function VersusScreen() {
                 });
             }
         };
-    
-        // const initializeGame = async () => {
-        //     if (selectedMap && SocketManagerGame) {
-        //         SocketManagerGame.waitForConnection(async () => {
-        //             try {
-        //                 setReadyToInitialize(true);
-        //                 let data = await SocketManagerGame.onStartGame().then();
-        //                 if (data) {
-        //                     if (data.reversed == true) {
-        //                         console.log("true : ", data);
-        //                         ballX *= -1;
-        //                         console.log(ballX);
-        //                     }
-        //                     setStartGame(true);
-        //                 }
-        //             } catch (error) {
-        //                 console.error("Error in sendInitialize:", error);
-        //             }
-        //         });
-        //     }
-        // };
-    
+        
         const initializeGame = async () => {
             if (selectedMap && SocketManagerGame) {
                 SocketManagerGame.waitForConnection(() => {
                     SocketManagerGame.onStartGame()
                         .then((data) => {
-                            if (data && data.reversed === true) {
-                                console.log("true : ", data);
-                                ballX *= -1;
-                                console.log(ballX);
+                            if (data) {
+                                console.log("bda lgame");
+                                if (data.reversed == true) {
+                                    console.log("9lb dakchi");
+                                    ballX *= -1;
+                                } else {
+                                    console.log("mat9lb walo");
+                                }
+                                setStartGame(true);
                             }
-                            setStartGame(true);
                         })
                         .catch((error) => {
                             console.error("Error in sendInitialize:", error);
@@ -203,15 +218,15 @@ export default function VersusScreen() {
                   const { playerId, direction } = data;
                   if (playerId == currentUserId) {
                     if (direction == "up") {
-                      Body.translate(leftPaddle, { x: 0, y: -3 });
+                      Body.translate(leftPaddle, { x: 0, y: -5 });
                     } else {
-                      Body.translate(leftPaddle, { x: 0, y: 3 });
+                      Body.translate(leftPaddle, { x: 0, y: 5 });
                     }
                   } else {
                     if (direction == "up") {
-                      Body.translate(rightPaddle, { x: 0, y: -3 });
+                      Body.translate(rightPaddle, { x: 0, y: -5 });
                     } else {
-                      Body.translate(rightPaddle, { x: 0, y: 3 });
+                      Body.translate(rightPaddle, { x: 0, y: 5 });
                     }
                   }
                   isSent = false;
@@ -219,7 +234,29 @@ export default function VersusScreen() {
               });
             }
           };
-    
+        
+        // const handleScoreUpdate = () => {
+        //     if (startGame && SocketManagerGame) {
+        //         SocketManagerGame.onScoreUpdate((data) => {
+        //             console.log("score ja");
+        //             const {playerId, newScore} = data;
+        //             Body.setPosition(ball, {x: worldWidth / 2, y: worldHeight / 2});
+        //             Body.setVelocity(ball, {
+        //                 x: ballX,
+        //                 y: ballY
+        //             })
+        //             Body.setPosition(leftPaddle, {x: 20, y: worldHeight / 2});
+        //             Body.setPosition(rightPaddle, {x: worldWidth - 20, y: worldHeight / 2});
+        //             if (playerId == currentUserId)
+        //                 setMyScore(newScore);
+        //             else {
+        //                 setEnemyScore(newScore);
+        //             }
+        //         })
+        //         setGameStarted(true);
+        //     }
+        // }
+   
         const createGame = () => {
             worldWidth = canvasRef.current?.width! * 4;
             worldHeight = canvasRef.current?.height! * 4;
@@ -291,12 +328,18 @@ export default function VersusScreen() {
         };
     
         if (!user || !currentUserId) fetchData();
-        if (user && currentUserId) waitForNewGame();
+        waitForNewGame();
         if (selectedMap && enemyPlayer && playerFound && !startGame) initializeGame();
-        if (selectedMap && readyToInitialize) sendInitialization();
-        if (startGame) handlePaddlePosition();
+        if (selectedMap && !startGame) sendInitialization();
         if (startGame) createGame();
-    }, [user, currentUserId, enemyPlayer, selectedMap, readyToInitialize, startGame, sentInitialize, leftPaddle, rightPaddle]);
+        if (startGame) handlePaddlePosition();
+        // if (startGame) handleScoreUpdate();
+        // if (startGame) handlGameEnd();
+
+        return () => {
+            
+        };
+    }, [user, currentUserId, enemyPlayer, selectedMap, readyToInitialize, startGame, sentInitialize, leftPaddle, rightPaddle, enemyPlayer]);
     
     
     const handleMapClick = (map: string) => {
@@ -307,10 +350,19 @@ export default function VersusScreen() {
     return (
         startGame ? (
             <div className='w-full h-screen flex items-center justify-center'>
-            <div className='w-2/3 h-2/3 border-2 border-black z-30' ref={boxRef}>
-                <canvas className='w-full h-full border-2 border-black z-30' id="myCanva" ref={canvasRef} />
+                <div className='w-2/3 h-2/3 border-2 border-black z-30' ref={boxRef}>
+                    <canvas className='w-full h-full border-2 border-black z-30' id="myCanva" ref={canvasRef} />
+                </div>
             </div>
-    </div>
+            // <div className='w-full h-screen flex items-center justify-center'>
+            //     <div className='w-2/3 h-2/3 border-2 border-black z-30' ref={boxRef}>
+            //         <canvas className='w-full h-full border-2 border-black z-30' id="myCanva" ref={canvasRef} />
+            //         <div className="absolute top-0 left-0 p-4 text-white">
+            //             <p>My Score: {myScore}</p>
+            //             <p>Enemy Score: {enemyScore}</p>
+            //         </div>
+            //     </div>
+            // </div>
         ) : (
         <div className='min-h-screen bg-gradient-to-t from-[#2b2948] to-[#141321] flex flex-col justify-center items-center'>
             <div className='grid grid-cols-3'>

@@ -405,7 +405,7 @@ export class GameService {
 			return element == String(client)
 		}), 1);
 		this.gameGateway.server.to(String(this.gameGateway.currentGames[payload.gameId].player1.id)).emit('startGame', {reversed: false});
-		this.gameGateway.server.to(String(this.gameGateway.currentGames[payload.gameId].player2.id)).emit('startGame', {revered: true});
+		this.gameGateway.server.to(String(this.gameGateway.currentGames[payload.gameId].player2.id)).emit('startGame', {reversed: true});
 	}
 
 	async updatePlayerPosition(client: number, payload: any) {
@@ -507,6 +507,7 @@ export class GameService {
 	}
 
 	async updateScore(userId: number, gameId: number) {
+		console.log("score update", gameId, userId);
 		const currentPlayer = await this.prisma.player.findUnique({
 			where: {
 				userId_gameId: {

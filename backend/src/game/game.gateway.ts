@@ -79,7 +79,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     
     @SubscribeMessage('updateScore')
     updateScore(client: any, payload: {gameId: number}): void {
-      if (!payload || !payload.gameId || typeof payload.gameId !== "number")
+      if (!payload || !payload.gameId || typeof payload.gameId != "number") {
+        console.log("payload is not valid !", payload);
+        throw new WsException("invalid payload");        
+      }
       this.gameService.updateScore(parseInt(client.id), payload.gameId);
     }
 
