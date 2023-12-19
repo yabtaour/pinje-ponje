@@ -123,7 +123,7 @@ class SocketManager {
       if (this.notificationSocket && this.notificationSocket.connected) {
         console.log("Socket is connected.", this.notificationSocket);
         console.log("Connected to notification namespace");
-        this.notificationSocket?.emit("getNotifications", (notifications: any) => {
+        this.notificationSocket?.on("notification", (notifications: any) => {
           console.log("Notifications:", notifications);
           resolve(notifications);
         });
@@ -133,6 +133,8 @@ class SocketManager {
       }
     });
   }
+
+  
   public getConversations(): Promise<any[]> {
     return new Promise((resolve, reject) => {
       if (this.chatSocket && this.chatSocket.connected) {

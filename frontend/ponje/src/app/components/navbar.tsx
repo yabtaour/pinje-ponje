@@ -15,6 +15,9 @@ import Notification from "./notification";
 import SearchInput from "./search";
 import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/app/globalRedux/store";
+import { Toast } from '@chakra-ui/react';
+import axios from "@/app/utils/axios";
+import { useEffect, useState } from 'react';
 
 
 interface NavBarProps {
@@ -24,6 +27,8 @@ interface NavBarProps {
 export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps) {
   const currentuser = useAppSelector((state) => state.authReducer.value.user);
   const router = useRouter();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const defaultAvatarUrl = "/placeholderuser.jpeg";
   // const AvatarImg = '/avatars' + currentuser?.profile?.avatar || defaultAvatarUrl;
@@ -35,6 +40,37 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
   const handleSignedInAsClick = () => {
     router.push('/Profile');
   };
+
+
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await axios.get(`/users/me`, {
+          headers: {
+            Authorization: `${localStorage.getItem('access_token')}`,
+          },
+        });
+        console.log(data.data);
+        setUser(data.data);
+        setLoading(false);
+        const loggedUserId = data.data.id;
+      } catch (err) {
+        Toast({
+          title: 'Error',
+          status: 'error',
+          duration: 9000,
+          isClosable: true,
+          position: "bottom-right",
+          variant: "solid",
+      });
+        console.error(err);
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
 <Navbar maxWidth="full" className="bg-[#151424] border-b-[#1A3070]">
       <NavbarContent className="flex justify-between items-center">
@@ -79,7 +115,7 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
               variant="flat"
             >
               <DropdownItem>
-                <Notification />
+                <Notification user={user} />
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
@@ -95,7 +131,6 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
                 name="Jason Hughes"
                 size="sm"
                 src={AvatarImg}
-              // src={currentuser?.profile.avatar ?? undefined}
               />
             </DropdownTrigger>
             <DropdownMenu
