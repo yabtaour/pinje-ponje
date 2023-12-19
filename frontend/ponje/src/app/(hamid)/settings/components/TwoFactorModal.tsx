@@ -14,7 +14,7 @@ import { getCookie } from "cookies-next";
 import Image from 'next/image';
 
 
-    export function TwoFactorModal() {
+export function TwoFactorModal() {
 
     const user = useAppSelector((state) => state.authReducer.value.user);
     const [qrCodeData, setQrCodeData] = useState('');
@@ -37,8 +37,7 @@ import Image from 'next/image';
                 },
             });
             setTwoFactorAuth(newStatus);
-            if (response)
-            {
+            if (response) {
                 const data = await fetchQRCode(accessToken);
                 setQrCodeData(data);
             }
@@ -97,6 +96,7 @@ import Image from 'next/image';
             setSubmissionAttempted(true);
         }
     }
+
     return (
         <>
             <ModalHeader className="flex flex-col gap-1"></ModalHeader>
@@ -123,15 +123,11 @@ import Image from 'next/image';
                                     <div className='flex justify-center flex-col items-center pb-5 mt-4'>
                                         <InputCode onSubmit={handleSubmit} />
                                         {submissionAttempted && !twofasuccess ? (
-                                            <p className='text-red-500 text-xs'>Your code is wrong enter a new one</p>
-                                        ) : (
-                                            null
-                                        )}
+                                            <p className='text-red-500 text-xs'>Your code is wrong, enter a new one</p>
+                                        ) : null}
                                         {submissionAttempted && twofasuccess ? (
-                                            <p className="text-green-500 text-xs">Your code is correct !</p>
-                                        ) : (
-                                            null
-                                        )}
+                                            <p className="text-green-500 text-xs">Your code is correct!</p>
+                                        ) : null}
                                     </div>
                                 </div>
                             </div>
