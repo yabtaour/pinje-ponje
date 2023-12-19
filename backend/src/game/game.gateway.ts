@@ -22,7 +22,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   currentGames: Map<number, GameState>;
   intializeArray: number[];
-  initializeClients: string[];
+  initializeClients: number[];
   
   constructor(
 		@Inject(forwardRef(() => GameService))
@@ -45,25 +45,37 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           || typeof payload.ballVel !== "number") {
         throw new WsException("Bad request");
       }
+      if (this.currentGames.has(payload.gameId)) {
+          throw new WsException("Game already initiated");
+      }
+    
       const clientIndex = this.initializeClients.findIndex((element) => {
         return (element == client.id);
       })
       if (clientIndex != -1)
-        return;
-      this.initializeClients.push(client.id);
-      if (this.currentGames.has(payload.gameId)) {
-          throw new WsException("Game already initiated");
-      }
-      this.intializeArray.push(payload.gameId);
-      const firstIndex = this.intializeArray.findIndex((element) => {
+        return ;
+      else
+        this.initializeClients.push(client.id);
+    
+      let firstIndex = this.intializeArray.findIndex((element) => {
         return (element === payload.gameId);
       });
-      const lastIndex = this.intializeArray.lastIndexOf(payload.gameId);
-      if (firstIndex != lastIndex && firstIndex != -1 && lastIndex != -1) {
+      if (firstIndex != -1) {
         this.intializeArray.splice(firstIndex, 1);
-        this.intializeArray.splice(lastIndex, 1);
-        this.gameService.initializeGame(parseInt(client.id), payload)
+        this.initializeClients.splice(clientIndex, 1);
+        this.gameService.initializeGame(parseInt(client.id), payload);
+      } else {
+        this.intializeArray.push(payload.gameId);
       }
+      // const lastIndex = this.intializeArray.lastIndexOf(payload.gameId);
+      // if (firstIndex != lastIndex && firstIndex != -1 && lastIndex != -1) {
+      //   this.intializeArray.splice(firstIndex, 1);
+      //   firstIndex = this.intializeArray.findIndex((element) => {
+      //     return (element === payload.gameId);
+      //   });
+      //   this.intializeArray.splice(firstIndex, 1);
+      //   this.gameService.initializeGame(parseInt(client.id), payload)
+      // }
     }
 
     @SubscribeMessage('updatePlayerPosition')

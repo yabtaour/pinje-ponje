@@ -182,18 +182,12 @@ class SocketManager {
 
   public onNewGame(): Promise<any> {
     return new Promise(async (resolve, reject) => {
-      if (this.gameSocket && this.gameSocket.connected) {
-        console.log("Socket is connected", this.gameSocket);
-  
+      if (this.gameSocket && this.gameSocket.connected) {  
         const gameFoundListener = (data: any) => {
-          console.log("data jaat");
-          console.log("gameFound", data);
           if (data) {
             resolve(data);
           }
           data = null;
-  
-          // Remove the listener after handling the event
           this.gameSocket?.off("gameFound", gameFoundListener);
         };
   
@@ -209,9 +203,6 @@ class SocketManager {
   public sendIntialization(payload: {gameId: number, playerPos: number, ballVel: number}): Promise<any> {
     return new Promise(async (resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
-        console.log("Socket is connected.", this.gameSocket);
-        console.log("Connected to game namespace");
-        console.log(payload);
         this.gameSocket?.emit("initialize", payload);
       } else {
         console.log("Socket is not connected yet.");
@@ -227,7 +218,6 @@ class SocketManager {
         // console.log("Connected to game namespace");
         // console.log(payload);
         this.gameSocket?.emit("updatePlayerPosition", payload);
-        console.log("mcha : ", payload);
         resolve("done");
       } else {
         // console.log("Socket is not connected yet.");
@@ -254,7 +244,6 @@ class SocketManager {
     if (this.gameSocket && this.gameSocket.connected) {
       this.gameSocket?.off("updateScore");
       this.gameSocket?.on("updateScore", (data: any) => {
-        console.log("update the shitty score : ", data);
         callback(data);
       });
     } else {
@@ -265,7 +254,6 @@ class SocketManager {
   public onGameFinished(callback: (data: any) => void): void {
     if (this.gameSocket && this.gameSocket.connected) {
       this.gameSocket?.on("gameOver", (data: any) => {
-        console.log("GAME SALAT : ", data);
         callback(data);
       });
     } else {
@@ -275,10 +263,8 @@ class SocketManager {
 
   public onPaddlePosition(callback: (data: any) => void): void {
     if (this.gameSocket && this.gameSocket.connected) {
-      // console.log("Socket connected");
+      this.gameSocket?.off("updatePaddle");
       this.gameSocket?.on("updatePaddle", (data: any) => {
-        // console.log("DATA JAT !! : ", data);
-        console.log("update the shit : ", data);
         callback(data);
       });
     } else {
@@ -294,7 +280,6 @@ class SocketManager {
         this.gameSocket?.off("startGame");
         this.gameSocket?.on("startGame", (data: any) => {
           resolve(data);
-          console.log("DATA JAT !! : ", data);
         });
       } else {
         reject("Socket is not connected");
