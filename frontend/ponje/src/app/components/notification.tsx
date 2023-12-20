@@ -19,6 +19,8 @@ interface Notification {
   read: boolean;
   name: string;
   avatar: string;
+  treated: boolean; // Add this property
+
 }
 
 export default function Notification({ user }: { user: User | null | undefined }) {
@@ -27,6 +29,7 @@ export default function Notification({ user }: { user: User | null | undefined }
   const [notifs, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  
 
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
@@ -85,6 +88,7 @@ export default function Notification({ user }: { user: User | null | undefined }
             name: user?.username || 'Unknown',
             avatar: user?.avatar || '/placeholderuser.jpeg',
             createdAt: formatDate(notification.createdAt),
+            treated: false,
           } as Notification;
         })
       );
@@ -161,6 +165,10 @@ export default function Notification({ user }: { user: User | null | undefined }
             type={notification.type}
             avatar={notification.avatar}
             createdAt={notification.createdAt}
+            treated={notification.treated}
+            setNotifications={setNotifications}
+            notifs={notifs}
+            index={notifs.indexOf(notification)}
           />
         ))}
       </div>
@@ -174,131 +182,141 @@ export default function Notification({ user }: { user: User | null | undefined }
   );
 }
 
-const handleAccept = async (type: string, id: number) => {
-  console.log(type, id);
-  if (type === "FRIEND_REQUEST") {
-    try {
-      const res = await axios.post('/users/friends/accept', { id: id }, {
-        headers: {
-          Authorization: `${localStorage.getItem('access_token')}`,
-        },
-      });
-      if (res.status === 201) {
-        Toast({
-          title: 'Success',
-          status: 'success',
-          duration: 9000,
-          isClosable: true,
-          position: "bottom-right",
-          variant: "solid",
-        });
-      }
-    } catch (error) {
-      console.error("friend accept error", error);
-      Toast({
-        title: 'Error',
-        status: 'error',
-        duration: 9000,
-        isClosable: true,
-        position: "bottom-right",
-        variant: "solid",
-      })
-    }
-  }
-  else if (type === "GAME_INVITE") {
-    try {
-      const res = await axios.post('/game/accept', { id: id }, {
-        headers: {
-          Authorization: `${localStorage.getItem('access_token')}`,
-        },
-      });
-      if (res.status === 201) {
-        Toast({
-          title: 'Success',
-          status: 'success',
-          duration: 9000,
-          isClosable: true,
-          position: "bottom-right",
-          variant: "solid",
-        });
-      }
-    } catch (error) {
-      console.error("2fa error", error);
-      Toast({
-        title: 'Error',
-        status: 'error',
-        duration: 9000,
-        isClosable: true,
-        position: "bottom-right",
-        variant: "solid",
-      })
-    }
-  }
-}
 
-const handleReject = async (type: string, id: number) => {
-  console.log(type, id);
-  if (type === "FRIEND_REQUEST") {
-    try {
-      const res = await axios.delete('/users/friends/reject', {
-        headers: {
-          Authorization: `${localStorage.getItem('access_token')}`,
-        },
-        data: { id: id }, 
-      });
-      if (res.status === 201) {
+export const NotificationComponent = ({id, name, type, avatar, createdAt, treated , setNotifications , notifs , index }: 
+  { id: number, name: string, type: string, avatar: string, createdAt: string, treated: boolean , setNotifications : any , notifs : any , index : number}) => {
+  const handleAccept = async (type: string, id: number , index : number) => {
+    console.log(type, id);
+    if (type === "FRIEND_REQUEST") {
+      try {
+        const res = await axios.post('/users/friends/accept', { id: id }, {
+          headers: {
+            Authorization: `${localStorage.getItem('access_token')}`,
+          },
+        });
+        if (res.status === 201) {
+          console.log("NOTIF", notifs[index]);
+          notifs[index].treated = true;
+          setNotifications([...notifs]);
+          Toast({
+            title: 'Success',
+            status: 'success',
+            duration: 9000,
+            isClosable: true,
+            position: "bottom-right",
+            variant: "solid",
+          });
+        }
+      } catch (error) {
+        console.error("friend accept error", error);
         Toast({
-          title: 'Success',
-          status: 'success',
+          title: 'Error',
+          status: 'error',
           duration: 9000,
           isClosable: true,
           position: "bottom-right",
           variant: "solid",
-        });
+        })
       }
-    } catch (error) {
-      console.error("friend accept error", error);
-      Toast({
-        title: 'Error',
-        status: 'error',
-        duration: 9000,
-        isClosable: true,
-        position: "bottom-right",
-        variant: "solid",
-      })
     }
-  }
-  else if (type === "GAME_INVITE") {
-    try {
-      const res = await axios.post('/game/decline', { id: id }, {
-        headers: {
-          Authorization: `${localStorage.getItem('access_token')}`,
-        },
-      });
-      if (res.status === 201) {
+    else if (type === "GAME_INVITE") {
+      try {
+        const res = await axios.post('/game/accept', { id: id }, {
+          headers: {
+            Authorization: `${localStorage.getItem('access_token')}`,
+          },
+        });
+        if (res.status === 201) {
+          notifs[index].treated = true; 
+          setNotifications([...notifs]);
+          Toast({
+            title: 'Success',
+            status: 'success',
+            duration: 9000,
+            isClosable: true,
+            position: "bottom-right",
+            variant: "solid",
+          });
+        }
+      } catch (error) {
+        console.error("2fa error", error);
         Toast({
-          title: 'Success',
-          status: 'success',
+          title: 'Error',
+          status: 'error',
           duration: 9000,
           isClosable: true,
           position: "bottom-right",
           variant: "solid",
-        });
+        })
       }
-    } catch (error) {
-      console.error("2fa error", error);
-      Toast({
-        title: 'Error',
-        status: 'error',
-        duration: 9000,
-        isClosable: true,
-        position: "bottom-right",
-        variant: "solid",
-      })
     }
   }
-}
-export const NotificationComponent = ({ id, name, type, avatar, createdAt }: { id: number, name: string, type: string, avatar: string, createdAt: string }) => {
+  const handleReject = async (type: string, id: number , index : number) => {
+    console.log(type, id);
+    if (type === "FRIEND_REQUEST") {
+      try {
+        const res = await axios.delete('/users/friends/reject', {
+          headers: {
+            Authorization: `${localStorage.getItem('access_token')}`,
+          },
+          data: { id: id }, 
+        });
+        if (res.status === 201) {
+          notifs[index].treated = true; 
+          setNotifications([...notifs]);
+          Toast({
+            title: 'Success',
+            status: 'success',
+            duration: 9000,
+            isClosable: true,
+            position: "bottom-right",
+            variant: "solid",
+          });
+        }
+      } catch (error) {
+        console.error("friend accept error", error);
+        Toast({
+          title: 'Error',
+          status: 'error',
+          duration: 9000,
+          isClosable: true,
+          position: "bottom-right",
+          variant: "solid",
+        })
+      }
+    }
+    else if (type === "GAME_INVITE") {
+      try {
+        const res = await axios.post('/game/decline', { id: id }, {
+          headers: {
+            Authorization: `${localStorage.getItem('access_token')}`,
+          },
+        });
+        if (res.status === 201) {
+          notifs[index].treated = true; 
+          setNotifications([...notifs]);
+          Toast({
+            title: 'Success',
+            status: 'success',
+            duration: 9000,
+            isClosable: true,
+            position: "bottom-right",
+            variant: "solid",
+          });
+        }
+      } catch (error) {
+        console.error("2fa error", error);
+        Toast({
+          title: 'Error',
+          status: 'error',
+          duration: 9000,
+          isClosable: true,
+          position: "bottom-right",
+          variant: "solid",
+        })
+      }
+    }
+  }
   
   return (
     <div className="w-full p-3 mt-1 bg-[#323054] rounded flex flex-col md:flex-row">
@@ -323,16 +341,16 @@ export const NotificationComponent = ({ id, name, type, avatar, createdAt }: { i
           </span>
         </p>
         <p className="text-[#C6BCBC] text-xs">{createdAt}</p>
-        {type === "FRIEND_REQUEST" || type === "GAME_INVITE" ? (
+        {type === "FRIEND_REQUEST" || type === "GAME_INVITE"  && !treated ? (
           <div className="flex space-x-1 pt-2">
             {/* {!actionCompleted && ( */}
               <>
-                <button className="btn btn-xs btn-active h-7 bg-[#323054] hover:bg-green-300 hover:border-green-700 text-green-500 border-green-300" onClick={(e) => handleAccept(type, id)}> Accept
+                <button className="btn btn-xs btn-active h-7 bg-[#323054] hover:bg-green-300 hover:border-green-700 text-green-500 border-green-300" onClick={(e) => handleAccept(type, id, index)}> Accept
                   <svg xmlns="http://www.w3.org/2000/svg" width="12" height="14" viewBox="0 0 52 41" fill="none">
                     <path d="M46.0543 0.387695L17.7834 28.6919L6.11261 17.0544L0.220947 22.946L17.7918 40.4752L51.948 6.27936L46.0543 0.387695Z" fill="#4CAF50" />
                   </svg>
                 </button>
-                <button className="btn btn-xs btn-active h-7 bg-[#323054] hover:bg-red-300 hover:border-red-700 text-red-500 border-red-300" onClick={(e) => handleReject(type, id)}> Reject
+                <button className="btn btn-xs btn-active h-7 bg-[#323054] hover:bg-red-300 hover:border-red-700 text-red-500 border-red-300" onClick={(e) => handleReject(type, id, index)}> Reject
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 100 100" fill="none">
                     <path d="M20.0632 74.0879L74.2738 19.8754L80.1665 25.7679L25.9559 79.9803L20.0632 74.0879Z" fill="#D50000" />
                     <path d="M49.9999 8.33301C27.0833 8.33301 8.33325 27.083 8.33325 49.9997C8.33325 72.9163 27.0833 91.6663 49.9999 91.6663C72.9166 91.6663 91.6666 72.9163 91.6666 49.9997C91.6666 27.083 72.9166 8.33301 49.9999 8.33301ZM49.9999 83.333C31.6666 83.333 16.6666 68.333 16.6666 49.9997C16.6666 31.6663 31.6666 16.6663 49.9999 16.6663C68.3333 16.6663 83.3332 31.6663 83.3332 49.9997C83.3332 68.333 68.3333 83.333 49.9999 83.333Z" fill="#D50000" />

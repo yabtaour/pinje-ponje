@@ -113,6 +113,7 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
               className="bg-[#323054] text-white"
               aria-label="Profile Actions"
               variant="flat"
+              closeOnSelect={false}
             >
               <DropdownItem>
                 <Notification user={user} />
