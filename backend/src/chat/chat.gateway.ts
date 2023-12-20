@@ -155,7 +155,7 @@ export class ChatGateway
   @SubscribeMessage('getRoom')
   async handleGetRoom(client: AuthWithWs, payload: any) {
     try {
-      const room = await this.chatService.getRoomByNames(payload.id);
+      const room = await this.chatService.getRoomByid(payload.id);
       console.log('room : ', room);
       this.server.to(String(payload.id)).emit('roomDetails', room);
     } catch (exception: any) {

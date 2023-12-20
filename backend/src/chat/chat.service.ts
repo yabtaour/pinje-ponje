@@ -92,7 +92,7 @@ export class ChatService {
   async updateConversationRead(user_id: number, payload: any, status: boolean) {
     const roomid = parseInt(String(payload.roomId));
     if (Number.isNaN(roomid))
-      throw new HttpException('roomId is not valid', HttpStatus.BAD_REQUEST);
+      throw new HttpException('Invalid roomId.', HttpStatus.BAD_REQUEST);
 
     try {
       await this.prisma.roomMembership.update({
@@ -107,7 +107,10 @@ export class ChatService {
         },
       });
     } catch (e) {
-      throw new HttpException('Prisma: .BAD_REQUEST', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Prisma: Bad request encountered.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -161,7 +164,10 @@ export class ChatService {
       });
       return updatedRoom;
     } catch (e) {
-      throw new HttpException('Room not found', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Prisma: Bad request encountered.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -192,11 +198,18 @@ export class ChatService {
         },
       });
     } catch (e) {
-      throw new HttpException('Prisma : Bad Request', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Prisma: Bad request encountered.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
-  async removeAdmin(userid: number, roomid: number, payload: FriendsActionsDto) {
+  async removeAdmin(
+    userid: number,
+    roomid: number,
+    payload: FriendsActionsDto,
+  ) {
     const peer_id = parseInt(String(payload.id));
 
     if (Number.isNaN(peer_id)) {
@@ -223,10 +236,12 @@ export class ChatService {
         },
       });
     } catch (e) {
-      throw new HttpException('Prisma : Bad Request', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Prisma: Bad request encountered.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
-
 
   async inviteToPrivateRoom(
     userid: number,
@@ -246,7 +261,7 @@ export class ChatService {
 
     if (membershipInTheRoom === null)
       throw new HttpException(
-        'You are not a memeber of this room',
+        'Membership records not found for the specified users in the room.',
         HttpStatus.BAD_REQUEST,
       );
 
@@ -306,137 +321,184 @@ export class ChatService {
   }
 
   async joinRoom(userid: number, payload: joinRoomDto, room_id: number) {
-    const roomid = parseInt(String(room_id));
-    if (Number.isNaN(roomid))
-      throw new HttpException('roomid requied', HttpStatus.BAD_REQUEST);
-    const room = await this.prisma.chatRoom.findUnique({
-      where: {
-        id: roomid,
-      },
-      select: {
-        id: true,
-        name: true,
-        password: true,
-        roomType: true,
-      },
-    });
-    if (!room) throw new HttpException(`Room not found`, HttpStatus.NOT_FOUND);
-
-    if (room.roomType === 'PROTECTED' && room.password !== payload.password)
-      throw new HttpException(
-        `valid password is required`,
-        HttpStatus.FORBIDDEN,
-      );
-
-    if ((await this.isUserInRoom(roomid, userid)) === true)
-      throw new HttpException(
-        `You are already a member of this room`,
-        HttpStatus.CONFLICT,
-      );
-
-    const patchedRoom = await this.prisma.chatRoom.update({
-      where: {
-        id: roomid,
-      },
-      data: {
-        members: {
-          create: [
-            {
-              user: { connect: { id: userid } },
-              role: 'MEMBER' as ChatRole,
-            },
-          ],
+    try {
+      const roomid = parseInt(String(room_id));
+      if (Number.isNaN(roomid))
+        throw new HttpException('roomid requied', HttpStatus.BAD_REQUEST);
+      const room = await this.prisma.chatRoom.findUnique({
+        where: {
+          id: roomid, 
         },
-      },
-      include: {
-        messages: {
-          select: {
-            content: true,
-            createdAt: true,
+        select: {
+          id: true,
+          name: true,
+          password: true,
+          roomType: true,
+        },
+      });
+      if (!room)
+        throw new HttpException(`Room not found`, HttpStatus.NOT_FOUND);
 
-            user: {
-              select: {
-                id: true,
-                username: true,
-                profile: {
-                  select: {
-                    avatar: true,
+      if (room.roomType === 'PROTECTED' && room.password !== payload.password)
+        throw new HttpException(
+          `valid password is required`,
+          HttpStatus.FORBIDDEN,
+        );
+
+      if ((await this.isUserInRoom(roomid, userid)) === true)
+        throw new HttpException(
+          `You are already a member of this room`,
+          HttpStatus.CONFLICT,
+        );
+
+      const patchedRoom = await this.prisma.chatRoom.update({
+        where: {
+          id: roomid,
+        },
+        data: {
+          members: {
+            create: [
+              {
+                user: { connect: { id: userid } },
+                role: 'MEMBER' as ChatRole,
+              },
+            ],
+          },
+        },
+        include: {
+          messages: {
+            select: {
+              content: true,
+              createdAt: true,
+
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  profile: {
+                    select: {
+                      avatar: true,
+                    },
+                  },
+                },
+              },
+            },
+            orderBy: {
+              createdAt: 'asc',
+            },
+          },
+          members: {
+            where: {
+              // userId: { not: userid },
+              state: {
+                in: ['ACTIVE', 'MUTED'],
+              },
+            },
+            select: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  status: true,
+                  profile: {
+                    select: {
+                      avatar: true,
+                    },
                   },
                 },
               },
             },
           },
-          orderBy: {
-            createdAt: 'asc',
-          },
         },
-        members: {
-          where: {
-            userId: { not: userid },
-            state: {
-              in: ['ACTIVE', 'MUTED'],
-            },
-          },
-          select: {
-            user: {
-              select: {
-                id: true,
-                username: true,
-                status: true,
-                profile: {
-                  select: {
-                    avatar: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-    delete patchedRoom.password;
-    return patchedRoom;
+      });
+      delete patchedRoom.password;
+      return patchedRoom;
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientUnknownRequestError || Prisma.PrismaClientKnownRequestError) {
+        throw  e;
+      } else throw e;
+    }
   }
 
-  async leave_room(userid: number, payload: joinRoomDto, room_id: number) {
-    const room = await this.prisma.roomMembership.deleteMany({
-      where: {
-        AND: {
-          userId: userid,
-          roomId: room_id,
+  async leave_room(userid: number, payload: joinRoomDto, roomId: number) {
+    try {
+      const roomMembership = await this.prisma.roomMembership.delete({
+        where: {
+          userId_roomId: {
+            userId: userid,
+            roomId: roomId,
+          },
         },
-      },
-    });
+      });
+
+      if (roomMembership.role === ChatRole.OWNER) {
+        const newOwner = await this.prisma.roomMembership.findFirst({
+          where: {
+            roomId: roomId,
+            role: ChatRole.MEMBER,
+          },
+        });
+        if (newOwner) {
+          await this.prisma.roomMembership.update({
+            where: {
+              userId_roomId: {
+                userId: newOwner.userId,
+                roomId: roomId,
+              },
+            },
+            data: {
+              role: ChatRole.OWNER,
+            },
+          });
+        }
+      }
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientUnknownRequestError) {
+        throw new HttpException(
+          'Prisma: Bad request encountered.',
+          HttpStatus.BAD_REQUEST,
+        );
+      } else throw e;
+    }
   }
 
   // switch to unique name
-  async getRoomByNames(room_id: number): Promise<ChatRoom> {
-    const room = await this.prisma.chatRoom.findUnique({
-      where: {
-        id: room_id,
-      },
-      select: {
-        id: true,
-        name: true,
-        password: true,
-        roomType: true,
-        updatedAt: true,
-        createdAt: true,
-      },
-    });
+  async getRoomByid(roomId: number): Promise<ChatRoom> {
+    try {
+      const room = await this.prisma.chatRoom.findUnique({
+        where: {
+          id: roomId,
+        },
+        select: {
+          id: true,
+          name: true,
+          password: true,
+          roomType: true,
+          updatedAt: true,
+          createdAt: true,
+        },
+      });
 
-    if (!room) {
-      throw new WsException(`Room with name ${room_id} not found`);
+      if (!room) {
+        throw new HttpException(`Room not found`, HttpStatus.NOT_FOUND);
+      }
+
+      if (['PRIVATE', 'DM'].includes(room.roomType)) {
+        throw new HttpException(
+          `Room with ID ${roomId} either doesn't exist or is not public`,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return room;
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientUnknownRequestError) {
+        throw new HttpException(
+          'Prisma: Bad request encountered.',
+          HttpStatus.BAD_REQUEST,
+        );
+      } else throw e;
     }
-
-    if (room.roomType === 'PRIVATE' || room.roomType === 'DM')
-      throw new HttpException(
-        `Room With name ${room_id} doesn't exist or Not Public`,
-        HttpStatus.NOT_FOUND,
-      );
-
-    return room;
-    // hna khas ncheck protect to del and privet to check passorwd
   }
 
   async getRoomsByUserId(userId: number, params: PaginationLimitDto) {
@@ -875,16 +937,18 @@ export class ChatService {
         where: {
           userId: userId,
           roomId: roomId,
-          role: 'OWNER' || 'ADMIN',
+          role: {
+            in: ['ADMIN', 'OWNER']
+          },
         },
       });
-
       const peerMembership = await this.prisma.roomMembership.findFirst({
         where: {
           userId: peer_id,
           roomId: roomId,
         },
       });
+
       if (!userMembership || !peerMembership) return false;
       if (
         userMembership &&
@@ -908,8 +972,11 @@ export class ChatService {
       )
         return false;
       return true;
-    } catch (e) {
-      throw new HttpException('Room not found', HttpStatus.BAD_REQUEST);
+    } catch (e: any) {
+      throw new HttpException(
+        'Membership records not found for the specified users in the room.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 

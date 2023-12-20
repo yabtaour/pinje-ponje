@@ -1,25 +1,27 @@
 import { Transform } from "class-transformer";
 import { IsIn, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
+
 export class CreateChatDmRoomDto {
 
-    @IsNotEmpty()
+    @IsNotEmpty({ message: 'Name should not be empty' })
     name: string;
 
-    @IsString()
+    @IsString({ message: 'Password should be a string' })
     @IsOptional()
     password?: string;
 
     @IsOptional()
-    @IsNumber()
-    @Transform(({value}) => parseInt(value))
+    @IsNumber({}, { message: 'Peer ID should be a number' })
+    @Transform(({ value }) => parseInt(value))
     peer_id?: number;
 
-    @IsNotEmpty()
-    @IsString()
+    @IsNotEmpty({ message: 'Type should not be empty' })
+    @IsString({ message: 'Type should be a string' })
     type: string;
 
     @IsOptional()
-    @IsString()
+    @IsString({ message: 'Role should be a string' })
     role: string;
 }
+

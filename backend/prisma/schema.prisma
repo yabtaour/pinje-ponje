@@ -137,6 +137,7 @@ model ChatMessage {
   roomId    Int
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
+  state     MessageType @default(SENT)
   createdAt DateTime @default(now())
 }
 
@@ -169,6 +170,13 @@ enum NotificationType {
   GAME_INVITE
   GAME_INVITE_REJECTED
   GROUPE_CHAT_INVITE
+}
+
+enum MessageType {
+  SENT
+  FAIL
+  TEXT
+  INFORMATION
 }
 
 enum RoomType {
