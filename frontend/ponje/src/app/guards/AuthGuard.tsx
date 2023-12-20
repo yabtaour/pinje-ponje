@@ -38,7 +38,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
             localStorage.setItem('access_token', tokenFromCookie);
 
         if (!tokenFromSlice)
-            dispatch(login({ token: tokenFromCookie }));
+            dispatch(login({ token: tokenFromCookie}));
 
         const accessToken: string | null = localStorage.getItem('access_token');
         if (accessToken && !isAithenticated) {

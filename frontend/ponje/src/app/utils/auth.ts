@@ -1,5 +1,6 @@
 " use client";
 import axios from "@/app/utils/axios";
+import { Toast } from "@chakra-ui/react";
 import { AxiosError } from "axios";
 import { JwtPayload, jwtDecode } from "jwt-decode";
 import { useDispatch } from "react-redux";
@@ -17,6 +18,14 @@ export const fetchUserData = async (token: string) => {
     console.log(token);
     return response.data;
   } catch (error) {
+    Toast({
+      title: 'Error',
+      status: 'error',
+      duration: 9000,
+      isClosable: true,
+      position: "bottom-right",
+      variant: "solid",
+  });
     console.log(error);
     return null;
   }
@@ -75,6 +84,14 @@ export const handleSignup = async (
     );
     return await handleLogin(email, password);
   } catch (error) {
+    Toast({
+      title: 'Error',
+      status: 'error',
+      duration: 9000,
+      isClosable: true,
+      position: "bottom-right",
+      variant: "solid",
+  });
     const err = error as AxiosError;
     if (err.response && err.response.status === 409) {
       throw new ConflictError("User already exists");
@@ -111,9 +128,7 @@ export const handleLogin = async (email: string, password: string) => {
       email,
       password,
     });
-
     const { token } = response.data;
-
     if (response.status === 201) {
       const user = await fetchUserData(token);
       if (user) {
@@ -124,6 +139,14 @@ export const handleLogin = async (email: string, password: string) => {
       }
     }
   } catch (error) {
+    Toast({
+      title: 'Error',
+      status: 'error',
+      duration: 9000,
+      isClosable: true,
+      position: "bottom-right",
+      variant: "solid",
+  });
     console.error(error);
   }
 };

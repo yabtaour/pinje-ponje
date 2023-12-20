@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpException,
   Param,
   ParseIntPipe,
   Post,
@@ -32,10 +34,14 @@ export class ChatController {
 
   @Post('room')
   async createRoom(@Req() request: Request, @Body() data: CreateChatDmRoomDto) {
-    const user = await this.userService.getCurrentUser(request);
-    const room = await this.chatService.createRoom(user.id, data);
-    this.chatgateway.server.to(String(user.id)).emit('roomCreated', room);
-    return room;
+    try {
+      const user = await this.userService.getCurrentUser(request);
+      const room = await this.chatService.createRoom(user.id, data);
+      this.chatgateway.server.to(String(user.id)).emit('roomCreated', room);
+      return room;
+    } catch (exception: any) {
+      throw new HttpException(exception, exception.status);
+    }
   }
 
   @Get('rooms')
@@ -95,11 +101,14 @@ export class ChatController {
     @Req() request: Request,
     @Body() payload: joinRoomDto,
   ) {
-    console.log(payload);
-    const user = await this.userService.getCurrentUser(request);
-    const room = await this.chatService.joinRoom(user.id, payload, room_id);
-    this.chatgateway.server.to(String(user.id)).emit('joinedRoom', room);
-    return room;
+    try {
+      const user = await this.userService.getCurrentUser(request);
+      const room = await this.chatService.joinRoom(user.id, payload, room_id);
+      this.chatgateway.server.to(String(user.id)).emit('joinedRoom', room);
+      return room;
+    } catch (exception: any) {
+      throw new HttpException(exception, exception.status);
+    }
   }
 
   @Post('rooms/:id/admin')
@@ -110,6 +119,20 @@ export class ChatController {
   ) {
     const user = await this.userService.getCurrentUser(request);
     const room = await this.chatService.addAdmin(user.id, room_id, payload);
+    this.chatgateway.server
+      .to(String(payload.id))
+      .emit('you have been promoted to admin', room);
+    return room;
+  }
+
+  @Delete('rooms/:id/admin')
+  async remove_admin(
+    @Param('id', ParseIntPipe) room_id: number,
+    @Req() request: Request,
+    @Body() payload: FriendsActionsDto,
+  ) {
+    const user = await this.userService.getCurrentUser(request);
+    const room = await this.chatService.removeAdmin(user.id, room_id, payload);
     this.chatgateway.server
       .to(String(payload.id))
       .emit('you have been promoted to admin', room);

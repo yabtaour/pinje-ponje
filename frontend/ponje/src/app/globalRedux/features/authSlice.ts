@@ -25,6 +25,9 @@ type User = {
     Friends: [];
     createdAt: string;
     updatedAt: string;
+    friendOf: [],
+    pendingRequest: [],
+    sentRequest: [],
     userid: number;
     bio?: string | null;
   };
@@ -49,6 +52,7 @@ export const auth = createSlice({
   initialState,
   reducers: {
     login: (state, action) => {
+      console.log("Login payload:", action.payload);
       if (action.payload.user && action.payload.user.id) {
         const newState = {
           isAuthenticated: true,

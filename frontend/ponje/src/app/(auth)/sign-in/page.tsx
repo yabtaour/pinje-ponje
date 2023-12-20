@@ -66,7 +66,7 @@ export default function SignIn() {
 
     try {
       const data = await handleLogin(values.email, values.password);
-
+      console.log("this dispatch got called 4: ");
       dispatch(login(data));
 
       router.push('/dashboard');
@@ -102,7 +102,7 @@ export default function SignIn() {
 
 
   return (
-    <div className="flex h-screen bg-gray-900">
+    <div className="flex h-screen relative overflow-hidden bg-gray-900">
       <div className="w-1/2">
         <Image
           src="/login_illust.png"

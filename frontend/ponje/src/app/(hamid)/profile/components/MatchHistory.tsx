@@ -1,150 +1,122 @@
-
-"use client";
-import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, User } from "@nextui-org/react";
-import React from "react";
-import { useState } from "react";
+import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, User as NextUIUser } from "@nextui-org/react";
+import React, { useEffect, useState } from "react";
+import { User } from '../../../types/user';
+import { fetchGameHistory } from "@/app/utils/update";
 
 const columns = [
-    { name: "TYPE", uid: "type" },
-    { name: "RESULT", uid: "result" },
-    { name: "OPPONENT", uid: "opponent" },
-    { name: "XP", uid: "ex" },
-    { name: "DATE", uid: "date" },
+  { name: "MODE", uid: "mode" },
+  { name: "RESULT", uid: "result" },
+  { name: "OPPONENT", uid: "opponent" },
+  { name: "DATE", uid: "date" },
 ];
 
-const users = [
-    {
-        id: 1,
-        Opponent: "Tony Reichert",
-        avatar: "https://i.pravatar.cc/150?u=a042581f4e29026024d",
-        email: "tony.reichert@example.com",
-        date: "20 minutes ago",
-        ex: 40,
-        result: "LOSS",
-        type: "Normal"
+const skeletonCell = (
+  <div className="h-2.5 bg-gray-200 rounded-full dark:bg-gray-700 w-32 mb-4 animate-pulse"></div>
+);
 
+export default function MatchHistory({ user }: { user: User | null | undefined }) {
+  const [matchHistory, setMatchHistory] = useState([]);
 
-    },
-    {
-        id: 2,
-        Opponent: "Zoey Lang",
-        avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704d",
-        email: "zoey.lang@example.com",
-        date: "20 minutes ago",
-        ex: 40,
-        result: "WIN",
-        type: "Normal"
-
-
-    },
-    {
-        id: 3,
-        Opponent: "Jane Fisher",
-        avatar: "https://i.pravatar.cc/150?u=a04258114e29026702d",
-        email: "jane.fisher@example.com",
-        date: "20 minutes ago",
-        ex: 40,
-        result: "LOSS",
-        type: "Normal"
-
-
-    },
-    {
-        id: 4,
-        Opponent: "William Howard",
-        avatar: "https://i.pravatar.cc/150?u=a048581f4e29026701d",
-        email: "william.howard@example.com",
-        date: "20 minutes ago",
-        ex: 40,
-        result: "WIN",
-        type: "Normal"
-
-
-    },
-    {
-        id: 5,
-        Opponent: "Kristen Copper",
-        avatar: "https://i.pravatar.cc/150?u=a092581d4ef9026700d",
-        email: "kristen.cooper@example.com",
-        date: "20 minutes ago",
-        ex: 40,
-        result: "WIN",
-        type: "Normal"
-
-
-    },
-];
-
-
-
-const statusColorMap = {
-    active: "success",
-    paused: "danger",
-    vacation: "warning",
-};
-
-
-
-export default function MatchHistory() {
-
-
-    const renderCell = React.useCallback((user: any, columnKey: any) => {
-        const cellValue = user[columnKey];
-
-        switch (columnKey) {
-            case "opponent":
-                return (
-                    <button className="hover:bg-[#333153] p-1 rounded-lg ">
-                        <User
-                            avatarProps={{ radius: "lg", src: user.avatar }}
-                            description={user.email}
-                            name={cellValue}
-                        >
-                            {user.email}
-                        </User>
-                    </button>
-                );
-            case "date":
-                return <p className="text-default-400">{cellValue}</p>;
-            case "result":
-                const bgColor = cellValue === "WIN" ? "bg-green-300" : "bg-red-300";
-                const textColor = cellValue === "WIN" ? "text-green-700" : "text-red-700";
-                return (
-                    <span className={`px-1 py-0.5 font-semibold text-sm leading-tight ${textColor} rounded-sm ${bgColor}`}>
-                        {cellValue}
-                    </span>
-                );
-            default:
-                return cellValue;
+  useEffect(() => {
+    if (user) {
+      const fetchData = async () => {
+        try {
+          const data = await fetchGameHistory(user.id, localStorage.getItem("access_token"));
+          setMatchHistory(data);
+            
+        } catch (err) {
+          console.log(err);
         }
-    }, []);
-    const [currentIndex, setCurrentIndex] = useState(0);
+      };
+      fetchData();
+    }
+  }, [user]);
 
-    return (
+const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const delta = now.getTime() - date.getTime(); 
+  
+    if (delta < 60 * 1000) {
+      return "a second ago";
+    } else if (delta < 3600 * 1000) {
+      return `${Math.floor(delta / (60 * 1000))} minutes ago`;
+    } else if (delta < 24 * 3600 * 1000) {
+      return `${Math.floor(delta / (3600 * 1000))} hours ago`;
+    } else if (delta < 48 * 3600 * 1000) {
+      return "yesterday";
+    } else {
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric' });
+    }
+  };
+  
 
-        <div className="p-0 m-0 ml-5">
-            <h2 className="text-2xl font-light text-[#4E40F4] mb-1"> Match history </h2>
-            <Table isStriped style={{
-                padding: "0px",
-                color: "#fff",
-            }} radius='lg' className=" text[#fff]" aria-label="Example table with custom cells">
-                <TableHeader columns={columns}>
-                    {(column) => (
-                        <TableColumn className='bg-[#333153] text-[#8C87E1] font-medium text-sm'
-                            key={column.uid} align={"center"}>
-                            {column.name}
-                        </TableColumn>
+    
+    const renderCell = React.useCallback((match: any, columnKey: any) => {
+
+
+   
+    const cellValue = match[columnKey];
+    
+    switch (columnKey) {
+      case "opponent":
+        const opponent = match.players[1];
+        return (
+          <div className="p-1 rounded-lg ">
+            <NextUIUser
+              avatarProps={{ size: "sm", radius: "lg", src: opponent.user.profile.avatar ?? "https://cdn-icons-png.flaticon.com/512/149/149071.png" }}
+              name={opponent.user.username}
+              className="text-[#77DFF8] p-1 rounded-lg space-x-2"
+            />
+          </div>
+        );
+      case "date":
+        return <p className="text-default-400">{formatDate(match.createdAt)}</p>;
+      case "result":
+        const bgColor = match.players[0].status === "WINNER" ? "bg-green-300" : "bg-red-300";
+        const textColor = match.players[0].status === "WINNER" ? "text-green-700" : "text-red-700";
+        return (
+          <span
+            className={`px-1 py-0.5 font-semibold text-sm leading-tight ${textColor} rounded-sm ${bgColor}`}
+          >
+            {match.players[0].status}
+          </span>
+        );
+      default:
+        return cellValue;
+    }
+  }, []);
+
+
+  return (
+    <div className="p-0 m-0 ml-5">
+      <h2 className="text-2xl font-light text-[#4E40F4] mb-1 ml-4"> Match history </h2>
+      <Table isStriped style={{ padding: "0px", color: "#fff", borderRadius: "lg" }} className="text[#fff]" aria-label="Example table with custom cells">
+        <TableHeader columns={columns}>
+          {(column) => (
+            <TableColumn
+              key={column.uid}
+              className="bg-[#333153] text-[#8C87E1] font-medium text-sm"
+              align="center"
+            >
+              {column.name}
+            </TableColumn>
+          )}
+        </TableHeader>
+            {
+                matchHistory.length === 0 ? (
+                    <TableBody style={{ backgroundColor: "#1B1A2D" , color : "#9BA4AF"  }} emptyContent={"This player hasnt played any games yet."}>{[]}</TableBody>
+                ) : (
+                    <TableBody items={matchHistory} style={{ backgroundColor: "#1B1A2D" }}>
+                    {(match) => (
+                      <TableRow key="match">
+                        {(columnKey) => <TableCell>{renderCell(match, columnKey)}</TableCell>}
+                      </TableRow>
                     )}
-                </TableHeader>
-                <TableBody className="bg-[#000] " items={users}>
-                    {(item) => (
-                        <TableRow key={item.id} className={currentIndex % 2 === 0 ? "bg-[#1B1A2D]" : "bg-[#312e52]"}>
-                            {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-                        </TableRow>
-                    )}
-                </TableBody>
-            </Table>
-        </div>
-    );
-
+                  </TableBody>
+                )
+            }
+      </Table>
+    </div>
+  );
 }
