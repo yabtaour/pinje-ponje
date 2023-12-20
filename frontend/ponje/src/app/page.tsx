@@ -3,8 +3,23 @@
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { useAppSelector } from './globalRedux/store';
+import { getCookie } from 'cookies-next';
 
 export default function Home() {
+  const isAithenticated = useAppSelector((state) => state.authReducer.value.isAuthenticated);
+
+
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isAithenticated || getCookie('token'))
+      router.push('/dashboard');
+  }, [])
+
+
   return (
     <div>
       <Head>

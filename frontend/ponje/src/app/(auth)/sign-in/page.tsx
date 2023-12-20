@@ -3,15 +3,16 @@ import Auth42Button, { AuthGoogleButton } from "@/app/components/buttons";
 import { login } from "@/app/globalRedux/features/authSlice";
 import { useAppSelector } from "@/app/globalRedux/store";
 import { useToast } from '@chakra-ui/react';
+import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
 import { Link } from "@nextui-org/react";
 import { ErrorMessage, Field, Form, Formik } from 'formik';
+import Image from "next/image";
 import { useRouter } from 'next/navigation';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import * as Yup from 'yup';
 import { handleLogin } from '../../utils/auth';
-import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
-import Image from "next/image";
+import { getCookie } from "cookies-next";
 
 
 
@@ -24,10 +25,26 @@ export default function SignIn() {
   const dispatch = useDispatch();
   const router = useRouter();
   const [errorerrorMessage, setErrorMessage] = useState(null as any)
+  const isAithenticated = useAppSelector((state) => state.authReducer.value.isAuthenticated);
+
+
+
+
+  useEffect(() => {
+    if (isAithenticated || getCookie('token'))
+      router.push('/dashboard');
+  }, [])
+
+
+
+
+
 
   const togglePasswordVisibility = () => {
     setPasswordShown(!passwordShown);
   };
+
+
 
   const initialValues = {
     rememberMe: false,

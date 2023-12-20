@@ -31,7 +31,6 @@ export default function Layout({
 
     }, [token]);
 
-    // console.log("from hamid ; ", globalSocket.chatSocket);
 
     return (
         <AuthProvider>

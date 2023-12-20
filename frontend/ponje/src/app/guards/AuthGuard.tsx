@@ -55,7 +55,6 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
                 console.log("socketManager: ", socketManager);
                 try {
                     const rooms = await socketManager.getConversations();
-                    console.log("rooms: ", rooms);
                     dispatch(setRooms(rooms));
                 } catch (error) {
                     console.error("Error fetching rooms:", error);

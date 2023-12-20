@@ -1,11 +1,19 @@
 'use client';
 
+import { addMessage, replaceMessage } from "@/app/globalRedux/features/chatSlice";
 import { useAppSelector } from "@/app/globalRedux/store";
 import SocketManager from "@/app/utils/socketManager";
 import { Input } from "@nextui-org/react";
 import { getCookie } from "cookies-next";
-import { useState } from "react";
+import { miyagi } from 'ldrs';
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
+
+
+if (typeof window !== 'undefined') {
+    miyagi.register()
+}
+
 
 
 const spinner = <svg width="512" height="512" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -15,24 +23,8 @@ const spinner = <svg width="512" height="512" viewBox="0 0 24 24" xmlns="http://
 </svg>
 
 const generateUniqueId = (flag = '_') => flag + Math.random().toString(36).substr(2, 9);
-const replace = (array: any[], index: number, element: any) => [...array.slice(0, index), element, ...array.slice(index + 1)];
-
-// message :  {
-//     id: 287,
-//     content: 'asd',
-//     roomId: 10,
-//     userId: 83,
-//     createdAt: 2023-12-03T19:05:22.973Z,
-//     user: { id: 83, username: 'ahouari', avatar: null }
-//   }
-
-
-
-
-
 
 export default function ChatInput() {
-
     const dispatch = useDispatch();
     const [value, setValue] = useState("")
     const activeConversationId = useAppSelector(state => state?.chatReducer?.activeConversationId);
@@ -42,36 +34,36 @@ export default function ChatInput() {
     const socketManager = SocketManager.getInstance('http://localhost:3000', accessToken);
 
 
+    useEffect(() => { }, [activeConversation]);
 
-    // const draftNewMessage = (status: any) => ({
-    //     id: generateUniqueId('newMessage_'),
-    //     roomId: activeConversation?.room?.id,
-    //     userId: me?.id,
-    //     content: value,
-    //     createdAt: new Date(),
-    //     status
-    // })
+
+
 
 
     const handleSend = async () => {
         if (activeConversation?.room?.id) {
-            // const messageId = generateUniqueId('_new_message__');
-            // const draftNewMessage = (status: any) => ({
-            //     id: messageId,
-            //     roomId: activeConversation?.room?.id,
-            //     userId: me?.id,
-            //     content: value,
-            //     createdAt: new Date(),
-            //     status
-            // })
-            // dispatch(addMessage(draftNewMessage('pending')))
+            const messageId = generateUniqueId('_new_message__');
+
+
+
+            const draftNewMessage = (status: any) => ({
+                id: messageId,
+                roomId: activeConversation?.room?.id,
+                user: me,
+                content: value,
+                createdAt: new Date(),
+                status
+            })
+
+            const draftmessage = draftNewMessage('pending');
+            dispatch(addMessage(draftmessage))
 
             setValue('');
 
             try {
                 socketManager.sendMessage(value, activeConversation?.room?.id);
-                // const foundIndex = activeConversation?.room?.messages.findIndex((message: any) => message.id === messageId);
-                // dispatch(replaceMessage(draftNewMessage('pending')))
+                const foundIndex = activeConversation?.room?.messages.findIndex((message: any) => message.id === messageId);
+                dispatch(replaceMessage(draftmessage))
 
 
             } catch (error) {
@@ -93,37 +85,44 @@ export default function ChatInput() {
         if (e.key === 'Enter') {
             e.preventDefault();
             if (value.trim() !== '') {
-                console.log('Sending message:', value);
                 handleSend();
                 setValue('');
             }
         }
     };
 
-
-
     return (
-        <div className="bg-[#151424] w-[80%] flex justify-center absolute  p-10" style={{ bottom: 0, color: '#817EC4' }}>
+        <div className="bg-[#151424] w-[80%] flex justify-center absolute p-10" style={{ bottom: 0, color: '#817EC4', opacity: activeConversation?.state === 'MUTED' ? 0.5 : 1 }}>
             <Input
                 type="text"
-                placeholder="Type a message"
-                className="bg-[#1B1A2D] text-white w-[100%]"
+                placeholder={activeConversation?.state === 'MUTED' ? 'You are muted' : 'Type a message'}
+                className={`bg-[#1B1A2D] text-white w-[100%] ${activeConversation?.state === 'MUTED' ? 'cursor-not-allowed' : ''}`}
                 radius={'md'}
                 value={value}
                 onValueChange={setValue}
                 onKeyDown={handleKeyDown}
+                disabled={activeConversation?.state === 'MUTED'}
                 onChange={(e) => setValue(e.target.value)}
+                style={{ pointerEvents: activeConversation?.state === 'MUTED' ? 'none' : 'auto' }}
                 endContent={
-                    <button onClick={handleOnClick} className="bg-[#1B1A2D] rounded-full p-2 hover:bg-[#817EC4]">
-                        <div className="flex items-center space-x-2">
-                            <svg width="32" height="32" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path fill="currentColor" d="M3 20V4l19 8l-19 8Zm2-3l11.85-5L5 7v3.5l6 1.5l-6 1.5V17Zm0 0V7v10Z" />
-                            </svg>
-                        </div>
-                    </button>
+
+                    <>
+                        <button
+                            onClick={handleOnClick}
+                            className={`bg-[#1B1A2D] rounded-full p-2 hover:bg-[#817EC4] ${activeConversation?.state === 'MUTED' ? 'cursor-not-allowed' : ''}`}
+                            disabled={activeConversation?.state === 'MUTED'}
+                            style={{ pointerEvents: activeConversation?.state === 'MUTED' ? 'none' : 'auto' }}
+                        >
+                            <div className="flex items-center space-x-2">
+                                <svg width="32" height="32" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill="currentColor" d="M3 20V4l19 8l-19 8Zm2-3l11.85-5L5 7v3.5l6 1.5l-6 1.5V17Zm0 0V7v10Z" />
+                                </svg>
+                            </div>
+                        </button>
+                    </>
+
                 }
             />
-        </div>
-    );
+        </div>);
 
 }

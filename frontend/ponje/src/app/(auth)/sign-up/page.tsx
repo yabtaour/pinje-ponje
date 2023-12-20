@@ -5,15 +5,16 @@ import { login } from "@/app/globalRedux/features/authSlice";
 import { useAppSelector } from "@/app/globalRedux/store";
 import { handleSignup } from "@/app/utils/auth";
 import { Toast } from "@chakra-ui/react";
-import { ErrorMessage, Field, Form, Formik } from 'formik';
-import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from 'next/navigation';
-import { useDispatch } from "react-redux";
-import * as Yup from 'yup';
-import Image from "next/image";
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
 import { AxiosError } from "axios";
+import { getCookie } from "cookies-next";
+import { ErrorMessage, Field, Form, Formik } from 'formik';
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import * as Yup from 'yup';
 
 
 
@@ -26,7 +27,14 @@ export default function SignUp() {
     const [passwordShown, setPasswordShown] = useState(false);
     const [confirmPasswordShown, setConfirmPasswordShown] = useState(false);
     const [userExistsError, setUserExistsError] = useState(false)
+    const isAithenticated = useAppSelector((state) => state.authReducer.value.isAuthenticated);
 
+
+
+    useEffect(() => {
+        if (isAithenticated || getCookie('token'))
+            router.push('/dashboard');
+    }, [])
 
 
     const togglePasswordVisibility = () => {
@@ -62,18 +70,17 @@ export default function SignUp() {
 
     const onSubmit = async (values: any) => {
         try {
-            console.log(values);
             const data = await handleSignup(values.email, values.password, values.username);
             dispatch(login(data));
             router.push('/dashboard');
         } catch (error) {
             const err = error as AxiosError;
             if (err.message === "User already exists") {
-                console.log("conflict error !!!!!!!!!!!!");
+
                 setUserExistsError(true);
                 setTimeout(() => {
                     setUserExistsError(false);
-                  }, 4000);
+                }, 4000);
             } else {
                 Toast({
                     title: 'Error',
@@ -187,12 +194,12 @@ export default function SignUp() {
                 <div className="mt-4 font-semibold text-sm text-slate-500 mr-[100px] text-center md:text-left">
                     Already have an account? <Link className="text-cyan-200 hover:underline hover:underline-offset-4" href="/sign-in">Login</Link>
                 </div>
-                {userExistsError ? 
-                <div role="alert" className="alert alert-error w-92 mt-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    <span>Error! A user with those infos already exists</span>
-                </div> 
-                : null}
+                {userExistsError ?
+                    <div role="alert" className="alert alert-error w-92 mt-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <span>Error! A user with those infos already exists</span>
+                    </div>
+                    : null}
             </div>
         </div>
 

@@ -1,11 +1,19 @@
+'use client';
+
 import { useAppSelector } from "@/app/globalRedux/store";
-import { Button, Card, CardBody, CardHeader, Image, Modal, ModalContent, User } from '@nextui-org/react';
-import axios from "axios";
+import { Button, Card, CardBody, CardHeader, Image, Modal, ModalContent, ScrollShadow, User } from '@nextui-org/react';
+
+import { setRooms } from "@/app/globalRedux/features/chatSlice";
+import axios from "@/app/utils/axios";
+import SocketManager from "@/app/utils/socketManager";
 import { getCookie } from "cookies-next";
 import { ErrorMessage, Field, Form, Formik, FormikProps } from "formik";
 import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { HashLoader } from "react-spinners";
 import * as Yup from 'yup';
 import { Join } from "./actions";
+const socketManager = SocketManager.getInstance("http://localhost:3000", getCookie('token'));
 
 
 export function JoinRooms({ onOpenChange, setAction }: { onOpenChange: () => void, setAction: (action: string) => void }) {
@@ -20,38 +28,45 @@ export function JoinRooms({ onOpenChange, setAction }: { onOpenChange: () => voi
     useEffect(() => {
 
         const fetchRooms = async () => {
-            const rooms = await axios.get('http://localhost:3000/chatapi/rooms/list', {
+            const rooms = await axios.get('/chatapi/rooms/list', {
                 headers: {
-                    'Authorization': `${getCookie('token')}`
+                    authorization: `${getCookie('token')}`
                 }
             })
-            console.log("rooms: ", rooms.data);
             setRooms(rooms.data);
-
         }
         fetchRooms();
 
     }, [])
 
 
+    const removeRoom = (room: any) => {
+        setRooms(rooms.filter((r: any) => r.id !== room.id));
+    }
 
     return (
-        <div className="flex flex-col items-center justify-center bg-[#222039] py-8">
-            <h1>Rooms your can join</h1>
+        <div className="flex flex-col items-center justify-center bg-[#222039] text-cyan-500 py-8">
+            <h1 className="m-5">Rooms your can join</h1>
 
 
-            {rooms.map((room, index) => (
-                // <ScrollShadow hideScrollBar className=" h-[75vh]">
-                // </ScrollShadow>
-                <div key={index} className="flex justify-between  border w-[50%] border-gray-800 m-2 px-5 rounded-full">
-                    <User
-                        className="text-white my-2"
-                        name={room.name}
-                        avatarProps={{ src: "https://i.redd.it/ow1iazp3ob351.jpg" }}
-                    />
-                    <Join />
-                </div>
-            ))}
+            <ScrollShadow hideScrollBar className=" flex items-center flex-col justify-start  w-full h-[50vh]">
+                {
+                    rooms.length === 0 ? (
+                        <HashLoader size={100} color="#2F296E" />
+                    ) : (
+
+                        rooms.map((room, index) => (
+                            <div key={index} className="flex justify-between hover:border-gray-300  border w-[50%] border-gray-800 m-2 px-5 rounded-full">
+                                <User
+                                    className="text-white my-2"
+                                    name={room.name}
+                                    avatarProps={{ src: "/groups.svg" }}
+                                />
+                                <Join room={room} removeRoom={removeRoom} />
+                            </div>
+                        )
+                        ))}
+            </ScrollShadow>
 
         </div>
     )
@@ -59,17 +74,17 @@ export function JoinRooms({ onOpenChange, setAction }: { onOpenChange: () => voi
 
 
 export function CreateRoom({ onOpenChange, setAction }: { onOpenChange: () => void, setAction: (action: string) => void }) {
-
+    const dispatch = useDispatch();
 
     const initialValues = {
         name: '',
         password: '',
-        roomType: ''
+        type: ''
     };
 
     const validationSchema = Yup.object({
         name: Yup.string().required('Name is required'),
-        roomType: Yup.string().required('Room Type is required'),
+        type: Yup.string().required('Room Type is required'),
     });
 
     const handleSubmit = (values: any) => {
@@ -77,7 +92,21 @@ export function CreateRoom({ onOpenChange, setAction }: { onOpenChange: () => vo
         if (values.password === '') {
             delete values.password;
         }
-        console.log("values: ", values);
+        axios.post('chatapi/room', values, {
+            headers: {
+                authorization: `${getCookie('token')}`
+            },
+
+        }).then((res) => {
+            const fetchNewMessages = async () => {
+                const rooms = await socketManager.getConversations();
+                dispatch(setRooms(rooms));
+            };
+            fetchNewMessages();
+        }).catch((err) => {
+            console.log(err);
+        })
+
         setAction('');
         onOpenChange();
     };
@@ -117,23 +146,23 @@ export function CreateRoom({ onOpenChange, setAction }: { onOpenChange: () => vo
                             <Field
                                 as="select"
 
-                                name="roomType"
+                                name="type"
                                 type="text"
                                 placeholder="Room Type"
                                 className="text-sm font-light w-80 px-4 py-3 text-white bg-[#222038] border border-solid placeholder-slate-600 border-slate-700  rounded pl-10"
                             >
                                 <option value="">Select Room Type</option>
-                                <option value="public">Public</option>
-                                <option value="private">Private</option>
-                                <option value="protected">protected </option>
+                                <option value="PUBLIC">Public</option>
+                                <option value="PRIVATE">Private</option>
+                                <option value="PROTECTED">protected </option>
                             </Field>
-                            <ErrorMessage name="roomType" component="div" className="text-red-500 text-sm" />
+                            <ErrorMessage name="type" component="div" className="text-red-500 text-sm" />
                         </div>
 
 
 
 
-                        {values.roomType === 'protected' && (
+                        {values.type === 'PROTECTED' && (
                             <div className="flex flex-col relative mb-8 p-1">
                                 <div className="absolute top-[-2rem] text-slate-200 text-sm mb-8">Password</div>
 
@@ -192,14 +221,14 @@ export default function RoomOptions({ isOpen, onOpenChange }: { isOpen: boolean,
                 {
                     action === 'create' ? (<CreateRoom onOpenChange={onOpenChange} setAction={setAction} />) : action === 'join' ? (<JoinRooms onOpenChange={onOpenChange} setAction={setAction} />) : (
                         <div className="flex flex-col items-center justify-center bg-[#222039] py-8">
-                            <h1 className="text-white"> hamid</h1>
+                            <h1 className="text-cyan-500 "> Please Choose </h1>
                             <div className="flex flex-row items-center ">
                                 <Button onClick={() => { setAction('create'); }} >
-                                    <Card className="hover:bg-slate-400/10 m-10 h-[150px]">
+                                    <Card className="hover:bg-slate-400/10 m-10 rounded-lg  h-full">
                                         <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
                                             <p className="text-tiny uppercase font-bold text-white">Create a Room</p>
 
-                                            <h4 className="font-bold text-large text-gray-400">hamid hamid</h4>
+                                            <h4 className="font-bold text-large text-gray-400">Create Your own Room</h4>
                                         </CardHeader>
                                         <CardBody className="overflow-visible py-2">
                                             <Image
@@ -213,11 +242,11 @@ export default function RoomOptions({ isOpen, onOpenChange }: { isOpen: boolean,
                                     </Card>
                                 </Button>
                                 <Button onClick={() => { setAction('join'); }} >
-                                    <Card className="hover:bg-slate-400/10 m-10 h-[150px]">
+                                    <Card className="hover:bg-slate-400/10 m-10 rounded-lg h-full">
                                         <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
                                             <p className="text-tiny uppercase font-bold text-white">Join the rooms</p>
 
-                                            <h4 className="font-bold text-large text-gray-400">hamid hamid</h4>
+                                            <h4 className="font-bold text-large text-gray-400">Join Other Roooms</h4>
                                         </CardHeader>
                                         <CardBody className="overflow-visible py-2">
                                             <Image

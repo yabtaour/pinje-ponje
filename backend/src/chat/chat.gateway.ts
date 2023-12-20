@@ -52,7 +52,6 @@ export class ChatGateway
     );
 
     userRooms.forEach((rooms) => {
-      console.log(rooms);
       this.logger.debug(`Client ${client.id} joined room ${rooms.room.name}`);
       client.join(String(rooms.room.id));
     });
@@ -85,7 +84,6 @@ export class ChatGateway
 
   @SubscribeMessage('readMessages')
   async readMessage(client: any, payload: { roomId: number }) {
-    console.log('roomId: ', payload.roomId);
     await this.chatService.updateConversationRead(
       parseInt(client.id),
       payload,
@@ -101,7 +99,7 @@ export class ChatGateway
 
   @SubscribeMessage('createRoom')
   async handleCreateRoom(client: any, payload: CreateChatDmRoomDto) {
-    console.log('user id : ', client.id);
+
     const room = await this.chatService.createRoom(
       parseInt(client.id),
       payload,
@@ -122,7 +120,6 @@ export class ChatGateway
 
   @SubscribeMessage('getRooms')
   async handleGetRooms(client: AuthWithWs, payload: any) {
-    console.log('The User ID Requesting Rooms : ', client.id);
     const rooms = await this.chatService.getRoomsByUserId(
       parseInt(client.id),
       client.handshake.query,
@@ -143,7 +140,6 @@ export class ChatGateway
   @SubscribeMessage('getRoom')
   async handleGetRoom(client: AuthWithWs, payload: any) {
     const room = await this.chatService.getRoomByNames(payload.id);
-    console.log('room : ', room);
     this.server.to(String(payload.id)).emit('roomDetails', room);
   }
 
@@ -158,7 +154,6 @@ export class ChatGateway
 
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(client: AuthWithWs, payload: joinRoomDto) {
-    console.log('payload : ', payload);
     const room = await this.chatService.joinRoom(
       parseInt(client.id),
       payload,
@@ -169,6 +164,7 @@ export class ChatGateway
     const message =
       'New User ' + client.id + ' Joined Room ' + String(payload.roomId);
     this.server.to(String(payload.roomId)).emit('roomBroadcast', message);
+    return room;
   }
 
   /**
@@ -282,7 +278,6 @@ export class ChatGateway
       parseInt(payload.id),
       payload,
     );
-    console.log('message : ', message);
     if (message) this.server.to(String(payload.id)).emit('message', message);
   }
 
