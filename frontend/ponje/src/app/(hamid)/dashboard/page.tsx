@@ -1,39 +1,13 @@
 'use client'
-import { auth } from '@/app/globalRedux/features/authSlice';
 import { useAppSelector } from '@/app/globalRedux/store';
 import { Card } from '@nextui-org/react';
 import Image from 'next/image';
-import { io } from "socket.io-client";
 
 
 
 export default function Dashboard() {
 
     const AuthState = useAppSelector((state) => state.authReducer.value)
-    // const userToken = useAppSelector((state) => state.authReducer.value.token);
-    // console.log("HERElol");
-    // // const notifsocket = io("http://localhost:3000/notfication", { 
-    // //     auth: { 
-    // //       token: userToken 
-    // //     } 
-    // //   });
-    // const notifsocket = io("http://localhost:3000/notfication");
-    // notifsocket.on("connect", () => {
-    //     console.log(notifsocket.id); // x8WIv7-mJelg7on_ALbx
-    //     console.log("connected"); // This should now be logged if the connection is successful
-    // });
-
-    // notifsocket.on("error", (error) => {
-    //     console.error("Error:", error);
-    // });
-
-    // notifsocket.on("notification", (...args) => {
-    //     console.log(notifsocket.id); // x8WIv7-mJelg7on_ALbx
-    //     console.log("notification args", ...args);
-    // });
-
-    // console.log("HEEEEERE");
-
 
     return (
         <div className="bg-[#151424] h-screen w-screen " style={{

@@ -4,33 +4,29 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  Logger,
   Param,
   ParseIntPipe,
-  Patch,
-  Query,
   UseFilters,
   createParamDecorator,
 } from '@nestjs/common';
-import { CreateChatDmRoomDto } from './dto/create-chat.dto';
-import * as crypto from 'crypto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import {
-  ChatRoom,
-  RoomType,
-  ChatRole,
-  NotificationType,
-  MemberState,
-  Prisma,
-} from '@prisma/client';
 import { WsException } from '@nestjs/websockets';
-import { IsInt, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import {
+  ChatRole,
+  ChatRoom,
+  MemberState,
+  NotificationType,
+  Prisma,
+  RoomType,
+} from '@prisma/client';
 import { Transform, plainToClass } from 'class-transformer';
-import { chatActionsDto } from './dto/actions-dto';
-import { updateRoomDto } from './dto/update-room.dto';
-import { FriendsActionsDto } from 'src/user/dto/FriendsActions-user.dto';
+import { IsInt, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import * as crypto from 'crypto';
 import { NotificationService } from 'src/notification/notification.service';
-import { de } from '@faker-js/faker';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { FriendsActionsDto } from 'src/user/dto/FriendsActions-user.dto';
+import { chatActionsDto } from './dto/actions-dto';
+import { CreateChatDmRoomDto } from './dto/create-chat.dto';
+import { updateRoomDto } from './dto/update-room.dto';
 import { GlobalExceptionFilter } from 'src/global-exception.filter';
 
 export const ChatActions = createParamDecorator(
@@ -274,13 +270,26 @@ export class ChatService {
       },
     });
 
+    const roomMemberShip = await this.prisma.roomMembership.findUnique({
+      where: {
+        id: patchedRoom.id,
+      },
+      include: {
+        user: {
+          include: {
+            profile: true,
+          },
+        },
+      },
+    });
+
     this.notificationService.create({
       senderId: userid,
       receiverId: peer_id,
       type: NotificationType.GROUPE_CHAT_INVITE,
     });
 
-    return patchedRoom;
+    return roomMemberShip;
   }
 
   async createRoom(userid: number, payload: any) {
@@ -537,18 +546,11 @@ export class ChatService {
               },
             },
             members: {
-              where: {
-                userId: { not: userId },
-                state: {
-                  in: ['ACTIVE', 'MUTED'],
-                },
-              },
-              select: {
+              include: {
                 user: {
                   select: {
                     id: true,
                     username: true,
-                    status: true,
                     profile: {
                       select: {
                         avatar: true,
@@ -557,6 +559,12 @@ export class ChatService {
                   },
                 },
               },
+              // where: {
+              //   userId: { not: userId },
+              //   state: {
+              //     in: ['ACTIVE', 'MUTED'],
+              //   },
+              // },
             },
           },
         },
@@ -681,7 +689,14 @@ export class ChatService {
     const muteDurationInMilliseconds = 60 * 1000; // 1 minute
     const unmuteTime = new Date(Date.now() + muteDurationInMilliseconds);
 
-    await this.prisma.roomMembership.update({
+    const updatedMember = await this.prisma.roomMembership.update({
+      include: {
+        user: {
+          include: {
+            profile: true,
+          },
+        },
+      },
       where: {
         userId_roomId: {
           userId: peer_id,
@@ -693,6 +708,7 @@ export class ChatService {
         unmuteTime: unmuteTime,
       },
     });
+    return updatedMember;
   }
 
   async unMuteUser(user_id: number, payload: chatActionsDto) {
@@ -704,7 +720,14 @@ export class ChatService {
     if ((await this.isUserAdminInRoom(roomid, user_id, peer_id)) === false)
       throw new HttpException(`Not Allowed`, HttpStatus.FORBIDDEN);
 
-    await this.prisma.roomMembership.update({
+    const updatedMember = await this.prisma.roomMembership.update({
+      include: {
+        user: {
+          include: {
+            profile: true,
+          },
+        },
+      },
       where: {
         userId_roomId: {
           userId: peer_id,
@@ -716,6 +739,7 @@ export class ChatService {
         unmuteTime: null,
       },
     });
+    return updatedMember;
   }
 
   async BanUserFromRoom(
@@ -729,7 +753,14 @@ export class ChatService {
 
     if ((await this.isUserAdminInRoom(roomid, user_id, peer_id)) === false)
       throw new HttpException(`Not Allowed`, HttpStatus.FORBIDDEN);
-    await this.prisma.roomMembership.update({
+    const updatedMember = await this.prisma.roomMembership.update({
+      include: {
+        user: {
+          include: {
+            profile: true,
+          },
+        },
+      },
       where: {
         userId_roomId: {
           userId: peer_id,
@@ -740,6 +771,7 @@ export class ChatService {
         state: 'BANNED',
       },
     });
+    return updatedMember;
   }
 
   async UnBanUserFromRoom(
@@ -754,7 +786,14 @@ export class ChatService {
     if ((await this.isUserAdminInRoom(roomid, user_id, peer_id)) === false)
       throw new HttpException(`Not Allowed`, HttpStatus.FORBIDDEN);
 
-    await this.prisma.roomMembership.update({
+    const updatedMember = await this.prisma.roomMembership.update({
+      include: {
+        user: {
+          include: {
+            profile: true,
+          },
+        },
+      },
       where: {
         userId_roomId: {
           userId: peer_id,
@@ -765,6 +804,7 @@ export class ChatService {
         state: 'ACTIVE',
       },
     });
+    return updatedMember;
   }
 
   async createMessage(user_id: number, room_id: number, payload: MessageDto) {
