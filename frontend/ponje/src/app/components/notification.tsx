@@ -150,29 +150,32 @@ export default function Notification({ user }: { user: User | null | undefined }
     if (notifs.length === 0) {
       return <p>No notifications for this user.</p>;
     }
-
     return (
       <div
         style={{ maxHeight: '400px', overflow: 'auto', margin: '0 rem' }}
         className="mb-0.5 p-0"
-        onClick={() => setDropdownOpen(!dropdownOpen)}
       >
-        {notifs.slice().reverse().map((notification) => (
-          <NotificationComponent
-            key={notification.id}
-            id={notification.senderid}
-            name={notification.name}
-            type={notification.type}
-            avatar={notification.avatar}
-            createdAt={notification.createdAt}
-            treated={notification.treated}
-            setNotifications={setNotifications}
-            notifs={notifs}
-            index={notifs.indexOf(notification)}
-          />
-        ))}
+        {notifs
+          .filter((notification) => !notification.treated) 
+          .slice()
+          .reverse()
+          .map((notification) => (
+            <NotificationComponent
+              key={notification.id}
+              id={notification.senderid}
+              name={notification.name}
+              type={notification.type}
+              avatar={notification.avatar}
+              createdAt={notification.createdAt}
+              treated={notification.treated}
+              setNotifications={setNotifications}
+              notifs={notifs}
+              index={notifs.indexOf(notification)}
+            />
+          ))}
       </div>
     );
+    
   };
 
   return (
@@ -185,7 +188,9 @@ export default function Notification({ user }: { user: User | null | undefined }
 
 export const NotificationComponent = ({id, name, type, avatar, createdAt, treated , setNotifications , notifs , index }: 
   { id: number, name: string, type: string, avatar: string, createdAt: string, treated: boolean , setNotifications : any , notifs : any , index : number}) => {
-  const handleAccept = async (type: string, id: number , index : number) => {
+  
+  
+    const handleAccept = async (type: string, id: number , index : number) => {
     console.log(type, id);
     if (type === "FRIEND_REQUEST") {
       try {
@@ -195,28 +200,11 @@ export const NotificationComponent = ({id, name, type, avatar, createdAt, treate
           },
         });
         if (res.status === 201) {
-          console.log("NOTIF", notifs[index]);
           notifs[index].treated = true;
           setNotifications([...notifs]);
-          Toast({
-            title: 'Success',
-            status: 'success',
-            duration: 9000,
-            isClosable: true,
-            position: "bottom-right",
-            variant: "solid",
-          });
         }
       } catch (error) {
         console.error("friend accept error", error);
-        Toast({
-          title: 'Error',
-          status: 'error',
-          duration: 9000,
-          isClosable: true,
-          position: "bottom-right",
-          variant: "solid",
-        })
       }
     }
     else if (type === "GAME_INVITE") {
@@ -229,25 +217,9 @@ export const NotificationComponent = ({id, name, type, avatar, createdAt, treate
         if (res.status === 201) {
           notifs[index].treated = true; 
           setNotifications([...notifs]);
-          Toast({
-            title: 'Success',
-            status: 'success',
-            duration: 9000,
-            isClosable: true,
-            position: "bottom-right",
-            variant: "solid",
-          });
         }
       } catch (error) {
-        console.error("2fa error", error);
-        Toast({
-          title: 'Error',
-          status: 'error',
-          duration: 9000,
-          isClosable: true,
-          position: "bottom-right",
-          variant: "solid",
-        })
+        console.error("friend accept error", error);
       }
     }
   }
@@ -264,25 +236,9 @@ export const NotificationComponent = ({id, name, type, avatar, createdAt, treate
         if (res.status === 201) {
           notifs[index].treated = true; 
           setNotifications([...notifs]);
-          Toast({
-            title: 'Success',
-            status: 'success',
-            duration: 9000,
-            isClosable: true,
-            position: "bottom-right",
-            variant: "solid",
-          });
         }
       } catch (error) {
-        console.error("friend accept error", error);
-        Toast({
-          title: 'Error',
-          status: 'error',
-          duration: 9000,
-          isClosable: true,
-          position: "bottom-right",
-          variant: "solid",
-        })
+        console.error("friend reject error", error);
       }
     }
     else if (type === "GAME_INVITE") {
@@ -295,25 +251,9 @@ export const NotificationComponent = ({id, name, type, avatar, createdAt, treate
         if (res.status === 201) {
           notifs[index].treated = true; 
           setNotifications([...notifs]);
-          Toast({
-            title: 'Success',
-            status: 'success',
-            duration: 9000,
-            isClosable: true,
-            position: "bottom-right",
-            variant: "solid",
-          });
         }
       } catch (error) {
-        console.error("2fa error", error);
-        Toast({
-          title: 'Error',
-          status: 'error',
-          duration: 9000,
-          isClosable: true,
-          position: "bottom-right",
-          variant: "solid",
-        })
+        console.error("game reject error", error);
       }
     }
   }
@@ -341,7 +281,7 @@ export const NotificationComponent = ({id, name, type, avatar, createdAt, treate
           </span>
         </p>
         <p className="text-[#C6BCBC] text-xs">{createdAt}</p>
-        {type === "FRIEND_REQUEST" || type === "GAME_INVITE"  && !treated ? (
+        {(type === "FRIEND_REQUEST" || type === "GAME_INVITE") && !treated ? (
           <div className="flex space-x-1 pt-2">
             {/* {!actionCompleted && ( */}
               <>
