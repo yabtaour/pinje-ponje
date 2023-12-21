@@ -1,10 +1,10 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post, Req, UseGuards } from "@nestjs/common";
+import {
+	ApiBearerAuth,
+} from '@nestjs/swagger';
 import { JWTGuard } from "src/auth/guards/jwt.guard";
 import { UserService } from "src/user/user.service";
 import { GameService } from "./game.service";
-import {
-	ApiBearerAuth,
-  } from '@nestjs/swagger';
 @UseGuards(JWTGuard)
 @Controller("game")
 @ApiBearerAuth()
@@ -37,14 +37,12 @@ export class GameController {
 	async getGamesByUserId(
 		@Param('id', ParseIntPipe) id: number,
 	) {
-		console.log(id);
 		return this.gameService.getGamesByUserId(id);
 	}
 
 	@Post("queue")
 	async findGame(@Req() request: Request) {
 		const user = await this.userService.getCurrentUser(request);
-		console.log("request made by user",user);
 		return this.gameService.findGame(user);
 	}
 

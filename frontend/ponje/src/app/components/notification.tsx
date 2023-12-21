@@ -201,7 +201,9 @@ export const NotificationComponent = ({id, name, type, avatar, createdAt, treate
         });
         if (res.status === 201) {
           notifs[index].treated = true;
-          setNotifications([...notifs]);
+          useEffect(() => {
+            setNotifications([...notifs]);
+          }, [notifs]);
         }
       } catch (error) {
         console.error("friend accept error", error);

@@ -1,40 +1,26 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UseGuards,
-  Req,
-  Query,
-  ParseIntPipe,
-  Put,
+  Get,
   HttpException,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+  Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
-import {
-  ChatService,
-  MessageDto,
-  PaginationLimitDto,
-  joinRoomDto,
-} from './chat.service';
-import { CreateChatDmRoomDto } from './dto/create-chat.dto';
-import { UpdateChatDto } from './dto/update-chat.dto';
-import { ChatGateway } from './chat.gateway';
-import { AuthWithWs } from './dto/user-ws-dto';
-import { ConnectedSocket } from '@nestjs/websockets';
-import { Client } from 'socket.io/dist/client';
-import { GetUser } from 'src/auth/decorators/get-user.decorator';
-import { use } from 'passport';
-import { JWTGuard } from 'src/auth/guards/jwt.guard';
-import { UserService } from 'src/user/user.service';
-import { th } from '@faker-js/faker';
-import { chatActionsDto } from './dto/actions-dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { RoomDto } from './dto/room-dto';
-import { updateRoomDto } from './dto/update-room.dto';
+import { JWTGuard } from 'src/auth/guards/jwt.guard';
 import { FriendsActionsDto } from 'src/user/dto/FriendsActions-user.dto';
+import { UserService } from 'src/user/user.service';
+import { ChatGateway } from './chat.gateway';
+import { ChatService, PaginationLimitDto, joinRoomDto } from './chat.service';
+import { chatActionsDto } from './dto/actions-dto';
+import { CreateChatDmRoomDto } from './dto/create-chat.dto';
+import { updateRoomDto } from './dto/update-room.dto';
 
 @UseGuards(JWTGuard)
 @ApiBearerAuth()
@@ -79,6 +65,7 @@ export class ChatController {
     console.log(user.id);
     const rooms = await this.chatService.getUnjoinedRooms(user.id, query);
     // this.chatgateway.server.to(String(user.id)).emit('listOfRooms', rooms);
+    console.log(rooms);
     return rooms;
   }
 
@@ -221,40 +208,64 @@ export class ChatController {
   @Post('kick')
   async kick(@Req() request: Request, @Body() payload: chatActionsDto) {
     const user = await this.userService.getCurrentUser(request);
-    const message = await this.chatService.kickUserFromRoom(user.id, payload);
+    const updatedMember = await this.chatService.kickUserFromRoom(
+      user.id,
+      payload,
+    );
     this.chatgateway.server
       .to(String(payload.id))
-      .emit('roomBroadcast', 'User Kicked');
+      .emit('roomBroadcast', updatedMember);
+    return { status: 'success' };
   }
 
   @Post('ban')
   async ban(@Req() request: Request, @Body() payload: chatActionsDto) {
     const user = await this.userService.getCurrentUser(request);
-    const message = await this.chatService.BanUserFromRoom(user.id, payload);
+    const updatedMember = await this.chatService.BanUserFromRoom(
+      user.id,
+      payload,
+    );
     this.chatgateway.server
       .to(String(payload.id))
-      .emit('roomBroadcast', 'User banned');
+      .emit('roomBroadcast', updatedMember);
+    return user;
   }
 
   @Post('unban')
   async unban(@Req() request: Request, @Body() payload: chatActionsDto) {
     const user = await this.userService.getCurrentUser(request);
-    const message = await this.chatService.UnBanUserFromRoom(user.id, payload);
+    const updatedMember = await this.chatService.UnBanUserFromRoom(
+      user.id,
+      payload,
+    );
     this.chatgateway.server
       .to(String(payload.id))
-      .emit('roomBroadcast', 'User uban');
+      .emit('roomBroadcast', updatedMember);
+    return user;
   }
 
   @Post('mute')
-  async mute(
-    @Param('room_id', ParseIntPipe) room_id: number,
-    @Req() request: Request,
-    @Body() payload: chatActionsDto,
-  ) {
+  async mute(@Req() request: Request, @Body() payload: chatActionsDto) {
     const user = await this.userService.getCurrentUser(request);
-    const message = await this.chatService.MuteUserFromRoom(user.id, payload);
+    const updatedMember = await this.chatService.MuteUserFromRoom(
+      user.id,
+      payload,
+    );
     this.chatgateway.server
       .to(String(payload.id))
-      .emit('roomBroadcast', 'User muted');
+      .emit('roomBroadcast', updatedMember);
+
+    console.log(updatedMember);
+    return user;
+  }
+
+  @Post('unmute')
+  async unmute(@Req() request: Request, @Body() payload: chatActionsDto) {
+    const user = await this.userService.getCurrentUser(request);
+    const updatedMember = await this.chatService.unMuteUser(user.id, payload);
+    this.chatgateway.server
+      .to(String(payload.id))
+      .emit('roomBroadcast', updatedMember);
+    return user;
   }
 }

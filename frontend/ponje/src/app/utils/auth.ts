@@ -1,10 +1,9 @@
 " use client";
 import axios from "@/app/utils/axios";
+import { Toast } from "@chakra-ui/react";
+import { AxiosError } from "axios";
 import { JwtPayload, jwtDecode } from "jwt-decode";
 import { useDispatch } from "react-redux";
-import  { AxiosError } from 'axios';
-import { Toast } from '@chakra-ui/react';
-
 export type KeyedObject = {
   [key: string]: string | number | KeyedObject | any;
 };
@@ -52,7 +51,7 @@ export const verifyToken = (access_token?: string | null): boolean => {
 export const setSession = (access_token?: string | null) => {
   if (access_token) {
     localStorage.setItem("access_token", access_token);
-    axios.defaults.headers.common.Authorization = `Bearer ${access_token}`;
+    axios.defaults.headers.common.authorization = `${access_token}`;
   } else {
     localStorage.removeItem("access_token");
     delete axios.defaults.headers.common.Authorization;
@@ -62,19 +61,27 @@ export const setSession = (access_token?: string | null) => {
 export class ConflictError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'ConflictError';
+    this.name = "ConflictError";
   }
 }
 
-export const handleSignup = async (email: string, password: string, username: string) => {
+export const handleSignup = async (
+  email: string,
+  password: string,
+  username: string
+) => {
   try {
-    await axios.post("/auth/signUp", {
-      username,
-      email,
-      password,
-    },{
-      withCredentials: true,
-    });
+    await axios.post(
+      "/auth/signUp",
+      {
+        username,
+        email,
+        password,
+      },
+      {
+        withCredentials: true,
+      }
+    );
     return await handleLogin(email, password);
   } catch (error) {
     Toast({
@@ -94,10 +101,6 @@ export const handleSignup = async (email: string, password: string, username: st
     }
   }
 };
-
-
-
-
 
 // export const handleLogin = async (email: string, password: string) => {
 //   console.log("this got called :p");
@@ -147,7 +150,6 @@ export const handleLogin = async (email: string, password: string) => {
     console.error(error);
   }
 };
-
 
 export const handleLogout = () => {
   const dispatch = useDispatch();

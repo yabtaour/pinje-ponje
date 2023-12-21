@@ -98,14 +98,14 @@ export default function Onboarding() {
                                         </p>
                                     </div>
 
-                                <Formik
-                                    initialValues={{bio: ""}}
-                                    validationSchema={validationSchema}
-                                    onSubmit={handleSubmit}
-                                >
-                                    {({ values, setFieldValue }) => (
-                                        <Form>
-                                            <div className="flex flex-col relative mb-8 mx-auto">
+                                    <Formik
+                                        initialValues={{ bio: "" }}
+                                        validationSchema={validationSchema}
+                                        onSubmit={handleSubmit}
+                                    >
+                                        {({ values, setFieldValue }) => (
+                                            <Form>
+                                                <div className="flex flex-col relative mb-8 mx-auto">
 
                                                     {/* <div className="flex  justify-center ">
 
@@ -155,24 +155,24 @@ fallback={
                                                     <div className="absolute top-[-2rem] text-slate-200 text-sm mb-8">Bio</div>
 
 
-                                                <Field
-                                                    name="bio"
-                                                    type="text"
-                                                    placeholder="Bio"
-                                                    component={Textarea}
-                                                    rows={4}
-                                                    variant="outlined"
-                                                    fullWidth
-                                                    style={{
-                                                        width: "100%",
-                                                        height: "100%",
-                                                        backgroundColor: "#1f2937",
-                                                        color: "#fff",
-                                                    }}
-                                                />
-                                                <ErrorMessage name="bio" component="div" className="text-red-500 text-sm" />
-                                            </div>
-{/* 
+                                                    <Field
+                                                        name="bio"
+                                                        type="text"
+                                                        placeholder="Bio"
+                                                        component={Textarea}
+                                                        rows={4}
+                                                        variant="outlined"
+                                                        fullWidth
+                                                        style={{
+                                                            width: "100%",
+                                                            height: "100%",
+                                                            backgroundColor: "#1f2937",
+                                                            color: "#fff",
+                                                        }}
+                                                    />
+                                                    <ErrorMessage name="bio" component="div" className="text-red-500 text-sm" />
+                                                </div>
+                                                {/* 
                                             <div className="flex flex-col relative mb-8 p-1">
                                                 <div className="absolute top-[-2rem] text-slate-200 text-sm mb-8">username</div>
                                                 <Field
@@ -184,7 +184,7 @@ fallback={
                                                 <ErrorMessage name="username" component="div" className="text-red-500 text-sm" />
                                             </div> */}
 
-                                            {/* <div className="flex flex-col relative mb-8 p-1">
+                                                {/* <div className="flex flex-col relative mb-8 p-1">
                                                 <div className="absolute top-[-2rem] text-slate-200 text-sm mb-8">Phone number</div>
                                                 <Field
                                                     name="Phone number"
