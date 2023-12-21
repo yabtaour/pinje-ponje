@@ -29,15 +29,13 @@ export default function ChatInput() {
     const [value, setValue] = useState("")
     const activeConversationId = useAppSelector(state => state?.chatReducer?.activeConversationId);
     const activeConversation = useAppSelector(state => state?.chatReducer?.rooms?.find((room: any) => room?.id === activeConversationId));
+    const rooms = useAppSelector(state => state?.chatReducer?.rooms);
     const me = useAppSelector(state => state?.authReducer?.value?.user);
     const accessToken = getCookie('token');
     const socketManager = SocketManager.getInstance('http://localhost:3000', accessToken);
 
 
-    useEffect(() => { }, [activeConversation]);
-
-
-
+    useEffect(() => { }, [activeConversation, socketManager, rooms]);
 
 
     const handleSend = async () => {

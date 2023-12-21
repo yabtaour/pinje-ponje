@@ -14,7 +14,7 @@ import {
   ChatRole,
   ChatRoom,
   MemberState,
-  MessageType,
+  MessageState,
   NotificationType,
   Prisma,
   RoomType,
@@ -22,13 +22,12 @@ import {
 import { Transform, plainToClass } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 import * as crypto from 'crypto';
+import { GlobalExceptionFilter } from 'src/global-exception.filter';
 import { NotificationService } from 'src/notification/notification.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FriendsActionsDto } from 'src/user/dto/FriendsActions-user.dto';
 import { chatActionsDto } from './dto/actions-dto';
-import { CreateChatDmRoomDto } from './dto/create-chat.dto';
 import { updateRoomDto } from './dto/update-room.dto';
-import { GlobalExceptionFilter } from 'src/global-exception.filter';
 
 export const ChatActions = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): chatActionsDto => {
@@ -78,7 +77,7 @@ export class MessageDto {
   message: string;
 
   @IsNotEmpty()
-  state: MessageType
+  state: MessageState;
 }
 
 @Injectable()
@@ -340,7 +339,7 @@ export class ChatService {
         throw new HttpException('roomid requied', HttpStatus.BAD_REQUEST);
       const room = await this.prisma.chatRoom.findUnique({
         where: {
-          id: roomid, 
+          id: roomid,
         },
         select: {
           id: true,
@@ -428,8 +427,11 @@ export class ChatService {
       delete patchedRoom.password;
       return patchedRoom;
     } catch (e) {
-      if (e instanceof Prisma.PrismaClientUnknownRequestError || Prisma.PrismaClientKnownRequestError) {
-        throw  e;
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
       } else throw e;
     }
   }
@@ -814,8 +816,7 @@ export class ChatService {
   }
 
   async createMessage(user_id: number, room_id: number, payload: MessageDto) {
-
-    console.log("here", user_id, room_id)
+    console.log('here', user_id, room_id);
     if (
       Number.isNaN(user_id) ||
       Number.isNaN(room_id) ||
@@ -896,7 +897,7 @@ export class ChatService {
     @Param('room_id', ParseIntPipe) room_id: number,
     params: PaginationLimitDto,
   ) {
-    console.log(params)
+    console.log(params);
     if (Number.isNaN(user_id) || Number.isNaN(room_id))
       throw new BadRequestException();
     const room = await this.prisma.chatRoom.findMany({
@@ -990,7 +991,7 @@ export class ChatService {
           userId: userId,
           roomId: roomId,
           role: {
-            in: ['ADMIN', 'OWNER']
+            in: ['ADMIN', 'OWNER'],
           },
         },
       });

@@ -6,6 +6,7 @@ import { Button, Card, CardBody, CardHeader, Image, Modal, ModalContent, ScrollS
 import { setRooms } from "@/app/globalRedux/features/chatSlice";
 import axios from "@/app/utils/axios";
 import SocketManager from "@/app/utils/socketManager";
+import { useToast } from "@chakra-ui/react";
 import { getCookie } from "cookies-next";
 import { ErrorMessage, Field, Form, Formik, FormikProps } from "formik";
 import { useEffect, useState } from "react";
@@ -20,24 +21,53 @@ export function JoinRooms({ onOpenChange, setAction }: { onOpenChange: () => voi
     const activeConversationId = useAppSelector(state => state?.chatReducer?.activeConversationId);
     const activeConversation = useAppSelector(state => state?.chatReducer?.rooms?.find((room: any) => room?.id === activeConversationId));
     const me = useAppSelector(state => state?.authReducer?.value?.user);
-
     const [rooms, setRooms] = useState<any[]>([]);
+    const [isLoading, setLoading] = useState(true);
+    const toast = useToast();
 
 
 
     useEffect(() => {
-
         const fetchRooms = async () => {
-            const rooms = await axios.get('/chatapi/rooms/list', {
-                headers: {
-                    authorization: `${getCookie('token')}`
-                }
-            })
-            setRooms(rooms.data);
-        }
-        fetchRooms();
+            try {
+                const rooms = await axios.get('/chatapi/rooms/list', {
+                    headers: {
+                        authorization: `${getCookie('token')}`
+                    }
+                });
+                setRooms(rooms.data);
+            } catch (err) {
+                console.log(err);
+                toast({
+                    title: "Error.",
+                    description: "counldn't fetch rooms.",
+                    status: "error",
+                    duration: 3000,
+                    isClosable: true,
+                });
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    }, [])
+        fetchRooms();
+    }, []);
+
+
+
+
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            if (isLoading && rooms.length === 0) {
+                setLoading(false);
+
+            }
+        }, 5000);
+
+        return () => clearTimeout(timeout);
+    }, [isLoading]);
+
 
 
     const removeRoom = (room: any) => {
@@ -46,28 +76,35 @@ export function JoinRooms({ onOpenChange, setAction }: { onOpenChange: () => voi
 
     return (
         <div className="flex flex-col items-center justify-center bg-[#222039] text-cyan-500 py-8">
-            <h1 className="m-5">Rooms your can join</h1>
-
-
-            <ScrollShadow hideScrollBar className=" flex items-center flex-col justify-start  w-full h-[50vh]">
-                {
-                    rooms.length === 0 ? (
+            <h1 className="m-5">Rooms you can join</h1>
+            <ScrollShadow hideScrollBar className="flex items-center flex-col justify-start w-full h-[50vh]">
+                {!isLoading && rooms.length === 0 ? (
+                    <div className='text-gray-500 flex flex-col items-center'>
+                        <Image
+                            className='my-10'
+                            width={150}
+                            alt="NextUI hero Image"
+                            src="noData.svg"
+                        />
+                        <h1>NO Room UWU</h1>
+                    </div>
+                ) : rooms.length === 0 && isLoading ? (
+                    <div className="flex justify-center">
                         <HashLoader size={100} color="#2F296E" />
-                    ) : (
-
-                        rooms.map((room, index) => (
-                            <div key={index} className="flex justify-between hover:border-gray-300  border w-[50%] border-gray-800 m-2 px-5 rounded-full">
-                                <User
-                                    className="text-white my-2"
-                                    name={room.name}
-                                    avatarProps={{ src: "/groups.svg" }}
-                                />
-                                <Join room={room} removeRoom={removeRoom} />
-                            </div>
-                        )
-                        ))}
+                    </div>
+                ) : (
+                    rooms.map((room, index) => (
+                        <div key={index} className="flex justify-between hover:border-gray-300 border w-[50%] border-gray-800 m-2 px-5 rounded-full">
+                            <User
+                                className="text-white my-2"
+                                name={room.name}
+                                avatarProps={{ src: "/groups.svg" }}
+                            />
+                            <Join room={room} removeRoom={removeRoom} />
+                        </div>
+                    ))
+                )}
             </ScrollShadow>
-
         </div>
     )
 }
@@ -75,6 +112,7 @@ export function JoinRooms({ onOpenChange, setAction }: { onOpenChange: () => voi
 
 export function CreateRoom({ onOpenChange, setAction }: { onOpenChange: () => void, setAction: (action: string) => void }) {
     const dispatch = useDispatch();
+    const toast = useToast();
 
     const initialValues = {
         name: '',
@@ -104,6 +142,13 @@ export function CreateRoom({ onOpenChange, setAction }: { onOpenChange: () => vo
             };
             fetchNewMessages();
         }).catch((err) => {
+            toast({
+                title: "Error.",
+                description: "Counldn't create a room.",
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+            });
             console.log(err);
         })
 
