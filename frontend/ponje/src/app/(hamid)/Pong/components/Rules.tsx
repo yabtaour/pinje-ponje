@@ -13,7 +13,7 @@ export default function Rules() {
                 <div className="badge badge-secondary badge-outline mb-3">Rules</div>
                 <div className="flex items-center justify-between">
                   <p className="flex-1 text-base">
-                    Move your paddle using the arrow keys to hit the ball back and forth. Score when the ball passes your opponent&apos;s paddle. First to 11 points wins!
+                    Move your paddle using the up and down arrow keys to hit the ball back and forth. Score when the ball passes your opponent&apos;s paddle. First to hit 10 points wins!
                   </p>
 
                   <Image

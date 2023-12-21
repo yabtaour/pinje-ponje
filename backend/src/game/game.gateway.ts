@@ -1,9 +1,7 @@
 import { Inject, Injectable, UseFilters, forwardRef } from '@nestjs/common';
 import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer, WsException } from '@nestjs/websockets';
-import { Server } from 'socket.io';
-import { AuthWithWs } from 'src/chat/dto/user-ws-dto';
+import { Server } from 'socket.io'
 import { GlobalExceptionFilter } from 'src/global-exception.filter';
-import { UpdatePaddlePositionDto, UpdateScoreDto } from './dto/game.dto';
 import { GameService } from './game.service';
 import { GameState } from './gameState';
 
@@ -22,6 +20,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   currentGames: Map<number, GameState>;
   intializeArray: number[];
+  initializeClients: number[];
   
   constructor(
 		@Inject(forwardRef(() => GameService))
@@ -29,6 +28,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   ) {
     this.intializeArray = [];
     this.currentGames = new Map();
+    this.initializeClients = [];
   }
   
     afterInit(server: Server) {
@@ -43,37 +43,57 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           || typeof payload.ballVel !== "number") {
         throw new WsException("Bad request");
       }
-      this.intializeArray.push(payload.gameId);
-      const firstIndex = this.intializeArray.findIndex((element) => {
-        element === payload.gameId;
+      if (this.currentGames.has(payload.gameId)) {
+          throw new WsException("Game already initiated");
+      }
+    
+      const clientIndex = this.initializeClients.findIndex((element) => {
+        return (element == client.id);
+      })
+      if (clientIndex != -1)
+        return ;
+      else
+        this.initializeClients.push(client.id);
+    
+      let firstIndex = this.intializeArray.findIndex((element) => {
+        return (element === payload.gameId);
       });
-      const lastIndex = this.intializeArray.lastIndexOf(payload.gameId);
-      if (firstIndex != lastIndex && firstIndex != -1 && lastIndex != -1) {
+      if (firstIndex != -1) {
         this.intializeArray.splice(firstIndex, 1);
-        this.intializeArray.splice(lastIndex, 1);
-        this.gameService.initializeGame(parseInt(client.id), payload)
+        this.initializeClients.splice(clientIndex, 1);
+        this.gameService.initializeGame(parseInt(client.id), payload);
+      } else {
+        this.intializeArray.push(payload.gameId);
       }
     }
 
     @SubscribeMessage('updatePlayerPosition')
     updatePlayerPosition(client: any, payload: {gameId: number, direction: string}): void {
-      console.log(client);
-      this.gameService.updatePlayerPosition(client.id, payload);
+      if (!payload || !payload.gameId || !payload.direction
+        || typeof payload.gameId != "number" || typeof payload.direction != "string") {
+          console.log("payload is not valid !", payload);
+          throw new WsException("invalid payload");
+        }
+      this.gameService.updatePlayerPosition(parseInt(client.id), payload);
     }
     
     @SubscribeMessage('updateScore')
     updateScore(client: any, payload: {gameId: number}): void {
-      if (!payload || !payload.gameId || typeof payload.gameId !== "number")
+      if (!payload || !payload.gameId || typeof payload.gameId != "number") {
+        console.log("payload is not valid !", payload);
+        throw new WsException("invalid payload");        
+      }
       this.gameService.updateScore(parseInt(client.id), payload.gameId);
     }
 
-    async handleConnection(client: AuthWithWs) {
+    async handleConnection(client: any) {
       const sockets = this.server.sockets;
 			console.log(`Client connected: ${client.id}`);
-			console.log(this.server);
     }
-    
-    handleDisconnect(client: AuthWithWs) {
+
+    async handleDisconnect(client: any) {
       console.log(`Client disconnected: ${client.id}`);
+      console.log("khsrti awldi");
     }
 }
+

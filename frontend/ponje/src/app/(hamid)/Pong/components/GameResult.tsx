@@ -7,22 +7,24 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 
-export default function GameResult() {
+export default function GameResult(result: any) {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const router = useRouter();
-    const [result, setResult] = useState("");
+    // const [result, setResult] = useState("");
 
     const handleHomeClick = () => {
         router.push('/Pong');
     }
-    useEffect(() => {
-        // setResult("win");
-        setResult("loss");
-    }, []);
+    // useEffect(() => {
+    //     // setResult("win");
+    //     setResult("loss");
+    // }, []);
 
-    const imageSrc = result === "win" ? "/win_icon.svg" : "/loss_icon.svg";
-    const resultmssg = result === "win" ? "YOU WIN!" : "YOU LOST :(";
-    const textColor = result === "win" ? "text-green-500" : "text-red-500";
+    console.log(result);
+    console.log(result.result);
+    const imageSrc = result.result === "win" ? "/win_icon.svg" : "/loss_icon.svg";
+    const resultmssg = result.result === "win" ? "YOU WON!" : "YOU LOST :(";
+    const textColor = result.result === "win" ? "text-green-500" : "text-red-500";
    
     const confettiConfig = {
         width: 410,
