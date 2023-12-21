@@ -20,16 +20,16 @@ export default function VersusScreen() {
     const [selectedMap, setSelectedMap] = useState('');
     const [loading, setLoading] = useState(true);
     const [currentUserId, setcurrentUserId] = useState(0);
-    const SocketManagerGame = SocketManager.getInstance("http://localhost:3000",`${localStorage.getItem('access_token')}`);
-    const token = getCookie("token");
-    // const SocketManagerGame = SocketManager.getInstance("http://localhost:3000", token);
-
     const [user, setUser] = useState(null);
+    const token = getCookie("token");
+    const SocketManagerGame = SocketManager.getInstance("http://localhost:3000",`${localStorage.getItem('access_token')}`);
 
 
     const handleMapClick = (map: string) => {
         setSelectedMap(map);
     };
+
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -84,7 +84,9 @@ export default function VersusScreen() {
                     }
                 });
             }
-        };    
+        };   
+        
+        
     useEffect(() => {
         initializeSocketManager();
     }, [user]);

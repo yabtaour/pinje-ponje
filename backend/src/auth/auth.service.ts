@@ -13,24 +13,23 @@ export class AuthService {
     ) {}
 
     async isTwiFactorCodeValid(user: any, twofactorcode: string){
-      console.log(twofactorcode);
-      console.log(user.twoFactorSecret);
-      const result = await authenticator.verify({
-        token: String(twofactorcode),
-        secret: user.twoFactorSecret
-      });
-      console.log(result);
-      return result;
-      // return authenticator.verify({
-			// 	token: String(twofactorcode),
-			// 	secret: user.twoFactorSecret
-			// });
+      console.log('Entered Code:', twofactorcode);
+      console.log('User Secret:', user.twoFactorSecret);
+      try {
+        const result = await authenticator.verify({
+          token: twofactorcode,
+          secret: user.twoFactorSecret,
+        });
+        console.log('Verification Result:', result);
+        return result;
+      } catch (error) {
+        console.error('Verification Error:', error);
+        return false;
+      }
     }
 
     async userTwoFaChecker(user: any, body: { twofactorcode: string }) {
-      console.log(body);
-      const validCode = await this.isTwiFactorCodeValid(user, String(body.twofactorcode));
-      console.log(validCode);
+      const validCode = await this.isTwiFactorCodeValid(user, body.twofactorcode);
       if (validCode) {
         return true;
       } else {
