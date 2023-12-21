@@ -347,6 +347,7 @@ export class ChatGateway
   @SubscribeMessage('getMessages')
   async handleGetMessages(client: AuthWithWs, payload: any) {
     try {
+      console.log("here")
       const messages = await this.chatService.getMessages(
         parseInt(client.id),
         parseInt(payload.id),

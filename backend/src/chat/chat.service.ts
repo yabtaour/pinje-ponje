@@ -14,6 +14,7 @@ import {
   ChatRole,
   ChatRoom,
   MemberState,
+  MessageType,
   NotificationType,
   Prisma,
   RoomType,
@@ -71,10 +72,13 @@ export class MessageDto {
   @IsOptional()
   @IsNumber()
   @Transform(({ value }) => parseInt(value))
-  roomId?: number;
+  id?: number;
 
   @IsNotEmpty()
   message: string;
+
+  @IsNotEmpty()
+  state: MessageType
 }
 
 @Injectable()
@@ -378,6 +382,7 @@ export class ChatService {
           messages: {
             select: {
               content: true,
+              state: true,
               createdAt: true,
 
               user: {
@@ -527,6 +532,7 @@ export class ChatService {
             messages: {
               select: {
                 content: true,
+                state: true,
                 createdAt: true,
 
                 user: {
@@ -808,10 +814,13 @@ export class ChatService {
   }
 
   async createMessage(user_id: number, room_id: number, payload: MessageDto) {
+
+    console.log("here", user_id, room_id)
     if (
       Number.isNaN(user_id) ||
       Number.isNaN(room_id) ||
-      payload.message == undefined
+      payload.message == undefined ||
+      payload.state == undefined
     )
       throw new BadRequestException();
     const room = await this.prisma.chatRoom.findUnique({
@@ -848,6 +857,7 @@ export class ChatService {
     const message = await this.prisma.chatMessage.create({
       data: {
         content: payload.message,
+        state: payload.state,
         room: {
           connect: {
             id: room.id,
@@ -886,6 +896,7 @@ export class ChatService {
     @Param('room_id', ParseIntPipe) room_id: number,
     params: PaginationLimitDto,
   ) {
+    console.log(params)
     if (Number.isNaN(user_id) || Number.isNaN(room_id))
       throw new BadRequestException();
     const room = await this.prisma.chatRoom.findMany({
@@ -908,6 +919,7 @@ export class ChatService {
           select: {
             content: true,
             createdAt: true,
+            state: true,
             user: {
               select: {
                 id: true,
@@ -921,7 +933,7 @@ export class ChatService {
             },
           },
         },
-        ...params,
+        // ...params, // need to be fixed is it used by socket but rest its all good to do
       },
     });
 
