@@ -8,6 +8,7 @@ import PlayerCard, { PlayerSkeleton } from '../components/PlayerCard';
 import ScoreCard from "../components/ScoreCard";
 import GameResult from "../components/GameResult";
 import _ from 'lodash';
+import { Toast } from '@chakra-ui/react';
 
 const socketManager = SocketManager.getInstance();
 
@@ -131,6 +132,8 @@ export default function VersusScreen() {
     const [enemyScore, setEnemyScore] = useState(0);
     const [gameStarted, setGameStarted] = useState(false);
     const [gameEnded, setGameEnded] = useState(false);
+    const [gameResult, setGameResult] = useState('');
+    // let gameResult: any = null;
     const [loading, setLoading] = useState(true);
     let gameEndMessage = null;
     
@@ -143,12 +146,25 @@ export default function VersusScreen() {
                 const data = await axios.get(`http://localhost:3000/users/me`, {
                     headers: {
                         Authorization: `${localStorage.getItem('access_token')}`,
+                        // Authorization: token,
                     },
                 });
                 setUser(data.data);
-                currentUserId = data.data.id;
+                setLoading(false);
+                // console.log(data.data);
+                // const loggedUserId = data.data.id;
+                currentUserId = data.data.id
             } catch (err) {
-                console.error("Error when fetching user's data");
+                Toast({
+                    title: 'Error',
+                    status: 'error',
+                    duration: 9000,
+                    isClosable: true,
+                    position: "bottom-right",
+                    variant: "solid",
+                });
+                console.error("Error in fetchData:", err);
+                setLoading(false);
             }
         };
     
@@ -344,7 +360,9 @@ export default function VersusScreen() {
                     socketManager.onGameFinished()
                         .then((data) => {
                             if (data) {
-                                gameEndMessage = data;
+                                setGameResult(data);
+                                // gameResult = data;
+                                console.log("gameResult : ", gameResult);
                                 setGameEnded(true);
                             }
                         })
@@ -371,7 +389,7 @@ export default function VersusScreen() {
             // socketManager.getGameSocket()?.off('startGame');
             // socketManager.getGameSocket()?.off('updatePaddle');
         };
-    }, [user, currentUserId, enemyPlayer, playerFound, selectedMap, readyToInitialize, startGame, sentInitialize, leftPaddle, rightPaddle, myScore, enemyScore, gameEnded]);
+    }, [user, currentUserId, enemyPlayer, playerFound, selectedMap, readyToInitialize, startGame, sentInitialize, leftPaddle, rightPaddle, myScore, enemyScore, gameEnded, gameResult]);
     
     
     const handleMapClick = (map: string) => {
@@ -380,12 +398,9 @@ export default function VersusScreen() {
     };
 
     return (
-        gameEnded ? (
+        (gameEnded && gameResult) ? (
             <div>
-                <h1>
-                    aaaaaaaaaa
-                    {gameEndMessage}
-                </h1>
+                <GameResult result={gameResult}/>
             </div>
         ) : (
         startGame ? (

@@ -490,8 +490,8 @@ export class GameService {
 			}
 		});
 		console.log("loser : ", loserId, " winner : ", winnerId);
-		await this.gameGateway.server.to(String(winnerId)).emit('gameOver', "YOU WON THE GAME !!! CONGRATULATIONS !!!");
-		await this.gameGateway.server.to(String(loserId)).emit('gameOver', "YOU LOST THE GAME !!! GOOD LUCK NEXT TIME :( :( :(");		
+		await this.gameGateway.server.to(String(winnerId)).emit('gameOver', "win");
+		await this.gameGateway.server.to(String(loserId)).emit('gameOver', "loss");		
 		console.log(this.gameGateway.currentGames);
 		console.log(gameId);
 		this.gameGateway.currentGames.delete(gameId);
@@ -506,7 +506,7 @@ export class GameService {
 		if (userId === this.gameGateway.currentGames.get(gameId).player1.id) {
 			this.gameGateway.currentGames.get(gameId).player2.score++ ;
 			if (this.gameGateway.currentGames.get(gameId).player2.score >= 5) {
-				this.finishGame(userId, this.gameGateway.currentGames.get(gameId).player2.id, gameId);
+				this.finishGame(this.gameGateway.currentGames.get(gameId).player2.id, userId, gameId);
 				return;
 			}
 			await this.gameGateway.server
@@ -518,7 +518,7 @@ export class GameService {
 		} else if (userId === this.gameGateway.currentGames.get(gameId).player2.id) {
 			this.gameGateway.currentGames.get(gameId).player1.score++ ;
 			if (this.gameGateway.currentGames.get(gameId).player1.score >= 5) {
-				this.finishGame(userId, this.gameGateway.currentGames.get(gameId).player1.id, gameId);
+				this.finishGame(this.gameGateway.currentGames.get(gameId).player1.id, userId, gameId);
 				return;
 			}
 			await this.gameGateway.server
