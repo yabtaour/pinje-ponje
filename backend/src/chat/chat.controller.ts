@@ -127,20 +127,6 @@ export class ChatController {
     return updateRole;
   }
 
-  // @Delete('rooms/:id/admin')
-  // async remove_admin(
-  //   @Param('id', ParseIntPipe) room_id: number,
-  //   @Req() request: Request,
-  //   @Body() payload: FriendsActionsDto,
-  // ) {
-  //   const user = await this.userService.getCurrentUser(request);
-  //   const room = await this.chatService.removeAdmin(user.id, room_id, payload);
-  //   this.chatgateway.server
-  //     .to(String(payload.id))
-  //     .emit('you have been promoted to admin', room);
-  //   return room;
-  // }
-
   @Post('rooms/:id/invite')
   async invite(
     @Param('id', ParseIntPipe) room_id: number,
