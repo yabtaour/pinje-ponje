@@ -76,8 +76,8 @@ export class MessageDto {
   @IsNotEmpty()
   message: string;
 
-  @IsNotEmpty()
-  state: MessageState;
+  @IsOptional()
+  state?: MessageState;
 }
 
 @Injectable()
@@ -661,18 +661,37 @@ export class ChatService {
   async kickUserFromRoom(user_id: number, payload: chatActionsDto) {
     const roomid = parseInt(String(payload.id));
     const peer_id = parseInt(String(payload.userId));
+    let kickedUser = null;
+
     if (Number.isNaN(roomid) || Number.isNaN(peer_id))
       throw new BadRequestException();
 
     if ((await this.isUserAdminInRoom(roomid, user_id, peer_id)) === false)
       throw new HttpException(`Not Allowed`, HttpStatus.FORBIDDEN);
 
-    const user = await this.prisma.roomMembership.delete({
-      where: {
-        userId_roomId: {
+    if (peer_id && peer_id) {
+      kickedUser = await this.prisma.roomMembership.findFirst({
+        where: {
           userId: peer_id,
           roomId: roomid,
         },
+      });
+    }
+
+    if (kickedUser) {
+      await this.prisma.roomMembership.update({
+        where: {
+          id: kickedUser.id,
+        },
+        data: {
+          state: 'KICKED',
+        },
+      });
+    }
+
+    const user = await this.prisma.roomMembership.delete({
+      where: {
+        id: kickedUser.id,
       },
       include: {
         user: {
@@ -820,8 +839,7 @@ export class ChatService {
     if (
       Number.isNaN(user_id) ||
       Number.isNaN(room_id) ||
-      payload.message == undefined ||
-      payload.state == undefined
+      payload.message == undefined
     )
       throw new BadRequestException();
     const room = await this.prisma.chatRoom.findUnique({

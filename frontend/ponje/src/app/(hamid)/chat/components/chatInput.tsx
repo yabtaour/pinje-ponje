@@ -34,8 +34,9 @@ export default function ChatInput() {
     const accessToken = getCookie('token');
     const socketManager = SocketManager.getInstance('http://localhost:3000', accessToken);
 
-
-    useEffect(() => { }, [activeConversation, socketManager, rooms]);
+    useEffect(() => {
+   
+    }, [dispatch ,activeConversation, socketManager, rooms, activeConversation?.state]);
 
 
     const handleSend = async () => {
