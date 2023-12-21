@@ -22,10 +22,11 @@ export default function Pong() {
   const [gameDataFetched, setGameDataFetched] = useState(false); 
   const router = useRouter();
   const handleMMClick = () => {
+    router.push('/Pong/VersusScreen');
     if (!gameDataFetched) {
       getGameDataHandler();
+      
     }
-    router.push('/Pong/VersusScreen');
   };
 
 
@@ -47,7 +48,7 @@ export default function Pong() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await axios.get(`/users/me`, {
+        const data = await axios.get(`http://localhost:3000/users/me`, {
           headers: {
             Authorization: `${localStorage.getItem('access_token')}`,
           },
@@ -76,7 +77,7 @@ export default function Pong() {
 
   const fetchOnlineFriends = async (userId: number) => {
     try {
-      const data = await axios.get(`/users/${userId}/friends`, {
+      const data = await axios.get(`http://localhost:3000/users/${userId}/friends`, {
         headers: {
           Authorization: `${localStorage.getItem('access_token')}`,
         },

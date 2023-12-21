@@ -1,4 +1,4 @@
-'use strict';
+// 'use strict';
 'use client';
 import SocketManager from '@/app/utils/socketManager';
 
@@ -114,20 +114,21 @@ export default function Game() {
 
 
   useEffect(() => {
+    if ()
     worldWidth = canvasRef.current?.width! * 4;
     worldHeight = canvasRef.current?.height! * 4;
     canvaWidth = canvasRef.current?.width!;
     canvaHeight = canvasRef.current?.height!;
     console.log(canvasRef.current?.width)
-    socketManager.waitForConnection(async () => {
-      socketManager.khouyaSawbLgame();
-    });
+    // socketManager.waitForConnection(async () => {
+    //   socketManager.khouyaSawbLgame();
+    // });
     // gameSocket.emit('khouyaSawbLgame');
     const initializeGame = async () => {
-      let data;
+      let data: any;
       socketManager.waitForConnection(async () => {
 
-        data = await socketManager.onstartGame();
+        // data = await socketManager.onstartGame();
         console.log(data);
         console.log("DATA WSLAAT");
         if (!gameStarted) {
@@ -199,13 +200,13 @@ export default function Game() {
 
   return (
     <div className='w-full h-screen flex items-center justify-center'>
-      {gameStarted ? (
+      {/* {gameStarted ? ( */}
         <div className='w-2/3 h-2/3 border-2 border-black z-30' ref={boxRef}>
           <canvas className='w-full h-full border-2 border-black z-30' id="myCanva" ref={canvasRef} />
         </div>
-      ) : (
+      {/* ) : (
         <p>Loading...</p>
-      )}
+      )} */}
     </div>
   );
 }

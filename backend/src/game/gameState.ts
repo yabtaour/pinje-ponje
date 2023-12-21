@@ -5,10 +5,10 @@ type Player = {
 }
 
 export class GameState {
-    private player1: Player;
-    private player2: Player;
-    private ballPosition: {x: number, y: number};
-    private ballVelocity: {x: number, y: number};
+    player1: Player;
+    player2: Player;
+    ballPosition: {x: number, y: number};
+    ballVelocity: {x: number, y: number};
 
     constructor(
         player1: Player,
