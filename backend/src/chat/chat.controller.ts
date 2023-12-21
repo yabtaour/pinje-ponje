@@ -6,6 +6,7 @@ import {
   HttpException,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Put,
   Query,
@@ -21,6 +22,7 @@ import { ChatService, PaginationLimitDto, joinRoomDto } from './chat.service';
 import { chatActionsDto } from './dto/actions-dto';
 import { CreateChatDmRoomDto } from './dto/create-chat.dto';
 import { updateRoomDto } from './dto/update-room.dto';
+import { updateRoomRoleDto } from './dto/update-room-role.dto';
 
 @UseGuards(JWTGuard)
 @ApiBearerAuth()
@@ -111,33 +113,33 @@ export class ChatController {
     }
   }
 
-  @Post('rooms/:id/admin')
+  @Patch('rooms/:id/role')
   async add_admin(
     @Param('id', ParseIntPipe) room_id: number,
     @Req() request: Request,
-    @Body() payload: FriendsActionsDto,
+    @Body() payload: updateRoomRoleDto,
   ) {
     const user = await this.userService.getCurrentUser(request);
-    const room = await this.chatService.addAdmin(user.id, room_id, payload);
+    const updateRole = await this.chatService.updateRoomRole(user.id, room_id, payload);
     this.chatgateway.server
-      .to(String(payload.id))
-      .emit('you have been promoted to admin', room);
-    return room;
+      .to(String(payload.userId))
+      .emit('roomBroadcast', updateRole);
+    return updateRole;
   }
 
-  @Delete('rooms/:id/admin')
-  async remove_admin(
-    @Param('id', ParseIntPipe) room_id: number,
-    @Req() request: Request,
-    @Body() payload: FriendsActionsDto,
-  ) {
-    const user = await this.userService.getCurrentUser(request);
-    const room = await this.chatService.removeAdmin(user.id, room_id, payload);
-    this.chatgateway.server
-      .to(String(payload.id))
-      .emit('you have been promoted to admin', room);
-    return room;
-  }
+  // @Delete('rooms/:id/admin')
+  // async remove_admin(
+  //   @Param('id', ParseIntPipe) room_id: number,
+  //   @Req() request: Request,
+  //   @Body() payload: FriendsActionsDto,
+  // ) {
+  //   const user = await this.userService.getCurrentUser(request);
+  //   const room = await this.chatService.removeAdmin(user.id, room_id, payload);
+  //   this.chatgateway.server
+  //     .to(String(payload.id))
+  //     .emit('you have been promoted to admin', room);
+  //   return room;
+  // }
 
   @Post('rooms/:id/invite')
   async invite(

@@ -28,6 +28,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { FriendsActionsDto } from 'src/user/dto/FriendsActions-user.dto';
 import { chatActionsDto } from './dto/actions-dto';
 import { updateRoomDto } from './dto/update-room.dto';
+import { updateRoomRoleDto } from './dto/update-room-role.dto';
 
 export const ChatActions = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): chatActionsDto => {
@@ -170,50 +171,94 @@ export class ChatService {
     }
   }
 
-  async addAdmin(userid: number, roomid: number, payload: FriendsActionsDto) {
-    const peer_id = parseInt(String(payload.id));
+  // async addAdmin(userid: number, roomid: number, payload: FriendsActionsDto) {
+  //   const peer_id = parseInt(String(payload.id));
 
-    if (Number.isNaN(peer_id)) {
-      throw new BadRequestException();
-    }
+  //   if (Number.isNaN(peer_id)) {
+  //     throw new BadRequestException();
+  //   }
 
-    if (!(await this.isUserAdminInRoom(roomid, userid, peer_id))) {
-      throw new HttpException(
-        'Not Allowed to do this action',
-        HttpStatus.FORBIDDEN,
-      );
-    }
+  //   if (!(await this.isUserAdminInRoom(roomid, userid, peer_id))) {
+  //     throw new HttpException(
+  //       'Not Allowed to do this action',
+  //       HttpStatus.FORBIDDEN,
+  //     );
+  //   }
 
-    try {
-      await this.prisma.roomMembership.update({
-        where: {
-          userId_roomId: {
-            userId: peer_id,
-            roomId: roomid,
-          },
-        },
-        data: {
-          role: ChatRole.ADMIN,
-        },
-      });
-    } catch (e) {
-      throw new HttpException(
-        'Prisma: Bad request encountered.',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
+  //   try {
+  //     await this.prisma.roomMembership.update({
+  //       where: {
+  //         userId_roomId: {
+  //           userId: peer_id,
+  //           roomId: roomid,
+  //         },
+  //       },
+  //       data: {
+  //         role: ChatRole.ADMIN,
+  //       },
+  //     });
+  //   } catch (e) {
+  //     throw new HttpException(
+  //       'Prisma: Bad request encountered.',
+  //       HttpStatus.BAD_REQUEST,
+  //     );
+  //   }
+  // }
 
-  async removeAdmin(
+  // async removeAdmin(
+  //   userid: number,
+  //   roomid: number,
+  //   payload: FriendsActionsDto,
+  // ) {
+  //   const peer_id = parseInt(String(payload.id));
+
+  //   if (Number.isNaN(peer_id)) {
+  //     throw new BadRequestException();
+  //   }
+
+  //   if (!(await this.isUserAdminInRoom(roomid, userid, peer_id))) {
+  //     throw new HttpException(
+  //       'Not Allowed to do this action',
+  //       HttpStatus.FORBIDDEN,
+  //     );
+  //   }
+
+  //   try {
+  //     await this.prisma.roomMembership.update({
+  //       where: {
+  //         userId_roomId: {
+  //           userId: peer_id,
+  //           roomId: roomid,
+  //         },
+  //       },
+  //       data: {
+  //         role: ChatRole.MEMBER,
+  //       },
+  //     });
+  //   } catch (e) {
+  //     throw new HttpException(
+  //       'Prisma: Bad request encountered.',
+  //       HttpStatus.BAD_REQUEST,
+  //     );
+  //   }
+  // }
+
+
+  async updateRoomRole(
     userid: number,
     roomid: number,
-    payload: FriendsActionsDto,
+    payload: updateRoomRoleDto,
   ) {
-    const peer_id = parseInt(String(payload.id));
+    const peer_id = parseInt(String(payload.userId));
+    const { role } = payload
+    console.log(role)
 
-    if (Number.isNaN(peer_id)) {
+    if (Number.isNaN(peer_id) || payload.role == undefined) {
       throw new BadRequestException();
     }
+
+    if (Object.values(ChatRole).includes(payload.role) === false)
+      throw new HttpException('bad Role type', HttpStatus.BAD_REQUEST);
 
     if (!(await this.isUserAdminInRoom(roomid, userid, peer_id))) {
       throw new HttpException(
@@ -223,7 +268,7 @@ export class ChatService {
     }
 
     try {
-      await this.prisma.roomMembership.update({
+      const updatedRole = await this.prisma.roomMembership.update({
         where: {
           userId_roomId: {
             userId: peer_id,
@@ -231,9 +276,10 @@ export class ChatService {
           },
         },
         data: {
-          role: ChatRole.MEMBER,
+          role: payload.role,
         },
       });
+      return updatedRole
     } catch (e) {
       throw new HttpException(
         'Prisma: Bad request encountered.',
