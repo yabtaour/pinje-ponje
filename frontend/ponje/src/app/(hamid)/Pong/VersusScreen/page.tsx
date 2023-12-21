@@ -5,6 +5,8 @@ import Matter, { Body, Events } from 'matter-js';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from "react";
 import PlayerCard, { PlayerSkeleton } from '../components/PlayerCard';
+import ScoreCard from "../components/ScoreCard";
+import GameResult from "../components/GameResult";
 import _ from 'lodash';
 
 const socketManager = SocketManager.getInstance();
@@ -129,6 +131,7 @@ export default function VersusScreen() {
     const [enemyScore, setEnemyScore] = useState(0);
     const [gameStarted, setGameStarted] = useState(false);
     const [gameEnded, setGameEnded] = useState(false);
+    const [loading, setLoading] = useState(true);
     let gameEndMessage = null;
     
     const boxRef = useRef<HTMLDivElement>(null);
@@ -390,8 +393,7 @@ export default function VersusScreen() {
                 <div className='w-2/3 h-2/3 border-2 border-black z-30' ref={boxRef}>
                     <canvas className='w-full h-full border-2 border-black z-30' id="myCanva" ref={canvasRef} />
                     <div className="absolute top-0 left-0 p-4 text-white">
-                        <p>My Score: {myScore}</p>
-                        <p>Enemy Score: {enemyScore}</p>
+                        <ScoreCard playerOne={user} playerTwo={enemyPlayer} myScore={myScore} enemyScore={enemyScore}/>
                     </div>
                 </div>
             </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { createSlice } from "@reduxjs/toolkit";
+import produce from "immer";
 
 type User = {
   id: number;
@@ -20,6 +21,17 @@ type Message = {
   user: User;
 };
 
+type Member = {
+  id: number;
+  role: string;
+  state: string;
+  unmuteTime: string;
+  userId: number;
+  roomId: number;
+  read: boolean;
+  user: User;
+};
+
 type Room = {
   id: number;
   role: string;
@@ -27,6 +39,7 @@ type Room = {
   unmuteTime: string;
   userId: number;
   roomId: number;
+  read: boolean;
   room: {
     id: number;
     name: string;
@@ -35,9 +48,10 @@ type Room = {
     updatedAt: string;
     createdAt: string;
     messages: Message[];
-    members: {
-      user: User;
-    }[];
+    members: Member[];
+    // members: {
+    //   user: User;
+    // }[];
   };
 };
 
@@ -58,9 +72,23 @@ export const chat = createSlice({
     setRooms: (state, action) => {
       state.rooms = action.payload;
     },
+
     setActiveConversation: (state, action) => {
-      state.activeConversationId = action.payload?.id || null;
+      const activeConversationId = action?.payload?.id || null;
+      const roomIndex = state.rooms.findIndex(
+        (room) => room?.id === action.payload?.id
+      );
+
+      if (roomIndex !== -1) {
+        return produce(state, (draftState) => {
+          draftState.activeConversationId = activeConversationId;
+          draftState.rooms[roomIndex].read = true;
+        });
+      }
+
+      return state;
     },
+
     addMessage: (state, action) => {
       const { roomId } = action.payload;
 
@@ -127,6 +155,7 @@ export const chat = createSlice({
     },
 
     replaceMessage: (state, action) => {
+      console.log("replaceMessage:", action);
       const { roomId, id, content } = action.payload;
       const roomIndex = state.rooms.findIndex(
         (room) => room?.room?.id === roomId
@@ -172,14 +201,197 @@ export const chat = createSlice({
     },
 
     addConversation: (state, action) => {
-      const { conversation } = action.payload;
-      state.rooms.push(conversation);
+      console.log("addConversation:", action.payload);
+
+      const updatedRooms = [...state.rooms, action.payload];
+
+      return {
+        ...state,
+        rooms: updatedRooms,
+      };
+    },
+    addMember: (state, action) => {
+      const { roomId } = action.payload;
+
+      const roomIndex = state.rooms.findIndex(
+        (room) => room?.room?.id === roomId
+      );
+      if (roomIndex !== -1) {
+        const updatedRoom = {
+          ...state.rooms[roomIndex],
+          room: {
+            ...state.rooms[roomIndex].room,
+            members: [...state.rooms[roomIndex].room.members, action.payload],
+          },
+        };
+
+        const updatedRooms = [
+          ...state.rooms.slice(0, roomIndex),
+          updatedRoom,
+          ...state.rooms.slice(roomIndex + 1),
+        ];
+
+        return {
+          ...state,
+          rooms: updatedRooms,
+        };
+      }
+      return state;
+    },
+
+    removeMember(state, action) {
+      //paylod:
+      // {
+      //   id: 166,
+      //   role: 'MEMBER',
+      //   state: 'ACTIVE',
+      //   read: false,
+      //   unmuteTime: null,
+      //   userId: 2,
+      //   roomId: 17,
+      //   user: {
+      //     id: 2,
+      //     username: 'donald92',
+      //     profile: { avatar: 'https://placekitten.com/761/819' }
+      //   }
+
+      // }
+
+      console.log("removeMember:", action.payload);
+      const { roomId, id } = action.payload;
+
+      const roomIndex = state.rooms.findIndex(
+        (room) => room?.room?.id === roomId
+      );
+
+      console.log("id:", id);
+
+      console.log("removeMember:", roomIndex);
+      if (roomIndex !== -1) {
+        const updatedRoom = {
+          ...state.rooms[roomIndex],
+          room: {
+            ...state.rooms[roomIndex].room,
+            members: state.rooms[roomIndex].room.members.filter(
+              (member) => member.id !== id
+            ),
+          },
+        };
+
+        const updatedRooms = [
+          ...state.rooms.slice(0, roomIndex),
+          updatedRoom,
+          ...state.rooms.slice(roomIndex + 1),
+        ];
+
+        return {
+          ...state,
+          rooms: updatedRooms,
+        };
+      }
+
+      return state;
+    },
+
+    updateMemberState(state, action) {
+      //payload = {
+      // member = {}
+      // state = "ACTIVE"
+      // }
+      const { member, newState } = action.payload;
+
+      const roomIndex = state.rooms.findIndex(
+        (room) => room?.room?.id === member.roomId
+      );
+
+      if (roomIndex !== -1) {
+        const memberIndex = state.rooms[roomIndex].room.members.findIndex(
+          (m) => m.id === member.id
+        );
+
+        if (memberIndex !== -1) {
+          const updatedMember = {
+            ...state.rooms[roomIndex].room.members[memberIndex],
+            state: newState,
+          };
+
+          const updatedRoom = {
+            ...state.rooms[roomIndex],
+            room: {
+              ...state.rooms[roomIndex].room,
+              members: [
+                ...state.rooms[roomIndex].room.members.slice(0, memberIndex),
+                updatedMember,
+                ...state.rooms[roomIndex].room.members.slice(memberIndex + 1),
+              ],
+            },
+          };
+
+          const updatedRooms = [
+            ...state.rooms.slice(0, roomIndex),
+            updatedRoom,
+            ...state.rooms.slice(roomIndex + 1),
+          ];
+
+          return {
+            ...state,
+            rooms: updatedRooms,
+          };
+        }
+      }
+    },
+
+    changeRole(state, action) {
+      const { member, newRole } = action.payload;
+      const roomIndex = state.rooms.findIndex(
+        (room) => room?.room?.id === member.roomId
+      );
+
+      if (roomIndex !== -1) {
+        const memberIndex = state.rooms[roomIndex].room.members.findIndex(
+          (m) => m.id === member.id
+        );
+
+        if (memberIndex !== -1) {
+          const updatedMember = {
+            ...state.rooms[roomIndex].room.members[memberIndex],
+            role: newRole,
+          };
+
+          const updatedRoom = {
+            ...state.rooms[roomIndex],
+            room: {
+              ...state.rooms[roomIndex].room,
+              members: [
+                ...state.rooms[roomIndex].room.members.slice(0, memberIndex),
+                updatedMember,
+                ...state.rooms[roomIndex].room.members.slice(memberIndex + 1),
+              ],
+            },
+          };
+
+          const updatedRooms = [
+            ...state.rooms.slice(0, roomIndex),
+            updatedRoom,
+            ...state.rooms.slice(roomIndex + 1),
+          ];
+
+          return {
+            ...state,
+            rooms: updatedRooms,
+          };
+        }
+      }
     },
   },
 });
 
 export const {
+  addMember,
+  removeMember,
+  updateMemberState,
   replaceMessage,
+  changeRole,
   setActiveConversation,
   setRooms,
   addMessage,

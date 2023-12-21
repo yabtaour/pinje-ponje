@@ -6,7 +6,6 @@ interface userData {
   username?: string | undefined;
   bio?: string | undefined;
   email?: string | undefined;
-  // twoFactor?: boolean | undefined;
 }
 
 export const updateUser = async (userData: userData, token: string | null) => {

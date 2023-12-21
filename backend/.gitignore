@@ -13,7 +13,7 @@ lerna-debug.log*
 
 
 # 
-prisma/migrations
+# prisma/migrations
 # OS
 .DS_Store
 

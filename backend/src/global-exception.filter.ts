@@ -1,6 +1,7 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
-import e, { Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
+import { Request, Response } from 'express';
 import { JsonWebTokenError } from 'jsonwebtoken';
 
 @Catch()
@@ -37,7 +38,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       const response = host.switchToHttp().getResponse<Response>();
       const request = host.switchToHttp().getRequest<Request>();
 
-      const status = exception.getStatus();
+      const status = exception.getStatus() | HttpStatus.CONFLICT;
       const message = exception.message;
 
       logger.error(`Error ${status} ${message}`);

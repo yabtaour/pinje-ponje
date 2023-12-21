@@ -1,6 +1,9 @@
 import { Profile } from "./profile";
 
 export type User = {
+  friendOf: any;
+  sentRequest: any;
+  pendingRequest: any;
   id: number;
   username: String;
   password: String;

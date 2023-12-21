@@ -6,6 +6,7 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
+  WsException,
 } from '@nestjs/websockets';
 import { Namespace, Server } from 'socket.io';
 import { GlobalExceptionFilter } from 'src/global-exception.filter';
@@ -13,6 +14,7 @@ import { ChatService, joinRoomDto } from './chat.service';
 import { chatActionsDto } from './dto/actions-dto';
 import { CreateChatDmRoomDto } from './dto/create-chat.dto';
 import { AuthWithWs } from './dto/user-ws-dto';
+import { isInstance } from 'class-validator';
 
 /**
  * WebSocket Gateway for handling chat-related events.
@@ -52,13 +54,12 @@ export class ChatGateway
     );
 
     userRooms.forEach((rooms) => {
-      console.log(rooms);
-      this.logger.debug(`Client ${client.id} joined room ${rooms.room.name}`);
+      // this.logger.debug(`Client ${client.id} joined room ${rooms.room.name}`);
       client.join(String(rooms.room.id));
     });
 
-    this.logger.debug(`Number of connected sockets: ${sockets.size}`);
-    this.logger.log(`Client connected: `, client.id);
+    // this.logger.debug(`Number of connected sockets: ${sockets.size}`);
+    // this.logger.log(`Client connected: `, client.id);
   }
 
   /**
@@ -69,8 +70,8 @@ export class ChatGateway
   async handleDisconnect(client: AuthWithWs) {
     const sockets = this.server.sockets;
 
-    this.logger.log(`Disconnected socket id: `, client.id);
-    this.logger.debug(`Number of connected sockets: ${sockets.size}`);
+    // this.logger.log(`Disconnected socket id: `, client.id);
+    // this.logger.debug(`Number of connected sockets: ${sockets.size}`);
 
     const userRooms = await this.chatService.getRoomsByUserId(
       parseInt(client.id),
@@ -78,19 +79,23 @@ export class ChatGateway
     );
 
     userRooms.forEach((rooms) => {
-      this.logger.debug(`Client ${client.id} leave room ${rooms.room.name}`);
+      // this.logger.debug(`Client ${client.id} leave room ${rooms.room.name}`);
       client.leave(String(rooms.room.id));
     });
   }
 
   @SubscribeMessage('readMessages')
   async readMessage(client: any, payload: { roomId: number }) {
-    console.log('roomId: ', payload.roomId);
-    await this.chatService.updateConversationRead(
-      parseInt(client.id),
-      payload,
-      true,
-    );
+    try {
+      await this.chatService.updateConversationRead(
+        parseInt(client.id),
+        payload,
+        true,
+      );
+      return "OK";
+    } catch (exception) {
+      throw new WsException(exception);
+    }
   }
 
   /**
@@ -100,14 +105,17 @@ export class ChatGateway
    */
 
   @SubscribeMessage('createRoom')
-  async handleCreateRoom(client: any, payload: CreateChatDmRoomDto) {
-    console.log('user id : ', client.id);
-    const room = await this.chatService.createRoom(
-      parseInt(client.id),
-      payload,
-    );
-    client.join(String(room.id));
-    this.server.to(String(room.id)).emit('roomCreated', room);
+  async handleCreateRoom(client: any, payload: any) {
+    try {
+      const room = await this.chatService.createRoom(
+        parseInt(client.id),
+        payload,
+      );
+      client.join(String(room.id));
+      this.server.to(String(room.id)).emit('roomCreated', room);
+    } catch (exception) {
+      throw new WsException(exception);
+    }
   }
 
   /**
@@ -122,13 +130,17 @@ export class ChatGateway
 
   @SubscribeMessage('getRooms')
   async handleGetRooms(client: AuthWithWs, payload: any) {
-    console.log('The User ID Requesting Rooms : ', client.id);
-    const rooms = await this.chatService.getRoomsByUserId(
-      parseInt(client.id),
-      client.handshake.query,
-    );
-    // this.server.to(client.id).emit('listOfRooms', rooms);
-    return rooms;
+    try {
+      console.log('The User ID Requesting Rooms : ', client.id);
+      const rooms = await this.chatService.getRoomsByUserId(
+        parseInt(client.id),
+        client.handshake.query,
+      );
+      // this.server.to(client.id).emit('listOfRooms', rooms);
+      return rooms;
+    } catch (exception: any) {
+      throw new WsException(exception);
+    }
   }
 
   /**
@@ -142,9 +154,13 @@ export class ChatGateway
 
   @SubscribeMessage('getRoom')
   async handleGetRoom(client: AuthWithWs, payload: any) {
-    const room = await this.chatService.getRoomByNames(payload.id);
-    console.log('room : ', room);
-    this.server.to(String(payload.id)).emit('roomDetails', room);
+    try {
+      const room = await this.chatService.getRoomByid(payload.id);
+      console.log('room : ', room);
+      this.server.to(String(payload.id)).emit('roomDetails', room);
+    } catch (exception: any) {
+      throw new WsException(exception);
+    }
   }
 
   /**
@@ -157,18 +173,21 @@ export class ChatGateway
    */
 
   @SubscribeMessage('joinRoom')
-  async handleJoinRoom(client: AuthWithWs, payload: joinRoomDto) {
-    console.log('payload : ', payload);
-    const room = await this.chatService.joinRoom(
-      parseInt(client.id),
-      payload,
-      payload.roomId,
-    );
-    client.join(String(payload.roomId));
-    this.server.to(String(payload.roomId)).emit('roomJoined', room);
-    const message =
-      'New User ' + client.id + ' Joined Room ' + String(payload.roomId);
-    this.server.to(String(payload.roomId)).emit('roomBroadcast', message);
+  async handleJoinRoom(client: AuthWithWs, payload: any) {
+    try {
+      const room = await this.chatService.joinRoom(
+        parseInt(client.id),
+        payload,
+        payload.roomId,
+      );
+      client.join(String(payload.roomId));
+      this.server.to(String(payload.roomId)).emit('roomJoined', room);
+      const message =
+        'New User ' + client.id + ' Joined Room ' + String(payload.roomId);
+      this.server.to(String(payload.roomId)).emit('roomBroadcast', message);
+    } catch (exception: any) {
+      throw new WsException(exception);
+    }
   }
 
   /**
@@ -181,12 +200,16 @@ export class ChatGateway
 
   @SubscribeMessage('getRoomUsers')
   async handleGetRoomUsers(client: any, payload: any) {
-    const users = await this.chatService.getRoomUsers(
-      client,
-      payload.id,
-      client.handshake.query,
-    );
-    this.server.to(String(payload.id)).emit('listOfRoomMembers', users);
+    try {
+      const users = await this.chatService.getRoomUsers(
+        client,
+        payload.id,
+        client.handshake.query,
+      );
+      this.server.to(String(payload.id)).emit('listOfRoomMembers', users);
+    } catch (exception: any) {
+      throw new WsException(exception);
+    }
   }
 
   /**
@@ -200,11 +223,15 @@ export class ChatGateway
 
   @SubscribeMessage('kick')
   async handleKick(client: AuthWithWs, payload: any) {
-    const room = await this.chatService.kickUserFromRoom(
-      parseInt(client.id),
-      payload,
-    );
-    this.server.to(String(payload.id)).emit('roomBroadcast', 'User Kicked');
+    try {
+      const room = await this.chatService.kickUserFromRoom(
+        parseInt(client.id),
+        payload,
+      );
+      this.server.to(String(payload.id)).emit('roomBroadcast', 'User Kicked');
+    } catch (exception: any) {
+      throw new WsException(exception);
+    }
   }
 
   /**
@@ -218,20 +245,28 @@ export class ChatGateway
 
   @SubscribeMessage('mute')
   async handleMute(client: AuthWithWs, payload: any) {
-    const room = await this.chatService.MuteUserFromRoom(
-      parseInt(client.id),
-      payload,
-    );
-    this.server.to(String(payload.id)).emit('roomBroadcast', 'User Muted');
+    try {
+      const room = await this.chatService.MuteUserFromRoom(
+        parseInt(client.id),
+        payload,
+      );
+      this.server.to(String(payload.id)).emit('roomBroadcast', 'User Muted');
+    } catch (exception: any) {
+      throw new WsException(exception);
+    }
   }
 
   @SubscribeMessage('unmute')
   async handleunMute(client: AuthWithWs, payload: any) {
-    const room = await this.chatService.unMuteUser(
-      parseInt(client.id),
-      payload,
-    );
-    this.server.to(String(payload.id)).emit('roomBroadcast', 'User unmuted');
+    try {
+      const room = await this.chatService.unMuteUser(
+        parseInt(client.id),
+        payload,
+      );
+      this.server.to(String(payload.id)).emit('roomBroadcast', 'User unmuted');
+    } catch (exception: any) {
+      throw new WsException(exception);
+    }
   }
 
   /**
@@ -244,22 +279,30 @@ export class ChatGateway
    */
 
   @SubscribeMessage('ban')
-  async handleBan(client: AuthWithWs, payload: chatActionsDto) {
-    const room = await this.chatService.BanUserFromRoom(
-      parseInt(client.id),
-      payload,
-    );
-    this.server.emit('roomBroadcast', 'User Banned');
-    this.server.to(String(payload.id)).emit('roomBroadcast', 'User Banned');
+  async handleBan(client: AuthWithWs, payload: any) {
+    try {
+      const room = await this.chatService.BanUserFromRoom(
+        parseInt(client.id),
+        payload,
+      );
+      this.server.emit('roomBroadcast', 'User Banned');
+      this.server.to(String(payload.id)).emit('roomBroadcast', 'User Banned');
+    } catch (exception: any) {
+      throw new WsException(exception);
+    }
   }
 
   @SubscribeMessage('unban')
-  async handleUnban(client: AuthWithWs, payload: chatActionsDto) {
-    const room = await this.chatService.UnBanUserFromRoom(
-      parseInt(client.id),
-      payload,
-    );
-    this.server.to(String(payload.id)).emit('roomBroadcast', 'User Unbanned');
+  async handleUnban(client: AuthWithWs, payload: any) {
+    try {
+      const room = await this.chatService.UnBanUserFromRoom(
+        parseInt(client.id),
+        payload,
+      );
+      this.server.to(String(payload.id)).emit('roomBroadcast', 'User Unbanned');
+    } catch (exception: any) {
+      throw new WsException(exception);
+    }
   }
 
   /**
@@ -277,13 +320,17 @@ export class ChatGateway
 
   @SubscribeMessage('sendMessage')
   async handleMessage(client: AuthWithWs, payload: any) {
-    const message = await this.chatService.createMessage(
-      parseInt(client.id),
-      parseInt(payload.id),
-      payload,
-    );
-    console.log('message : ', message);
-    if (message) this.server.to(String(payload.id)).emit('message', message);
+    try {
+      const message = await this.chatService.createMessage(
+        parseInt(client.id),
+        parseInt(payload.id),
+        payload,
+      );
+      console.log('message : ', message);
+      if (message) this.server.to(String(payload.id)).emit('message', message);
+    } catch (exception: any) {
+      throw new WsException(exception);
+    }
   }
 
   /**
@@ -299,12 +346,17 @@ export class ChatGateway
 
   @SubscribeMessage('getMessages')
   async handleGetMessages(client: AuthWithWs, payload: any) {
-    const messages = await this.chatService.getMessages(
-      parseInt(client.id),
-      parseInt(payload.id),
-      client.handshake.query,
-    );
-    this.server.to(String(client.id)).emit('listOfMessages', messages);
+    try {
+      console.log("here")
+      const messages = await this.chatService.getMessages(
+        parseInt(client.id),
+        parseInt(payload.id),
+        client.handshake.query,
+      );
+      this.server.to(String(client.id)).emit('listOfMessages', messages);
+    } catch (exception: any) {
+      throw new WsException(exception);
+    }
   }
 }
 

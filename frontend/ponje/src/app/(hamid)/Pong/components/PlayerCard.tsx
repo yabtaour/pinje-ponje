@@ -31,7 +31,7 @@ export default function PlayerCard({ user, cardColor }: { user: User | null | un
   const username = user?.username;
   const rank = user?.rank;
   const experience = user?.experience;
-  const avatar = user?.profile?.avatar ?? "https://via.placeholder.com/150";
+  const avatar = user?.profile?.avatar ?? "/placeholderuser.jpeg";
   return (
 
     <div className="flex flex-col items-center ">
@@ -48,7 +48,7 @@ export default function PlayerCard({ user, cardColor }: { user: User | null | un
             <p className="text-xs	md:text-base lg:text-lg uppercase font-bold text-[#81eeee]">{username}</p>
             <div className="badge bg-[#A499BE] border-none text-[#151424]">{rank}</div>
             <h4 className="font-semibold text-xs	md:text-base lg:text-lg">{experience} XP</h4>
-            <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 64 64" fill="none">
+            <svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 64 64" fill="none" className="w-8 h-8 md:h-16 md:w-16">
               <g clipPath="url(#clip0_1134_387)">
                 <path d="M31.9995 18.25L35.81 28.2071L46.4573 28.7541L38.165 35.455L40.9348 45.7503L31.9995 39.9346L23.064 45.7503L25.8341 35.455L17.5416 28.7541L28.1891 28.2071L31.9995 18.25Z" fill="#77DFF8" />
                 <path d="M40.9348 47.5652C40.5906 47.5652 40.2464 47.4675 39.9448 47.2714L31.9993 42.0999L24.0538 47.2714C23.4235 47.6815 22.6056 47.6607 21.9971 47.2187C21.3886 46.7765 21.1161 46.0052 21.3114 45.279L23.7745 36.1244L16.401 30.1659C15.8161 29.6934 15.5833 28.9088 15.8155 28.1937C16.048 27.4784 16.6973 26.9807 17.4484 26.9422L26.9161 26.4558L30.3045 17.6017C30.5733 16.8994 31.2473 16.4355 31.9993 16.4355C32.7513 16.4355 33.4253 16.8994 33.694 17.6017L37.0824 26.4558L46.5501 26.9422C47.3011 26.9807 47.9506 27.4787 48.183 28.1937C48.4153 28.9089 48.1826 29.6934 47.5975 30.1659L40.224 36.1244L42.6871 45.279C42.8826 46.0052 42.6099 46.7765 42.0014 47.2187C41.6843 47.4493 41.3098 47.5652 40.9348 47.5652ZM31.9995 38.12C32.344 38.12 32.6885 38.218 32.9895 38.4138L37.9505 41.6425L36.4125 35.9267C36.226 35.2333 36.4659 34.495 37.0244 34.0437L41.6283 30.3233L35.7169 30.0197C34.9998 29.9828 34.3718 29.5265 34.1151 28.8559L31.9995 23.3277L29.8839 28.8559C29.6273 29.5264 28.9991 29.9827 28.2821 30.0197L22.3708 30.3233L26.9746 34.0437C27.5333 34.495 27.7729 35.2333 27.5865 35.9267L26.0485 41.6425L31.0095 38.4138C31.3105 38.2178 31.6549 38.12 31.9995 38.12Z" fill={cardColor} />

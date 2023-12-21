@@ -4,15 +4,23 @@ import axios from '@/app/utils/axios';
 import { Toast } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { getCookie } from "cookies-next";
+
 
 export default function VerificationPage() {
     const router  = useRouter();
+    const token = getCookie("token");
     const handleSubmit = async (values: any) => {
         try {
-            const res = await axios.post('/auth/2fa', values);
+            const res = await axios.post('/auth/2fa', { twofactorcode: values }, {
+                headers: {
+                    Authorization: token,
+                  },
+            });
             console.log(res);
-            if (res.status === 200)
-                router.push('/dashboard');
+            if (res.status === 201)
+                console.log('2fa success');
+
         }
         catch (error) {
             Toast({
@@ -35,14 +43,6 @@ export default function VerificationPage() {
                 width={1920}
                 height={1080}
             />
-
-
-
-
-
-
-
-
 
             <div className='h-50vh w-60vw absolute inset-0 flex items-center justify-center '>
                 <div className='p-10 flex flex-col items-center bg-[#1B1A2D] shadow-lg'>

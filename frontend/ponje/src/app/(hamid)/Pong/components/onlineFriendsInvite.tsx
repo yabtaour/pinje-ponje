@@ -1,5 +1,5 @@
 import React from "react";
-import { User } from "../../../types/user";
+import { User } from "../../../../app/types/user"
 import Image from "next/image";
 
 
@@ -8,7 +8,7 @@ export default function OnlineFriendsInvite({ users }: { users: User[] }) {
     return (
         <div>
             <div className="flex flex-col items-center justify-center">
-                <table className="table bg-[#26243f] w-3/4">
+                <table className="table bg-[#26243f] md:w-3/5 lg:w-3/4">
                     <thead>
                         <tr>
                             <th className="text-lg font-normal text-[#73d3ff]">Play with a friend !!</th>
@@ -30,7 +30,7 @@ export default function OnlineFriendsInvite({ users }: { users: User[] }) {
                                             <div className="avatar">
                                                 <div className="mask mask-squircle w-12 h-12">
                                                     <Image
-                                                        src={user.profile.avatar}
+                                                        src={user?.profile?.avatar ?? "/placeholderuser.jpeg"}
                                                         alt={`Avatar of ${user.username}`}
                                                         className="avatar online" 
                                                         width={48}
