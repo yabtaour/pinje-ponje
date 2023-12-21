@@ -121,7 +121,7 @@ export function CreateRoom({ onOpenChange, setAction }: { onOpenChange: () => vo
     };
 
     const validationSchema = Yup.object({
-        name: Yup.string().required('Name is required'),
+        name: Yup.string().required('Name is required').max(20, 'Name must be less than 20 characters'),
         type: Yup.string().required('Room Type is required'),
     });
 

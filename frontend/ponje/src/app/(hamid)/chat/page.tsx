@@ -73,7 +73,7 @@ export function OtherMessage({ message }: any) {
                 <img src={message?.user?.profile?.avatar ? message?.user?.profile?.avatar : "/defaultAvatar.png"} alt="User Avatar" className="w-8 h-8 mt-4 rounded-full" />
             </Button>
             <div className="bg-[#2F296E] rounded-lg p-2 m-2 max-w-[80%] min-w-[10%] sm:max-w-[60%] md:max-w-[50%] lg:max-w-[40%]">
-                <p className={`text-sm text-[${activeConversation?.room.roomType !== "DM" ? color.color : '#426bc2'}]`}>{message?.user?.username}</p>
+                <p className={`text-sm ${activeConversation?.room?.roomType !== "DM" ? `text-[${color.color}]` : 'text-cyan-500'}`}>{message?.user?.username}</p>
                 <p className="text-white text-xs sm:text-sm">{message?.content} </p>
                 <p className="text-[#999] text-xs sm:text-sm" > {formatMessageDate(message?.createdAt)}</p>
             </div>

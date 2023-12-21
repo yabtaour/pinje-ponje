@@ -39,7 +39,7 @@ export function RoomSettings({ room, onOpenChange }: { room: any, onOpenChange: 
     };
 
     const validationSchema = Yup.object({
-        name: Yup.string().required('Name is required'),
+        name: Yup.string().required('Name is required').max(20, 'Name should be less than 20 characters'),
         roomType: Yup.string().required('Room Type is required'),
     });
 
