@@ -78,22 +78,28 @@ export function OtherMessage({ message }: any) {
 
 export function InformationMessage({ message }: any) {
     return (
-        <div className="flex flex-row justify-center">
-            <div className="bg-[#252341]/40  rounded-lg p-2 m-2 max-w-[80%] sm:max-w-[60%] md:max-w-[50%] lg:max-w-[40%]">
+        <>
+            {
+                message?.state === "INFORMATION" && message?.content?.includes("ACTIVE") ? (<></>) : (
+                    <div className="flex flex-row justify-center">
+                        <div className="bg-[#252341]/40  rounded-lg p-2 m-2 max-w-[80%] sm:max-w-[60%] md:max-w-[50%] lg:max-w-[40%]">
 
-                <div className="flex w-full flex-row justify-between">
-                    <svg className="mx-2" width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <g fill="" stroke="white" stroke-width="2">
-                            <circle cx="12" cy="12" r="10" />
-                            <path stroke-linecap="round" d="M12 7h.01" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 11h2v5m-2 0h4" />
-                        </g>
-                    </svg>
-                    <p className="text-white text-xs sm:text-sm">{message?.content}</p>
+                            <div className="flex w-full flex-row justify-between">
+                                <svg className="mx-2" width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <g fill="" stroke="white" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <path stroke-linecap="round" d="M12 7h.01" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 11h2v5m-2 0h4" />
+                                    </g>
+                                </svg>
+                                <p className="text-white text-xs sm:text-sm">{message?.content}</p>
 
-                </div>
-            </div>
-        </div>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+        </>
     )
 }
 
@@ -177,7 +183,7 @@ export default function Chat() {
 
                                             //     <OtherMessage message={message} />
                                             // )
-                                            message?.user === null ? (
+                                            message?.state === "INFORMATION" ? (
                                                 <InformationMessage message={message} />
                                             ) : (
                                                 message?.user?.id === me?.id ? (

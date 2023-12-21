@@ -3,7 +3,7 @@
 
 
 
-import { addMessage, setActiveConversation, setRooms } from "@/app/globalRedux/features/chatSlice";
+import { addMessage, replaceMessage, setActiveConversation, setRooms } from "@/app/globalRedux/features/chatSlice";
 import { useAppSelector } from "@/app/globalRedux/store";
 import SocketManager from "@/app/utils/socketManager";
 import { Toast, useToast } from "@chakra-ui/react";
@@ -56,8 +56,6 @@ export default function Conversation({ collapsed }: any) {
     const [messageDispatched, setMessageDispatched] = useState(false);
 
 
-
-
     useEffect(() => {
         const timeout = setTimeout(() => {
             if (isLoading && conversations.length === 0) {
@@ -68,6 +66,7 @@ export default function Conversation({ collapsed }: any) {
 
         return () => clearTimeout(timeout);
     }, [isLoading, conversations.length]);
+
 
     useEffect(() => {
         const fetchNewMessages = async () => {
@@ -90,58 +89,62 @@ export default function Conversation({ collapsed }: any) {
             }
         };
 
-
-
-
-
-
         fetchNewMessages();
-
-        console.log("conversations", conversations);
-
     }, [conversations]);
 
 
     useEffect(() => {
         const handleActions = (memberShip: any) => {
             const { state } = memberShip;
-            const messageId = generateUniqueId('_new_message__');
 
-            const draftNewMessage = (status: any) => ({
-                id: messageId,
-                roomId: activeConversation?.roomId,
-                user: null,
-                content: state === "ACTIVE" ? `${memberShip?.user?.username} joined` : `${memberShip?.user?.username} has been ${state}`,
-                createdAt: new Date(),
-                status: 'information'
-            });
+            if ((state === "BANNED" || state === "MUTED" || state === "KICKED" || state === "ACTIVE")) {
 
-            if ((state === "BANNED" || state === "MUTED" || state === "KICKED")) {
-                dispatch(addMessage(draftNewMessage('information')));
+                const generateUniqueId = (flag = '_') => flag + Math.random().toString(36).substr(2, 9);
 
+                const messageId = generateUniqueId('_new_message__');
+                const draftNewMessage = (status: any) => ({
+                    id: messageId,
+                    roomId: activeConversation?.roomId,
+                    user: null,
+                    content: activeConversation?.userId === memberShip?.userId ? `you have been ${state}` : `${memberShip?.user?.username} has been ${state}`,
+                    createdAt: new Date(),
+                    state: 'INFORMATION'
+                });
+
+                const draftMessage = draftNewMessage('INFORMATION');
+
+                dispatch(addMessage(draftMessage));
+                try {
+                    if (activeConversation) {
+                        socketManager.sendMessage(draftMessage.content, activeConversation.roomId, 'INFORMATION');
+                        dispatch(replaceMessage(draftMessage))
+                    }
+
+                } catch (error) {
+                    console.error("Error sending message:", error);
+                }
             }
         };
-        const generateUniqueId = (flag = '_') => flag + Math.random().toString(36).substr(2, 9);
 
 
         const handleMemberStateChanges = async () => {
             try {
                 const memberShip = await socketManager.listenOnUpdates();
+
+                if (memberShip?.id === activeConversation?.id) {
+                    dispatch(setActiveConversation(memberShip));
+                }
+
                 handleActions(memberShip);
-
-                // const rooms = await socketManager.getConversations();
-                // dispatch(setRooms(rooms));
-
-
             } catch (error) {
-                console.error("Error fetching new messages:", error);
+                console.error("Error:", error);
             }
         }
 
 
         handleMemberStateChanges();
 
-    }, [conversations])
+    }, [activeConversation, socketManager, conversations]);
 
 
     return (
