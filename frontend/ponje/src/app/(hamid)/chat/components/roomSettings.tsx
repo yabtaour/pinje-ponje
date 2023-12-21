@@ -3,7 +3,8 @@ import { setRooms } from '@/app/globalRedux/features/chatSlice';
 import { useAppSelector } from '@/app/globalRedux/store';
 import axios from '@/app/utils/axios';
 import SocketManager from '@/app/utils/socketManager';
-import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Modal, ModalContent, ScrollShadow, User, useDisclosure } from '@nextui-org/react';
+import { useToast } from '@chakra-ui/react';
+import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Image, Modal, ModalContent, ScrollShadow, User, useDisclosure } from '@nextui-org/react';
 import { getCookie } from 'cookies-next';
 import { ErrorMessage, Field, Form, Formik, FormikProps } from 'formik';
 import { useRouter } from 'next/navigation';
@@ -36,40 +37,56 @@ const handlePlay = () => {
 
 
 
-export function RoomSettings({ onOpenChange }: { onOpenChange: () => void }) {
+export function RoomSettings({ room, onOpenChange }: { room: any, onOpenChange: () => void }) {
 
 
     const activeConversationId = useAppSelector(state => state?.chatReducer?.activeConversationId);
     const activeConversation = useAppSelector(state => state?.chatReducer?.rooms?.find((room: any) => room?.id === activeConversationId));
     const dispatch = useDispatch();
+    const toast = useToast();
     const initialValues = {
         name: activeConversation?.room.name,
         password: activeConversation?.room.password,
-        type: activeConversation?.room.roomType
+        roomType: activeConversation?.room.roomType
     };
 
     const validationSchema = Yup.object({
         name: Yup.string().required('Name is required'),
-        type: Yup.string().required('Room Type is required'),
+        roomType: Yup.string().required('Room Type is required'),
     });
 
     const handleSubmit = (values: any) => {
 
-        if (values.password === '') {
+        if (values.password === '' || values.password === undefined || values.password === null) {
             delete values.password;
         }
-        axios.post('chatapi/room', values, {
+        axios.put(`chatapi/rooms/${room?.roomId}`, values, {
             headers: {
                 authorization: `${getCookie('token')}`
             },
 
         }).then((res) => {
             const fetchNewMessages = async () => {
+                toast({
+                    title: "Room Updated.",
+                    description: "Room Updated successfully",
+                    status: "success",
+                    duration: 5000,
+                    isClosable: true,
+                })
+
                 const rooms = await socketManager.getConversations();
                 dispatch(setRooms(rooms));
             };
             fetchNewMessages();
         }).catch((err) => {
+            toast({
+                title: "Error.",
+                description: "Error while updating room",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+            })
             console.log(err);
         })
 
@@ -119,7 +136,7 @@ export function RoomSettings({ onOpenChange }: { onOpenChange: () => void }) {
                                             <Field
                                                 as="select"
 
-                                                name="type"
+                                                name="roomType"
                                                 type="text"
                                                 placeholder="Room Type"
                                                 className="text-sm font-light w-80 px-4 py-3 text-white bg-[#222038] border border-solid placeholder-slate-600 border-slate-700  rounded pl-10"
@@ -129,9 +146,9 @@ export function RoomSettings({ onOpenChange }: { onOpenChange: () => void }) {
                                                 <option value="PRIVATE">Private</option>
                                                 <option value="PROTECTED">protected </option>
                                             </Field>
-                                            <ErrorMessage name="type" component="div" className="text-red-500 text-sm" />
+                                            <ErrorMessage name="roomType" component="div" className="text-red-500 text-sm" />
                                         </div>
-                                        {values.type === 'PROTECTED' && (
+                                        {values.roomType === 'PROTECTED' && (
                                             <div className="flex flex-col relative mb-8 p-1">
                                                 <div className="absolute top-[-2rem] text-slate-200 text-sm mb-8">Password</div>
 
@@ -209,7 +226,7 @@ export function DmInfo({ user }: { user: any }) {
                 Visit Profile
             </button>
             <div className='flex justify-start'>
-                <Play />
+                <Play member={user} />
                 <Ban member={user} />
             </div>
 
@@ -253,7 +270,8 @@ export function InviteFriends() {
     useEffect(() => {
         const timeout = setTimeout(() => {
             if (isLoading && friends.length === 0) {
-                setRooms([]);
+                setLoading(false);
+                setFriends([]);
             }
         }, 5000);
 
@@ -264,12 +282,26 @@ export function InviteFriends() {
     return (
         <div className='flex justify-center flex-row'>
             <div className='flex flex-col align-middle'>
-                {
-                    isLoading && friends.length === 0 ? (
-                        <HashLoader size={100} color="#2F296E" />
-                    ) : friends.length === 0 ? (
-                        <div className='text-white'>
-                            HAMID HAS NO FRIENDS
+                {isLoading && friends.length === 0 ? (
+                    <HashLoader size={100} color="#2F296E" />
+                ) : friends.length === 0 && !isLoading ? (
+                    <div className='text-white'>
+                        <Image
+                            width={300}
+                            alt="NextUI hero Image"
+                            src="https://nextui-docs-v2.vercel.app/images/hero-card-complete.jpeg"
+                        />
+                    </div>
+                ) : (
+                    filteredFriends.length === 0 ? (
+                        <div className='text-gray-500 '>
+                            <Image
+                                className='my-10'
+                                width={150}
+                                alt="NextUI hero Image"
+                                src="noData.svg"
+                            />
+                            <h1>NO FRIENDS UWU</h1>
                         </div>
                     ) : (
                         filteredFriends.map((friend, index) => (
@@ -285,14 +317,13 @@ export function InviteFriends() {
                             </div>
                         ))
                     )
-                }
+                )}
             </div>
         </div>
     )
 }
 
 const HanldeRoleOptions = ({ member }: { member: any }) => {
-    const [muted, setMuted] = useState(false);
     const activeConversationId = useAppSelector(state => state?.chatReducer?.activeConversationId);
     const activeConversation = useAppSelector(state => state?.chatReducer?.rooms?.find((room: any) => room?.id === activeConversationId));
 
@@ -303,8 +334,7 @@ const HanldeRoleOptions = ({ member }: { member: any }) => {
                 <DropdownItem key="" ><Mute member={member} /></DropdownItem>
                 <DropdownItem key="" className="text-danger" color="danger"><Ban member={member} /></DropdownItem>
                 <DropdownItem key="" className="text-danger" color="danger"><Kick member={member} /></DropdownItem>
-
-                <DropdownItem key="" ><Play /> </DropdownItem>
+                <DropdownItem key="" ><Play member={member} /> </DropdownItem>
             </DropdownMenu>
         )
     }
@@ -312,7 +342,7 @@ const HanldeRoleOptions = ({ member }: { member: any }) => {
         if (member?.role === "OWNER") {
             return (
                 <DropdownMenu variant="flat" aria-label="Dropdown menu with shortcut">
-                    <DropdownItem key="Play" ><Play /> </DropdownItem>
+                    <DropdownItem key="" ><Play member={member} /> </DropdownItem>
                 </DropdownMenu>
             )
         }
@@ -320,10 +350,9 @@ const HanldeRoleOptions = ({ member }: { member: any }) => {
             return (
                 <DropdownMenu variant="flat" aria-label="Dropdown menu with shortcut">
                     <DropdownItem key="" ><Mute member={member} /></DropdownItem>
-                    <DropdownItem key="Ban" className="text-danger" color="danger"><Ban member={member} />
-                    </DropdownItem>
+                    <DropdownItem key="" className="text-danger" color="danger"><Ban member={member} /></DropdownItem>
                     <DropdownItem key="" className="text-danger" color="danger"><Kick member={member} /></DropdownItem>
-                    <DropdownItem key="Play" ><Play /> </DropdownItem>
+                    <DropdownItem key="" ><Play member={member} /> </DropdownItem>
                 </DropdownMenu>
             )
         }
@@ -331,7 +360,7 @@ const HanldeRoleOptions = ({ member }: { member: any }) => {
     else {
         return (
             <DropdownMenu variant="flat" aria-label="Dropdown menu with shortcut">
-                <DropdownItem key="Play" > <Play /> </DropdownItem>
+                <DropdownItem key="Play" > <Play member={member} /> </DropdownItem>
             </DropdownMenu>
         )
     }
@@ -408,7 +437,7 @@ export function RoomMembers() {
                                                 </button>
 
                                                 {
-                                                    activeConversation?.role === 'MEMBER' ? (
+                                                    activeConversation?.role === 'MEMBER' || (activeConversation?.role === 'OWNER' && activeConversation?.userId === member?.userId) ? (
                                                         <div key={index} className=' mx-2 flex flex-col justify-center border-cyan-300'>
                                                             <p className='text-cyan-500 border text-sm border-cyan-300 rounded-full p-1'>{member?.role}</p>
                                                         </div>
@@ -418,23 +447,28 @@ export function RoomMembers() {
                                                     </>)
                                                 }
                                             </div >
-                                            <Dropdown className='bg-gray-900 text-white text-sm  w-1/2 rounded-lg'>
-                                                <DropdownTrigger>
-                                                    <Button
-                                                        variant='bordered'
-                                                    >
-                                                        <svg width="24" height="16" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-                                                            <path fill="currentColor" d="M256 144a64 64 0 1 0-64-64a64.072 64.072 0 0 0 64 64m0-96a32 32 0 1 1-32 32a32.036 32.036 0 0 1 32-32m0 320a64 64 0 1 0 64 64a64.072 64.072 0 0 0-64-64m0 96a32 32 0 1 1 32-32a32.036 32.036 0 0 1-32 32m0-272a64 64 0 1 0 64 64a64.072 64.072 0 0 0-64-64m0 96a32 32 0 1 1 32-32a32.036 32.036 0 0 1-32 32" />
-                                                        </svg>
-                                                    </Button>
-                                                </DropdownTrigger>
-                                                <HanldeRoleOptions member={member} />
-                                            </Dropdown>
                                             {
-                                                activeConversation.role === "owner" ? (
+                                                activeConversation?.userId === member?.userId ? (<></>) : (
+
+                                                    <Dropdown className='bg-gray-900 text-white text-sm  w-1/2 rounded-lg'>
+                                                        <DropdownTrigger>
+                                                            <Button
+                                                                variant='bordered'
+                                                            >
+                                                                <svg width="24" height="16" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path fill="currentColor" d="M256 144a64 64 0 1 0-64-64a64.072 64.072 0 0 0 64 64m0-96a32 32 0 1 1-32 32a32.036 32.036 0 0 1 32-32m0 320a64 64 0 1 0 64 64a64.072 64.072 0 0 0-64-64m0 96a32 32 0 1 1 32-32a32.036 32.036 0 0 1-32 32m0-272a64 64 0 1 0 64 64a64.072 64.072 0 0 0-64-64m0 96a32 32 0 1 1 32-32a32.036 32.036 0 0 1-32 32" />
+                                                                </svg>
+                                                            </Button>
+                                                        </DropdownTrigger>
+                                                        <HanldeRoleOptions member={member} />
+                                                    </Dropdown>
+                                                )
+                                            }
+                                            {/* {
+                                                activeConversation.role === "OWNER" ? (
                                                     <ChangeRole member={member} />
                                                 ) : (<></>)
-                                            }
+                                            } */}
 
                                         </div>
 
@@ -480,7 +514,7 @@ export default function RoomOptions({ isOpen, onOpenChange }: { isOpen: boolean,
                         ? (
                             <DmInfo user={activeConversation?.room.members?.[0]?.user} />
                         ) : (
-                            <RoomSettings onOpenChange={onOpenChange} />
+                            <RoomSettings room={activeConversation} onOpenChange={onOpenChange} />
                         )
                 }
             </ModalContent>

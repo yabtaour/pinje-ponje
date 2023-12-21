@@ -1,6 +1,6 @@
 
 'use client';
-import { addMember, removeMember, setRooms, updateMemberState } from "@/app/globalRedux/features/chatSlice";
+import { addMember, changeRole, removeMember, setRooms, updateMemberState } from "@/app/globalRedux/features/chatSlice";
 import { useAppSelector } from "@/app/globalRedux/store";
 import axios from "@/app/utils/axios";
 import SocketManager from "@/app/utils/socketManager";
@@ -160,24 +160,52 @@ export function Mute({ member }: { member: any }) {
     )
 }
 
-export function Play() {
+export function Play({ member }: { member: any }) {
     const dispatch = useDispatch()
     const toast = useToast()
 
 
-    const handlePlay = () => { };
+    const handlePlay = () => {
 
+        axios
+            .post(`/game/invite`, {
+                userId: member?.userId
+            },
+                {
+                    headers: {
+                        authorization: `${getCookie('token')}`
+                    }
+                })
+            .then((res) => {
+                console.log("res: ", res);
+                toast({
+                    title: "Invitation sent.",
+                    description: "Invitation sent.",
+                    status: "success",
+                    duration: 5000,
+                    isClosable: true,
+                })
+            })
+            .catch((err) => {
+                toast({
+                    title: "An error occurred.",
+                    description: "Unable to invite.",
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                })
+            });
+    };
 
 
     return (
         <div className='p-2   flex flex-col align-middle justify-center '>
-            <Button className=" px-4 rounded-full border hover:bg-blue-700/10 border-blue-700/10">
+            <Button onClick={handlePlay} className=" px-4 rounded-full border hover:bg-blue-700/10 border-blue-700/10">
                 <p className="px-2">Play</p>
                 <svg className='hover:fill-blue-500  rounded-full ' width="24" height="24" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
                     <path fill="currentColor" d="m498.03 15.125l-87.06 34.72l-164.5 164.5l-34.657-32.095l31.156-28.844l-223-133.594L176.155 164.5l-31.094 28.813l63.563 58.875l-70.03 70.03a398.93 398.93 0 0 0 8.968 10.438l9.656 9.656l71.5-71.5l13.718 12.688l-72 72l9.843 9.844a405.858 405.858 0 0 0 10.657 9.187l72-72l40.782 37.75l-29 26.876l223 133.594l-158.69-146.97l29-26.842l-67.217-62.282l162.5-162.5l34.718-87.03zm-67.34 53.688l13.218 13.218L280.28 245.657l-13.717-12.687L430.688 68.812zm-341 216.875L61.874 313.5L199.22 450.875l27.81-27.844c-56.283-34.674-103.014-81.617-137.343-137.342zM108.44 386.5l-81 81l17.75 17.75l81-81l-17.75-17.75z" />
                 </svg>
             </Button>
-
         </div>
     )
 }
@@ -364,12 +392,32 @@ export function Kick({ member }: { member: any }) {
 }
 
 export function ChangeRole({ member }: { member: any }) {
-    const [role, setRole] = useState(member?.role);
-
+    const toast = useToast()
+    const dispatch = useDispatch()
     const handleChangeRole = (role: string) => {
-        setRole(role);
-    }
 
+        axios
+            .post(`/chatapi/rooms/${member.roomId}/admin`, {
+                id: member.userId,
+            },
+                {
+                    headers: {
+                        authorization: `${getCookie('token')}`
+                    }
+                })
+            .then((res) => {
+                dispatch(changeRole({ member, newState: role }))
+            })
+            .catch((err) => {
+                toast({
+                    title: "An error occurred.",
+                    description: "Unable to change role.",
+                    status: "error",
+                    duration: 9000,
+                    isClosable: true,
+                })
+            });
+    }
 
 
     return (
@@ -382,32 +430,22 @@ export function ChangeRole({ member }: { member: any }) {
                 </DropdownTrigger>
                 <DropdownMenu variant="faded" aria-label="Dropdown menu with shortcut">
                     <DropdownItem
-                        className={`hover:bg-[#252341] rounded-full ${role === 'OWNER' ? 'bg-[#252341]' : ''
-                            }`}
-                        onClick={() => {
-                            handleChangeRole('OWNER');
-                        }}
-                        key='Owner'
-                    >
-                        Owner
-                    </DropdownItem>
-                    <DropdownItem
-                        className={`hover:bg-[#252341] rounded-full ${role === 'ADMIN' ? 'bg-[#252341]' : ''
+                        className={`hover:bg-[#252341] rounded-full ${member?.role === 'ADMIN' ? 'bg-[#252341]' : ''
                             }`}
                         onClick={() => {
                             handleChangeRole('ADMIN');
                         }}
-                        key='Admin'
+                        key='ADMIN'
                     >
                         Admin
                     </DropdownItem>
                     <DropdownItem
-                        className={`hover:bg-[#252341] rounded-full ${role === 'MEMBER' ? 'bg-[#252341]' : ''
+                        className={`hover:bg-[#252341] rounded-full ${member?.role === 'MEMBER' ? 'bg-[#252341]' : ''
                             }`}
                         onClick={() => {
                             handleChangeRole('MEMBER');
                         }}
-                        key='Member'
+                        key='MEMBER'
                     >
                         Member
                     </DropdownItem>

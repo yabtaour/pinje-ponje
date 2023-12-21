@@ -24,7 +24,9 @@ const sent = <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w
 export function Mymessage({ message }: any) {
     return (
         <div className="flex flex-row justify-end">
-            <div className="bg-[#252341] rounded-lg p-2 m-2 max-w-[80%] sm:max-w-[60%] md:max-w-[50%] lg:max-w-[40%]">
+
+            <div className="bg-[#252341] rounded-lg p-2 m-2 min-w-[10%]  max-w-[80%] sm:max-w-[60%] md:max-w-[50%] lg:max-w-[40%]">
+                {/* <h3 className="text-cyan-500">{message?.user?.username}</h3> */}
                 <p className="text-white text-xs sm:text-sm">{message?.content}</p>
 
                 <div className="flex flex-row justify-between">
@@ -53,11 +55,18 @@ export function Mymessage({ message }: any) {
 }
 
 
+
+
+
 export function OtherMessage({ message }: any) {
+
     return (
         <div className="flex p-3 flex-row justify-start">
+
             <img src={message?.user?.profile?.avatar ? message?.user?.profile?.avatar : "/defaultAvatar.png"} alt="User Avatar" className="w-8 h-8 mt-4 rounded-full" />
-            <div className="bg-[#2F296E] rounded-lg p-2 m-2 max-w-[80%] sm:max-w-[60%] md:max-w-[50%] lg:max-w-[40%]">
+
+            <div className="bg-[#2F296E] rounded-lg p-2 m-2 max-w-[80%] min-w-[10%] sm:max-w-[60%] md:max-w-[50%] lg:max-w-[40%]">
+                <p className={`text-sm text-cyan-300`}>{message?.user?.username}</p>
                 <p className="text-white text-xs sm:text-sm">{message?.content} </p>
                 <p className="text-[#999] text-xs sm:text-sm" > {formatMessageDate(message?.createdAt)}</p>
             </div>
@@ -91,8 +100,6 @@ export function InformationMessage({ message }: any) {
 
 
 export default function Chat() {
-
-
 
     const activeConversationId = useAppSelector(state => state?.chatReducer?.activeConversationId);
     const activeConversation = useAppSelector(state => state?.chatReducer?.rooms?.find((room: any) => room?.id === activeConversationId));
