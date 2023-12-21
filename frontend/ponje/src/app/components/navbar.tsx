@@ -15,6 +15,9 @@ import Notification from "./notification";
 import SearchInput from "./search";
 import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/app/globalRedux/store";
+import { Toast } from '@chakra-ui/react';
+import axios from "@/app/utils/axios";
+import { useEffect, useState } from 'react';
 
 
 interface NavBarProps {
@@ -24,6 +27,8 @@ interface NavBarProps {
 export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps) {
   const currentuser = useAppSelector((state) => state.authReducer.value.user);
   const router = useRouter();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const defaultAvatarUrl = "/placeholderuser.jpeg";
   // const AvatarImg = '/avatars' + currentuser?.profile?.avatar || defaultAvatarUrl;
@@ -35,6 +40,37 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
   const handleSignedInAsClick = () => {
     router.push('/Profile');
   };
+
+
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await axios.get(`/users/me`, {
+          headers: {
+            Authorization: `${localStorage.getItem('access_token')}`,
+          },
+        });
+        console.log(data.data);
+        setUser(data.data);
+        setLoading(false);
+        const loggedUserId = data.data.id;
+      } catch (err) {
+        Toast({
+          title: 'Error',
+          status: 'error',
+          duration: 9000,
+          isClosable: true,
+          position: "bottom-right",
+          variant: "solid",
+      });
+        console.error(err);
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
 <Navbar maxWidth="full" className="bg-[#151424] border-b-[#1A3070]">
       <NavbarContent className="flex justify-between items-center">
@@ -43,9 +79,9 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
         </NavbarItem>
         <button className="lg:hidden md:hidden" onClick={onToggleSidebar}>
           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="16" viewBox="0 0 48 36" fill="none">
-            <path d="M3 2.5H45" stroke="#77DFF8" strokeWidth="5" stroke-linecap="round" />
-            <path d="M3 18H45" stroke="#77DFF8" strokeWidth="5" stroke-linecap="round" />
-            <path d="M3 33H45" stroke="#77DFF8" strokeWidth="5" stroke-linecap="round" />
+            <path d="M3 2.5H45" stroke="#77DFF8" strokeWidth="5" strokeLinecap="round" />
+            <path d="M3 18H45" stroke="#77DFF8" strokeWidth="5" strokeLinecap="round" />
+            <path d="M3 33H45" stroke="#77DFF8" strokeWidth="5" strokeLinecap="round" />
           </svg>
         </button>
         <NavbarItem className="grow flex justify-center items-center">
@@ -77,9 +113,10 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
               className="bg-[#323054] text-white"
               aria-label="Profile Actions"
               variant="flat"
+              closeOnSelect={false}
             >
               <DropdownItem>
-                <Notification />
+                <Notification user={user} />
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
@@ -95,7 +132,6 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
                 name="Jason Hughes"
                 size="sm"
                 src={AvatarImg}
-              // src={currentuser?.profile.avatar ?? undefined}
               />
             </DropdownTrigger>
             <DropdownMenu

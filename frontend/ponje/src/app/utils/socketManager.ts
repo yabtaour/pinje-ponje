@@ -106,6 +106,24 @@ class SocketManager {
     return this.statusSocket;
   }
 
+
+  public getNotifications(): Promise<any[]> {
+    return new Promise((resolve, reject) => {
+      if (this.notificationSocket && this.notificationSocket.connected) {
+        console.log("Socket is connected.", this.notificationSocket);
+        console.log("Connected to notification namespace");
+        this.notificationSocket?.on("notification", (notifications: any) => {
+          console.log("Notifications:", notifications);
+          resolve(notifications);
+        });
+      } else {
+        console.log("Socket is not connected yet.");
+        reject("Socket is not connected");
+      }
+    });
+  }
+
+  
   public getConversations(): Promise<any[]> {
     return new Promise((resolve, reject) => {
       if (this.chatSocket && this.chatSocket.connected) {
