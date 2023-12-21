@@ -141,7 +141,7 @@ export class ChatController {
     );
     this.chatgateway.server
       .to(String(payload.id))
-      .emit('You Have Been Invited to this room', room);
+      .emit('roomBroadcast', room);
     return room;
   }
 
