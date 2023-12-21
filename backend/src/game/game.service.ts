@@ -536,6 +536,7 @@ export class GameService {
 	async handleClientDisconnect(client: number, gameId: number) {
 		const game = this.gameGateway.currentGames.get(gameId);
 		const winnerId = client == game.player1.id ? game.player2.id : game.player1.id;
+		console.log("the loser is, client")
 		this.finishGame(winnerId, client, gameId);
 	}
 }

@@ -93,19 +93,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     async handleDisconnect(client: any) {
       console.log(`Client disconnected: ${client.id}`);
-      let gameId = 0;
-      let opponentId = 0;
-      for (const [gameIdH, gameState] of Object.entries(this.currentGames)) {
-        if (gameState.player1 && gameState.player1.id == parseInt(client.id)) {
-          gameId = parseInt(gameIdH);
-          opponentId = parseInt(gameState.player2.id);
-          return this.gameService.finishGame(opponentId, parseInt(client.id), gameId)
-        } else if (gameState.player2 && gameState.player2.id == parseInt(client.id)) {
-          gameId = parseInt(gameIdH);
-          opponentId = parseInt(gameState.player1.id);
-          return this.gameService.finishGame(opponentId, parseInt(client.id), gameId)
-        }
-      }
       console.log("khsrti awldi");
     }
 }
