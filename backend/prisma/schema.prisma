@@ -1,4 +1,4 @@
- // Pinjponj is a game where you can play with your friends and have fun
+// Pinjponj is a game where you can play with your friends and have fun
 // this is the schema of the database
 
 generator client {
@@ -11,42 +11,42 @@ datasource db {
 }
 
 model User {
-  id                    Int             @id @unique @default(autoincrement())
-  username              String          @unique
-  password              String?
-  email                 String          @unique
-  intraid               Int?
-  googleId              String?
-  twoFactor             Boolean         @default(false)
-  twoFactorSecret       String?
-  status                Status          @default(ONLINE)
-  winRate               Float           @default(0)
-  accuracy              Float           @default(0)
-  consitency            Float           @default(0)
-  reflex                Float           @default(0)
-  gamePoints            Int             @default(0)
-  rank                  Rank            @default(UNRANKED)
-  level                 Int             @default(0)
-  experience            Int             @default(0)
+  id              Int     @id @unique @default(autoincrement())
+  username        String  @unique
+  password        String?
+  email           String  @unique
+  intraid         Int?
+  googleId        String?
+  twoFactor       Boolean @default(false)
+  twoFactorSecret String?
+  status          Status  @default(ONLINE)
+  winRate         Float   @default(0)
+  accuracy        Float   @default(0)
+  consitency      Float   @default(0)
+  reflex          Float   @default(0)
+  gamePoints      Int     @default(0)
+  rank            Rank    @default(UNRANKED)
+  level           Int     @default(0)
+  experience      Int     @default(0)
 
-  profile               Profile?
+  profile Profile?
 
   Rooms                 RoomMembership[]
   messages              ChatMessage[]
   players               Player[]
-  blockedBy             UserBlocking[] @relation("BlockedBy")
-  blocking              UserBlocking[] @relation("Blocking")
-  friends               Friendship[] @relation("firend")
-  friendOf              Friendship[] @relation("frinedof")
-  pendingRequest        FriendRequest[] @relation("UserPending")
-  sentRequest           FriendRequest[] @relation("userRequest")
-  notificationsSent     Notification[]  @relation("sender")
-  notificationsReceived Notification[]  @relation("receiver")
+  blockedBy             UserBlocking[]   @relation("BlockedBy")
+  blocking              UserBlocking[]   @relation("Blocking")
+  friends               Friendship[]     @relation("firend")
+  friendOf              Friendship[]     @relation("frinedof")
+  pendingRequest        FriendRequest[]  @relation("UserPending")
+  sentRequest           FriendRequest[]  @relation("userRequest")
+  notificationsSent     Notification[]   @relation("sender")
+  notificationsReceived Notification[]   @relation("receiver")
 
-  gameInvitesSent       Int?            @default(0)
+  gameInvitesSent Int? @default(0)
 
-  createdAt             DateTime        @default(now())
-  updatedAt             DateTime        @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Friendship {
@@ -81,15 +81,15 @@ model UserBlocking {
 }
 
 model Profile {
-  id         Int      @id @unique @default(autoincrement())
-  bio        String?  @default("I am a new player") @db.VarChar(255)
-  avatar     String?
+  id     Int     @id @unique @default(autoincrement())
+  bio    String? @default("I am a new player") @db.VarChar(255)
+  avatar String?
 
-  user       User     @relation(fields: [userid], references: [id], onDelete: Cascade)
-  userid     Int      @unique
+  user   User @relation(fields: [userid], references: [id], onDelete: Cascade)
+  userid Int  @unique
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now()) @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Player {
@@ -127,17 +127,19 @@ model RoomMembership {
   userId     Int
   room       ChatRoom    @relation(fields: [roomId], references: [id], onDelete: Cascade)
   roomId     Int
+
   @@unique([userId, roomId])
 }
 
 model ChatMessage {
-  id        Int      @id @default(autoincrement())
+  id        Int          @id @default(autoincrement())
   content   String
-  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  room      ChatRoom     @relation(fields: [roomId], references: [id], onDelete: Cascade)
   roomId    Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
-  createdAt DateTime @default(now())
+  state     MessageState @default(SENT)
+  createdAt DateTime     @default(now())
 }
 
 model ChatRoom {
@@ -169,6 +171,13 @@ enum NotificationType {
   GAME_INVITE
   GAME_INVITE_REJECTED
   GROUPE_CHAT_INVITE
+}
+
+enum MessageState {
+  SENT
+  LOADING
+  FAIL
+  INFORMATION
 }
 
 enum RoomType {

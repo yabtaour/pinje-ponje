@@ -1,6 +1,7 @@
 import { User } from '@/app/types/user';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { user } from '@nextui-org/theme';
 
 const FriendButton = ({ userId }: { userId: number | undefined }) => {
   const [userMe, setUserMe] = useState<User | null>(null);
@@ -70,7 +71,7 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
 
     const isFriend = userMe.friendOf.some((friend: { userId: any }) => friend.userId === userId);
     const isSentRequest = userMe.sentRequest.some((request: { receiverId: any }) => request.receiverId === userId);
-    const isPendingRequest = userMe.pendingRequest.some((request: { receiverId: any }) => request.receiverId === userId);
+    const isPendingRequest = userMe.pendingRequest.some((request: { receiverId: any }) => request.receiverId === userMe.id);
 
     switch (true) {
       case isFriend:
