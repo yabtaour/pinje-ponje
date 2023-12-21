@@ -35,27 +35,8 @@ export default function Notification({ user }: { user: User | null | undefined }
     setDropdownOpen(!dropdownOpen);
   };
 
-  const fetchNotifications = async () => {
-    if (SocketManagerNotifs) {
-      console.log("fetching notifications");
-      SocketManagerNotifs.waitForConnection(async () => {
-        console.log("connected");
-        const data = await SocketManagerNotifs.getNotifications();
-        console.log("HEEEEEEEEYO data i got back from server", data);
-        Toast({
-          title: 'Success',
-          status: 'success',
-          duration: 9000,
-          isClosable: true,
-          position: "bottom-right",
-          variant: "solid",
-        })
-      })
-    }
 
-  };
-
-  const formatDate = (dateStr: string) => {
+  const formatDate = React.useCallback((dateStr: string) => {
     const date = new Date(dateStr);
     const now = new Date();
     const delta = now.getTime() - date.getTime();
@@ -71,32 +52,39 @@ export default function Notification({ user }: { user: User | null | undefined }
     } else {
       return date.toLocaleDateString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric' });
     }
-  };
+  }, []);
 
   const getMyNotifications = async () => {
     try {
-      const data = await axios.get(`/notification/my`, {
+      const response = await axios.get(`/notification/my`, {
         headers: {
           Authorization: `${localStorage.getItem('access_token')}`,
         },
       });
+  
       const notificationsWithUser = await Promise.all(
-        data.data.map(async (notification: Notification) => {
-          const user = await getUserById(notification.senderid);
-          return {
-            ...notification,
-            name: user?.username || 'Unknown',
-            avatar: user?.avatar || '/placeholderuser.jpeg',
-            createdAt: formatDate(notification.createdAt),
-            treated: false,
-          } as Notification;
+        response.data.map(async (notification: Notification) => {
+          try {
+            const user = await getUserById(notification.senderid);
+            return {
+              ...notification,
+              name: user?.username || 'Unknown',
+              avatar: user?.avatar || '/placeholderuser.jpeg',
+              createdAt: formatDate(notification.createdAt),
+              treated: false,
+            } as Notification;
+          } catch (error) {
+            console.error("Error fetching user information", error);
+            return null;
+          }
         })
       );
-
-      setNotifications(notificationsWithUser);
+  
+      const validNotifications = notificationsWithUser.filter(notification => notification !== null);
+  
+      setNotifications(validNotifications);
       setLoading(false);
-    }
-    catch (err) {
+    } catch (err) {
       setLoading(false);
       Toast({
         title: 'Error',
@@ -107,8 +95,8 @@ export default function Notification({ user }: { user: User | null | undefined }
         variant: "solid",
       });
     }
-  }
-
+  };
+  
   const getUserById = async (userId: number) => {
     try {
       const response = await axios.get(`/users/${userId}`, {
@@ -132,7 +120,6 @@ export default function Notification({ user }: { user: User | null | undefined }
   }
 
   useEffect(() => {
-    fetchNotifications();
     getMyNotifications();
   }, [user]);
 
@@ -190,41 +177,23 @@ export const NotificationComponent = ({id, name, type, avatar, createdAt, treate
   { id: number, name: string, type: string, avatar: string, createdAt: string, treated: boolean , setNotifications : any , notifs : any , index : number}) => {
   
   
-    const handleAccept = async (type: string, id: number , index : number) => {
-    console.log(type, id);
-    if (type === "FRIEND_REQUEST") {
+    const handleAccept = async (type: string, id: number, index: number) => {
       try {
-        const res = await axios.post('/users/friends/accept', { id: id }, {
-          headers: {
-            Authorization: `${localStorage.getItem('access_token')}`,
-          },
-        });
+        const endpoint = type === "FRIEND_REQUEST" ? '/users/friends/accept' : '/game/accept';
+        const res = await axios.post(endpoint, { id }, { headers: { Authorization: `${localStorage.getItem('access_token')}` } });
+    
         if (res.status === 201) {
-          notifs[index].treated = true;
-          useEffect(() => {
-            setNotifications([...notifs]);
-          }, [notifs]);
+          setNotifications((prevNotifications : any) => {
+            const updatedNotifications = [...prevNotifications];
+            updatedNotifications[index].treated = true;
+            return updatedNotifications;
+          });
         }
       } catch (error) {
-        console.error("friend accept error", error);
+        console.error("Error handling request acceptance", error);
       }
-    }
-    else if (type === "GAME_INVITE") {
-      try {
-        const res = await axios.post('/game/accept', { id: id }, {
-          headers: {
-            Authorization: `${localStorage.getItem('access_token')}`,
-          },
-        });
-        if (res.status === 201) {
-          notifs[index].treated = true; 
-          setNotifications([...notifs]);
-        }
-      } catch (error) {
-        console.error("friend accept error", error);
-      }
-    }
-  }
+    };
+    
   const handleReject = async (type: string, id: number , index : number) => {
     console.log(type, id);
     if (type === "FRIEND_REQUEST") {
@@ -236,8 +205,11 @@ export const NotificationComponent = ({id, name, type, avatar, createdAt, treate
           data: { id: id }, 
         });
         if (res.status === 201) {
-          notifs[index].treated = true; 
-          setNotifications([...notifs]);
+          setNotifications((prevNotifications : any) => {
+            const updatedNotifications = [...prevNotifications];
+            updatedNotifications[index].treated = true;
+            return updatedNotifications;
+          });
         }
       } catch (error) {
         console.error("friend reject error", error);
@@ -251,8 +223,11 @@ export const NotificationComponent = ({id, name, type, avatar, createdAt, treate
           },
         });
         if (res.status === 201) {
-          notifs[index].treated = true; 
-          setNotifications([...notifs]);
+          setNotifications((prevNotifications : any) => {
+            const updatedNotifications = [...prevNotifications];
+            updatedNotifications[index].treated = true;
+            return updatedNotifications;
+          });
         }
       } catch (error) {
         console.error("game reject error", error);
