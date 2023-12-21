@@ -123,8 +123,8 @@ class SocketManager {
   public listenOnUpdates(): Promise<any> {
     return new Promise((resolve, reject) => {
       if (this.chatSocket && this.chatSocket.connected) {
+        this.chatSocket?.off("roomBroadcast");
         this.chatSocket?.on("roomBroadcast", (updatedMember: any) => {
-          console.log("roomBroadcast : ", updatedMember);
           resolve(updatedMember);
         });
       } else {
@@ -149,12 +149,16 @@ class SocketManager {
     return new Promise((resolve, reject) => {});
   }
 
-  public sendMessage(message: string, roomId: number): Promise<any> {
+  public sendMessage(
+    message: string,
+    roomId: number,
+    state?: string
+  ): Promise<any> {
     return new Promise((resolve, reject) => {
       if (this.chatSocket && this.chatSocket.connected) {
         this.chatSocket?.emit(
           "sendMessage",
-          { message, id: roomId },
+          { message, id: roomId, state },
           (res: any) => {
             resolve(res);
           }
@@ -182,6 +186,7 @@ class SocketManager {
     return new Promise((resolve, reject) => {
       if (this.chatSocket && this.chatSocket.connected) {
         console.log("Socket is connected.", this.chatSocket);
+        this.chatSocket?.off("message");
         this.chatSocket?.on("message", (data: any) => {
           resolve(data);
         });
