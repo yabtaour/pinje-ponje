@@ -67,7 +67,7 @@ export function Ban({ member }: { member: any }) {
             }
         } className=" px-4 rounded-full border hover:bg-blue-700/10 border-blue-700/10">
             {
-                member.state === 'BANNED' ? (
+                member?.state === 'BANNED' ? (
                     <>
                         <h1 className="px-2">Unban</h1>
                         <svg className='hover:bg-red-500/10' width="24" height="24" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
@@ -396,27 +396,53 @@ export function ChangeRole({ member }: { member: any }) {
     const dispatch = useDispatch()
     const handleChangeRole = (role: string) => {
 
-        axios
-            .post(`/chatapi/rooms/${member.roomId}/admin`, {
-                id: member.userId,
-            },
-                {
-                    headers: {
-                        authorization: `${getCookie('token')}`
-                    }
+        if (role === "ADMIN") {
+            axios
+                .post(`/chatapi/rooms/${member.roomId}/admin`, {
+                    id: member.userId,
+                },
+                    {
+                        headers: {
+                            authorization: `${getCookie('token')}`
+                        }
+                    })
+                .then((res) => {
+                    dispatch(changeRole({ member, newState: role }))
                 })
-            .then((res) => {
-                dispatch(changeRole({ member, newState: role }))
-            })
-            .catch((err) => {
-                toast({
-                    title: "An error occurred.",
-                    description: "Unable to change role.",
-                    status: "error",
-                    duration: 9000,
-                    isClosable: true,
+                .catch((err) => {
+                    toast({
+                        title: "An error occurred.",
+                        description: "Unable to change role.",
+                        status: "error",
+                        duration: 5000,
+                        isClosable: true,
+                    })
+                });
+        }
+        else if (role === "MEMBER") {
+            axios
+                .delete(`/chatapi/rooms/${member.roomId}/admin`,
+                    {
+                        headers: {
+                            authorization: `${getCookie('token')}`
+                        }
+                    })
+                .then((res) => {
+                    dispatch(changeRole({ member, newState: role }))
                 })
-            });
+                .catch((err) => {
+                    toast({
+                        title: "An error occurred.",
+                        description: "Unable to change role.",
+                        status: "error",
+                        duration: 5000,
+                        isClosable: true,
+                    })
+                });
+        }
+
+
+
     }
 
 
