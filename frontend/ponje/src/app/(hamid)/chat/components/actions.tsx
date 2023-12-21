@@ -395,54 +395,28 @@ export function ChangeRole({ member }: { member: any }) {
     const toast = useToast()
     const dispatch = useDispatch()
     const handleChangeRole = (role: string) => {
-
-        if (role === "ADMIN") {
-            axios
-                .post(`/chatapi/rooms/${member.roomId}/admin`, {
-                    id: member.userId,
-                },
-                    {
-                        headers: {
-                            authorization: `${getCookie('token')}`
-                        }
-                    })
-                .then((res) => {
-                    dispatch(changeRole({ member, newState: role }))
+        axios
+            .patch(`/chatapi/rooms/${member.roomId}/role`, {
+                userId: member.userId,
+                role
+            },
+                {
+                    headers: {
+                        authorization: `${getCookie('token')}`
+                    }
                 })
-                .catch((err) => {
-                    toast({
-                        title: "An error occurred.",
-                        description: "Unable to change role.",
-                        status: "error",
-                        duration: 5000,
-                        isClosable: true,
-                    })
-                });
-        }
-        else if (role === "MEMBER") {
-            axios
-                .delete(`/chatapi/rooms/${member.roomId}/admin`,
-                    {
-                        headers: {
-                            authorization: `${getCookie('token')}`
-                        }
-                    })
-                .then((res) => {
-                    dispatch(changeRole({ member, newState: role }))
+            .then((res) => {
+                dispatch(changeRole({ member, newRole: role }))
+            })
+            .catch((err) => {
+                toast({
+                    title: "An error occurred.",
+                    description: "Unable to change role.",
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
                 })
-                .catch((err) => {
-                    toast({
-                        title: "An error occurred.",
-                        description: "Unable to change role.",
-                        status: "error",
-                        duration: 5000,
-                        isClosable: true,
-                    })
-                });
-        }
-
-
-
+            });
     }
 
 

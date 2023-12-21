@@ -27,8 +27,8 @@ import { NotificationService } from 'src/notification/notification.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FriendsActionsDto } from 'src/user/dto/FriendsActions-user.dto';
 import { chatActionsDto } from './dto/actions-dto';
-import { updateRoomDto } from './dto/update-room.dto';
 import { updateRoomRoleDto } from './dto/update-room-role.dto';
+import { updateRoomDto } from './dto/update-room.dto';
 
 export const ChatActions = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): chatActionsDto => {
@@ -171,15 +171,12 @@ export class ChatService {
     }
   }
 
-
   async updateRoomRole(
     userid: number,
     roomid: number,
     payload: updateRoomRoleDto,
   ) {
     const peer_id = parseInt(String(payload.userId));
-    const { role } = payload
-    console.log(role)
 
     if (Number.isNaN(peer_id) || payload.role == undefined) {
       throw new BadRequestException();
@@ -197,6 +194,13 @@ export class ChatService {
 
     try {
       const updatedRole = await this.prisma.roomMembership.update({
+        include: {
+          user: {
+            include: {
+              profile: true,
+            },
+          },
+        },
         where: {
           userId_roomId: {
             userId: peer_id,
@@ -207,7 +211,7 @@ export class ChatService {
           role: payload.role,
         },
       });
-      return updatedRole
+      return updatedRole;
     } catch (e) {
       throw new HttpException(
         'Prisma: Bad request encountered.',
