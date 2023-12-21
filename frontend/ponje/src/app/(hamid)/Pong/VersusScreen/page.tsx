@@ -5,9 +5,9 @@ import Matter, { Body, Events } from 'matter-js';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from "react";
 import PlayerCard, { PlayerSkeleton } from '../components/PlayerCard';
-let token: string | undefined = localStorage.getItem('access_token')!;
-const SocketManagerGame = SocketManager.getInstance("http://localhost:3000", token);
 import _ from 'lodash';
+
+const socketManager = SocketManager.getInstance();
 
 export const Engine = Matter.Engine;
 export const Render = Matter.Render;
@@ -88,11 +88,11 @@ let isSent = false;
 
 export function updatePaddlesgame(gameId: number) {
     if (!isSent && keys['ArrowUp'] && leftPaddle.position.y - 100 / 2 > 10) {
-        SocketManagerGame.sendPaddlePosition({ gameId: gameId, direction: 'up' });
+        socketManager.sendPaddlePosition({ gameId: gameId, direction: 'up' });
         isSent = true;
     }
     if (!isSent && keys['ArrowDown'] && leftPaddle.position.y + 100 / 2 < worldHeight - 10) {
-        SocketManagerGame.sendPaddlePosition({ gameId: gameId, direction: 'down' });
+        socketManager.sendPaddlePosition({ gameId: gameId, direction: 'down' });
         isSent = true;
     }
 }
@@ -111,7 +111,7 @@ let scoreSent = false;
 
 export function updateScore(gameId: number) {
     if (scoreSent == false) {
-        SocketManagerGame.sendScoreUpdate({gameId: gameId});
+        socketManager.sendScoreUpdate({gameId: gameId});
         scoreSent = true;
     }
 }
@@ -129,6 +129,7 @@ export default function VersusScreen() {
     const [enemyScore, setEnemyScore] = useState(0);
     const [gameStarted, setGameStarted] = useState(false);
     const [gameEnded, setGameEnded] = useState(false);
+    let gameEndMessage = null;
     
     const boxRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -149,10 +150,10 @@ export default function VersusScreen() {
         };
     
         const waitForNewGame = async () => {
-            if (SocketManagerGame) {
-                SocketManagerGame.waitForConnection(async () => {
+            if (socketManager) {
+                socketManager.waitForConnection(async () => {
                     try {
-                        let data = await SocketManagerGame.onNewGame();
+                        let data = await socketManager.onNewGame();
                         if (data) {
                             gameId = data.id;
                             const otherUser = data.players.find((player: any) => player.userId !== currentUserId);
@@ -168,14 +169,13 @@ export default function VersusScreen() {
         
         const initializeGame = async () => {
             console.log("setting up start game listener")
-            if (selectedMap && SocketManagerGame) {
-                SocketManagerGame.waitForConnection(() => {
-                    SocketManagerGame.onStartGame()
+            if (selectedMap && socketManager) {
+                socketManager.waitForConnection(() => {
+                    socketManager.onStartGame()
                         .then((data) => {
                             if (data) {
                                 if (data.reversed == true) {
                                     ballX *= -1;
-                                } else {
                                 }
                                 setStartGame(true);
                             }
@@ -190,10 +190,10 @@ export default function VersusScreen() {
         
         const sendInitialization = async () => {
             console.log("sending game intialization");
-            if (selectedMap && !sentInitialize && SocketManagerGame) {
-                SocketManagerGame.waitForConnection(async () => {
+            if (selectedMap && !sentInitialize && socketManager) {
+                socketManager.waitForConnection(async () => {
                     try {
-                        await SocketManagerGame.sendIntialization({ gameId: gameId, playerPos: 30, ballVel: 3 });
+                        await socketManager.sendIntialization({ gameId: gameId, playerPos: 30, ballVel: 3 });
                         setSentInitialize(true);
                     } catch (error) {
                         console.error("Error in sendInitialize:", error);
@@ -204,9 +204,9 @@ export default function VersusScreen() {
 
         const handlePaddlePosition = () => {
             console.log("setting up paddle listener")
-            if (startGame && SocketManagerGame) {
-              SocketManagerGame.waitForConnection(() => {
-                SocketManagerGame.onPaddlePosition((data) => {
+            if (startGame && socketManager) {
+              socketManager.waitForConnection(() => {
+                socketManager.onPaddlePosition((data) => {
                   const { playerId, direction } = data;
                   if (playerId == currentUserId) {
                     if (direction == "up") {
@@ -228,8 +228,8 @@ export default function VersusScreen() {
           };
         
         const handleScoreUpdate = () => {
-            if (startGame && SocketManagerGame) {
-                SocketManagerGame.onScoreUpdate((data) => {
+            if (startGame && socketManager) {
+                socketManager.onScoreUpdate((data) => {
                     console.log("score ja", data);
                     const {player, newScore} = data;
                     scoreSent = false;
@@ -307,7 +307,7 @@ export default function VersusScreen() {
                 });
 
                 Events.on(engine, 'beforeUpdate', () => {
-                    // useEffect
+                    console.log("update");
                     if (ballReachedLeftThreshold())
                         updateScore(gameId);
                     else {
@@ -335,24 +335,40 @@ export default function VersusScreen() {
             setGameStarted(true);
         };
 
-        const handleGameEnd = () => {
-
-        }
+        const handleGameEnd = async () => {
+            console.log("setting up end game listener")
+                socketManager.waitForConnection(() => {
+                    socketManager.onGameFinished()
+                        .then((data) => {
+                            if (data) {
+                                gameEndMessage = data;
+                                setGameEnded(true);
+                            }
+                        })
+                        .catch((error) => {
+                            console.error("Error in sendInitialize:", error);
+                        });
+                        setReadyToInitialize(true);
+                });
+        };
     
-        if (!user || !currentUserId) fetchData();
-        waitForNewGame();
-        if (selectedMap && enemyPlayer && playerFound && !startGame) initializeGame();
-        if (selectedMap && !startGame) sendInitialization();
-        if (startGame) handlePaddlePosition();
-        if (startGame) handleScoreUpdate();
-        if (startGame && !gameStarted) createGame();
-        if (startGame) handleGameEnd();
-        // if (startGame) handlGameEnd();
+        if (!enemyPlayer && !playerFound) waitForNewGame();
+        if (!user && !currentUserId) fetchData();
+        if (selectedMap && enemyPlayer && playerFound && !startGame && !gameEnded) initializeGame();
+        if (selectedMap && !startGame && !gameEnded) sendInitialization();
+        if (startGame && !gameEnded) handlePaddlePosition();
+        if (startGame && !gameEnded) handleScoreUpdate();
+        if (startGame && !gameStarted && !gameEnded) createGame();
+        if (startGame && !gameEnded) handleGameEnd();
 
         return () => {
-            
+            socketManager.getGameSocket()?.off('gameOver');
+            // socketManager.getGameSocket()?.off('updateScore');
+            // socketManager.getGameSocket()?.off('gameFound');
+            // socketManager.getGameSocket()?.off('startGame');
+            // socketManager.getGameSocket()?.off('updatePaddle');
         };
-    }, [user, currentUserId, enemyPlayer, selectedMap, readyToInitialize, startGame, sentInitialize, leftPaddle, rightPaddle, enemyPlayer, myScore, enemyScore]);
+    }, [user, currentUserId, enemyPlayer, playerFound, selectedMap, readyToInitialize, startGame, sentInitialize, leftPaddle, rightPaddle, myScore, enemyScore, gameEnded]);
     
     
     const handleMapClick = (map: string) => {
@@ -361,12 +377,15 @@ export default function VersusScreen() {
     };
 
     return (
+        gameEnded ? (
+            <div>
+                <h1>
+                    aaaaaaaaaa
+                    {gameEndMessage}
+                </h1>
+            </div>
+        ) : (
         startGame ? (
-            // <div className='w-full h-screen flex items-center justify-center'>
-            //     <div className='w-2/3 h-2/3 border-2 border-black z-30' ref={boxRef}>
-            //         <canvas className='w-full h-full border-2 border-black z-30' id="myCanva" ref={canvasRef} />
-            //     </div>
-            // </div>
             <div className='w-full h-screen flex items-center justify-center'>
                 <div className='w-2/3 h-2/3 border-2 border-black z-30' ref={boxRef}>
                     <canvas className='w-full h-full border-2 border-black z-30' id="myCanva" ref={canvasRef} />
@@ -450,6 +469,7 @@ export default function VersusScreen() {
                 <p></p>
             )}
         </div>
+    )
     )
     );
 }

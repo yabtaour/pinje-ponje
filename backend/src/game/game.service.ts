@@ -416,7 +416,7 @@ export class GameService {
 		// });
 		// if (!currentPlayer)
 		// 	throw new WsException(`No player found`);
-		
+		if (this.gameGateway.currentGames.has(payload.gameId)) {
 		await this.gameGateway.server
 			.to(String(this.gameGateway.currentGames.get(payload.gameId).player1.id))
 			.emit('updatePaddle', {playerId: client, direction: payload.direction});
@@ -424,6 +424,7 @@ export class GameService {
 		await this.gameGateway.server
 			.to(String(this.gameGateway.currentGames.get(payload.gameId).player2.id))
 			.emit('updatePaddle', {playerId: client, direction: payload.direction});
+		}
 	}
 
 	// async updateBallPosition(x: number, y: number, gameId: number) {
@@ -433,6 +434,7 @@ export class GameService {
 	// }
 
 	async finishGame(winnerId: number, loserId: number, gameId: number) {
+		if (this.gameGateway.currentGames.has(gameId)) {
 		const winner = await this.prisma.player.update({
 			where: {
 				userId_gameId: {
@@ -494,25 +496,17 @@ export class GameService {
 		console.log(gameId);
 		this.gameGateway.currentGames.delete(gameId);
 		console.log(this.gameGateway.currentGames);
+		}
 	}
 
 	async updateScore(userId: number, gameId: number) {
 		console.log("score update", gameId, userId);
-		// const currentPlayer = await this.prisma.player.findUnique({
-		// 	where: {
-		// 		userId_gameId: {
-		// 			userId: userId,
-		// 			gameId: gameId,
-		// 		},
-		// 	},
-		// });
-		// if (!currentPlayer)
-		// 	throw new WsException(`No player found`);
 
+		if (this.gameGateway.currentGames.has(gameId)) {
 		if (userId === this.gameGateway.currentGames.get(gameId).player1.id) {
 			this.gameGateway.currentGames.get(gameId).player2.score++ ;
-			if (this.gameGateway.currentGames.get(gameId).player2.score >= 10) {
-				this.finishGame(this.gameGateway.currentGames.get(gameId).player1.id, userId, gameId);
+			if (this.gameGateway.currentGames.get(gameId).player2.score >= 5) {
+				this.finishGame(userId, this.gameGateway.currentGames.get(gameId).player2.id, gameId);
 				return;
 			}
 			await this.gameGateway.server
@@ -523,8 +517,8 @@ export class GameService {
 				.emit('updateScore', {player: userId, newScore: this.gameGateway.currentGames.get(gameId).player2.score});
 		} else if (userId === this.gameGateway.currentGames.get(gameId).player2.id) {
 			this.gameGateway.currentGames.get(gameId).player1.score++ ;
-			if (this.gameGateway.currentGames.get(gameId).player1.score >= 10) {
-				this.finishGame(this.gameGateway.currentGames.get(gameId).player1.id, userId, gameId);
+			if (this.gameGateway.currentGames.get(gameId).player1.score >= 5) {
+				this.finishGame(userId, this.gameGateway.currentGames.get(gameId).player1.id, gameId);
 				return;
 			}
 			await this.gameGateway.server
@@ -536,5 +530,12 @@ export class GameService {
 		} else {
 			throw new WsException("No player found");
 		}
+	}
+	}
+
+	async handleClientDisconnect(client: number, gameId: number) {
+		const game = this.gameGateway.currentGames.get(gameId);
+		const winnerId = client == game.player1.id ? game.player2.id : game.player1.id;
+		this.finishGame(winnerId, client, gameId);
 	}
 }

@@ -18,10 +18,11 @@ class SocketManager {
     this.dispatchFunction = dispatch;
 
     this.mainSocket = io(url, {
-      auth: {
-        token: token,
-      },
-    });
+        auth: {
+          token: token,
+        } 
+      }
+    );
 
     if (this.mainSocket && !this.chatSocket) {
       this.chatSocket = io(`${url}/chat`, {
@@ -29,44 +30,43 @@ class SocketManager {
           token: token,
         },
       });
-
-      console.log("Socket is connected.", this.chatSocket);
+      console.log("chatSocket is connected.", this.chatSocket);
     }
+
     if (this.mainSocket && !this.gameSocket) {
       this.gameSocket = io(`${url}/game`, {
         auth: {
           token: token,
         },
+        autoConnect: false,
+        reconnection: false
       });
-      console.log(" is connected.", this.chatSocket);
     }
+    this.gameSocket?.disconnect();
 
     if (this.mainSocket && !this.notificationSocket) {
-      console.log("Socket is connected.", this.chatSocket);
       this.notificationSocket = io(`${url}/notification`, {
         auth: {
           token: token,
         },
       });
+      console.log("notificationSocket is connected.", this.notificationSocket);
     }
 
     if (this.mainSocket && !this.statusSocket) {
-      console.log("Socket is connected.", this.chatSocket);
       this.statusSocket = io(`${url}/status`, {
         auth: {
           token: token,
         },
       });
+      console.log("statusSocket is connected.", this.statusSocket);
     }
 
-    console.log("Socket is connected.", this.mainSocket);
     this.mainSocket?.connect();
     this.chatSocket?.connect();
-    this.gameSocket?.connect();
     this.notificationSocket?.connect();
     this.statusSocket?.connect();
 
-    // Example: Add listeners to each socket
     this.chatSocket?.on("connect", () => {
       console.log("Connected to chat namespace");
       // Handle further logic here
@@ -87,6 +87,7 @@ class SocketManager {
       console.log("Connected to status namespace");
       // Handle further logic here
     });
+
   }
 
   public static getInstance(
@@ -101,6 +102,9 @@ class SocketManager {
   }
 
   //getters
+  public getMainSocket(): Socket | null {
+    return this.mainSocket;
+  }
   public getChatSocket(): Socket | null {
     return this.chatSocket;
   }
@@ -115,6 +119,13 @@ class SocketManager {
 
   public getStatusSocket(): Socket | null {
     return this.statusSocket;
+  }
+
+  public connectGameSocket(): void {
+    if (this.mainSocket && this.gameSocket && !this.gameSocket.connected) {
+      this.gameSocket.connect();
+      console.log("gameSocket connected")
+    }
   }
 
   public getConversations(): Promise<any[]> {
@@ -185,12 +196,12 @@ class SocketManager {
       if (this.gameSocket && this.gameSocket.connected) {  
         const gameFoundListener = (data: any) => {
           if (data) {
+            console.log("new game found")
             resolve(data);
           }
           data = null;
           this.gameSocket?.off("gameFound", gameFoundListener);
         };
-  
         this.gameSocket?.on("gameFound", gameFoundListener);
       } else {
         console.log("Socket is not connected yet.");
@@ -198,7 +209,6 @@ class SocketManager {
       }
     });
   }
-  
 
   public sendIntialization(payload: {gameId: number, playerPos: number, ballVel: number}): Promise<any> {
     return new Promise(async (resolve, reject) => {
@@ -214,20 +224,14 @@ class SocketManager {
   public sendPaddlePosition(payload: {gameId: number, direction: string}): Promise <any> {
     return new Promise(async (resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
-        // console.log("Socket is connected.", this.gameSocket);
-        // console.log("Connected to game namespace");
-        // console.log(payload);
         this.gameSocket?.emit("updatePlayerPosition", payload);
         resolve("done");
       } else {
-        // console.log("Socket is not connected yet.");
         reject("Socket is not connected");
       }
     });    
   }
 
-
-  
   public sendScoreUpdate(payload: {gameId: number}): Promise <any> {
     return new Promise(async (resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
@@ -251,14 +255,24 @@ class SocketManager {
     }
   }
 
-  public onGameFinished(callback: (data: any) => void): void {
-    if (this.gameSocket && this.gameSocket.connected) {
-      this.gameSocket?.on("gameOver", (data: any) => {
-        callback(data);
-      });
-    } else {
-      console.error("Socket is not connected");
-    }
+  public onGameFinished(): Promise<any> {
+    return new Promise(async (resolve, reject) => {
+      if (this.gameSocket && this.gameSocket.connected) {  
+        const gameFinishedListener = (data: any) => {
+          if (data) {
+            console.log("game ended : ", data);
+            resolve(data);
+          }
+          data = null;
+          this.gameSocket?.off("gameOver", gameFinishedListener);
+        };
+  
+        this.gameSocket?.on("gameOver", gameFinishedListener);
+      } else {
+        console.log("Socket is not connected yet.");
+        reject("Socket is not connected");
+      }
+    });
   }
 
   public onPaddlePosition(callback: (data: any) => void): void {
@@ -271,8 +285,6 @@ class SocketManager {
       console.error("Socket is not connected");
     }
   }
-  
-  
 
   public onStartGame(): Promise<any> {
     return new Promise(async (resolve, reject) => {

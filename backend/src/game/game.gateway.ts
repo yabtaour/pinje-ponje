@@ -1,9 +1,7 @@
 import { Inject, Injectable, UseFilters, forwardRef } from '@nestjs/common';
 import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer, WsException } from '@nestjs/websockets';
-import { Server } from 'socket.io';
-import { AuthWithWs } from 'src/chat/dto/user-ws-dto';
+import { Server } from 'socket.io'
 import { GlobalExceptionFilter } from 'src/global-exception.filter';
-import { UpdatePaddlePositionDto, UpdateScoreDto } from './dto/game.dto';
 import { GameService } from './game.service';
 import { GameState } from './gameState';
 
@@ -67,15 +65,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       } else {
         this.intializeArray.push(payload.gameId);
       }
-      // const lastIndex = this.intializeArray.lastIndexOf(payload.gameId);
-      // if (firstIndex != lastIndex && firstIndex != -1 && lastIndex != -1) {
-      //   this.intializeArray.splice(firstIndex, 1);
-      //   firstIndex = this.intializeArray.findIndex((element) => {
-      //     return (element === payload.gameId);
-      //   });
-      //   this.intializeArray.splice(firstIndex, 1);
-      //   this.gameService.initializeGame(parseInt(client.id), payload)
-      // }
     }
 
     @SubscribeMessage('updatePlayerPosition')
@@ -85,7 +74,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
           console.log("payload is not valid !", payload);
           throw new WsException("invalid payload");
         }
-      // console.log("khouya updati liya data ", payload);
       this.gameService.updatePlayerPosition(parseInt(client.id), payload);
     }
     
@@ -98,13 +86,27 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       this.gameService.updateScore(parseInt(client.id), payload.gameId);
     }
 
-    async handleConnection(client: AuthWithWs) {
+    async handleConnection(client: any) {
       const sockets = this.server.sockets;
 			console.log(`Client connected: ${client.id}`);
-			// console.log(this.server);
     }
-    
-    handleDisconnect(client: AuthWithWs) {
+
+    async handleDisconnect(client: any) {
       console.log(`Client disconnected: ${client.id}`);
+      let gameId = 0;
+      let opponentId = 0;
+      for (const [gameIdH, gameState] of Object.entries(this.currentGames)) {
+        if (gameState.player1 && gameState.player1.id == parseInt(client.id)) {
+          gameId = parseInt(gameIdH);
+          opponentId = parseInt(gameState.player2.id);
+          return this.gameService.finishGame(opponentId, parseInt(client.id), gameId)
+        } else if (gameState.player2 && gameState.player2.id == parseInt(client.id)) {
+          gameId = parseInt(gameIdH);
+          opponentId = parseInt(gameState.player1.id);
+          return this.gameService.finishGame(opponentId, parseInt(client.id), gameId)
+        }
+      }
+      console.log("khsrti awldi");
     }
 }
+
