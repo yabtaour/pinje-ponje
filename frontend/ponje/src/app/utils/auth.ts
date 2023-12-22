@@ -13,7 +13,7 @@ export const fetchUserData = async (token: string) => {
   try {
     const response = await axios.get("/users/me", {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `${token}`,
       },
     });
     return response.data;
@@ -129,7 +129,7 @@ export const handleLogin = async (email: string, password: string) => {
       const user = await fetchUserData(token);
       console.log(user);
       if (user) {
-        setCookie("token", `Bearer ${token}`);
+        setCookie("token", `${token}`);
         setSession(token);
         return { token, user };
       } else {
