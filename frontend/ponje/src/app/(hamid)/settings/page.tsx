@@ -10,9 +10,12 @@ import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import * as Yup from 'yup';
-import { resetPassword, updateUser, fetchQRCode } from "../../utils/update";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from "@nextui-org/react";
+// import { resetPassword, updateUser} from "../../utils/update";
+import { resetPassword} from "../../utils/update";
+import { Modal, ModalContent, useDisclosure } from "@nextui-org/react";
 import { TwoFactorModal, TwoFactorModalDeactivate } from './components/TwoFactorModal';
+import axios from "@/app/utils/axios";
+// import { AxiosError } from "axios";
 
 
 export default function UserSettings() {
@@ -24,6 +27,9 @@ export default function UserSettings() {
     const [twoFactorAuth, setTwoFactorAuth] = useState(false);
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [activationComplete, setActivationComplete] = useState(false);
+    const [submitError, setSubmitError] = useState("");
+    const [showErrorBadge, setShowErrorBadge] = useState(false);
+
 
 
     useEffect(() => {
@@ -55,7 +61,7 @@ export default function UserSettings() {
     };
 
     const initialValues = {
-        username: user?.profile.username ? user?.profile?.username : "",
+        username: user?.username ? user?.username : "",
         email: user?.email ? user?.email : "",
         bio: user?.profile?.bio ? user?.profile?.bio : "",
         oldpassword: "",
@@ -79,51 +85,99 @@ export default function UserSettings() {
 
     });
 
+    interface UserData {
+        username?: string;
+        bio?: string;
+        email?: string;
+      }
+      
+      const updateUser = async (userData: UserData, token: string | null) => {
+        try {
+          const { username, bio, email } = userData;
+          if (username || email) {
+            const response = await axios.patch("/users", { username, email }, {
+              headers: {
+                Authorization: token,
+              },
+            });
+            return { success: true, message: "Update successful", data: response.data };
+          }
+          if (bio) {
+            const bioResponse = await axios.patch("/profiles", { bio }, {
+              headers: {
+                Authorization: token,
+              },
+            });
+            console.log("updated bio", bioResponse.data);
+          }
+          return { success: true, message: "Update successful"};
+        } catch (error) {
+          console.error("Failed to update user:", error);
+          const err = error as AxiosError;
+          if (err.response?.status === 409) {
+            const conflictError = {
+              success: false,
+              message: "Conflict error: Username or email already exists.",
+            };
+            throw conflictError;
+          }
+          throw error;
+        }
+      };
+      
     const onSubmit = async (values: any, { setSubmitting }: any) => {
         const { username, bio, oldpassword, newpassword, email } = values;
         let userProfileData = { username, bio, email };
-
+    
         try {
             if (username || bio || email) {
-                console.log("USERNAME TO BE UPDATED", username);
-                if (username !== undefined && username === user?.profile?.username)
+                if (username !== undefined && username === user?.username)
                     delete userProfileData.username;
                 if (email !== undefined && email === user?.email)
                     delete userProfileData.email;
-                const response = await updateUser(userProfileData, userToken);
-
-                // Check if 'avatar' property exists in response.data
-                const updatedAvatar = response.data?.avatar || user?.profile?.avatar;
-
-                const updatedUser = {
-                    ...user,
-                    profile: {
-                        ...user?.profile,
-                        avatar: updatedAvatar,
-                        twoFactor: twoFactorAuth,
-                    },
-                };
-
-                dispatch(UpdateUser(updatedUser));
-                console.log("updatedUser : ", updatedUser);
+                
+                try {
+                    const response = await updateUser(userProfileData, userToken);
+                    const updatedAvatar = response || user?.profile?.avatar;
+    
+                    const updatedUser = {
+                        ...user,
+                        profile: {
+                            ...user?.profile,
+                            avatar: updatedAvatar,
+                            twoFactor: twoFactorAuth,
+                        },
+                    };
+                    
+                    dispatch(UpdateUser(updatedUser));
+                    console.log("updatedUser : ", updatedUser);
+                } catch (error) {
+                    const err = error as AxiosError;
+                    if (err.message === "Conflict error: Username or email already exists.") {
+                        setSubmitError("Username or email already exists. Please choose a different one.");
+                    } else if (err.response?.status === 401) {
+                        setSubmitError("Incorrect password");
+                    }
+                    setShowErrorBadge(true);
+                    setTimeout(() => setShowErrorBadge(false), 5000);
+                }
             }
+    
             if (oldpassword && newpassword) {
                 await resetPassword(oldpassword, newpassword);
                 console.log("Password updated successfully.");
                 setResetPasswordError("");
             }
+    
             setShowSuccessBadge(true);
             setTimeout(() => setShowSuccessBadge(false), 5000);
         } catch (error) {
-            console.log(error);
-            const err = error as AxiosError;
-            if (err.response?.status === 401) {
-                setResetPasswordError("Incorrect password");
-            }
+            console.error("An unexpected error occurred:", error);
         }
+    
         setSubmitting(false);
     };
-
+    
 
     return (
 
@@ -320,6 +374,11 @@ export default function UserSettings() {
                                     <span>data changed successfully.</span>
                                 </div>
                             </div>}
+                            {showErrorBadge && <div className="toast toast-end">
+                                <div className="alert alert-error">
+                                    <span>{submitError}</span>
+                                </div>
+                            </div>}
                         </div>
 
                     </div>
@@ -329,4 +388,3 @@ export default function UserSettings() {
         </div >
     );
 }
-

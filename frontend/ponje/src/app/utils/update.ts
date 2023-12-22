@@ -1,28 +1,48 @@
 import axios from "./axios";
-import { Toast } from '@chakra-ui/react';
+import { AxiosError } from "axios";
 
 
-interface userData {
-  username?: string | undefined;
-  bio?: string | undefined;
-  email?: string | undefined;
+
+interface UserData {
+  username?: string;
+  bio?: string;
+  email?: string;
 }
 
-export const updateUser = async (userData: userData, token: string | null) => {
-  
+export const updateUser = async (userData: UserData, token: string | null) => {
   try {
-    const response = await axios.patch("/profiles", userData, {
-      headers: {
-        Authorization: token,
-      },
-    });
-    
-    return response.data;
+    const { username, bio, email } = userData;
+    if (username || email) {
+      const response = await axios.patch("/users", { username, email }, {
+        headers: {
+          Authorization: token,
+        },
+      });
+      return { success: true, message: "Update successful", data: response.data };
+    }
+    if (bio) {
+      const bioResponse = await axios.patch("/profiles", { bio }, {
+        headers: {
+          Authorization: token,
+        },
+      });
+      console.log("updated bio", bioResponse.data);
+    }
+    return { success: true, message: "Update successful"};
   } catch (error) {
     console.error("Failed to update user:", error);
+    const err = error as AxiosError;
+    if (err.response?.status === 409) {
+      const conflictError = {
+        success: false,
+        message: "Conflict error: Username or email already exists.",
+      };
+      throw conflictError;
+    }
     throw error;
   }
 };
+
 
 export const fetchTwoFactorStatus = async (token: string | null) => {
   try {
@@ -82,8 +102,6 @@ export const fetchQRCode = async (token: string | null) => {
   }
 }
 
-// Get users/QRCode
-// POST users/resetPassword
 
 export const resetPassword = async (old: string, newpass: string) => {
   try {
