@@ -218,7 +218,7 @@ export default function Conversation({ collapsed }: any) {
                                                     </p>
                                                 ) : (
                                                     <p className="text-white px-2 text-left text-sm font-semibold">
-                                                        {collapsed ? "" : conversation?.room?.members?.[0]?.user?.username}
+                                                        {collapsed ? "" : conversation?.room?.members?.find((member: any) => member?.userId !== activeConversation?.userId)?.user?.username}
                                                     </p>
                                                 )}
                                             </h2>
