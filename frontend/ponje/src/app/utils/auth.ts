@@ -12,20 +12,19 @@ export const fetchUserData = async (token: string) => {
   try {
     const response = await axios.get("/users/me", {
       headers: {
-        Authorization: `${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
-    console.log(token);
     return response.data;
   } catch (error) {
     Toast({
-      title: 'Error',
-      status: 'error',
+      title: "Error",
+      status: "error",
       duration: 9000,
       isClosable: true,
       position: "bottom-right",
       variant: "solid",
-  });
+    });
     console.log(error);
     return null;
   }
@@ -71,27 +70,21 @@ export const handleSignup = async (
   username: string
 ) => {
   try {
-    await axios.post(
-      "/auth/signUp",
-      {
-        username,
-        email,
-        password,
-      },
-      {
-        withCredentials: true,
-      }
-    );
+    const res = await axios.post("/auth/signUp", {
+      username,
+      email,
+      password,
+    });
     return await handleLogin(email, password);
   } catch (error) {
     Toast({
-      title: 'Error',
-      status: 'error',
+      title: "Error",
+      status: "error",
       duration: 9000,
       isClosable: true,
       position: "bottom-right",
       variant: "solid",
-  });
+    });
     const err = error as AxiosError;
     if (err.response && err.response.status === 409) {
       throw new ConflictError("User already exists");
@@ -124,10 +117,12 @@ export const handleSignup = async (
 
 export const handleLogin = async (email: string, password: string) => {
   try {
+    console.log("this got called :p");
     const response = await axios.post("/auth/login", {
       email,
       password,
     });
+    console.log(response);
     const { token } = response.data;
     if (response.status === 201) {
       const user = await fetchUserData(token);
@@ -140,13 +135,13 @@ export const handleLogin = async (email: string, password: string) => {
     }
   } catch (error) {
     Toast({
-      title: 'Error',
-      status: 'error',
+      title: "Error",
+      status: "error",
       duration: 9000,
       isClosable: true,
       position: "bottom-right",
       variant: "solid",
-  });
+    });
     console.error(error);
   }
 };
