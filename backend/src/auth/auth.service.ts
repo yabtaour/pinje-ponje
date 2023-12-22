@@ -71,7 +71,7 @@ export class AuthService {
 
     async signUp(data: SignUpDto) {
       const user = await this.userService.CreateUserLocal(data);
-			const token = await this.jwtService.generateToken(String(user.id));
+			const token = "Bearer " + await this.jwtService.generateToken(String(user.id));
       return { user, token };
     }
 }
