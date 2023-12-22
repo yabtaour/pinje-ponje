@@ -33,7 +33,7 @@ export default function FriendsList({ users }: { users: User[] }) {
 
         return (
             <div>
-                <button style={{
+                <div style={{
                     color: "#77DFF8",
                 }} className=" hover:bg-[#333153] p-1 rounded-lg w-full  flex justify-start">
                     <NextUser
@@ -43,7 +43,8 @@ export default function FriendsList({ users }: { users: User[] }) {
                     >
                         {user.email}
                     </NextUser>
-                </button>
+                </div>
+                    <p className="ml-12 text-[#4E40F4] text-xs sm:text-sm">{user.status}</p>
             </div>
         )
     }, []);

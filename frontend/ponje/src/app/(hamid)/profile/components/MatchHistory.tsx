@@ -10,27 +10,24 @@ const columns = [
   { name: "DATE", uid: "date" },
 ];
 
-const skeletonCell = (
-  <div className="h-2.5 bg-gray-200 rounded-full dark:bg-gray-700 w-32 mb-4 animate-pulse"></div>
-);
-
 export default function MatchHistory({ user }: { user: User | null | undefined }) {
+  
   const [matchHistory, setMatchHistory] = useState([]);
-
+  
   useEffect(() => {
     if (user) {
       const fetchData = async () => {
         try {
           const data = await fetchGameHistory(user.id, localStorage.getItem("access_token"));
-          setMatchHistory(data);
-            
+          setMatchHistory(data || []); 
         } catch (err) {
-          console.log(err);
+          console.error(err);
         }
       };
       fetchData();
     }
   }, [user]);
+  
 
 const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);

@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import * as Yup from 'yup';
 // import { resetPassword, updateUser} from "../../utils/update";
-import { resetPassword} from "../../utils/update";
+import { resetPassword } from "../../utils/update";
 import { Modal, ModalContent, useDisclosure } from "@nextui-org/react";
 import { TwoFactorModal, TwoFactorModalDeactivate } from './components/TwoFactorModal';
 import axios from "@/app/utils/axios";
@@ -25,12 +25,20 @@ export default function UserSettings() {
     const userToken = useAppSelector((state) => state.authReducer.value.token);
     const dispatch = useDispatch();
     const [twoFactorAuth, setTwoFactorAuth] = useState(false);
-    const { isOpen, onOpen, onClose } = useDisclosure();
+    const { onOpen, onClose } = useDisclosure();
     const [activationComplete, setActivationComplete] = useState(false);
     const [submitError, setSubmitError] = useState("");
     const [showErrorBadge, setShowErrorBadge] = useState(false);
+    const [isOpen, setIsOpen] = useState([false, false, false]);
 
 
+    function toggleOpen(index: number) {
+        const newState = isOpen.map((item, i) => {
+            if (i == index) return !item;
+            return item;
+        });
+        setIsOpen(newState);
+    }
 
     useEffect(() => {
         const fetchData = async () => {
@@ -42,8 +50,6 @@ export default function UserSettings() {
                     if (userChanged) {
                         dispatch(UpdateUser(userData));
                         setTwoFactorAuth(userData?.twoFactor);
-                        console.log("2FA VALUE", userData?.twoFactor);
-                        console.log("2FA VALUE in setter", twoFactorAuth);
                     }
                 }
             } catch (error) {
@@ -89,57 +95,57 @@ export default function UserSettings() {
         username?: string;
         bio?: string;
         email?: string;
-      }
-      
-      const updateUser = async (userData: UserData, token: string | null) => {
+    }
+
+    const updateUser = async (userData: UserData, token: string | null) => {
         try {
-          const { username, bio, email } = userData;
-          if (username || email) {
-            const response = await axios.patch("/users", { username, email }, {
-              headers: {
-                Authorization: token,
-              },
-            });
-            return { success: true, message: "Update successful", data: response.data };
-          }
-          if (bio) {
-            const bioResponse = await axios.patch("/profiles", { bio }, {
-              headers: {
-                Authorization: token,
-              },
-            });
-            console.log("updated bio", bioResponse.data);
-          }
-          return { success: true, message: "Update successful"};
+            const { username, bio, email } = userData;
+            if (username || email) {
+                const response = await axios.patch("/users", { username, email }, {
+                    headers: {
+                        Authorization: token,
+                    },
+                });
+                return { success: true, message: "Update successful", data: response.data };
+            }
+            if (bio) {
+                const bioResponse = await axios.patch("/profiles", { bio }, {
+                    headers: {
+                        Authorization: token,
+                    },
+                });
+                console.log("updated bio", bioResponse.data);
+            }
+            return { success: true, message: "Update successful" };
         } catch (error) {
-          console.error("Failed to update user:", error);
-          const err = error as AxiosError;
-          if (err.response?.status === 409) {
-            const conflictError = {
-              success: false,
-              message: "Conflict error: Username or email already exists.",
-            };
-            throw conflictError;
-          }
-          throw error;
+            console.error("Failed to update user:", error);
+            const err = error as AxiosError;
+            if (err.response?.status === 409) {
+                const conflictError = {
+                    success: false,
+                    message: "Conflict error: Username or email already exists.",
+                };
+                throw conflictError;
+            }
+            throw error;
         }
-      };
-      
+    };
+
     const onSubmit = async (values: any, { setSubmitting }: any) => {
         const { username, bio, oldpassword, newpassword, email } = values;
         let userProfileData = { username, bio, email };
-    
+
         try {
             if (username || bio || email) {
                 if (username !== undefined && username === user?.username)
                     delete userProfileData.username;
                 if (email !== undefined && email === user?.email)
                     delete userProfileData.email;
-                
+
                 try {
                     const response = await updateUser(userProfileData, userToken);
                     const updatedAvatar = response || user?.profile?.avatar;
-    
+
                     const updatedUser = {
                         ...user,
                         profile: {
@@ -148,7 +154,7 @@ export default function UserSettings() {
                             twoFactor: twoFactorAuth,
                         },
                     };
-                    
+
                     dispatch(UpdateUser(updatedUser));
                     console.log("updatedUser : ", updatedUser);
                 } catch (error) {
@@ -162,22 +168,22 @@ export default function UserSettings() {
                     setTimeout(() => setShowErrorBadge(false), 5000);
                 }
             }
-    
+
             if (oldpassword && newpassword) {
                 await resetPassword(oldpassword, newpassword);
                 console.log("Password updated successfully.");
                 setResetPasswordError("");
             }
-    
+
             setShowSuccessBadge(true);
             setTimeout(() => setShowSuccessBadge(false), 5000);
         } catch (error) {
             console.error("An unexpected error occurred:", error);
         }
-    
+
         setSubmitting(false);
     };
-    
+
 
     return (
 
@@ -327,9 +333,8 @@ export default function UserSettings() {
                                                 <p className="text-xl font-regular pb-2 text-[#4E40F4]">
                                                     Security
                                                 </p>
-                                                <div className='flex justify-center mt-6 flex-row'>
-                                                    <button
-                                                        className="bg-[#5faed3] text-white justify-center font-bold uppercase text-xs px-6 py-3 rounded shadow hover:bg-blue-600 transition-all duration-150"
+                                                <div className='flex justify-start mt-4 flex-row'>
+                                                    {/* <button className="btn btn-outline btn-sm btn-primary"
                                                         onClick={onOpen}
                                                     >
                                                         {twoFactorAuth ? (
@@ -337,7 +342,21 @@ export default function UserSettings() {
                                                         ) : (
                                                             <p>Activate 2FA</p>
                                                         )}
-                                                    </button>
+                                                    </button> */}
+                                                    {!twoFactorAuth && (
+                                                       <button className="btn btn-outline btn-sm btn-primary"
+                                                            onClick={activateTwoFa}
+                                                        >
+                                                            Activate 2FA
+                                                        </button>
+                                                    )}
+                                                    {twoFactorAuth && (
+                                                       <button className="btn btn-outline btn-sm btn-primary"
+                                                            onClick={deactivateTwoFa}
+                                                        >
+                                                            DEACTIVATE 2FA
+                                                        </button>
+                                                    )}
                                                     {isOpen && (
                                                         <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center z-50">
                                                             <div className="absolute top-0 left-0 w-full h-full bg-black opacity-60"></div>
@@ -365,6 +384,7 @@ export default function UserSettings() {
                                                     Save Changes
                                                 </button>
                                             </div>
+
                                         </div>
                                     </Form>
                                 )}
