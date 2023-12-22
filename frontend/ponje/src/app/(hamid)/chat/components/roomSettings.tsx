@@ -232,14 +232,22 @@ export function InviteFriends() {
     const [friends = [], setFriends] = useState<any[]>([]);
     const me = useAppSelector(state => state?.authReducer?.value?.user);
     const [isLoading, setLoading] = useState(true);
-
+    const toast = useToast();
     useEffect(() => {
         const fetchFriends = async () => {
             try {
                 const res = await axios.get(`/users/${me?.id}/friends`);
+                setLoading(false);
                 setFriends(res.data);
             } catch (err) {
-                // Handle error
+                console.log(err);
+                toast({
+                    title: "Error.",
+                    description: "Error while fetching friends",
+                    status: "error",
+                    duration: 3000,
+                    isClosable: true,
+                })
             }
         };
 
@@ -251,9 +259,6 @@ export function InviteFriends() {
     });
 
 
-    const removeFriend = (friend: any) => {
-        setFriends(friends.filter(f => f.id !== friend.id));
-    }
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -275,37 +280,28 @@ export function InviteFriends() {
                 ) : friends.length === 0 && !isLoading ? (
                     <div className='text-white'>
                         <Image
-                            width={300}
+                            width={200}
                             alt="NextUI hero Image"
-                            src="https://nextui-docs-v2.vercel.app/images/hero-card-complete.jpeg"
+                            src="noData.svg"
                         />
+                        <h1 className='text-center text-gray-500 m-5 '>No Friends to invite :(</h1>
                     </div>
                 ) : (
-                    filteredFriends.length === 0 ? (
-                        <div className='text-gray-500 '>
-                            <Image
-                                className='my-10'
-                                width={150}
-                                alt="NextUI hero Image"
-                                src="noData.svg"
+
+                    filteredFriends.map((friend, index) => (
+                        <div key={index} className="flex m-2 flex-row  hover:bg-[#252341] border border-gray-900 rounded-full px-5 justify-around">
+                            <User
+                                className="text-white my-2"
+                                name={friend.username}
+                                avatarProps={{
+                                    src: friend.profile?.avatar ?? "/defaultAvatar.png"
+                                }}
                             />
-                            <h1>NO FRIENDS UWU</h1>
+                            <Invite friend={friend} room={activeConversation} />
                         </div>
-                    ) : (
-                        filteredFriends.map((friend, index) => (
-                            <div key={index} className="flex m-2 flex-row  hover:bg-[#252341] border border-gray-900 rounded-full px-5 justify-around">
-                                <User
-                                    className="text-white my-2"
-                                    name={friend.username}
-                                    avatarProps={{
-                                        src: friend.profile?.avatar ?? "/defaultAvatar.png"
-                                    }}
-                                />
-                                <Invite friend={friend} room={activeConversation} />
-                            </div>
-                        ))
-                    )
-                )}
+                    ))
+                )
+                }
             </div>
         </div>
     )

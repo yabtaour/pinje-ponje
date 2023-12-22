@@ -37,11 +37,8 @@ class SocketManager {
         auth: {
           token: token,
         },
-        autoConnect: false,
-        reconnection: false
       });
     }
-    this.gameSocket?.disconnect();
 
     if (this.mainSocket && !this.notificationSocket) {
       this.notificationSocket = io(`${url}/notification`, {
