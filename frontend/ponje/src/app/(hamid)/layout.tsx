@@ -7,6 +7,11 @@ import SideBar from '../components/sidebar';
 import { AuthProvider } from "../globalRedux/provider";
 import { useAppSelector } from "../globalRedux/store";
 import AuthGuard from "../guards/AuthGuard";
+import { Toast } from '@chakra-ui/react';
+import SocketManager from '@/app/utils/socketManager';
+import { user } from "@nextui-org/theme";
+
+
 export default function Layout({
     children,
 }: {
@@ -14,15 +19,37 @@ export default function Layout({
 }) {
     const [collapsed, setCollapsed] = useState(true);
     const token = useAppSelector((state) => state.authReducer.value.token);
-
+    const [showToast, setShowToast] = useState(false);
 
 
     const toggleSidebar = () => {
         setCollapsed(!collapsed);
     };
 
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            setShowToast(false);
+        }, 3000); // Adjust the timeout duration as needed
 
+        return () => {
+            clearTimeout(timeoutId);
+        };
+    }, [showToast]);
 
+    useEffect(() => {
+        const SocketManagerNotifs = SocketManager.getInstance("http://localhost:3000", `${localStorage.getItem('access_token')}`);
+        const fetchNotifications = async () => {
+            if (SocketManagerNotifs) {
+                SocketManagerNotifs.waitForConnection(async () => {
+                    const data = await SocketManagerNotifs.getNotifications();
+                    console.log("HEEEEEEEEYO data i got back from server", data);
+                    setShowToast(true);
+                })
+            }
+
+        };
+        fetchNotifications();
+    }, [user]);
     useEffect(() => {
 
 
@@ -46,6 +73,12 @@ export default function Layout({
                                 <SideBar collapsed={collapsed} toggleSidebar={toggleSidebar} />
                             </aside>
                             <div className="flex-1 ml-0 transition-all duration-300 ease-in-out relative z-0 overflow-x-hidden">
+                                {showToast &&
+                                    <div className="toast toast-end">
+                                        <div className="alert alert-info">
+                                            <span>New mail arrived.</span>
+                                        </div>
+                                    </div>}
                                 {children}
                             </div>
                         </div>
@@ -55,6 +88,6 @@ export default function Layout({
         </AuthProvider>
     );
 
-    
+
 
 }      

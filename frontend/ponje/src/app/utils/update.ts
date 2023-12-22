@@ -6,7 +6,6 @@ interface userData {
   username?: string | undefined;
   bio?: string | undefined;
   email?: string | undefined;
-  // twoFactor?: boolean | undefined;
 }
 
 export const updateUser = async (userData: userData, token: string | null) => {
@@ -60,7 +59,7 @@ export const fetchTwoFactorStatus = async (token: string | null) => {
 export const getGameData = async (token : string | null) => {
   try {
 
-      const res = await axios.post(`/game/queue`, {}, {
+      const res = await axios.post(`http://localhost:3000/game/queue`, {}, {
           headers: {
               Authorization: token,
           },

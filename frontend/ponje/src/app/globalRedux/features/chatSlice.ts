@@ -343,6 +343,7 @@ export const chat = createSlice({
 
     changeRole(state, action) {
       const { member, newRole } = action.payload;
+
       const roomIndex = state.rooms.findIndex(
         (room) => room?.room?.id === member.roomId
       );
@@ -351,12 +352,11 @@ export const chat = createSlice({
         const memberIndex = state.rooms[roomIndex].room.members.findIndex(
           (m) => m.id === member.id
         );
-
         if (memberIndex !== -1) {
           const updatedMember = {
             ...state.rooms[roomIndex].room.members[memberIndex],
             role: newRole,
-          };
+          };  
 
           const updatedRoom = {
             ...state.rooms[roomIndex],
