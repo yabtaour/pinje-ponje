@@ -71,7 +71,6 @@ export default function SignUp() {
     const onSubmit = async (values: any) => {
         try {
             const data = await handleSignup(values.email, values.password, values.username);
-            console.log("this dispatch got called 3: ");
             dispatch(login(data));
             router.push('/dashboard');
         } catch (error) {
