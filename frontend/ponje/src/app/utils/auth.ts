@@ -2,6 +2,7 @@
 import axios from "@/app/utils/axios";
 import { Toast } from "@chakra-ui/react";
 import { AxiosError } from "axios";
+import { setCookie } from "cookies-next";
 import { JwtPayload, jwtDecode } from "jwt-decode";
 import { useDispatch } from "react-redux";
 export type KeyedObject = {
@@ -126,7 +127,9 @@ export const handleLogin = async (email: string, password: string) => {
     const { token } = response.data;
     if (response.status === 201) {
       const user = await fetchUserData(token);
+      console.log(user);
       if (user) {
+        setCookie("token", `Bearer ${token}`);
         setSession(token);
         return { token, user };
       } else {

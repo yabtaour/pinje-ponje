@@ -8,7 +8,6 @@ import { redirect, useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { setRooms } from '../globalRedux/features/chatSlice';
-import axios from '../utils/axios';
 import SocketManager from '../utils/socketManager';
 
 
@@ -38,7 +37,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
             localStorage.setItem('access_token', tokenFromCookie);
 
         if (!tokenFromSlice)
-            dispatch(login({ token: tokenFromCookie}));
+            dispatch(login({ token: tokenFromCookie }));
 
         const accessToken: string | null = localStorage.getItem('access_token');
         if (accessToken && !isAithenticated) {
@@ -47,9 +46,8 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
                 console.log("data: ", data);
                 dispatch(login({ user: data, token: accessToken }));
                 setSession(accessToken);
-
-                console.log(axios.defaults.headers.common.Authorization);
-                console.log("socketManager: ", socketManager);
+                if (!data?.profile?.avatar)
+                    router.push('/onboarding');
             })
             socketManager.waitForConnection(async () => {
                 console.log("socketManager: ", socketManager);
