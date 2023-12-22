@@ -67,7 +67,7 @@ export function Ban({ member }: { member: any }) {
             }
         } className=" px-4 rounded-full border hover:bg-blue-700/10 border-blue-700/10">
             {
-                member.state === 'BANNED' ? (
+                member?.state === 'BANNED' ? (
                     <>
                         <h1 className="px-2">Unban</h1>
                         <svg className='hover:bg-red-500/10' width="24" height="24" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
@@ -395,10 +395,10 @@ export function ChangeRole({ member }: { member: any }) {
     const toast = useToast()
     const dispatch = useDispatch()
     const handleChangeRole = (role: string) => {
-
         axios
-            .post(`/chatapi/rooms/${member.roomId}/admin`, {
-                id: member.userId,
+            .patch(`/chatapi/rooms/${member.roomId}/role`, {
+                userId: member.userId,
+                role
             },
                 {
                     headers: {
@@ -406,14 +406,14 @@ export function ChangeRole({ member }: { member: any }) {
                     }
                 })
             .then((res) => {
-                dispatch(changeRole({ member, newState: role }))
+                dispatch(changeRole({ member, newRole: role }))
             })
             .catch((err) => {
                 toast({
                     title: "An error occurred.",
                     description: "Unable to change role.",
                     status: "error",
-                    duration: 9000,
+                    duration: 5000,
                     isClosable: true,
                 })
             });

@@ -60,7 +60,6 @@ export default function Conversation({ collapsed }: any) {
         const timeout = setTimeout(() => {
             if (isLoading && conversations.length === 0) {
                 setLoading(false);
-
             }
         }, 5000);
 
@@ -71,10 +70,8 @@ export default function Conversation({ collapsed }: any) {
     useEffect(() => {
         const fetchNewMessages = async () => {
             try {
-                //handle new messages, mutes , bans, kicks , and invites
-                const newMessage = await socketManager.getNewMessages();
+                await socketManager.getNewMessages();
                 const rooms = await socketManager.getConversations();
-                // setLoading(false);
                 dispatch(setRooms(rooms));
             } catch (error) {
                 setLoading(false);

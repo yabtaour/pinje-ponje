@@ -25,18 +25,6 @@ enum RoomType {
 
 
 
-const handleBan = () => {
-}
-
-const handleMute = () => {
-}
-
-const handlePlay = () => {
-}
-
-
-
-
 export function RoomSettings({ room, onOpenChange }: { room: any, onOpenChange: () => void }) {
 
 
@@ -51,7 +39,7 @@ export function RoomSettings({ room, onOpenChange }: { room: any, onOpenChange: 
     };
 
     const validationSchema = Yup.object({
-        name: Yup.string().required('Name is required'),
+        name: Yup.string().required('Name is required').max(20, 'Name should be less than 20 characters'),
         roomType: Yup.string().required('Room Type is required'),
     });
 
@@ -220,7 +208,7 @@ export function DmInfo({ user }: { user: any }) {
                 className='text-blue-500 rounded-full p-2 '
                 onClick={() => {
                     {
-                        router.push(`/profile/${2}`);
+                        router.push(`/profile/${user?.id}`);
                     }
                 }}>
                 Visit Profile
@@ -437,8 +425,8 @@ export function RoomMembers() {
                                                 </button>
 
                                                 {
-                                                    activeConversation?.role === 'MEMBER' || (activeConversation?.role === 'OWNER' && activeConversation?.userId === member?.userId) ? (
-                                                        <div key={index} className=' mx-2 flex flex-col justify-center border-cyan-300'>
+                                                    activeConversation?.role === 'MEMBER' || (activeConversation?.role === 'OWNER' && activeConversation?.userId === member?.userId || activeConversation?.role === "ADMIN" && member.role === "OWNER") ? (
+                                                        <div key={index} className='mr-5 mx-2 flex flex-col justify-center border-cyan-300'>
                                                             <p className='text-cyan-500 border text-sm border-cyan-300 rounded-full p-1'>{member?.role}</p>
                                                         </div>
 
@@ -495,6 +483,12 @@ export default function RoomOptions({ isOpen, onOpenChange }: { isOpen: boolean,
     const me = useAppSelector(state => state?.authReducer?.value?.user);
     //TODO : check if user is admin or not
 
+    let member;
+    if (activeConversation?.room.roomType === RoomType.DM) {
+        member = activeConversation.room.members.find((member: any) => member.user.id !== me?.id);
+    }
+
+
     return (
         <Modal
             className="max-w-4xl max-h-5xl "
@@ -512,7 +506,7 @@ export default function RoomOptions({ isOpen, onOpenChange }: { isOpen: boolean,
                 {
                     activeConversation?.room?.roomType === RoomType.DM
                         ? (
-                            <DmInfo user={activeConversation?.room.members?.[0]?.user} />
+                            <DmInfo user={member?.user} />
                         ) : (
                             <RoomSettings room={activeConversation} onOpenChange={onOpenChange} />
                         )
