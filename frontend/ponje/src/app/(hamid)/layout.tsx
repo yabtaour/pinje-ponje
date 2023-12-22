@@ -1,15 +1,14 @@
 'use strict';
 'use client';
+import SocketManager from '@/app/utils/socketManager';
 import { NextUIProvider } from "@nextui-org/system";
+import { user } from "@nextui-org/theme";
 import { useEffect, useState } from "react";
 import NavBar from '../components/navbar';
 import SideBar from '../components/sidebar';
 import { AuthProvider } from "../globalRedux/provider";
 import { useAppSelector } from "../globalRedux/store";
 import AuthGuard from "../guards/AuthGuard";
-import { Toast } from '@chakra-ui/react';
-import SocketManager from '@/app/utils/socketManager';
-import { user } from "@nextui-org/theme";
 
 
 export default function Layout({

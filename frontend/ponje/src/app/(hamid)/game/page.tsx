@@ -114,7 +114,6 @@ export default function Game() {
 
 
   useEffect(() => {
-    if ()
     worldWidth = canvasRef.current?.width! * 4;
     worldHeight = canvasRef.current?.height! * 4;
     canvaWidth = canvasRef.current?.width!;
