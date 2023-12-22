@@ -46,8 +46,8 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
                 console.log("data: ", data);
                 dispatch(login({ user: data, token: accessToken }));
                 setSession(accessToken);
-                if (!data?.profile?.avatar)
-                    router.push('/onboarding');
+                // if (!data?.profile?.avatar)
+                //     router.push('/onboarding');
             })
             socketManager.waitForConnection(async () => {
                 console.log("socketManager: ", socketManager);
