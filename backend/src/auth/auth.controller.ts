@@ -67,17 +67,19 @@ export class AuthController {
 		const user = request.user;
 	  	console.log("Copy This Token: ", request.user.token);
 		response.cookie("token", "Bearer " + request.user.token);
-		if (user.twoFactor === true)
-			response.redirect('http://localhost:3001/verification');
-		else
-			response.redirect('http://localhost:3001/dashboard');
-		// response.send(user);
+		// if (user.twoFactor === true)
+		// 	response.redirect('http://localhost:3001/verification');
+		// else
+		// 	response.redirect('http://localhost:3001/dashboard');
+		console.log("user : ", user);
+		response.send(user);
 	}
 
 	@Post('signUp')
 	async signUp(@Body() data: SignUpDto, @Req() request: any, @Res() response: Response) {
 		const user = await this.authService.signUp(data);
-		response.cookie("token", "Brearer " + user.token);
+		response.cookie("token", "Bearer " + user.token);
+		console.log("user : ", user);
 		response.send(user);
 	}
 }

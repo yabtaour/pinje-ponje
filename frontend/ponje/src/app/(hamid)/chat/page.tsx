@@ -2,13 +2,14 @@
 'use client';
 import { useAppSelector } from "@/app/globalRedux/store";
 import { Button, ScrollShadow, User, useDisclosure } from "@nextui-org/react";
-
+import uniqolor from 'uniqolor';
 
 
 
 // import ChatInput from "./components/chatInput";
 import SocketManager from "@/app/utils/socketManager";
 import { getCookie } from "cookies-next";
+import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import ChatInput from "./components/chatInput";
@@ -59,14 +60,20 @@ export function Mymessage({ message }: any) {
 
 
 export function OtherMessage({ message }: any) {
+    const router = useRouter();
+    const color = uniqolor(message?.user?.username);
+    const activeConversationId = useAppSelector(state => state?.chatReducer?.activeConversationId);
+    const activeConversation = useAppSelector(state => state?.chatReducer?.rooms?.find((room: any) => room?.id === activeConversationId));
 
     return (
         <div className="flex p-3 flex-row justify-start">
-
-            <img src={message?.user?.profile?.avatar ? message?.user?.profile?.avatar : "/defaultAvatar.png"} alt="User Avatar" className="w-8 h-8 mt-4 rounded-full" />
-
+            <Button onClick={() => {
+                router.push(`/profile/${message?.user?.id}`);
+            }}>
+                <img src={message?.user?.profile?.avatar ? message?.user?.profile?.avatar : "/defaultAvatar.png"} alt="User Avatar" className="w-8 h-8 mt-4 rounded-full" />
+            </Button>
             <div className="bg-[#2F296E] rounded-lg p-2 m-2 max-w-[80%] min-w-[10%] sm:max-w-[60%] md:max-w-[50%] lg:max-w-[40%]">
-                <p className={`text-sm text-cyan-300`}>{message?.user?.username}</p>
+                <p className={`text-sm text-cyan-500`}>{message?.user?.username}</p>
                 <p className="text-white text-xs sm:text-sm">{message?.content} </p>
                 <p className="text-[#999] text-xs sm:text-sm" > {formatMessageDate(message?.createdAt)}</p>
             </div>
@@ -82,18 +89,16 @@ export function InformationMessage({ message }: any) {
             {
                 message?.state === "INFORMATION" && message?.content?.includes("ACTIVE") ? (<></>) : (
                     <div className="flex flex-row justify-center">
-                        <div className="bg-[#252341]/40  rounded-lg p-2 m-2 max-w-[80%] sm:max-w-[60%] md:max-w-[50%] lg:max-w-[40%]">
-
-                            <div className="flex w-full flex-row justify-between">
+                        <div className="bg-[#252341]/40 rounded-lg p-2 m-2 max-w-[80%] sm:max-w-[60%] md:max-w-[50%] lg:max-w-[40%]">
+                            <div className="flex w-full flex-row justify-between items-center">
                                 <svg className="mx-2" width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <g fill="" stroke="white" stroke-width="2">
+                                    <g fill="" stroke="white" strokeWidth="2">
                                         <circle cx="12" cy="12" r="10" />
-                                        <path stroke-linecap="round" d="M12 7h.01" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 11h2v5m-2 0h4" />
+                                        <path strokeLinecap="round" d="M12 7h.01" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 11h2v5m-2 0h4" />
                                     </g>
                                 </svg>
-                                <p className="text-white text-xs sm:text-sm">{message?.content}</p>
-
+                                <p className="text-white text-xs sm:text-xs md:text-sm">{message?.content}</p>
                             </div>
                         </div>
                     </div>
@@ -102,7 +107,6 @@ export function InformationMessage({ message }: any) {
         </>
     )
 }
-
 
 
 export default function Chat() {
@@ -136,7 +140,14 @@ export default function Chat() {
 
     useEffect(() => {
     }, [conversations, dispatch, socketManager, activeConversation]);
-    console.log(activeConversation);
+
+
+    //if dm get the member here 
+    let member
+    if (activeConversation?.room?.roomType === "DM") {
+        member = activeConversation?.room?.members?.find((member: any) => member?.user?.id !== me?.id);
+    }
+
     return (
         <div className="bg-[#151424] h-full  p-2 ">
             <div className="">
@@ -159,13 +170,13 @@ export default function Chat() {
                                             <Button onPress={onOpen} >
                                                 <User
                                                     className="text-white my-2 p-4"
-                                                    name={activeConversation?.room?.roomType !== "DM" ? activeConversation?.room?.name : activeConversation?.room?.members[0]?.user?.username}
+                                                    name={activeConversation?.room?.roomType !== "DM" ? activeConversation?.room?.name : member?.user.username}
                                                     avatarProps={
                                                         activeConversation?.room?.roomType !== "DM"
                                                             ?
                                                             { src: "/groups.svg" }
                                                             :
-                                                            { src: activeConversation?.room?.members[0]?.user?.profile?.avatar ?? "/defaultAvatar.png" }
+                                                            { src: member?.user?.profile?.avatar ?? "/defaultAvatar.png" }
                                                     }
                                                 />
                                             </Button>

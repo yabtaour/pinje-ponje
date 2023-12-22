@@ -22,7 +22,7 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
       if (!user) {
         throw new HttpException("user not found", HttpStatus.NOT_FOUND);
       }
-      const token = await this.jwtService.generateToken(String(user.id));
+      const token = "Bearer " + await this.jwtService.generateToken(String(user.id));
       done(null, { user, token });
   }
 }
