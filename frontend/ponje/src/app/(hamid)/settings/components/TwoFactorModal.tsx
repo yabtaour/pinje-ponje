@@ -7,7 +7,7 @@ import { Toast } from '@chakra-ui/react';
 import { UpdateUser } from '@/app/globalRedux/features/authSlice';
 import { fetchUserData } from '@/app/utils/auth';
 import { useEffect, useState } from 'react';
-import { resetPassword, updateUser, fetchQRCode } from "@/app/utils/update";
+import { fetchQRCode } from "@/app/utils/update";
 import { useAppSelector } from '@/app/globalRedux/store';
 import { useDispatch } from 'react-redux';
 import { getCookie } from "cookies-next";
@@ -39,6 +39,7 @@ export function TwoFactorModal() {
             setTwoFactorAuth(newStatus);
             if (response) {
                 const data = await fetchQRCode(accessToken);
+                console.log('QR code data:', data);
                 setQrCodeData(data);
             }
 
@@ -48,6 +49,7 @@ export function TwoFactorModal() {
         }
 
     };
+   
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -58,24 +60,14 @@ export function TwoFactorModal() {
                     if (userChanged) {
                         dispatch(UpdateUser(userData));
                     }
-                    // setTwoFactorAuth(userData?.twoFactor);
-                    try {
-                        await handleTwoFactorAuth();
-                        setTwoFactorAuth(!twoFactorAuth);
-
-                    } catch (error) {
-                        console.error('Failed to update Two Factor Authentication:', error);
-                    }
+                    setTwoFactorAuth(userData?.twoFactor);
                 }
-
             } catch (error) {
                 console.error("Error fetching user data:", error);
             }
-
         };
-
         fetchData();
-    }, [user, dispatch]);
+    }, [dispatch]);
 
     const handleSubmit = async (values: any) => {
         try {
@@ -144,7 +136,6 @@ export function TwoFactorModal() {
 export function TwoFactorModalDeactivate({ }) {
 
     const user = useAppSelector((state) => state.authReducer.value.user);
-    const [qrCodeData, setQrCodeData] = useState('');
     const [twoFactorAuth, setTwoFactorAuth] = useState(false);
     const [changeSuccess, setChangeSuccess] = useState(false);
     const dispatch = useDispatch();
@@ -161,8 +152,14 @@ export function TwoFactorModalDeactivate({ }) {
                     Authorization: token,
                 },
             });
-            setTwoFactorAuth(newStatus);
+            if(response){
+                setTwoFactorAuth(newStatus);
+                setSubmissionAttempted(true);
+                setChangeSuccess(true);
+            }
         } catch (error) {
+            setChangeSuccess(false);
+            setSubmissionAttempted(true);
             console.error("Failed to update user 2FA (caught actual error :p):", error);
             throw error;
         }

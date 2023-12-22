@@ -5,8 +5,6 @@ import { useAppSelector } from '@/app/globalRedux/store';
 import { fetchUserData } from '@/app/utils/auth';
 import Loader from '@/app/components/loader';
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
-import { Switch } from '@nextui-org/react';
-import axios from '../../utils/axios';
 import { AxiosError } from 'axios';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { useEffect, useState } from 'react';
@@ -30,26 +28,26 @@ export default function UserSettings() {
 
     useEffect(() => {
         const fetchData = async () => {
-          try {
-            let accessToken: string | null = localStorage.getItem('access_token');
-            if (accessToken) {
-              const userData = await fetchUserData(accessToken);
-              const userChanged = JSON.stringify(user) !== JSON.stringify(userData);
-              if (userChanged) {
-                dispatch(UpdateUser(userData));
-                setTwoFactorAuth(userData?.twoFactor);
-                console.log("2FA VALUE", userData?.twoFactor);
-                console.log("2FA VALUE in setter", twoFactorAuth);
-              }
+            try {
+                let accessToken: string | null = localStorage.getItem('access_token');
+                if (accessToken) {
+                    const userData = await fetchUserData(accessToken);
+                    const userChanged = JSON.stringify(user) !== JSON.stringify(userData);
+                    if (userChanged) {
+                        dispatch(UpdateUser(userData));
+                        setTwoFactorAuth(userData?.twoFactor);
+                        console.log("2FA VALUE", userData?.twoFactor);
+                        console.log("2FA VALUE in setter", twoFactorAuth);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching user data:", error);
             }
-          } catch (error) {
-            console.error("Error fetching user data:", error);
-          }
         };
-      
+
         fetchData();
-      }, [user, dispatch]);  // Ensure that the dependencies are correct
-      
+    }, [user, dispatch]);
+
 
     const [passwordShown, setPasswordShown] = useState(false);
     const togglePasswordVisibility = () => {
@@ -87,19 +85,21 @@ export default function UserSettings() {
 
         try {
             if (username || bio || email) {
-                if (username === user?.profile?.username)
-                    delete userProfileData.username
-                if (email === user?.email)
-                    delete userProfileData.email
-
-
-                console.log("bio" + bio);
+                console.log("USERNAME TO BE UPDATED", username);
+                if (username !== undefined && username === user?.profile?.username)
+                    delete userProfileData.username;
+                if (email !== undefined && email === user?.email)
+                    delete userProfileData.email;
                 const response = await updateUser(userProfileData, userToken);
+
+                // Check if 'avatar' property exists in response.data
+                const updatedAvatar = response.data?.avatar || user?.profile?.avatar;
+
                 const updatedUser = {
                     ...user,
                     profile: {
                         ...user?.profile,
-                        avatar: response.data.avatar,
+                        avatar: updatedAvatar,
                         twoFactor: twoFactorAuth,
                     },
                 };
@@ -114,8 +114,7 @@ export default function UserSettings() {
             }
             setShowSuccessBadge(true);
             setTimeout(() => setShowSuccessBadge(false), 5000);
-        }
-        catch (error) {
+        } catch (error) {
             console.log(error);
             const err = error as AxiosError;
             if (err.response?.status === 401) {
@@ -125,32 +124,6 @@ export default function UserSettings() {
         setSubmitting(false);
     };
 
-    const removeImage = async () => {
-        try {
-            const response = await axios.patch("/users", { avatar: null }, {
-                headers: {
-                    Authorization: userToken,
-                },
-            });
-            if (response.data) {
-                const updatedUser = {
-                    ...user,
-                    profile: {
-                        ...user?.profile,
-                        avatar: null,
-                    },
-                };
-                dispatch(UpdateUser(updatedUser));
-            } else {
-                console.error("Failed to update user avatar:", response.data.message);
-                throw new Error(response.data.message);
-            }
-        } catch (error) {
-            console.error("Failed to update user avatar:", error);
-            throw error;
-        }
-
-    };
 
     return (
 
@@ -164,7 +137,7 @@ export default function UserSettings() {
 
                     <div className="max-w-3xl w-full mx-auto">
                         <h3 className="text-3xl font-semibold text-center text-[#4E40F4] mb-4">
-                            User Settings 
+                            User Settings
                         </h3>
                         <p className='text-white font-bold text-center text-7xl mt-6'>{twoFactorAuth}</p>
 
@@ -178,13 +151,6 @@ export default function UserSettings() {
                                     <Form className="flex flex-col lg:flex-row gap-8">
                                         <div className="flex-1 flex flex-col items-center lg:items-start">
                                             <UploadAvatar />
-                                            <button
-                                                type="button"
-                                                className="text-sm font-regular text-[#73d3ff] mb-8 underline"
-                                                onClick={() => removeImage()}
-                                            >
-                                                remove profile picture
-                                            </button>
                                             <div className="mb-4 w-full">
                                                 <label htmlFor="username" className="text-sm font-regular text-[#73d3ff]">Username</label>
                                                 <Field
@@ -303,6 +269,38 @@ export default function UserSettings() {
                                                 </div>
                                                 <ErrorMessage name="confirmnewpassword" component="div" className="text-red-500 text-sm" />
                                             </div>
+                                            <div className="mb-4 w-full">
+                                                <p className="text-xl font-regular pb-2 text-[#4E40F4]">
+                                                    Security
+                                                </p>
+                                                <div className='flex justify-center mt-6 flex-row'>
+                                                    <button
+                                                        className="bg-[#5faed3] text-white justify-center font-bold uppercase text-xs px-6 py-3 rounded shadow hover:bg-blue-600 transition-all duration-150"
+                                                        onClick={onOpen}
+                                                    >
+                                                        {twoFactorAuth ? (
+                                                            <p>Deactivate 2FA</p>
+                                                        ) : (
+                                                            <p>Activate 2FA</p>
+                                                        )}
+                                                    </button>
+                                                    {isOpen && (
+                                                        <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center z-50">
+                                                            <div className="absolute top-0 left-0 w-full h-full bg-black opacity-60"></div>
+                                                            <Modal isOpen={isOpen} onClose={onClose}>
+                                                                <ModalContent>
+                                                                    {twoFactorAuth ? (
+                                                                        <TwoFactorModalDeactivate />
+                                                                    ) : (
+                                                                        <TwoFactorModal />
+                                                                    )}
+                                                                </ModalContent>
+                                                            </Modal>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                            </div>
 
                                             <div className="flex justify-end w-full mt-10">
                                                 <button
@@ -317,39 +315,17 @@ export default function UserSettings() {
                                     </Form>
                                 )}
                             </Formik>
+                            {showSuccessBadge && <div className="toast toast-end">
+                                <div className="alert alert-success">
+                                    <span>data changed successfully.</span>
+                                </div>
+                            </div>}
                         </div>
 
                     </div>
                 )
             }
-            <div className='flex justify-center mt-6'>
-                <button
-                    className="bg-blue-500 w-1/5 text-white justify-center font-bold uppercase text-xs px-6 py-3 rounded shadow hover:bg-blue-600 transition-all duration-150"
-                    onClick={onOpen}
-                >
-                    {twoFactorAuth ? (
-                        <p>Deactivate 2FA</p>
 
-                    ) : (
-                        <p>Activate 2FA</p>
-                    )}
-                </button>
-                {isOpen && (
-                    <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center z-50">
-                        <div className="absolute top-0 left-0 w-full h-full bg-black opacity-60"></div>
-                        <Modal isOpen={isOpen} onClose={onClose}>
-                            <ModalContent>
-                                {twoFactorAuth ? (
-                                    <TwoFactorModalDeactivate />
-                                ) : (
-                                    // <TwoFactorModal setActivationComplete={setActivationComplete} />
-                                    <TwoFactorModal />
-                                )}
-                            </ModalContent>
-                        </Modal>
-                    </div>
-                )}
-            </div>
         </div >
     );
 }

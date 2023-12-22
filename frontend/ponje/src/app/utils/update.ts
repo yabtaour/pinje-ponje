@@ -16,17 +16,9 @@ export const updateUser = async (userData: userData, token: string | null) => {
         Authorization: token,
       },
     });
-
+    
     return response.data;
   } catch (error) {
-    Toast({
-      title: 'Error',
-      status: 'error',
-      duration: 9000,
-      isClosable: true,
-      position: "bottom-right",
-      variant: "solid",
-  });
     console.error("Failed to update user:", error);
     throw error;
   }
@@ -42,14 +34,6 @@ export const fetchTwoFactorStatus = async (token: string | null) => {
     console.log("the value of twofa from db", response.data.twoFactor);
     return response.data.twoFactor;
   } catch (error) {
-    Toast({
-      title: 'Error',
-      status: 'error',
-      duration: 9000,
-      isClosable: true,
-      position: "bottom-right",
-      variant: "solid",
-  });
     console.error('Error fetching 2FA status:', error);
     throw error;
   }
@@ -66,14 +50,6 @@ export const getGameData = async (token : string | null) => {
       });
       return res.data;
   } catch (err) {
-    Toast({
-      title: 'Error',
-      status: 'error',
-      duration: 9000,
-      isClosable: true,
-      position: "bottom-right",
-      variant: "solid",
-  });
       console.error(err);
   }
 };
@@ -87,14 +63,6 @@ export const fetchGameHistory = async (id : number, token : string | null) => {
       });
       return res.data;
   } catch (err) {
-    Toast({
-      title: 'Error',
-      status: 'error',
-      duration: 9000,
-      isClosable: true,
-      position: "bottom-right",
-      variant: "solid",
-  });
       console.log(err);
   }
 };
@@ -109,14 +77,6 @@ export const fetchQRCode = async (token: string | null) => {
 
     return response.data;
   } catch (error) {
-    Toast({
-      title: 'Error',
-      status: 'error',
-      duration: 9000,
-      isClosable: true,
-      position: "bottom-right",
-      variant: "solid",
-  });
     console.error("Failed to fetch QRCode:", error);
     throw error;
   }
@@ -133,14 +93,6 @@ export const resetPassword = async (old: string, newpass: string) => {
     });
     return response.data;
   } catch (error) {
-    Toast({
-      title: 'Error',
-      status: 'error',
-      duration: 9000,
-      isClosable: true,
-      position: "bottom-right",
-      variant: "solid",
-  });
     console.error("Failed to reset password:", error);
     throw error;
   }
