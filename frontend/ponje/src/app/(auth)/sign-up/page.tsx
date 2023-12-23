@@ -33,7 +33,7 @@ export default function SignUp() {
 
     useEffect(() => {
         if (isAithenticated || getCookie('token'))
-            router.push('/dashboard');
+            router.push('/profile');
     }, [])
 
 
@@ -70,9 +70,10 @@ export default function SignUp() {
 
     const onSubmit = async (values: any) => {
         try {
+
             const data = await handleSignup(values.email, values.password, values.username);
             dispatch(login(data));
-            router.push('/dashboard');
+            router.push('/profile');
         } catch (error) {
             const err = error as AxiosError;
             if (err.message === "User already exists") {

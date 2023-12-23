@@ -2,24 +2,26 @@
 import InputCode from '@/app/components/inputCode';
 import axios from '@/app/utils/axios';
 import { Toast } from '@chakra-ui/react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { getCookie } from "cookies-next";
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 
 export default function VerificationPage() {
-    const router  = useRouter();
+    const router = useRouter();
     const token = getCookie("token");
     const handleSubmit = async (values: any) => {
         try {
             const res = await axios.post('/auth/2fa', { twofactorcode: values }, {
                 headers: {
-                    Authorization: token,
-                  },
+                    authorization: token,
+                },
             });
             console.log(res);
-            if (res.status === 201)
-                console.log('2fa success');
+            if (res.status === 201) {
+                router.push('/profile');
+
+            }
 
         }
         catch (error) {

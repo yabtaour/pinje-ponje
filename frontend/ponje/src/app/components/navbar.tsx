@@ -1,23 +1,25 @@
 "use client";
+import { useAppSelector } from "@/app/globalRedux/store";
+import axios from "@/app/utils/axios";
+import { Toast } from '@chakra-ui/react';
 import {
   Avatar,
   Dropdown,
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
-  Input,
   Navbar,
   NavbarContent,
-  NavbarItem,
+  NavbarItem
 } from "@nextui-org/react";
+import { deleteCookie } from "cookies-next";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from 'react';
+import { useDispatch } from "react-redux";
+import { logout } from "../globalRedux/features/authSlice";
 import Notification from "./notification";
 import SearchInput from "./search";
-import { useRouter } from "next/navigation";
-import { useAppSelector } from "@/app/globalRedux/store";
-import { Toast } from '@chakra-ui/react';
-import axios from "@/app/utils/axios";
-import { useEffect, useState } from 'react';
 
 
 interface NavBarProps {
@@ -33,7 +35,7 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
   const defaultAvatarUrl = "/placeholderuser.jpeg";
   // const AvatarImg = '/avatars' + currentuser?.profile?.avatar || defaultAvatarUrl;
   const AvatarImg = currentuser?.profile?.avatar || defaultAvatarUrl;
-
+  const dispatch = useDispatch();
   const handleSettingsClick = () => {
     router.push('/settings');
   };
@@ -41,8 +43,16 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
     router.push('/Profile');
   };
 
+  const handleLogoutClick = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('auth');
+    deleteCookie('token');
+    dispatch(logout());
+    router.push('/');
+  };
 
-  
+
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -63,7 +73,7 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
           isClosable: true,
           position: "bottom-right",
           variant: "solid",
-      });
+        });
         console.error(err);
         setLoading(false);
       }
@@ -72,7 +82,7 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
   }, []);
 
   return (
-<Navbar maxWidth="full" className="bg-[#151424] border-b-[#1A3070]">
+    <Navbar maxWidth="full" className="bg-[#151424] border-b-[#1A3070]">
       <NavbarContent className="flex justify-between items-center">
         <NavbarItem className="lg:block md:block hidden">
           <Image src="/Logo.png" alt="PONG Logo" width={90} height={90}></Image>
@@ -168,7 +178,7 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
                 className="hover:bg-[#504e89]"
                 key="logout"
                 color="danger"
-                // onClick={() => handleLogoutClick()}
+                onClick={() => handleLogoutClick()}
                 textValue="Log Out"
               >
                 <div className="flex items-center">

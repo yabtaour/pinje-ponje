@@ -11,7 +11,7 @@ const SearchInput = () => {
 
   useEffect(() => {
     if (!searchQuery || typeof searchQuery !== "string") {
-      // router.push('/dashboard');
+      // router.push('/profile');
     } else {
       const encodedSearchQuery = encodeURI(searchQuery);
       router.push(`/search?q=${encodedSearchQuery}`);
