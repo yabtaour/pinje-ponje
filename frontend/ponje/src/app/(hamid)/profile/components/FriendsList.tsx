@@ -1,11 +1,13 @@
 "use client";
 
-import { Pagination, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, User as NextUser } from "@nextui-org/react";
+import { User as NextUser, Pagination, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import { User } from '../../../../app/types/user'
+import { User } from '../../../../app/types/user';
 
 export default function FriendsList({ users }: { users: User[] }) {
     const [isOpen, setIsOpen] = useState(false);
+    const router = useRouter();
     const toggleDropdown = () => {
         setIsOpen(!isOpen);
     };
@@ -23,25 +25,30 @@ export default function FriendsList({ users }: { users: User[] }) {
         return users.slice(start, end);
     }, [page, users]);
 
-
-
-
-
     const renderUser = React.useCallback((user: any, columnKey: any) => {
 
         const cellValue = user[columnKey];
 
         return (
             <div>
-                <button style={{
-                    color: "#77DFF8",
-                }} className=" hover:bg-[#333153] p-1 rounded-lg w-full  flex justify-start">
+                <button
+                    onClick={() => {
+                        router.push(`/profile/${user?.id}`)
+                    }}
+                    style={{
+                        color: "#77DFF8",
+                    }} className=" hover:bg-[#333153] p-1 rounded-lg w-full  flex justify-start">
+
+
                     <NextUser
-                        avatarProps={{ radius: "lg", src: user.profile.avatar }}
-                        description={user.username}
-                        name={cellValue}
+                        avatarProps={{
+                            radius: "full",
+                            src: user?.profile?.avatar ? user?.profile?.avatar : "/defaultAvatar.png",
+                            isBordered: true,
+                        }}
+                        name={user?.username}
+                        description={user?.status}
                     >
-                        {user.email}
                     </NextUser>
                 </button>
             </div>
