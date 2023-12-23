@@ -1,17 +1,16 @@
 "use client"
-import React from 'react';
-import { ModalHeader, ModalBody, ModalFooter, Button } from "@nextui-org/react";
 import InputCode from '@/app/components/inputCode';
-import axios from '@/app/utils/axios';
-import { Toast } from '@chakra-ui/react';
 import { UpdateUser } from '@/app/globalRedux/features/authSlice';
-import { fetchUserData } from '@/app/utils/auth';
-import { useEffect, useState } from 'react';
-import { resetPassword, updateUser, fetchQRCode } from "@/app/utils/update";
 import { useAppSelector } from '@/app/globalRedux/store';
-import { useDispatch } from 'react-redux';
+import { fetchUserData } from '@/app/utils/auth';
+import axios from '@/app/utils/axios';
+import { fetchQRCode } from "@/app/utils/update";
+import { Toast } from '@chakra-ui/react';
+import { ModalBody, ModalFooter, ModalHeader } from "@nextui-org/react";
 import { getCookie } from "cookies-next";
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 
 
 export function TwoFactorModal() {
@@ -26,29 +25,29 @@ export function TwoFactorModal() {
     const token = getCookie("token");
 
 
-    const handleTwoFactorAuth = async () => {
-        try {
-            let accessToken: string | null = localStorage.getItem('access_token');
-            const newStatus = true;
-            console.log('newStatus:', newStatus);
-            const response = await axios.patch("/users", { twoFactor: newStatus }, {
-                headers: {
-                    Authorization: token,
-                },
-            });
-            setTwoFactorAuth(newStatus);
-            if (response) {
-                const data = await fetchQRCode(accessToken);
-                setQrCodeData(data);
+    useEffect(() => {
+        const handleTwoFactorAuth = async () => {
+            try {
+                let accessToken: string | null = localStorage.getItem('access_token');
+                const newStatus = true;
+                console.log('newStatus:', newStatus);
+                const response = await axios.patch("/users", { twoFactor: newStatus }, {
+                    headers: {
+                        Authorization: token,
+                    },
+                });
+                setTwoFactorAuth(newStatus);
+                if (response) {
+                    const data = await fetchQRCode(accessToken);
+                    setQrCodeData(data);
+                }
+
+            } catch (error) {
+                console.error("Failed to update user 2FA (caught actual error :p):", error);
+                throw error;
             }
 
-        } catch (error) {
-            console.error("Failed to update user 2FA (caught actual error :p):", error);
-            throw error;
-        }
-
-    };
-    useEffect(() => {
+        };
         const fetchData = async () => {
             try {
                 let accessToken: string | null = localStorage.getItem('access_token');
@@ -75,7 +74,7 @@ export function TwoFactorModal() {
         };
 
         fetchData();
-    }, [user, dispatch]);
+    }, [user, dispatch, twoFactorAuth, token]);
 
     const handleSubmit = async (values: any) => {
         try {
@@ -186,7 +185,7 @@ export function TwoFactorModalDeactivate({ }) {
             }
         };
         fetchData();
-    }, [dispatch]);
+    }, [dispatch, user, token]);
 
     return (
         <>

@@ -58,7 +58,7 @@ const Layout: React.FC<LayoutProps> = ({ children }: any) => {
         }
         handleCatch();
 
-    }, [socketManager]);
+    }, [toast]);
 
     return (
         <div className=" flex bg-gray-200">

@@ -16,7 +16,7 @@ export default function Home() {
   useEffect(() => {
     if (isAithenticated || getCookie('token'))
       router.push('/profile');
-  }, [])
+  }, [ isAithenticated , router])
 
 
   return (

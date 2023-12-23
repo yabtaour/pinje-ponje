@@ -64,7 +64,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
             redirect('/sign-in');
             // router.push('/sign-in');
         }
-    }, [isAithenticated, router]);
+    }, [isAithenticated, router, dispatch  , tokenFromSlice ]);
 
     return <>{children}</>;
 };

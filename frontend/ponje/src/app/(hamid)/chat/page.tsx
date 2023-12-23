@@ -2,8 +2,8 @@
 'use client';
 import { useAppSelector } from "@/app/globalRedux/store";
 import { Button, ScrollShadow, User, useDisclosure } from "@nextui-org/react";
+import Image from "next/image";
 import uniqolor from 'uniqolor';
-
 
 
 // import ChatInput from "./components/chatInput";
@@ -46,7 +46,7 @@ export function Mymessage({ message }: any) {
                     )}
                 </div>
             </div>
-            <img
+            <Image
                 src={message?.user?.profile?.avatar ? message?.user?.profile?.avatar : "/defaultAvatar.png"}
                 alt="User Avatar"
                 className="w-8 h-8 mt-4 rounded-full"
@@ -70,7 +70,7 @@ export function OtherMessage({ message }: any) {
             <Button onClick={() => {
                 router.push(`/profile/${message?.user?.id}`);
             }}>
-                <img src={message?.user?.profile?.avatar ? message?.user?.profile?.avatar : "/defaultAvatar.png"} alt="User Avatar" className="w-8 h-8 mt-4 rounded-full" />
+                <Image src={message?.user?.profile?.avatar ? message?.user?.profile?.avatar : "/defaultAvatar.png"} alt="User Avatar" className="w-8 h-8 mt-4 rounded-full" />
             </Button>
             <div className="bg-[#2F296E] rounded-lg p-2 m-2 max-w-[80%] min-w-[10%] sm:max-w-[60%] md:max-w-[50%] lg:max-w-[40%]">
                 <p className={`text-sm text-cyan-500`}>{message?.user?.username}</p>
@@ -158,7 +158,7 @@ export default function Chat() {
 
                             activeConversation === undefined ? (
                                 <>
-                                    <img src="/empty_chat.svg" alt="hero" className="w-full h-full m- rounded-full" />
+                                    <Image src="/empty_chat.svg" alt="hero" className="w-full h-full m- rounded-full" />
                                 </>
 
                             ) : (

@@ -1,19 +1,18 @@
 "use client"
 import UploadAvatar from '@/app/components/avatarUpload';
+import Loader from '@/app/components/loader';
 import { UpdateUser } from '@/app/globalRedux/features/authSlice';
 import { useAppSelector } from '@/app/globalRedux/store';
 import { fetchUserData } from '@/app/utils/auth';
-import Loader from '@/app/components/loader';
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
-import { Switch } from '@nextui-org/react';
-import axios from '../../utils/axios';
+import { Modal, ModalContent, useDisclosure } from "@nextui-org/react";
 import { AxiosError } from 'axios';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import * as Yup from 'yup';
-import { resetPassword, updateUser, fetchQRCode } from "../../utils/update";
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from "@nextui-org/react";
+import axios from '../../utils/axios';
+import { resetPassword, updateUser } from "../../utils/update";
 import { TwoFactorModal, TwoFactorModalDeactivate } from './components/TwoFactorModal';
 
 
@@ -48,7 +47,7 @@ export default function UserSettings() {
         };
       
         fetchData();
-      }, [user, dispatch]);  // Ensure that the dependencies are correct
+      }, [user, dispatch, twoFactorAuth]);  // Ensure that the dependencies are correct
       
 
     const [passwordShown, setPasswordShown] = useState(false);

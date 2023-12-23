@@ -91,11 +91,11 @@ export function RoomSettings({ room, onOpenChange }: { room: any, onOpenChange: 
                     <>
 
                         <div className="flex flex-col w-1/2  items-center justify-center ">
-                            <img
+                            <Image
                                 src="/groupChat.svg"
                                 alt="groupChat"
                                 className="w-10 h-10 "
-                            ></img>
+                            />
                             <h1 className="my-10 text-2xl text-cyan-300 font-semibold ">
                                 Room Settings
                             </h1>
@@ -193,7 +193,7 @@ export function DmInfo({ user }: { user: any }) {
     const router = useRouter();
     return (
         <div className="border border-gray-700 text-white flex flex-col items-center justify-center bg-[#222039] py-8">
-            <img
+            <Image
                 className='rounded-full w-[10%]'
                 src={user?.profile?.avatar ? user?.profile?.avatar : "/defaultAvatar.png"}
                 alt=""
@@ -252,7 +252,7 @@ export function InviteFriends() {
         };
 
         fetchFriends();
-    }, [activeConversationId, me]);
+    }, [activeConversationId, me , toast]);
 
     const filteredFriends = friends.filter(friend => {
         return !activeConversation?.room?.members?.some(member => member?.user?.id === friend.id);

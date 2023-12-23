@@ -1,10 +1,9 @@
 "use client";
-import React, { useEffect } from 'react';
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
 import Image from 'next/image';
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from "@nextui-org/react";
-import Confetti from 'react-confetti';
-import { useState } from 'react';
+
 import { useRouter } from 'next/navigation';
+import Confetti from 'react-confetti';
 
 
 export default function GameResult(result: any) {

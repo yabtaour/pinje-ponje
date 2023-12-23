@@ -2,7 +2,6 @@
 'use client';
 import SocketManager from '@/app/utils/socketManager';
 import { NextUIProvider } from "@nextui-org/system";
-import { user } from "@nextui-org/theme";
 import { useEffect, useState } from "react";
 import NavBar from '../components/navbar';
 import SideBar, { Collapse } from '../components/sidebar';
@@ -48,7 +47,7 @@ export default function Layout({
 
         };
         fetchNotifications();
-    }, [user]);
+    }, []);
     useEffect(() => {
 
 
