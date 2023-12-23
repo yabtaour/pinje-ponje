@@ -99,15 +99,14 @@ export function updatePaddlesgame(gameId: number) {
     }
 }
 
+export function sendBallUpdate(gameId: number) {
+
+}
+
 const ballReachedLeftThreshold = () => {
     const leftThreshold = 0; // Adjust this value based on your world setup
     return ball.position.x <= leftThreshold;
 };
-
-// const ballReachedRightThreshold = () => {
-//     const leftThreshold = worldWidth;
-//     return ball.position.x >= leftThreshold;
-// }
 
 let scoreSent = false;
 
@@ -132,7 +131,6 @@ export default function VersusScreen() {
     const [gameStarted, setGameStarted] = useState(false);
     const [gameEnded, setGameEnded] = useState(false);
     const [gameResult, setGameResult] = useState('');
-    // let gameResult: any = null;
     const [loading, setLoading] = useState(true);
     let gameEndMessage = null;
 
@@ -150,8 +148,6 @@ export default function VersusScreen() {
                 });
                 setUser(data.data);
                 setLoading(false);
-                // console.log(data.data);
-                // const loggedUserId = data.data.id;
                 currentUserId = data.data.id
             } catch (err) {
                 Toast({
@@ -166,7 +162,7 @@ export default function VersusScreen() {
                 setLoading(false);
             }
         };
-
+        
         const waitForNewGame = async () => {
             if (socketManager) {
                 socketManager.waitForConnection(async () => {
@@ -328,10 +324,49 @@ export default function VersusScreen() {
                     if (ballReachedLeftThreshold())
                         updateScore(gameId);
                     else {
+                        sendBallUpdate(gameId);
                         updatePaddlesgame(gameId);
                     }
+                });     
+                
+                document.addEventListener("visibilitychange", function() {
+                    if (document.visibilityState == 'hidden') {
+                        Events.on(engine, 'beforeUpdate', () => {
+                            console.log("update");
+                            if (ballReachedLeftThreshold())
+                                updateScore(gameId);
+                            else {
+                                sendBallUpdate(gameId);
+                                updatePaddlesgame(gameId);
+                            }
+                        });     
+                        engine.timing.timeScale = 1;
+                    }
+                    else if (document.hidden) {
+                        Events.on(engine, 'beforeUpdate', () => {
+                            console.log("update");
+                            if (ballReachedLeftThreshold())
+                                updateScore(gameId);
+                            else {
+                                sendBallUpdate(gameId);
+                                updatePaddlesgame(gameId);
+                            }
+                        });     
+                        engine.timing.timeScale = 1;
+                    } else {
+                        Events.on(engine, 'beforeUpdate', () => {
+                            console.log("update");
+                            if (ballReachedLeftThreshold())
+                                updateScore(gameId);
+                            else {
+                                sendBallUpdate(gameId);
+                                updatePaddlesgame(gameId);
+                            }
+                        });     
+                        engine.timing.timeScale = 1;
+                    }
                 });
-
+    
                 Matter.Runner.run(engine)
                 Render.run(render);
                 Events.on(engine, 'collisionStart', (event) => {

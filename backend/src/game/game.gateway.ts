@@ -59,8 +59,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         return (element === payload.gameId);
       });
       if (firstIndex != -1) {
-        this.intializeArray.splice(firstIndex, 1);
-        this.initializeClients.splice(clientIndex, 1);
         this.gameService.initializeGame(parseInt(client.id), payload);
       } else {
         this.intializeArray.push(payload.gameId);

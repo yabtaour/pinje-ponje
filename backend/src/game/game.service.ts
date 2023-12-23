@@ -491,9 +491,23 @@ export class GameService {
 		});
 		console.log("loser : ", loserId, " winner : ", winnerId);
 		await this.gameGateway.server.to(String(winnerId)).emit('gameOver', "win");
-		await this.gameGateway.server.to(String(loserId)).emit('gameOver', "loss");		
+		await this.gameGateway.server.to(String(loserId)).emit('gameOver', "loss");
+
 		console.log(this.gameGateway.currentGames);
 		console.log(gameId);
+		this.gameGateway.initializeClients.splice(
+			this.gameGateway.initializeClients.findIndex((element) => {
+				element == winnerId;
+			}
+		), 1)
+		this.gameGateway.initializeClients.splice(
+			this.gameGateway.initializeClients.findIndex((element) => {
+				element == loserId;
+			}
+		), 1)
+		this.gameGateway.intializeArray.splice(this.gameGateway.intializeArray.findIndex((element) => {
+				element == gameId;
+		}), 1)
 		this.gameGateway.currentGames.delete(gameId);
 		console.log(this.gameGateway.currentGames);
 		}
