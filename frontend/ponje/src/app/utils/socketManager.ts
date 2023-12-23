@@ -209,7 +209,7 @@ class SocketManager {
       if (this.chatSocket && this.chatSocket.connected) {
         this.chatSocket?.emit(
           "sendMessage",
-          { message, allo: roomId, state },
+          { message, id: roomId, state },
           (res: any) => {
             resolve(res);
           }

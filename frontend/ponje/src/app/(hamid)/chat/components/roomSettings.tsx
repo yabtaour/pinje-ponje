@@ -194,9 +194,11 @@ export function DmInfo({ user }: { user: any }) {
     return (
         <div className="border border-gray-700 text-white flex flex-col items-center justify-center bg-[#222039] py-8">
             <Image
-                className='rounded-full w-[10%]'
+                className='rounded-full'
                 src={user?.profile?.avatar ? user?.profile?.avatar : "/defaultAvatar.png"}
                 alt=""
+                width={80}
+                height={80}
             />
             <h1 className="text-2xl text-cyan-300 font-semibold ">
                 {user?.username}
@@ -252,7 +254,7 @@ export function InviteFriends() {
         };
 
         fetchFriends();
-    }, [activeConversationId, me , toast]);
+    }, [activeConversationId, me, toast]);
 
     const filteredFriends = friends.filter(friend => {
         return !activeConversation?.room?.members?.some(member => member?.user?.id === friend.id);
