@@ -22,7 +22,7 @@ export default function RootLayout({
 
     <html lang="en">
 
-      <body className={inter.className} style={{ padding: '0', background: '#151424' }}>
+      <body className={inter.className} style={{ padding: '0', backgroundColor: '#151424' }}>
         <AuthProvider>
           <NextUIProvider>
             <ChakraProvider>
