@@ -182,7 +182,7 @@ export function TwoFactorModal({
                                     <div className='flex justify-center flex-col items-center pb-5 mt-4'>
                                         <div>
                                             <div>
-                                                <div className="flex flex-col items-center">
+                                                <div className="flex items-center">
                                                     {Array.from({ length: 6 }, (_, index) => (
                                                         <input
                                                             key={index}
