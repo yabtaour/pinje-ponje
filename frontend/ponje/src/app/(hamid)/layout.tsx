@@ -5,7 +5,7 @@ import { NextUIProvider } from "@nextui-org/system";
 import { user } from "@nextui-org/theme";
 import { useEffect, useState } from "react";
 import NavBar from '../components/navbar';
-import SideBar from '../components/sidebar';
+import SideBar, { Collapse } from '../components/sidebar';
 import { AuthProvider } from "../globalRedux/provider";
 import { useAppSelector } from "../globalRedux/store";
 import AuthGuard from "../guards/AuthGuard";
@@ -59,16 +59,22 @@ export default function Layout({
         <AuthProvider>
             <AuthGuard>
                 <NextUIProvider>
-                    <div className="flex overflow-y-auto sticky top-0 flex-col h-full bg-gray-100">
+                    <div className="flex overflow-y-auto flex-col h-full">
                         <div className="w-full border-b border-blue-500">
                             <NavBar onToggleSidebar={toggleSidebar} />
                         </div>
-                        <div className="flex flex-1 sticky top-0">
+                        <div className=" flex flex-1  top-0">
                             <aside
-                                className={`${collapsed ? 'w-16' : 'w-64'
-                                    } border-r border-blue-500 transition-all duration-300 overflow-y-auto sticky top-0 ease-in-out ${collapsed ? 'hidden md:block' : ''
+                                className={`${collapsed ? 'w-16' : 'w-48'
+                                    } border-r  border-blue-500 bg-[#151424] transition-all duration-300 overflow-y-auto  top-0 ease-in-out ${collapsed ? 'hidden md:block' : ''
                                     }`}
                             >
+                                <button
+                                    onClick={toggleSidebar}
+                                    className={`absolute z-10 p-1  ${collapsed ? 'left-[50px]' : 'left-[180px]'} transition-all duration-300 overflow-y-auto text-gray-900 rounded-full bg-gray-100 dark:bg-gray-700 group focus:outline-none`}
+                                >
+                                    <Collapse collapsed={collapsed} setCollapsed={toggleSidebar} />
+                                </button>
                                 <SideBar collapsed={collapsed} toggleSidebar={toggleSidebar} />
                             </aside>
                             <div className="flex-1 ml-0 transition-all duration-300 ease-in-out relative z-0 overflow-x-hidden">
