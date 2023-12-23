@@ -17,7 +17,7 @@ export default function SideBar(Props: any) {
     const [activePage, setActivePage] = useState('home');
 
     const handleMenuItemClick = (id: string) => {
-        const pagePath = id === 'home' ? '/dashboard' : `/${id.toLowerCase()}`;
+        const pagePath = id === 'home' ? '/profile' : `/${id.toLowerCase()}`;
         setActivePage(id);
         router.push(pagePath);
     };
@@ -42,7 +42,6 @@ export default function SideBar(Props: any) {
                             </a>
                         </li>
                     ))}
-
                     <div className="absolute bottom-0 left-0 w-full">
                         <button
                             onClick={toggleSidebar}

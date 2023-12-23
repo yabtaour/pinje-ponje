@@ -7,11 +7,11 @@ import { Textarea, useToast } from "@chakra-ui/react";
 import { Modal, ModalContent, NextUIProvider } from '@nextui-org/react';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 
+import { Toast } from '@chakra-ui/react';
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import * as Yup from 'yup';
-import { Toast } from '@chakra-ui/react';
 
 
 
@@ -42,7 +42,7 @@ export default function Onboarding() {
             axios.defaults.headers.common["Authorization"] = `${AuthState.token}`;
             const res = await axios.patch("/users", { bio })
             if (res.status === 200) {
-                router.push("/dashboard");
+                router.push("/profile");
             }
         } catch (error) {
             Toast({
