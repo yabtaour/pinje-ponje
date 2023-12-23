@@ -1,6 +1,5 @@
 "use client"
 import React from 'react';
-import InputCode from '@/app/components/inputCode';
 import axios from '@/app/utils/axios';
 import { Toast } from '@chakra-ui/react';
 import { useState } from 'react';
@@ -9,8 +8,9 @@ import { useDispatch } from 'react-redux';
 import { getCookie } from "cookies-next";
 import Image from 'next/image';
 
+import { useRef } from "react";
 
-interface QrCodeProps {
+interface TwoFaProps {
     qrCodeData?: string;
     twoFactorAuth: boolean | undefined;
     toggleOpen: (index: number) => void;
@@ -22,9 +22,8 @@ export function TwoFactorModal({
     toggleOpen,
     twoFactorAuth,
     setTwoFactorAuth,
-}: QrCodeProps) {
+}: TwoFaProps) {
 
-    const [isCodeValid, setIsCodeValid] = useState(true);
     const [twofasuccess, settwofasuccess] = useState(false);
     const [submissionAttempted, setSubmissionAttempted] = useState(false);
     const token = getCookie("token");
@@ -46,13 +45,88 @@ export function TwoFactorModal({
         } catch (error) {
             console.error("2fa error", error);
             settwofasuccess(false);
-            setIsCodeValid(false);
         }
         finally {
             setSubmissionAttempted(true);
-            console.log("2fa finally", twofasuccess , isCodeValid);
         }
     }
+
+
+    const [code, setCode] = useState<string>("");
+    const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const { value, name } = event.target;
+        const index = parseInt(name);
+
+        if (value.length > 1) {
+            return;
+        }
+
+        const newCode = code.split("");
+        newCode[index] = value;
+        setCode(newCode.join(""));
+
+        if (/^\d$/.test(value)) {
+            const nextIndex = index + 1;
+            if (nextIndex < inputRefs.current.length) {
+                inputRefs.current[nextIndex]?.focus();
+            } else if (nextIndex === inputRefs.current.length) {
+                newCode.join("");
+            }
+        } else if (value === "" && index > 0) {
+            const prevIndex = index - 1;
+            inputRefs.current[prevIndex]?.focus();
+        } else {
+            inputRefs.current[index]?.focus();
+        }
+    };
+
+    const handleArrowKey = (event: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+        if (event.key === "ArrowLeft" && index > 0) {
+            event.preventDefault();
+            inputRefs.current[index - 1]?.focus();
+        } else if (event.key === "ArrowRight" && index < 5) {
+            event.preventDefault();
+            inputRefs.current[index + 1]?.focus();
+        }
+        else if (event.key === "Backspace" && index > 0) {
+            const newCode = code.split("");
+            newCode[index - 1] = "";
+            setCode(newCode.join(""));
+            event.preventDefault();
+            inputRefs.current[index - 1]?.focus();
+        }
+    };
+
+    const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
+        event.preventDefault();
+        const pastedText = event.clipboardData.getData("text/plain");
+        const newCode = pastedText.replace(/[^\d]/g, "").slice(0, 6);
+        setCode(newCode.padEnd(6, " "));
+        inputRefs.current[0]?.focus();
+    };
+
+    const handleSubmit = (event: React.BaseSyntheticEvent) => {
+        event.preventDefault();
+        setSubmissionAttempted(true);
+
+        const trimmedCode = code.replace(/\s/g, "");
+        if (trimmedCode.length !== 6 || !/^\d+$/.test(trimmedCode)) {
+            console.log("error");
+            Toast({
+                title: 'Should be 6 digits',
+                status: 'error',
+                duration: 9000,
+                isClosable: true,
+                position: "bottom-right",
+                variant: "solid",
+            });
+        }
+        else {
+            verifyCode(trimmedCode);
+        }
+    };
 
     return (
         <div
@@ -85,51 +159,90 @@ export function TwoFactorModal({
                                 <span className="sr-only">Close modal</span>
                             </button>
                         </div>
-                    {!twoFactorAuth && (
+                        {!twoFactorAuth && (
 
-                        <div className='flexs flex-col items-center rounded-lg bg-[#1B1A2D]'>
+                            <div className='flexs flex-col items-center rounded-lg bg-[#1B1A2D]'>
 
-                            <h1 className='text-lg lg:text-xl font-bold mb-7 text-[#77DFF8] text-center'>Activate Two Factor Authentication</h1>
-                            <p className='text-[#706bc6] pb-10 text-sm text-center font-semibold'>Protecting your Account is top priority . <br />
-                                Scan the QR code below with the Google Authenticator App and enter the code.
-                            </p>
-                            <div className='flex flex-col justify-center items-center'>
-                                {qrCodeData ? (
-                                    <Image src={qrCodeData} alt="QR Code" width={200} height={200} className=' ' />
-                                ) : (
-                                    <div className='flex justify-center items-center flex-col'>
-                                        <span className="loading loading-bars loading-lg text-primary"></span>
-                                        <p className='text-primary'>fetching QR code</p>
+                                <h1 className='text-lg lg:text-xl font-bold mb-7 text-[#77DFF8] text-center'>Activate Two Factor Authentication</h1>
+                                <p className='text-[#706bc6] pb-10 text-sm text-center font-semibold'>Protecting your Account is top priority . <br />
+                                    Scan the QR code below with the Google Authenticator App and enter the code.
+                                </p>
+                                <div className='flex flex-col justify-center items-center'>
+                                    {qrCodeData ? (
+                                        <Image src={qrCodeData} alt="QR Code" width={200} height={200} className=' ' />
+                                    ) : (
+                                        <div className='flex justify-center items-center flex-col'>
+                                            <span className="loading loading-bars loading-lg text-primary"></span>
+                                            <p className='text-primary'>fetching QR code</p>
+                                        </div>
+                                    )
+                                    }
+                                    <div className='flex justify-center flex-col items-center pb-5 mt-4'>
+                                        <div>
+                                            <div>
+                                                <div className="flex flex-col items-center">
+                                                    {Array.from({ length: 6 }, (_, index) => (
+                                                        <input
+                                                            key={index}
+                                                            type="text"
+                                                            name={index.toString()}
+                                                            maxLength={1}
+                                                            value={code[index] || ""}
+                                                            onChange={handleInputChange}
+                                                            onPaste={handlePaste}
+                                                            onKeyDown={(event) => handleArrowKey(event, index)}
+                                                            ref={(el) => (inputRefs.current[index] = el)}
+                                                            style={{
+                                                                marginRight: "0.5rem",
+                                                                width: "3.5rem",
+                                                                height: "5.5rem",
+                                                                textAlign: "center",
+                                                                background: "#1B1A2D",
+                                                                border: "1px solid #3B3A4D",
+                                                                borderRadius: "8px",
+                                                                color: "#FFFFFF",
+                                                            }}
+                                                        />
+                                                    ))}
+                                                </div>
+                                                <button
+                                                    className="mt-10 w bg-indigo-600 w-80 hover:bg-blue-700 px-4 py-3 text-white rounded font-medium text-sm ml-7"
+                                                    type="button"
+                                                    disabled={code.trim().length === 0 || code.trim().length < 6}
+                                                    onClick={(event: React.MouseEvent<HTMLButtonElement>) => handleSubmit(event)}            >
+                                                    Submit
+                                                </button>
+                                                {submissionAttempted && code.trim().length === 0 && (
+                                                    <p className="text-red-500 text-xs mt-2">Please enter a 6-digit code before submitting.</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {submissionAttempted && !twofasuccess ? (
+                                            <p className='text-red-500 text-xs'>Your code is wrong, enter a new one</p>
+                                        ) : null}
+                                        {submissionAttempted && twofasuccess ? (
+                                            <p className="text-green-500 text-xs">Your code is correct!</p>
+                                        ) : null}
+
                                     </div>
-                                )
-                                }
-                                <div className='flex justify-center flex-col items-center pb-5 mt-4'>
-                                    <InputCode onSubmit={verifyCode} isCodeValid={isCodeValid} />
-                                    {submissionAttempted && !twofasuccess ? (
-                                        <p className='text-red-500 text-xs'>Your code is wrong, enter a new one</p>
-                                    ) : null}
-                                    {submissionAttempted && twofasuccess ? (
-                                        <p className="text-green-500 text-xs">Your code is correct!</p>
-                                    ) : null}
                                 </div>
                             </div>
-                        </div>
 
-                    )}
-                    {twoFactorAuth && (
-                        <div className="flex flex-col items-center space-y-6  p-6">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="95" height="72" viewBox="0 0 995 1172" fill="none">
-                                <path fill-rule="evenodd" clipRule="evenodd" d="M67.5001 709C64.5001 358.8 63.1 183.7 63.1 183.7C331.1 37.2 655.2 37.2 923.2 183.7L931.8 707.6C845.7 886.3 700.9 1016.7 497.5 1098.7C241.3 988 98.0001 858.1 67.5001 709ZM5.80005 726.5C2.50005 326.2 0.800049 126 0.800049 126C307.2 -41.5 677.8 -41.5 984.2 126L994.1 724.9C895.6 929.3 730.1 1078.3 497.5 1172C204.7 1045.5 40.8 897 5.80005 726.5Z" fill="#008837" />
-                                <path fill-rule="evenodd" clipRule="evenodd" d="M220.1 591.3L298.6 506.1L405.9 616.4L724.6 304L801.3 379.9L408.3 776L220.1 591.3ZM113.6 695.8C111 383.1 109.6 226.8 109.6 226.8C348.9 96.0002 638.2 96.0002 877.5 226.8L885.3 694.5C808.4 854 679.1 970.5 497.5 1043.7C268.8 944.9 140.8 828.9 113.6 695.8Z" fill="#008837" />
-                            </svg>
-                            <p className="text-base leading-relaxed text-[#77DFF8] ">
-                                2FA Activated!
-                            </p>
-                        </div>
-                    )}
+                        )}
+                        {twoFactorAuth && (
+                            <div className="flex flex-col items-center space-y-6  p-6">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="95" height="72" viewBox="0 0 995 1172" fill="none">
+                                    <path fill-rule="evenodd" clipRule="evenodd" d="M67.5001 709C64.5001 358.8 63.1 183.7 63.1 183.7C331.1 37.2 655.2 37.2 923.2 183.7L931.8 707.6C845.7 886.3 700.9 1016.7 497.5 1098.7C241.3 988 98.0001 858.1 67.5001 709ZM5.80005 726.5C2.50005 326.2 0.800049 126 0.800049 126C307.2 -41.5 677.8 -41.5 984.2 126L994.1 724.9C895.6 929.3 730.1 1078.3 497.5 1172C204.7 1045.5 40.8 897 5.80005 726.5Z" fill="#008837" />
+                                    <path fill-rule="evenodd" clipRule="evenodd" d="M220.1 591.3L298.6 506.1L405.9 616.4L724.6 304L801.3 379.9L408.3 776L220.1 591.3ZM113.6 695.8C111 383.1 109.6 226.8 109.6 226.8C348.9 96.0002 638.2 96.0002 877.5 226.8L885.3 694.5C808.4 854 679.1 970.5 497.5 1043.7C268.8 944.9 140.8 828.9 113.6 695.8Z" fill="#008837" />
+                                </svg>
+                                <p className="text-base leading-relaxed text-[#77DFF8] ">
+                                    2FA Activated!
+                                </p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
-        </div>
         </div>
 
     );
@@ -139,7 +252,7 @@ export function TwoFactorModalDeactivate({
     toggleOpen,
     twoFactorAuth,
     setTwoFactorAuth,
-}: QrCodeProps) {
+}: TwoFaProps) {
 
     const [changeSuccess, setChangeSuccess] = useState(false);
     const [submissionAttempted, setSubmissionAttempted] = useState(false);
