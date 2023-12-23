@@ -289,10 +289,11 @@ export function InviteFriends() {
                 ) : (
 
                     filteredFriends.map((friend, index) => (
-                        <div key={index} className="flex m-2 flex-row  hover:bg-[#252341] border border-gray-900 rounded-full px-5 justify-around">
+                        <div key={index} className="flex m-2 flex-row  hover:bg-[#252341] border border-gray-900 rounded-full px-3 justify-around">
                             <User
                                 className="text-white my-2"
-                                name={friend.username}
+                                name={friend?.username}
+                                description={friend?.status}
                                 avatarProps={{
                                     src: friend.profile?.avatar ?? "/defaultAvatar.png"
                                 }}
