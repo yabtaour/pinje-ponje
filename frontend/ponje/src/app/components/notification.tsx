@@ -25,19 +25,14 @@ export default function Notification({ user }: { user: User | null | undefined }
 
   const [notifs, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
 
-
-  const toggleDropdown = () => {
-    setDropdownOpen(!dropdownOpen);
-  };
 
 
   const formatDate = React.useCallback((dateStr: string) => {
     const date = new Date(dateStr);
     const now = new Date();
     const delta = now.getTime() - date.getTime();
-
+  
     if (delta < 60 * 1000) {
       return "a second ago";
     } else if (delta < 3600 * 1000) {
@@ -51,6 +46,45 @@ export default function Notification({ user }: { user: User | null | undefined }
     }
   }, []);
 
+  const getMyNotifications = React.useCallback(async () => {
+    try {
+      const response = await axios.get(`/notification/my`, {
+        headers: {
+          Authorization: `${localStorage.getItem('access_token')}`,
+        },
+      });
+  
+      const notificationPromises = response.data.map(async (notification: Notification) => {
+        try {
+          const user = await getUserById(notification.senderid);
+          return {
+            ...notification,
+            name: user?.username || 'Unknown',
+            avatar: user?.avatar || '/placeholderuser.jpeg',
+            createdAt: formatDate(notification.createdAt),
+            treated: false,
+          } as Notification;
+        } catch (error) {
+          console.error("Error fetching user information", error);
+          return null;
+        }
+      });
+  
+      const notificationsWithUser = await Promise.all(notificationPromises);
+      setNotifications(notificationsWithUser);
+      setLoading(false);
+    } catch (err) {
+      setLoading(false);
+      Toast({
+        title: 'Error',
+        status: 'error',
+        duration: 9000,
+        isClosable: true,
+        position: "bottom-right",
+        variant: "solid",
+      });
+    }
+  }, [formatDate, setNotifications]);
 
 
   const getUserById = async (userId: number) => {
@@ -173,11 +207,10 @@ export default function Notification({ user }: { user: User | null | undefined }
 }
 
 
-export const NotificationComponent = ({ id, name, type, avatar, createdAt, treated, setNotifications, notifs, index }:
+export const NotificationComponent = React.memo(({ id, name, type, avatar, createdAt, treated, setNotifications, notifs, index }:
   { id: number, name: string, type: string, avatar: string, createdAt: string, treated: boolean, setNotifications: any, notifs: any, index: number }) => {
 
-
-  const handleAccept = async (type: string, id: number, index: number) => {
+  const handleAccept = React.useCallback(async (type: string, id: number, index: number) => {
     try {
       const endpoint = type === "FRIEND_REQUEST" ? '/users/friends/accept' : '/game/accept';
       const res = await axios.post(endpoint, { id }, { headers: { Authorization: `${localStorage.getItem('access_token')}` } });
@@ -192,9 +225,9 @@ export const NotificationComponent = ({ id, name, type, avatar, createdAt, treat
     } catch (error) {
       console.error("Error handling request acceptance", error);
     }
-  };
+  }, [setNotifications]);
 
-  const handleReject = async (type: string, id: number, index: number) => {
+  const handleReject = React.useCallback(async (type: string, id: number, index: number) => {
     console.log(type, id);
     if (type === "FRIEND_REQUEST") {
       try {
@@ -233,8 +266,8 @@ export const NotificationComponent = ({ id, name, type, avatar, createdAt, treat
         console.error("game reject error", error);
       }
     }
-  }
-
+  }, [setNotifications]);
+  
   return (
     <div className="w-full p-3 mt-1 bg-[#323054] rounded flex flex-col md:flex-row">
       <div tabIndex={0} aria-label="player icon" role="img" className="focus:outline-none flex items-center justify-center mb-4 md:mr-4 md:mb-0">
@@ -283,4 +316,4 @@ export const NotificationComponent = ({ id, name, type, avatar, createdAt, treat
 }
 
 
-
+)

@@ -27,7 +27,7 @@ export default function Layout({
     useEffect(() => {
         const timeoutId = setTimeout(() => {
             setShowToast(false);
-        }, 3000); // Adjust the timeout duration as needed
+        }, 3000); 
 
         return () => {
             clearTimeout(timeoutId);
@@ -80,7 +80,7 @@ export default function Layout({
                                 {showToast &&
                                     <div className="toast toast-end">
                                         <div className="alert alert-info">
-                                            <span>New mail arrived.</span>
+                                            <span>New notification arrived.</span>
                                         </div>
                                     </div>}
                                 {children}
