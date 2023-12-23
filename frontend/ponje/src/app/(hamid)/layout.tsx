@@ -59,14 +59,14 @@ export default function Layout({
         <AuthProvider>
             <AuthGuard>
                 <NextUIProvider>
-                    <div className="flex flex-col h-full bg-gray-100">
+                    <div className="flex overflow-y-auto sticky top-0 flex-col h-full bg-gray-100">
                         <div className="w-full border-b border-blue-500">
                             <NavBar onToggleSidebar={toggleSidebar} />
                         </div>
                         <div className="flex flex-1 sticky top-0">
                             <aside
                                 className={`${collapsed ? 'w-16' : 'w-64'
-                                    } border-r border-blue-500 transition-all duration-300 ease-in-out ${collapsed ? 'hidden md:block' : ''
+                                    } border-r border-blue-500 transition-all duration-300 overflow-y-auto sticky top-0 ease-in-out ${collapsed ? 'hidden md:block' : ''
                                     }`}
                             >
                                 <SideBar collapsed={collapsed} toggleSidebar={toggleSidebar} />

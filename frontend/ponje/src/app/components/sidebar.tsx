@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from "react";
 import { useRouter } from 'next/navigation';
+import { useState } from "react";
 
 
 export default function SideBar(Props: any) {
@@ -24,8 +24,8 @@ export default function SideBar(Props: any) {
 
     return (
         <aside className="z-40 bg-[#151424] h-full sticky top-0 flex flex-col justify-between">
-            <div className="h-full px-3 py-4">
-                <ul className="space-y-2 font-medium text-lg">
+            <div className=" overflow-y-auto px-3 py-4">
+                <ul className="space-y-2 font-medium text-lg flex justify-around flex-col">
                     {menuItems.map((item) => (
                         <li key={item.id}>
                             <a
