@@ -134,7 +134,35 @@ export class UserService {
         id: user_id,
       },
     });
-    if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+  
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+  
+    if (data.username && data.username !== user.username) {
+      const existingUserWithUsername = await this.prisma.user.findUnique({
+        where: {
+          username: data.username,
+        },
+      });
+  
+      if (existingUserWithUsername) {
+        throw new HttpException('Username already exists', HttpStatus.BAD_REQUEST);
+      }
+    }
+  
+    if (data.email && data.email !== user.email) {
+      const existingUserWithEmail = await this.prisma.user.findUnique({
+        where: {
+          email: data.email,
+        },
+      });
+  
+      if (existingUserWithEmail) {
+        throw new HttpException('Email already exists', HttpStatus.BAD_REQUEST);
+      }
+    }
+  
     let secret = null;
     if (data.twoFactor && data.twoFactor == true) {
       secret = authenticator.generateSecret();
@@ -143,18 +171,20 @@ export class UserService {
     } else {
       secret = null;
     }
-      const updatedUser = await this.prisma.user.update({
-        where: {
-          id: user_id,
-        },
-        data: {
-          ...data,
-          twoFactorSecret: secret,
-        },
-      });
-      return updatedUser;
+  
+    const updatedUser = await this.prisma.user.update({
+      where: {
+        id: user_id,
+      },
+      data: {
+        ...data,
+        twoFactorSecret: secret,
+      },
+    });
+  
+    return updatedUser;
   }
-
+  
   async CreateUserLocal(data: SignUpDto) {
 			const userExist = await this.prisma.user.findFirst({
         where: {

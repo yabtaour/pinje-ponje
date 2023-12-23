@@ -13,11 +13,11 @@ export function Collapse({ collapsed, setCollapsed }: any) {
 
                     <>
                         <svg width="24" height="24" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                            <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M19 12L31 24L19 36" />
+                            <path fill="none" stroke="#fff" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M19 12L31 24L19 36" />
                         </svg>
                     </>) : (<>
                         <svg width="24" height="24" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                            <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M31 36L19 24L31 12" />
+                            <path fill="none" stroke="#fff" strokeLinecap="round" strokeLinejoin="round" strokeWidth="4" d="M31 36L19 24L31 12" />
                         </svg>
                     </>)
             }
@@ -33,8 +33,8 @@ export default function SideBar(Props: any) {
     const menuItems = [
         {
             id: 'profile', icon: <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <g fill="none" stroke="#3574FF" stroke-width="2">
-                    <path stroke-linejoin="round" d="M4 18a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" />
+                <g fill="none" stroke="#3574FF" strokeWidth="2">
+                    <path strokeLinejoin="round" d="M4 18a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" />
                     <circle cx="12" cy="7" r="3" />
                 </g>
             </svg>, text: 'Profile'
@@ -43,7 +43,7 @@ export default function SideBar(Props: any) {
         { id: 'chat', icon: <path fill="#3574FF" d="M10 0C4.547 0 0 3.75 0 8.5c0 2.43 1.33 4.548 3.219 6.094a4.778 4.778 0 0 1-.969 2.25a14.4 14.4 0 0 1-.656.781a2.507 2.507 0 0 0-.313.406c-.057.093-.146.197-.187.407c-.042.209.015.553.187.812l.125.219l.25.125c.875.437 1.82.36 2.688.125c.867-.236 1.701-.64 2.5-1.063c.798-.422 1.557-.864 2.156-1.187c.084-.045.138-.056.219-.094C10.796 19.543 13.684 21 16.906 21c.031.004.06 0 .094 0c1.3 0 5.5 4.294 8 2.594c.1-.399-2.198-1.4-2.313-4.375c1.957-1.383 3.22-3.44 3.22-5.719c0-3.372-2.676-6.158-6.25-7.156C18.526 2.664 14.594 0 10 0zm0 2c4.547 0 8 3.05 8 6.5S14.547 15 10 15c-.812 0-1.278.332-1.938.688c-.66.355-1.417.796-2.156 1.187c-.64.338-1.25.598-1.812.781c.547-.79 1.118-1.829 1.218-3.281l.032-.563l-.469-.343C3.093 12.22 2 10.423 2 8.5C2 5.05 5.453 2 10 2z" />, text: 'Chat' },
         {
             id: 'pong', icon: <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <g fill="none" stroke="#3574FF" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                <g fill="none" stroke="#3574FF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
                     <path d="M12.718 20.713a7.64 7.64 0 0 1-7.48-12.755l.72-.72a7.643 7.643 0 0 1 9.105-1.283L17.45 3.61a2.08 2.08 0 0 1 3.057 2.815l-.116.126l-2.346 2.387a7.644 7.644 0 0 1-1.052 8.864" />
                     <path d="M11 18a3 3 0 1 0 6 0a3 3 0 1 0-6 0M9.3 5.3l9.4 9.4" />
                 </g>
