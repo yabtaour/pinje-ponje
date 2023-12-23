@@ -1,17 +1,17 @@
 "use client"
 import UploadAvatar from '@/app/components/avatarUpload';
+import Loader from '@/app/components/loader';
 import { UpdateUser } from '@/app/globalRedux/features/authSlice';
 import { useAppSelector } from '@/app/globalRedux/store';
 import { fetchUserData } from '@/app/utils/auth';
-import Loader from '@/app/components/loader';
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
 import { AxiosError } from 'axios';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import * as Yup from 'yup';
-import { fetchQRCode } from "@/app/utils/update";
-import { resetPassword } from "../../utils/update";
+import { fetchQRCode, resetPassword } from "@/app/utils/update";
+
 import { Modal, ModalContent, useDisclosure } from "@nextui-org/react";
 import { TwoFactorModal, TwoFactorModalDeactivate } from './components/TwoFactorModal';
 import axios from "@/app/utils/axios";
@@ -59,8 +59,8 @@ export default function UserSettings() {
         };
 
         fetchData();
-    }, [user, dispatch]);
-
+      }, [user, dispatch, twoFactorAuth]);  // Ensure that the dependencies are correct
+      
 
     const [passwordShown, setPasswordShown] = useState(false);
     const togglePasswordVisibility = () => {

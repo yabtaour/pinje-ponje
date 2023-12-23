@@ -16,7 +16,7 @@ const SearchInput = () => {
       const encodedSearchQuery = encodeURI(searchQuery);
       router.push(`/search?q=${encodedSearchQuery}`);
     }
-  }, [router]);
+  }, [router, searchQuery]);
 
   const onSearch = (event: React.FormEvent) => {
     event.preventDefault();

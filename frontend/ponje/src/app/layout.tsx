@@ -21,15 +21,12 @@ export default function RootLayout({
   return (
 
     <html lang="en">
-
       <body className={inter.className} style={{ padding: '0', backgroundColor: '#151424' }}>
         <AuthProvider>
           <NextUIProvider>
             <ChakraProvider>
               <CookiesProvider>
-
                 {children}
-
               </CookiesProvider>
             </ChakraProvider>
           </NextUIProvider>

@@ -1,12 +1,14 @@
 "use client"
-import React from 'react';
+
+import { UpdateUser } from '@/app/globalRedux/features/authSlice';
+import { fetchUserData } from '@/app/utils/auth';
 import axios from '@/app/utils/axios';
+import { fetchQRCode } from "@/app/utils/update";
 import { Toast } from '@chakra-ui/react';
-import { useState } from 'react';
-import { useAppSelector } from '@/app/globalRedux/store';
-import { useDispatch } from 'react-redux';
+import { user } from '@nextui-org/theme';
 import { getCookie } from "cookies-next";
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
 import { useRef } from "react";
 
@@ -280,7 +282,6 @@ export function TwoFactorModalDeactivate({
         }
 
     };
-
 
 
     return (
