@@ -5,11 +5,14 @@ import { Toast } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { getCookie } from "cookies-next";
+import { useState } from 'react';
 
 
 export default function VerificationPage() {
     const router  = useRouter();
     const token = getCookie("token");
+    const [isCodeValid, setIsCodeValid] = useState(true);
+
     const handleSubmit = async (values: any) => {
         try {
             const res = await axios.post('/auth/2fa', { twofactorcode: values }, {
@@ -19,7 +22,11 @@ export default function VerificationPage() {
             });
             console.log(res);
             if (res.status === 201)
+            {
                 console.log('2fa success');
+                setIsCodeValid(true);
+
+            }
 
         }
         catch (error) {
@@ -31,6 +38,7 @@ export default function VerificationPage() {
                 position: "bottom-right",
                 variant: "solid",
             });
+            setIsCodeValid(false);
         }
     }
 
@@ -54,11 +62,11 @@ export default function VerificationPage() {
                         <h1 className='text-2xl font-bold mb-7 text-white text-center'>Authenticate Your Account</h1>
 
                         <p className='text-white pb-10  text-center'>Protecting your Account is out top priority . <br />
-                            Please comfirm your account by entering the 6-digit code
+                            Please confirm your account by entering the 6-digit code
                         </p>
 
                         <div className='flex justify-center pb-5'>
-                            <InputCode onSubmit={handleSubmit} />
+                            <InputCode onSubmit={handleSubmit} isCodeValid={isCodeValid} />
                         </div>
                     </div>
                 </div>

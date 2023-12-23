@@ -10,12 +10,11 @@ import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import * as Yup from 'yup';
-// import { resetPassword, updateUser} from "../../utils/update";
+import { fetchQRCode } from "@/app/utils/update";
 import { resetPassword } from "../../utils/update";
 import { Modal, ModalContent, useDisclosure } from "@nextui-org/react";
 import { TwoFactorModal, TwoFactorModalDeactivate } from './components/TwoFactorModal';
 import axios from "@/app/utils/axios";
-// import { AxiosError } from "axios";
 
 
 export default function UserSettings() {
@@ -30,6 +29,8 @@ export default function UserSettings() {
     const [submitError, setSubmitError] = useState("");
     const [showErrorBadge, setShowErrorBadge] = useState(false);
     const [isOpen, setIsOpen] = useState([false, false, false]);
+    const [qrCodeData, setQrCodeData] = useState('');
+
 
 
     function toggleOpen(index: number) {
@@ -97,6 +98,30 @@ export default function UserSettings() {
         email?: string;
     }
 
+    const activateTwoFa = async () => {
+        try {
+            let accessToken: string | null = localStorage.getItem('access_token');
+            const newStatus = true;
+            const response = await axios.patch("/users", { twoFactor: newStatus }, {
+                headers: {
+                    Authorization: accessToken,
+                },
+            });
+            if (response) {
+                const data = await fetchQRCode(accessToken);
+                setQrCodeData(data);
+                toggleOpen(0);
+            }
+
+        } catch (error) {
+            console.error("Failed to update user 2FA (caught actual error :p):", error);
+            throw error;
+        }
+
+    }
+    function deactivateTwoFa() {
+        toggleOpen(1);
+    }
     const updateUser = async (userData: UserData, token: string | null) => {
         try {
             const { username, bio, email } = userData;
@@ -157,6 +182,8 @@ export default function UserSettings() {
 
                     dispatch(UpdateUser(updatedUser));
                     console.log("updatedUser : ", updatedUser);
+                    setShowSuccessBadge(true);
+                    setTimeout(() => setShowSuccessBadge(false), 5000);
                 } catch (error) {
                     const err = error as AxiosError;
                     if (err.message === "Conflict error: Username or email already exists.") {
@@ -173,10 +200,11 @@ export default function UserSettings() {
                 await resetPassword(oldpassword, newpassword);
                 console.log("Password updated successfully.");
                 setResetPasswordError("");
+                setShowSuccessBadge(true);
+                setTimeout(() => setShowSuccessBadge(false), 5000);
             }
 
-            setShowSuccessBadge(true);
-            setTimeout(() => setShowSuccessBadge(false), 5000);
+
         } catch (error) {
             console.error("An unexpected error occurred:", error);
         }
@@ -334,43 +362,25 @@ export default function UserSettings() {
                                                     Security
                                                 </p>
                                                 <div className='flex justify-start mt-4 flex-row'>
-                                                    {/* <button className="btn btn-outline btn-sm btn-primary"
-                                                        onClick={onOpen}
-                                                    >
-                                                        {twoFactorAuth ? (
-                                                            <p>Deactivate 2FA</p>
-                                                        ) : (
-                                                            <p>Activate 2FA</p>
-                                                        )}
-                                                    </button> */}
+
                                                     {!twoFactorAuth && (
-                                                       <button className="btn btn-outline btn-sm btn-primary"
+                                                        <button className="btn btn-outline btn-sm btn-primary"
                                                             onClick={activateTwoFa}
+                                                            type="button"
                                                         >
                                                             Activate 2FA
                                                         </button>
                                                     )}
                                                     {twoFactorAuth && (
-                                                       <button className="btn btn-outline btn-sm btn-primary"
+                                                        <button className="btn btn-outline btn-sm btn-primary"
                                                             onClick={deactivateTwoFa}
+                                                            type="button"
                                                         >
                                                             DEACTIVATE 2FA
                                                         </button>
                                                     )}
-                                                    {isOpen && (
-                                                        <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center z-50">
-                                                            <div className="absolute top-0 left-0 w-full h-full bg-black opacity-60"></div>
-                                                            <Modal isOpen={isOpen} onClose={onClose}>
-                                                                <ModalContent>
-                                                                    {twoFactorAuth ? (
-                                                                        <TwoFactorModalDeactivate />
-                                                                    ) : (
-                                                                        <TwoFactorModal />
-                                                                    )}
-                                                                </ModalContent>
-                                                            </Modal>
-                                                        </div>
-                                                    )}
+
+
                                                 </div>
 
                                             </div>
@@ -380,7 +390,7 @@ export default function UserSettings() {
                                                     type="submit"
                                                     className="bg-emerald-500 text-white font-bold uppercase text-sm px-6 py-3 rounded shadow hover:bg-emerald-600 transition-all duration-150"
                                                     disabled={isSubmitting}
-                                                >
+                                                    >
                                                     Save Changes
                                                 </button>
                                             </div>
@@ -389,6 +399,17 @@ export default function UserSettings() {
                                     </Form>
                                 )}
                             </Formik>
+                                {isOpen[0] &&
+
+                                    <TwoFactorModal qrCodeData={qrCodeData}
+                                        twoFactorAuth={twoFactorAuth}
+                                        toggleOpen={toggleOpen}
+                                        setTwoFactorAuth={setTwoFactorAuth} />}
+                                {isOpen[1] &&
+                                    <TwoFactorModalDeactivate twoFactorAuth={twoFactorAuth}
+                                        toggleOpen={toggleOpen}
+                                        setTwoFactorAuth={setTwoFactorAuth} />
+                                }
                             {showSuccessBadge && <div className="toast toast-end">
                                 <div className="alert alert-success">
                                     <span>data changed successfully.</span>
