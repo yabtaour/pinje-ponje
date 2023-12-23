@@ -34,7 +34,7 @@ export default function SignUp() {
     useEffect(() => {
         if (isAithenticated || getCookie('token'))
             router.push('/profile');
-    }, [])
+    }, [isAithenticated, router])
 
 
     const togglePasswordVisibility = () => {

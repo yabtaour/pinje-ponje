@@ -53,7 +53,7 @@ export default function FriendsList({ users }: { users: User[] }) {
                 </button>
             </div>
         )
-    }, []);
+    }, [router]);
 
 
     return (
