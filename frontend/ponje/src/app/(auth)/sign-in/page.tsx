@@ -5,6 +5,7 @@ import { useAppSelector } from "@/app/globalRedux/store";
 import { useToast } from '@chakra-ui/react';
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
 import { Link } from "@nextui-org/react";
+import { getCookie } from "cookies-next";
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import Image from "next/image";
 import { useRouter } from 'next/navigation';
@@ -12,7 +13,6 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import * as Yup from 'yup';
 import { handleLogin } from '../../utils/auth';
-import { getCookie } from "cookies-next";
 
 
 
@@ -32,7 +32,7 @@ export default function SignIn() {
 
   useEffect(() => {
     if (isAithenticated || getCookie('token'))
-      router.push('/dashboard');
+      router.push('/profile');
   }, [])
 
 
@@ -66,10 +66,11 @@ export default function SignIn() {
 
     try {
       const data = await handleLogin(values.email, values.password);
-      console.log("this dispatch got called 4: ");
       dispatch(login(data));
-
-      router.push('/dashboard');
+      if (data?.user?.twoFactor)
+        router.push('/verification');
+      else
+        router.push('/profile');
     }
     // catch (error) {
     //   toast({

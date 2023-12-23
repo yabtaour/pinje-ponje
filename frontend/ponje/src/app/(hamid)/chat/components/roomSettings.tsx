@@ -289,10 +289,11 @@ export function InviteFriends() {
                 ) : (
 
                     filteredFriends.map((friend, index) => (
-                        <div key={index} className="flex m-2 flex-row  hover:bg-[#252341] border border-gray-900 rounded-full px-5 justify-around">
+                        <div key={index} className="flex m-2 flex-row  hover:bg-[#252341] border border-gray-900 rounded-full px-3 justify-around">
                             <User
                                 className="text-white my-2"
-                                name={friend.username}
+                                name={friend?.username}
+                                description={friend?.status}
                                 avatarProps={{
                                     src: friend.profile?.avatar ?? "/defaultAvatar.png"
                                 }}
@@ -375,7 +376,7 @@ export function RoomMembers() {
                 {
                     showInviteFriends ? (
                         <svg width="32" height="32" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path fill="" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 18h3.75a5.25 5.25 0 1 0 0-10.5H5M7.5 4L4 7.5L7.5 11" />
+                            <path fill="" stroke="#fff" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 18h3.75a5.25 5.25 0 1 0 0-10.5H5M7.5 4L4 7.5L7.5 11" />
                         </svg>
                     )
                         : (

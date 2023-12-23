@@ -1,12 +1,11 @@
 'use client';
 
-import Head from 'next/head';
+import { getCookie } from 'cookies-next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useAppSelector } from './globalRedux/store';
-import { getCookie } from 'cookies-next';
 
 export default function Home() {
   const isAithenticated = useAppSelector((state) => state.authReducer.value.isAuthenticated);
@@ -16,7 +15,7 @@ export default function Home() {
 
   useEffect(() => {
     if (isAithenticated || getCookie('token'))
-      router.push('/dashboard');
+      router.push('/profile');
   }, [])
 
 

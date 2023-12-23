@@ -2,12 +2,11 @@
 import InputCode from '@/app/components/inputCode';
 import axios from '@/app/utils/axios';
 import { Toast } from '@chakra-ui/react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { getCookie } from "cookies-next";
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useRef } from "react";
-
+import { useRef } from 'react';
 
 
 export default function VerificationPage() {
@@ -15,35 +14,6 @@ export default function VerificationPage() {
     const token = getCookie("token");
     const [twofasuccess, settwofasuccess] = useState(false);
     const [submissionAttempted, setSubmissionAttempted] = useState(false);
-
-    // const handleSubmit = async (values: any) => {
-    //     try {
-    //         const res = await axios.post('/auth/2fa', { twofactorcode: values }, {
-    //             headers: {
-    //                 Authorization: token,
-    //               },
-    //         });
-    //         console.log(res);
-    //         if (res.status === 201)
-    //         {
-    //             console.log('2fa success');
-    //             setIsCodeValid(true);
-
-    //         }
-
-    //     }
-    //     catch (error) {
-    //         Toast({
-    //             title: 'Error',
-    //             status: 'error',
-    //             duration: 9000,
-    //             isClosable: true,
-    //             position: "bottom-right",
-    //             variant: "solid",
-    //         });
-    //         setIsCodeValid(false);
-    //     }
-    // }
 
     const verifyCode = async (values: any) => {
         try {
@@ -55,6 +25,7 @@ export default function VerificationPage() {
             });
             if (res.status === 201) {
                 console.log('2fa success');
+                router.push('/profile');
                 settwofasuccess(true);
             }
         } catch (error) {

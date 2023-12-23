@@ -1,7 +1,7 @@
 import { User } from '@/app/types/user';
-import { useState, useEffect } from 'react';
+import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@nextui-org/react';
 import axios from 'axios';
-import { user } from '@nextui-org/theme';
+import { useEffect, useState } from 'react';
 
 const FriendButton = ({ userId }: { userId: number | undefined }) => {
   const [userMe, setUserMe] = useState<User | null>(null);
@@ -76,9 +76,33 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
     switch (true) {
       case isFriend:
         return (
-          <button className="w-[10rem] btn btn-sm btn-friend" disabled={isLoadingFriendship} onClick={handleClick}>
-            Friend
-          </button>
+          // <button className="w-[10rem] btn btn-sm btn-friend" disabled={isLoadingFriendship} onClick={handleClick}>
+          //   Friend
+          // </button>
+          <Dropdown className='bg-[#1B1A2D]'>
+            <DropdownTrigger>
+              <Button
+                className="w-[10rem] btn btn-sm btn-friend" disabled={isLoadingFriendship} onClick={handleClick}
+                variant="bordered"
+              >
+                Friend
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu className='flex flex-col justify-center' aria-label="Dynamic Actions" >
+              <DropdownItem className='bg-[#333153] rounded-lg text-cyan-400 hover:bg-slate-600'>
+                <button className="w-[10rem] " onClick={() => handleFriendAction('cancel')} disabled={isLoadingFriendship}>
+                  Unfriend
+                </button>
+              </DropdownItem>
+              <DropdownItem className='bg-[#333153] rounded-lg text-cyan-400 hover:bg-slate-600'>
+                <button className="w-[10rem]  " onClick={() => handleFriendAction('cancel')} disabled={isLoadingFriendship}>
+                  Block
+                </button>
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+
+
         );
       case isSentRequest:
         return (
@@ -92,9 +116,9 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
         );
       case isPendingRequest:
         return (
-          <button className="w-[10rem] btn btn-sm btn-pending" 
-                  onClick={() => handleFriendAction('accept')}
-                  disabled={isLoadingFriendship}>
+          <button className="w-[10rem] btn btn-sm btn-pending"
+            onClick={() => handleFriendAction('accept')}
+            disabled={isLoadingFriendship}>
             Request Pending
           </button>
         );

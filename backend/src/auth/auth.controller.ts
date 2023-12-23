@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
 import { UserService } from 'src/user/user.service';
@@ -29,7 +29,7 @@ export class AuthController {
 		if (user.user.twoFactor === true)
 			response.redirect('http://localhost:3001/verification');
 		else
-			response.redirect('http://localhost:3001/dashboard');
+			response.redirect('http://localhost:3001/profile');
 	}
 
 	
@@ -45,7 +45,7 @@ export class AuthController {
 		if (user.user.twoFactor == true)
 			response.redirect('http://localhost:3001/verification');
 		else 
-			response.redirect('http://localhost:3001/dashboard');
+			response.redirect('http://localhost:3001/profile');
 	}
 
 	@Post('2fa')
