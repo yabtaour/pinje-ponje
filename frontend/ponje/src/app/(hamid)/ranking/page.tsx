@@ -9,7 +9,8 @@ import { User as NextUIUser, Pagination, Table, TableBody, TableCell, TableColum
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useEffect } from 'react';
-import { Toast } from '@chakra-ui/react';
+import { useToast } from "@chakra-ui/react";
+
 
 
 const columns = [
@@ -205,6 +206,8 @@ export const Leaderboard = ({ users }: { users: DisplayedInfo[] }) => {
 export default function RankPage() {
 
   const [users, setUsers] = React.useState([] as DisplayedInfo[]);
+  const toast = useToast();
+
 
 
 
@@ -227,14 +230,16 @@ export default function RankPage() {
         setUsers(transformedUsers);
         return res.data;
       } catch (err) {
-        Toast({
+        toast({
           title: 'Error',
+          description: "error while getting users",
           status: 'error',
           duration: 9000,
           isClosable: true,
           position: "bottom-right",
           variant: "solid",
-      });
+          colorScheme: "red",
+        });
         console.log(err);
       }
     };

@@ -1,6 +1,6 @@
 " use client";
 import axios from "@/app/utils/axios";
-import { Toast } from "@chakra-ui/react";
+import { useToast } from "@chakra-ui/react";
 import { AxiosError } from "axios";
 import { setCookie } from "cookies-next";
 import { JwtPayload, jwtDecode } from "jwt-decode";
@@ -8,6 +8,7 @@ export type KeyedObject = {
   [key: string]: string | number | KeyedObject | any;
 };
 
+const toast = useToast();
 export const fetchUserData = async (token: string) => {
   try {
     const response = await axios.get("/users/me", {
@@ -17,13 +18,15 @@ export const fetchUserData = async (token: string) => {
     });
     return response.data;
   } catch (error) {
-    Toast({
-      title: "Error",
-      status: "error",
+    toast({
+      title: 'Error',
+      description: "error getting user data",
+      status: 'error',
       duration: 9000,
       isClosable: true,
       position: "bottom-right",
       variant: "solid",
+      colorScheme: "red",
     });
     console.log(error);
     return null;
@@ -77,13 +80,15 @@ export const handleSignup = async (
     });
     return await handleLogin(email, password);
   } catch (error) {
-    Toast({
-      title: "Error",
-      status: "error",
+    toast({
+      title: 'Error',
+      description: "error handling signup",
+      status: 'error',
       duration: 9000,
       isClosable: true,
       position: "bottom-right",
       variant: "solid",
+      colorScheme: "red",
     });
     const err = error as AxiosError;
     if (err.response && err.response.status === 409) {
@@ -117,7 +122,6 @@ export const handleSignup = async (
 
 export const handleLogin = async (email: string, password: string) => {
   try {
-    console.log("this got called :p");
     const response = await axios.post("/auth/login", {
       email,
       password,
@@ -136,13 +140,15 @@ export const handleLogin = async (email: string, password: string) => {
       }
     }
   } catch (error) {
-    Toast({
-      title: "Error",
-      status: "error",
+    toast({
+      title: 'Error',
+      description: "error handling login",
+      status: 'error',
       duration: 9000,
       isClosable: true,
       position: "bottom-right",
       variant: "solid",
+      colorScheme: "red",
     });
     console.error(error);
   }

@@ -7,10 +7,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import Loader from "@/app/components/loader";
 import Image from "next/image";
-import { Toast } from '@chakra-ui/react';
+import { useToast } from "@chakra-ui/react";
 
+
+const toast = useToast();
 
 const fetchUsers = async (url: string) => {
+  
   console.log(url);
   try {
     const response = await axios.get(url, {
@@ -23,14 +26,16 @@ const fetchUsers = async (url: string) => {
     }    
     return response.data;
   } catch (error: any) {
-    Toast({
+    toast({
       title: 'Error',
+      description: "failed to fetch users",
       status: 'error',
       duration: 9000,
       isClosable: true,
       position: "bottom-right",
       variant: "solid",
-  });
+      colorScheme: "red",
+    });
     throw new Error(`Failed to fetch posts: ${error.message}`);
   }
 };

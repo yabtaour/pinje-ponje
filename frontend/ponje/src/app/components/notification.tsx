@@ -1,10 +1,11 @@
 'use client';
 import axios from "@/app/utils/axios";
 import SocketManager from '@/app/utils/socketManager';
-import { Toast } from '@chakra-ui/react';
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { User } from "../types/user";
+import { useToast } from "@chakra-ui/react";
+
 
 interface Notification {
   id: number;
@@ -16,7 +17,7 @@ interface Notification {
   read: boolean;
   name: string;
   avatar: string;
-  treated: boolean; // Add this property
+  treated: boolean; 
 
 }
 
@@ -25,6 +26,7 @@ export default function Notification({ user }: { user: User | null | undefined }
 
   const [notifs, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const toast = useToast();
 
 
 
@@ -32,7 +34,7 @@ export default function Notification({ user }: { user: User | null | undefined }
     const date = new Date(dateStr);
     const now = new Date();
     const delta = now.getTime() - date.getTime();
-  
+
     if (delta < 60 * 1000) {
       return "a second ago";
     } else if (delta < 3600 * 1000) {
@@ -45,47 +47,7 @@ export default function Notification({ user }: { user: User | null | undefined }
       return date.toLocaleDateString('en-US', { year: 'numeric', month: 'numeric', day: 'numeric' });
     }
   }, []);
-
-  const getMyNotifications = React.useCallback(async () => {
-    try {
-      const response = await axios.get(`/notification/my`, {
-        headers: {
-          Authorization: `${localStorage.getItem('access_token')}`,
-        },
-      });
   
-      const notificationPromises = response.data.map(async (notification: Notification) => {
-        try {
-          const user = await getUserById(notification.senderid);
-          return {
-            ...notification,
-            name: user?.username || 'Unknown',
-            avatar: user?.avatar || '/placeholderuser.jpeg',
-            createdAt: formatDate(notification.createdAt),
-            treated: false,
-          } as Notification;
-        } catch (error) {
-          console.error("Error fetching user information", error);
-          return null;
-        }
-      });
-  
-      const notificationsWithUser = await Promise.all(notificationPromises);
-      setNotifications(notificationsWithUser);
-      setLoading(false);
-    } catch (err) {
-      setLoading(false);
-      Toast({
-        title: 'Error',
-        status: 'error',
-        duration: 9000,
-        isClosable: true,
-        position: "bottom-right",
-        variant: "solid",
-      });
-    }
-  }, [formatDate, setNotifications]);
-
 
   const getUserById = async (userId: number) => {
     try {
@@ -97,13 +59,15 @@ export default function Notification({ user }: { user: User | null | undefined }
       return response.data;
     } catch (error) {
       console.error(error);
-      Toast({
+      toast({
         title: 'Error',
+        description: "error while getting user information",
         status: 'error',
         duration: 9000,
         isClosable: true,
         position: "bottom-right",
         variant: "solid",
+        colorScheme: "red",
       });
       return null;
     }
@@ -131,25 +95,35 @@ export default function Notification({ user }: { user: User | null | undefined }
                 treated: false,
               } as Notification;
             } catch (error) {
+              toast({
+                title: 'Error',
+                description: "error while getting user by id",
+                status: 'error',
+                duration: 9000,
+                isClosable: true,
+                position: "bottom-right",
+                variant: "solid",
+                colorScheme: "red",
+              });
               console.error("Error fetching user information", error);
               return null;
             }
           })
         );
 
-        const validNotifications = notificationsWithUser.filter(notification => notification !== null);
-
-        setNotifications(validNotifications);
+        setNotifications(notificationsWithUser);
         setLoading(false);
       } catch (err) {
         setLoading(false);
-        Toast({
+        toast({
           title: 'Error',
+          description: "error getting notifications",
           status: 'error',
           duration: 9000,
           isClosable: true,
           position: "bottom-right",
           variant: "solid",
+          colorScheme: "red",
         });
       }
     };
@@ -207,27 +181,39 @@ export default function Notification({ user }: { user: User | null | undefined }
 }
 
 
-export const NotificationComponent = React.memo(({ id, name, type, avatar, createdAt, treated, setNotifications, notifs, index }:
-  { id: number, name: string, type: string, avatar: string, createdAt: string, treated: boolean, setNotifications: any, notifs: any, index: number }) => {
+export const NotificationComponent = ({id, name, type, avatar, createdAt, treated , setNotifications , notifs , index }: 
+  { id: number, name: string, type: string, avatar: string, createdAt: string, treated: boolean , setNotifications : any , notifs : any , index : number}) => {
+    const toast = useToast();
 
-  const handleAccept = React.useCallback(async (type: string, id: number, index: number) => {
-    try {
-      const endpoint = type === "FRIEND_REQUEST" ? '/users/friends/accept' : '/game/accept';
-      const res = await axios.post(endpoint, { id }, { headers: { Authorization: `${localStorage.getItem('access_token')}` } });
-
-      if (res.status === 201) {
-        setNotifications((prevNotifications: any) => {
-          const updatedNotifications = [...prevNotifications];
-          updatedNotifications[index].treated = true;
-          return updatedNotifications;
-        });
+  
+    const handleAccept = async (type: string, id: number, index: number) => {
+      try {
+        const endpoint = type === "FRIEND_REQUEST" ? '/users/friends/accept' : '/game/accept';
+        const res = await axios.post(endpoint, { id }, { headers: { Authorization: `${localStorage.getItem('access_token')}` } });
+    
+        if (res.status === 201) {
+          setNotifications((prevNotifications : any) => {
+            const updatedNotifications = [...prevNotifications];
+            updatedNotifications[index].treated = true;
+            return updatedNotifications;
+          });
+        }
+      } catch (error) {
+          toast({
+              title: 'Error',
+              description: "error while handling request acceptance",
+              status: 'error',
+              duration: 9000,
+              isClosable: true,
+              position: "bottom-right",
+              variant: "solid",
+              colorScheme: "red",
+            });
+        console.error("Error handling request acceptance", error);
       }
-    } catch (error) {
-      console.error("Error handling request acceptance", error);
-    }
-  }, [setNotifications]);
-
-  const handleReject = React.useCallback(async (type: string, id: number, index: number) => {
+    };
+    
+  const handleReject = async (type: string, id: number , index : number) => {
     console.log(type, id);
     if (type === "FRIEND_REQUEST") {
       try {
@@ -235,16 +221,26 @@ export const NotificationComponent = React.memo(({ id, name, type, avatar, creat
           headers: {
             Authorization: `${localStorage.getItem('access_token')}`,
           },
-          data: { id: id },
+          data: { id: id }, 
         });
         if (res.status === 201) {
-          setNotifications((prevNotifications: any) => {
+          setNotifications((prevNotifications : any) => {
             const updatedNotifications = [...prevNotifications];
             updatedNotifications[index].treated = true;
             return updatedNotifications;
           });
         }
       } catch (error) {
+          toast({
+              title: 'Error',
+              description: "friend reject error",
+              status: 'error',
+              duration: 9000,
+              isClosable: true,
+              position: "bottom-right",
+              variant: "solid",
+              colorScheme: "red",
+            });
         console.error("friend reject error", error);
       }
     }
@@ -256,17 +252,27 @@ export const NotificationComponent = React.memo(({ id, name, type, avatar, creat
           },
         });
         if (res.status === 201) {
-          setNotifications((prevNotifications: any) => {
+          setNotifications((prevNotifications : any) => {
             const updatedNotifications = [...prevNotifications];
             updatedNotifications[index].treated = true;
             return updatedNotifications;
           });
         }
       } catch (error) {
+          toast({
+              title: 'Error',
+              description: "game request reject error",
+              status: 'error',
+              duration: 9000,
+              isClosable: true,
+              position: "bottom-right",
+              variant: "solid",
+              colorScheme: "red",
+            });
         console.error("game reject error", error);
       }
     }
-  }, [setNotifications]);
+  }
   
   return (
     <div className="w-full p-3 mt-1 bg-[#323054] rounded flex flex-col md:flex-row">
@@ -293,21 +299,19 @@ export const NotificationComponent = React.memo(({ id, name, type, avatar, creat
         <p className="text-[#C6BCBC] text-xs">{createdAt}</p>
         {(type === "FRIEND_REQUEST" || type === "GAME_INVITE") && !treated ? (
           <div className="flex space-x-1 pt-2">
-            {/* {!actionCompleted && ( */}
-            <>
-              <button className="btn btn-xs btn-active h-7 bg-[#323054] hover:bg-green-300 hover:border-green-700 text-green-500 border-green-300" onClick={(e) => handleAccept(type, id, index)}> Accept
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="14" viewBox="0 0 52 41" fill="none">
-                  <path d="M46.0543 0.387695L17.7834 28.6919L6.11261 17.0544L0.220947 22.946L17.7918 40.4752L51.948 6.27936L46.0543 0.387695Z" fill="#4CAF50" />
-                </svg>
-              </button>
-              <button className="btn btn-xs btn-active h-7 bg-[#323054] hover:bg-red-300 hover:border-red-700 text-red-500 border-red-300" onClick={(e) => handleReject(type, id, index)}> Reject
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 100 100" fill="none">
-                  <path d="M20.0632 74.0879L74.2738 19.8754L80.1665 25.7679L25.9559 79.9803L20.0632 74.0879Z" fill="#D50000" />
-                  <path d="M49.9999 8.33301C27.0833 8.33301 8.33325 27.083 8.33325 49.9997C8.33325 72.9163 27.0833 91.6663 49.9999 91.6663C72.9166 91.6663 91.6666 72.9163 91.6666 49.9997C91.6666 27.083 72.9166 8.33301 49.9999 8.33301ZM49.9999 83.333C31.6666 83.333 16.6666 68.333 16.6666 49.9997C16.6666 31.6663 31.6666 16.6663 49.9999 16.6663C68.3333 16.6663 83.3332 31.6663 83.3332 49.9997C83.3332 68.333 68.3333 83.333 49.9999 83.333Z" fill="#D50000" />
-                </svg>
-              </button>
-            </>
-            {/* )} */}
+              <>
+                <button className="btn btn-xs btn-active h-7 bg-[#323054] hover:bg-green-300 hover:border-green-700 text-green-500 border-green-300" onClick={(e) => handleAccept(type, id, index)}> Accept
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="14" viewBox="0 0 52 41" fill="none">
+                    <path d="M46.0543 0.387695L17.7834 28.6919L6.11261 17.0544L0.220947 22.946L17.7918 40.4752L51.948 6.27936L46.0543 0.387695Z" fill="#4CAF50" />
+                  </svg>
+                </button>
+                <button className="btn btn-xs btn-active h-7 bg-[#323054] hover:bg-red-300 hover:border-red-700 text-red-500 border-red-300" onClick={(e) => handleReject(type, id, index)}> Reject
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 100 100" fill="none">
+                    <path d="M20.0632 74.0879L74.2738 19.8754L80.1665 25.7679L25.9559 79.9803L20.0632 74.0879Z" fill="#D50000" />
+                    <path d="M49.9999 8.33301C27.0833 8.33301 8.33325 27.083 8.33325 49.9997C8.33325 72.9163 27.0833 91.6663 49.9999 91.6663C72.9166 91.6663 91.6666 72.9163 91.6666 49.9997C91.6666 27.083 72.9166 8.33301 49.9999 8.33301ZM49.9999 83.333C31.6666 83.333 16.6666 68.333 16.6666 49.9997C16.6666 31.6663 31.6666 16.6663 49.9999 16.6663C68.3333 16.6663 83.3332 31.6663 83.3332 49.9997C83.3332 68.333 68.3333 83.333 49.9999 83.333Z" fill="#D50000" />
+                  </svg>
+                </button>
+              </>
           </div>
         ) : null}
       </div>
@@ -315,5 +319,3 @@ export const NotificationComponent = React.memo(({ id, name, type, avatar, creat
   );
 }
 
-
-)

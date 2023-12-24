@@ -31,6 +31,7 @@ export const updateUser = async (userData: UserData, token: string | null) => {
     return { success: true, message: "Update successful"};
   } catch (error) {
     console.error("Failed to update user:", error);
+    
     const err = error as AxiosError;
     if (err.response?.status === 409) {
       const conflictError = {

@@ -1,15 +1,10 @@
 "use client"
 
-import { UpdateUser } from '@/app/globalRedux/features/authSlice';
-import { fetchUserData } from '@/app/utils/auth';
 import axios from '@/app/utils/axios';
-import { fetchQRCode } from "@/app/utils/update";
-import { Toast } from '@chakra-ui/react';
-import { user } from '@nextui-org/theme';
 import { getCookie } from "cookies-next";
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-
+import { useToast } from '@chakra-ui/react';
 import { useRef } from "react";
 
 interface TwoFaProps {
@@ -56,6 +51,8 @@ export function TwoFactorModal({
 
     const [code, setCode] = useState<string>("");
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+    const toast = useToast();
+
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { value, name } = event.target;
@@ -116,14 +113,16 @@ export function TwoFactorModal({
         const trimmedCode = code.replace(/\s/g, "");
         if (trimmedCode.length !== 6 || !/^\d+$/.test(trimmedCode)) {
             console.log("error");
-            Toast({
-                title: 'Should be 6 digits',
+            toast({
+                title: 'Error',
+                description: "should be 6 digits",
                 status: 'error',
                 duration: 9000,
                 isClosable: true,
                 position: "bottom-right",
                 variant: "solid",
-            });
+                colorScheme: "red",
+              });
         }
         else {
             verifyCode(trimmedCode);
@@ -259,6 +258,8 @@ export function TwoFactorModalDeactivate({
     const [changeSuccess, setChangeSuccess] = useState(false);
     const [submissionAttempted, setSubmissionAttempted] = useState(false);
     const token = getCookie("token");
+    const toast = useToast();
+
 
 
     const handleTwoFactorAuth = async () => {
@@ -275,6 +276,7 @@ export function TwoFactorModalDeactivate({
                 setChangeSuccess(true);
             }
         } catch (error) {
+
             setChangeSuccess(false);
             setSubmissionAttempted(true);
             console.error("Failed to update user 2FA (caught actual error :p):", error);
@@ -336,26 +338,30 @@ export function TwoFactorModalDeactivate({
                                 <div className='flex flex-col justify-center items-center'>
                                     <div className='flex justify-center flex-col items-center pb-5 mt-4'>
                                         {submissionAttempted && !changeSuccess ? (
-                                            Toast({
+                                             toast({
                                                 title: 'Error',
+                                                description: "error while changing TwoFa status",
                                                 status: 'error',
                                                 duration: 9000,
                                                 isClosable: true,
                                                 position: "bottom-right",
                                                 variant: "solid",
-                                            })
+                                                colorScheme: "red",
+                                              })
                                         ) : (
                                             null
                                         )}
                                         {submissionAttempted && changeSuccess ? (
-                                            Toast({
-                                                title: 'TwoFa disabled Successfully :D',
+                                            toast({
+                                                title: 'Success',
+                                                description: "twoFa status changed successfully",
                                                 status: 'success',
                                                 duration: 9000,
                                                 isClosable: true,
                                                 position: "bottom-right",
                                                 variant: "solid",
-                                            })
+                                                colorScheme: "red",
+                                              })
                                         ) : (
                                             null
                                         )}

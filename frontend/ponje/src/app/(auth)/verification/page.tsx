@@ -1,12 +1,11 @@
 'use client';
-import InputCode from '@/app/components/inputCode';
 import axios from '@/app/utils/axios';
-import { Toast } from '@chakra-ui/react';
 import { getCookie } from "cookies-next";
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useRef } from 'react';
+import { useToast } from '@chakra-ui/react';
 
 
 export default function VerificationPage() {
@@ -14,6 +13,8 @@ export default function VerificationPage() {
     const token = getCookie("token");
     const [twofasuccess, settwofasuccess] = useState(false);
     const [submissionAttempted, setSubmissionAttempted] = useState(false);
+    const toast = useToast();
+
 
     const verifyCode = async (values: any) => {
         try {
@@ -100,14 +101,16 @@ export default function VerificationPage() {
         const trimmedCode = code.replace(/\s/g, "");
         if (trimmedCode.length !== 6 || !/^\d+$/.test(trimmedCode)) {
             console.log("error");
-            Toast({
-                title: 'Should be 6 digits',
+            toast({
+                title: 'Error',
+                description: "game request reject error",
                 status: 'error',
                 duration: 9000,
                 isClosable: true,
                 position: "bottom-right",
                 variant: "solid",
-            });
+                colorScheme: "red",
+              });
         }
         else {
             verifyCode(trimmedCode);

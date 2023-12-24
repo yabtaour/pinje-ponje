@@ -15,6 +15,8 @@ import { fetchQRCode, resetPassword } from "@/app/utils/update";
 import { Modal, ModalContent, useDisclosure } from "@nextui-org/react";
 import { TwoFactorModal, TwoFactorModalDeactivate } from './components/TwoFactorModal';
 import axios from "@/app/utils/axios";
+import { useToast } from "@chakra-ui/react";
+
 
 
 export default function UserSettings() {
@@ -24,12 +26,12 @@ export default function UserSettings() {
     const userToken = useAppSelector((state) => state.authReducer.value.token);
     const dispatch = useDispatch();
     const [twoFactorAuth, setTwoFactorAuth] = useState(false);
-    const { onOpen, onClose } = useDisclosure();
-    const [activationComplete, setActivationComplete] = useState(false);
     const [submitError, setSubmitError] = useState("");
     const [showErrorBadge, setShowErrorBadge] = useState(false);
     const [isOpen, setIsOpen] = useState([false, false, false]);
     const [qrCodeData, setQrCodeData] = useState('');
+    const [passwordShown, setPasswordShown] = useState(false);
+    const toast = useToast();
 
 
 
@@ -59,10 +61,11 @@ export default function UserSettings() {
         };
 
         fetchData();
-      }, [user, dispatch, twoFactorAuth]);  // Ensure that the dependencies are correct
-      
+    }, [user, dispatch, twoFactorAuth]);
 
-    const [passwordShown, setPasswordShown] = useState(false);
+
+
+
     const togglePasswordVisibility = () => {
         setPasswordShown(!passwordShown);
     };
@@ -114,6 +117,16 @@ export default function UserSettings() {
             }
 
         } catch (error) {
+            toast({
+                title: 'Error',
+                description: "error while getting activating 2FA",
+                status: 'error',
+                duration: 9000,
+                isClosable: true,
+                position: "bottom-right",
+                variant: "solid",
+                colorScheme: "red",
+            });
             console.error("Failed to update user 2FA (caught actual error :p):", error);
             throw error;
         }
@@ -143,6 +156,16 @@ export default function UserSettings() {
             }
             return { success: true, message: "Update successful" };
         } catch (error) {
+            toast({
+                title: 'Error',
+                description: "error while updating user",
+                status: 'error',
+                duration: 9000,
+                isClosable: true,
+                position: "bottom-right",
+                variant: "solid",
+                colorScheme: "red",
+            });
             console.error("Failed to update user:", error);
             const err = error as AxiosError;
             if (err.response?.status === 409) {
@@ -279,84 +302,88 @@ export default function UserSettings() {
                                                 />
                                                 <ErrorMessage name="email" component="div" className="text-red-500 text-sm" />
                                             </div>
-                                            <div className="mb-4 w-full">
-                                                <p className="text-xl font-regular pb-2 text-[#4E40F4]">Change password</p>
-                                                <label htmlFor="oldpassword" className="text-sm font-regular text-[#73d3ff]">
-                                                    Old Password
-                                                </label>
-                                                <div className="relative">
-                                                    <Field
-                                                        id="oldpassword"
-                                                        name="oldpassword"
-                                                        type={passwordShown ? "text" : "password"}
-                                                        placeholder="******************"
-                                                        className="text-sm font-light w-full pl-4 pr-10 py-3 text-white rounded border bg-[#1B1A2D] border-[#73d3ff]"
-                                                    />
-                                                    <ErrorMessage name="oldpassword" component="div" className="text-red-500 text-sm" />
-                                                    {resetPasswordError && <div className="text-red-500 text-sm">{resetPasswordError}</div>}
-                                                    <button
-                                                        onClick={togglePasswordVisibility}
-                                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm"
-                                                    >
-                                                        {passwordShown ? (
-                                                            <EyeOffIcon className="h-5 w-5 text-gray-400" />
-                                                        ) : (
-                                                            <EyeIcon className="h-5 w-5 text-gray-400" />
-                                                        )}
-                                                    </button>
+                                            {(!user.googleId && !user.intraid) && (
+                                                <div>
+                                                    <div className="mb-4 w-full">
+                                                        <p className="text-xl font-regular pb-2 text-[#4E40F4]">Change password</p>
+                                                        <label htmlFor="oldpassword" className="text-sm font-regular text-[#73d3ff]">
+                                                            Old Password
+                                                        </label>
+                                                        <div className="relative">
+                                                            <Field
+                                                                id="oldpassword"
+                                                                name="oldpassword"
+                                                                type={passwordShown ? "text" : "password"}
+                                                                placeholder="******************"
+                                                                className="text-sm font-light w-full pl-4 pr-10 py-3 text-white rounded border bg-[#1B1A2D] border-[#73d3ff]"
+                                                            />
+                                                            <ErrorMessage name="oldpassword" component="div" className="text-red-500 text-sm" />
+                                                            {resetPasswordError && <div className="text-red-500 text-sm">{resetPasswordError}</div>}
+                                                            <button
+                                                                onClick={togglePasswordVisibility}
+                                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm"
+                                                            >
+                                                                {passwordShown ? (
+                                                                    <EyeOffIcon className="h-5 w-5 text-gray-400" />
+                                                                ) : (
+                                                                    <EyeIcon className="h-5 w-5 text-gray-400" />
+                                                                )}
+                                                            </button>
+                                                        </div>
+                                                        <ErrorMessage name="oldpassword" component="div" className="text-red-500 text-sm" />
+                                                    </div>
+                                                    <div className="mb-4 w-full">
+                                                        <label htmlFor="newpassword" className="text-sm font-regular text-[#73d3ff]">
+                                                            New Password
+                                                        </label>
+                                                        <div className="relative">
+                                                            <Field
+                                                                id="newpassword"
+                                                                name="newpassword"
+                                                                type={passwordShown ? "text" : "password"}
+                                                                placeholder="******************"
+                                                                className="text-sm font-light w-full pl-4 pr-10 py-3 text-white rounded border bg-[#1B1A2D] border-[#73d3ff]"
+                                                            />
+                                                            <button
+                                                                onClick={togglePasswordVisibility}
+                                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm"
+                                                            >
+                                                                {passwordShown ? (
+                                                                    <EyeOffIcon className="h-5 w-5 text-gray-400" />
+                                                                ) : (
+                                                                    <EyeIcon className="h-5 w-5 text-gray-400" />
+                                                                )}
+                                                            </button>
+                                                        </div>
+                                                        <ErrorMessage name="newpassword" component="div" className="text-red-500 text-sm" />
+                                                    </div>
+                                                    <div className="mb-4 w-full">
+                                                        <label htmlFor="confirmnewpassword" className="text-sm font-regular text-[#73d3ff]">
+                                                            Confirm new Password
+                                                        </label>
+                                                        <div className="relative">
+                                                            <Field
+                                                                id="confirmnewpassword"
+                                                                name="confirmnewpassword"
+                                                                type={passwordShown ? "text" : "password"}
+                                                                placeholder="******************"
+                                                                className="text-sm font-light w-full pl-4 pr-10 py-3 text-white rounded border bg-[#1B1A2D] border-[#73d3ff]"
+                                                            />
+                                                            <button
+                                                                onClick={togglePasswordVisibility}
+                                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm"
+                                                            >
+                                                                {passwordShown ? (
+                                                                    <EyeOffIcon className="h-5 w-5 text-gray-400" />
+                                                                ) : (
+                                                                    <EyeIcon className="h-5 w-5 text-gray-400" />
+                                                                )}
+                                                            </button>
+                                                        </div>
+                                                        <ErrorMessage name="confirmnewpassword" component="div" className="text-red-500 text-sm" />
+                                                    </div>
                                                 </div>
-                                                <ErrorMessage name="oldpassword" component="div" className="text-red-500 text-sm" />
-                                            </div>
-                                            <div className="mb-4 w-full">
-                                                <label htmlFor="newpassword" className="text-sm font-regular text-[#73d3ff]">
-                                                    New Password
-                                                </label>
-                                                <div className="relative">
-                                                    <Field
-                                                        id="newpassword"
-                                                        name="newpassword"
-                                                        type={passwordShown ? "text" : "password"}
-                                                        placeholder="******************"
-                                                        className="text-sm font-light w-full pl-4 pr-10 py-3 text-white rounded border bg-[#1B1A2D] border-[#73d3ff]"
-                                                    />
-                                                    <button
-                                                        onClick={togglePasswordVisibility}
-                                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm"
-                                                    >
-                                                        {passwordShown ? (
-                                                            <EyeOffIcon className="h-5 w-5 text-gray-400" />
-                                                        ) : (
-                                                            <EyeIcon className="h-5 w-5 text-gray-400" />
-                                                        )}
-                                                    </button>
-                                                </div>
-                                                <ErrorMessage name="newpassword" component="div" className="text-red-500 text-sm" />
-                                            </div>
-                                            <div className="mb-4 w-full">
-                                                <label htmlFor="confirmnewpassword" className="text-sm font-regular text-[#73d3ff]">
-                                                    Confirm new Password
-                                                </label>
-                                                <div className="relative">
-                                                    <Field
-                                                        id="confirmnewpassword"
-                                                        name="confirmnewpassword"
-                                                        type={passwordShown ? "text" : "password"}
-                                                        placeholder="******************"
-                                                        className="text-sm font-light w-full pl-4 pr-10 py-3 text-white rounded border bg-[#1B1A2D] border-[#73d3ff]"
-                                                    />
-                                                    <button
-                                                        onClick={togglePasswordVisibility}
-                                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm"
-                                                    >
-                                                        {passwordShown ? (
-                                                            <EyeOffIcon className="h-5 w-5 text-gray-400" />
-                                                        ) : (
-                                                            <EyeIcon className="h-5 w-5 text-gray-400" />
-                                                        )}
-                                                    </button>
-                                                </div>
-                                                <ErrorMessage name="confirmnewpassword" component="div" className="text-red-500 text-sm" />
-                                            </div>
+                                            )}
                                             <div className="mb-4 w-full">
                                                 <p className="text-xl font-regular pb-2 text-[#4E40F4]">
                                                     Security
@@ -390,7 +417,7 @@ export default function UserSettings() {
                                                     type="submit"
                                                     className="bg-emerald-500 text-white font-bold uppercase text-sm px-6 py-3 rounded shadow hover:bg-emerald-600 transition-all duration-150"
                                                     disabled={isSubmitting}
-                                                    >
+                                                >
                                                     Save Changes
                                                 </button>
                                             </div>
@@ -399,17 +426,17 @@ export default function UserSettings() {
                                     </Form>
                                 )}
                             </Formik>
-                                {isOpen[0] &&
+                            {isOpen[0] &&
 
-                                    <TwoFactorModal qrCodeData={qrCodeData}
-                                        twoFactorAuth={twoFactorAuth}
-                                        toggleOpen={toggleOpen}
-                                        setTwoFactorAuth={setTwoFactorAuth} />}
-                                {isOpen[1] &&
-                                    <TwoFactorModalDeactivate twoFactorAuth={twoFactorAuth}
-                                        toggleOpen={toggleOpen}
-                                        setTwoFactorAuth={setTwoFactorAuth} />
-                                }
+                                <TwoFactorModal qrCodeData={qrCodeData}
+                                    twoFactorAuth={twoFactorAuth}
+                                    toggleOpen={toggleOpen}
+                                    setTwoFactorAuth={setTwoFactorAuth} />}
+                            {isOpen[1] &&
+                                <TwoFactorModalDeactivate twoFactorAuth={twoFactorAuth}
+                                    toggleOpen={toggleOpen}
+                                    setTwoFactorAuth={setTwoFactorAuth} />
+                            }
                             {showSuccessBadge && <div className="toast toast-end">
                                 <div className="alert alert-success">
                                     <span>data changed successfully.</span>

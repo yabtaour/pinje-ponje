@@ -2,12 +2,16 @@ import { User } from '@/app/types/user';
 import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@nextui-org/react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { useToast } from "@chakra-ui/react";
+
 
 const FriendButton = ({ userId }: { userId: number | undefined }) => {
   const [userMe, setUserMe] = useState<User | null>(null);
   const [isLoading, setLoading] = useState<boolean>(true);
   const [isLoadingFriendship, setIsLoadingFriendship] = useState<boolean>(false);
   const [friendshipStatus, setFriendshipStatus] = useState(false);
+  const toast = useToast();
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -22,6 +26,16 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
         setLoading(false);
       } catch (err) {
         setLoading(false);
+        toast({
+          title: 'Error',
+          description: "error while getting user",
+          status: 'error',
+          duration: 9000,
+          isClosable: true,
+          position: "bottom-right",
+          variant: "solid",
+          colorScheme: "red",
+        });
       }
     };
 
@@ -40,10 +54,19 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
         },
       });
 
-      // Assuming the API response includes the updated friendship status
       setFriendshipStatus(true);
     } catch (error) {
       console.error(`Error ${action}ing friend request:`, error);
+      toast({
+        title: 'Error',
+        description: "error while performing friend action",
+        status: 'error',
+        duration: 9000,
+        isClosable: true,
+        position: "bottom-right",
+        variant: "solid",
+        colorScheme: "red",
+      });
     } finally {
       setIsLoadingFriendship(false);
     }

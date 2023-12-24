@@ -6,7 +6,7 @@
 import { addMessage, replaceMessage, setActiveConversation, setRooms } from "@/app/globalRedux/features/chatSlice";
 import { useAppSelector } from "@/app/globalRedux/store";
 import SocketManager from "@/app/utils/socketManager";
-import { Toast, useToast } from "@chakra-ui/react";
+import { useToast } from "@chakra-ui/react";
 import { Button, Image, useDisclosure } from '@nextui-org/react';
 import moment from 'moment';
 import { useEffect, useState } from "react";
@@ -75,13 +75,16 @@ export default function Conversation({ collapsed }: any) {
                 dispatch(setRooms(rooms));
             } catch (error) {
                 setLoading(false);
-                Toast({
-                    title: 'Error fetching new messages',
-                    description: `${error}`,
+                toast({
+                    title: 'Error',
+                    description: "Error fetching messages",
                     status: 'error',
-                    duration: 3000,
+                    duration: 9000,
                     isClosable: true,
-                })
+                    position: "bottom-right",
+                    variant: "solid",
+                    colorScheme: "red",
+                  });
                 console.error("Error fetching new messages:", error);
             }
         };

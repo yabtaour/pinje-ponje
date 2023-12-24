@@ -8,7 +8,7 @@ import Performance from "../components/Performance";
 import PlayerBanner from "../components/PlayerBanner";
 import ProgressBar from "../components/ProgressBar";
 import SkillAnalytics from "../components/SkillAnalytics";
-import { Toast } from '@chakra-ui/react';
+import { useToast } from "@chakra-ui/react";
 
 
 
@@ -16,6 +16,8 @@ export default function Profile({ params }: { params: { id: number } }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [Friends, setFriends] = useState([]);
+    const toast = useToast();
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -31,14 +33,16 @@ export default function Profile({ params }: { params: { id: number } }) {
                 setLoading(false);
                 console.log(data.data);
             } catch (err) {
-                Toast({
+                toast({
                     title: 'Error',
+                    description: "error while getting user",
                     status: 'error',
                     duration: 9000,
                     isClosable: true,
                     position: "bottom-right",
                     variant: "solid",
-                });
+                    colorScheme: "red",
+                  });
                 console.error(err);
                 setLoading(false);
             }
@@ -58,14 +62,16 @@ export default function Profile({ params }: { params: { id: number } }) {
           setLoading(false);
           console.log(data.data);
         } catch (err) {
-            Toast({
+            toast({
                 title: 'Error',
+                description: "error while getting friends",
                 status: 'error',
                 duration: 9000,
                 isClosable: true,
                 position: "bottom-right",
                 variant: "solid",
-            });
+                colorScheme: "red",
+              });
           console.error(err);
           setLoading(false);
         }
@@ -97,7 +103,7 @@ export default function Profile({ params }: { params: { id: number } }) {
             </div>
             <div className="flex justify-center flex-wrap">
                 <div className="lg:w-3/5">
-                    <MatchHistory />
+                    <MatchHistory user={user} />
                 </div>
                 <div className="w-full lg:w-1/3">
                     <FriendsList users={Friends} />

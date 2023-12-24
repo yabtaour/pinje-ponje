@@ -1,7 +1,6 @@
 "use client";
 import { useAppSelector } from "@/app/globalRedux/store";
 import axios from "@/app/utils/axios";
-import { Toast } from '@chakra-ui/react';
 import {
   Avatar,
   Dropdown,
@@ -20,6 +19,8 @@ import { useDispatch } from "react-redux";
 import { logout } from "../globalRedux/features/authSlice";
 import Notification from "./notification";
 import SearchInput from "./search";
+import { useToast } from "@chakra-ui/react";
+
 
 
 interface NavBarProps {
@@ -31,6 +32,8 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const toast = useToast();
+
 
   const defaultAvatarUrl = "/placeholderuser.jpeg";
   // const AvatarImg = '/avatars' + currentuser?.profile?.avatar || defaultAvatarUrl;
@@ -64,15 +67,16 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
         console.log(data.data);
         setUser(data.data);
         setLoading(false);
-        const loggedUserId = data.data.id;
       } catch (err) {
-        Toast({
+        toast({
           title: 'Error',
+          description: "error while getting current user",
           status: 'error',
           duration: 9000,
           isClosable: true,
           position: "bottom-right",
           variant: "solid",
+          colorScheme: "red",
         });
         console.error(err);
         setLoading(false);

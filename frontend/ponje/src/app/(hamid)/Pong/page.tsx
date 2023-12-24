@@ -8,9 +8,9 @@ import { getGameData } from '@/app/utils/update';
 import  PlayerCard  from "./components/PlayerCard";
 import OnlineFriendsInvite from "./components/onlineFriendsInvite";
 import ScoreCard from "./components/ScoreCard";
-import { Toast } from '@chakra-ui/react';
 import GameResult from "./components/GameResult";
 import Rules from "./components/Rules";
+import { useToast } from "@chakra-ui/react";
 
 
 
@@ -21,6 +21,7 @@ export default function Pong() {
   const [onlineFriends, setOnlineFriends] = useState([]);
   const [gameDataFetched, setGameDataFetched] = useState(false); 
   const router = useRouter();
+  const toast = useToast();
   const handleMMClick = () => {
     router.push('/Pong/VersusScreen');
     if (!gameDataFetched) {
@@ -59,14 +60,13 @@ export default function Pong() {
         const loggedUserId = data.data.id;
         fetchOnlineFriends(loggedUserId);
       } catch (err) {
-        Toast({
-          title: 'Error',
-          status: 'error',
-          duration: 9000,
+        toast({
+          title: "Error.",
+          description: "Error while fetching friends",
+          status: "error",
+          duration: 3000,
           isClosable: true,
-          position: "bottom-right",
-          variant: "solid",
-      });
+      })
         console.error(err);
         setLoading(false);
       }
@@ -87,14 +87,16 @@ export default function Pong() {
       setLoading(false);
       console.log(data.data);
     } catch (err) {
-      Toast({
+      toast({
         title: 'Error',
+        description: "error while gettinge friends",
         status: 'error',
         duration: 9000,
         isClosable: true,
         position: "bottom-right",
         variant: "solid",
-    });
+        colorScheme: "red",
+      });
       console.error(err);
       setLoading(false);
     }

@@ -1,13 +1,13 @@
 'use client'
 import axios from "@/app/utils/axios";
 import SocketManager from '@/app/utils/socketManager';
-import { Toast } from '@chakra-ui/react';
 import Matter, { Body, Events } from 'matter-js';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from "react";
 import GameResult from "../components/GameResult";
 import PlayerCard, { PlayerSkeleton } from '../components/PlayerCard';
 import ScoreCard from "../components/ScoreCard";
+import { useToast } from "@chakra-ui/react";
 
 const socketManager = SocketManager.getInstance();
 
@@ -132,6 +132,7 @@ export default function VersusScreen() {
     const [gameStarted, setGameStarted] = useState(false);
     const [gameEnded, setGameEnded] = useState(false);
     const [gameResult, setGameResult] = useState('');
+    const toast = useToast();
     // let gameResult: any = null;
     const [loading, setLoading] = useState(true);
     let gameEndMessage = null;
@@ -154,14 +155,16 @@ export default function VersusScreen() {
                 // const loggedUserId = data.data.id;
                 currentUserId = data.data.id
             } catch (err) {
-                Toast({
+                toast({
                     title: 'Error',
+                    description: "error while gettinge friends",
                     status: 'error',
                     duration: 9000,
                     isClosable: true,
                     position: "bottom-right",
                     variant: "solid",
-                });
+                    colorScheme: "red",
+                  });
                 console.error("Error in fetchData:", err);
                 setLoading(false);
             }
