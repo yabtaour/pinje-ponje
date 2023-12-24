@@ -6,7 +6,7 @@ import Matter, { Body, Events } from 'matter-js';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from "react";
 import GameResult from "../components/GameResult";
-import PlayerCard, { PlayerSkeleton } from '../components/PlayerCard';
+import PlayerCard, { PlayerSkeleton } from "../components/PlayerCard";
 import ScoreCard from "../components/ScoreCard";
 
 const socketManager = SocketManager.getInstance();
