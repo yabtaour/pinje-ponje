@@ -19,7 +19,7 @@ export default function Pong() {
   const [gameDataFetched, setGameDataFetched] = useState(false);
   const router = useRouter();
   const handleMMClick = () => {
-    router.push('/Pong/VersusScreen');
+    router.push('/pong/versusScreen');
     if (!gameDataFetched) {
       getGameDataHandler();
 
