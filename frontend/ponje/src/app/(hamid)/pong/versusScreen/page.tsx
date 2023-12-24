@@ -184,6 +184,16 @@ export default function VersusScreen() {
                             setPlayerFound(true);
                         }
                     } catch (error) {
+                        toast({
+                            title: 'Error',
+                            description: "Error in on NewGame",
+                            status: 'error',
+                            duration: 9000,
+                            isClosable: true,
+                            position: "bottom-right",
+                            variant: "solid",
+                            colorScheme: "red",
+                          });
                         console.error("Error in onNewGame:", error);
                     }
                 });

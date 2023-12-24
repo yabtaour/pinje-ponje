@@ -76,7 +76,8 @@ const SearchPage = () => {
     }
   };
   const { data, error, isLoading, isValidating } = useSWR(
-    `http://localhost:3000/users?search=${encodedSearchQuery}&take=9&skip=${(page - 1) * 9
+    `/users?search=${encodedSearchQuery}&take=9&skip=${
+      (page - 1) * 9
     }`,
     fetchUsers,
     { revalidateOnFocus: false }

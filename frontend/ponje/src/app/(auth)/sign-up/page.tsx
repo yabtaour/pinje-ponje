@@ -85,7 +85,7 @@ export default function SignUp() {
             } else {
                 toast({
                     title: 'Error',
-                    description: "game request reject error",
+                    description: "Signup Error",
                     status: 'error',
                     duration: 9000,
                     isClosable: true,

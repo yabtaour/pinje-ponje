@@ -30,6 +30,16 @@ export default function VerificationPage() {
                 settwofasuccess(true);
             }
         } catch (error) {
+            toast({
+                title: 'Error',
+                description: "2FA error",
+                status: 'error',
+                duration: 9000,
+                isClosable: true,
+                position: "bottom-right",
+                variant: "solid",
+                colorScheme: "red",
+              });
             console.error("2fa error", error);
             settwofasuccess(false);
         }

@@ -56,6 +56,16 @@ export default function UserSettings() {
                     }
                 }
             } catch (error) {
+                toast({
+                    title: 'Error',
+                    description: "error getting user data",
+                    status: 'error',
+                    duration: 9000,
+                    isClosable: true,
+                    position: "bottom-right",
+                    variant: "solid",
+                    colorScheme: "red",
+                  });
                 console.error("Error fetching user data:", error);
             }
         };

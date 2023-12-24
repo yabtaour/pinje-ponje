@@ -121,6 +121,16 @@ export default function Conversation({ collapsed }: any) {
                     }
 
                 } catch (error) {
+                    toast({
+                        title: 'Error',
+                        description: "Error sending message",
+                        status: 'error',
+                        duration: 9000,
+                        isClosable: true,
+                        position: "bottom-right",
+                        variant: "solid",
+                        colorScheme: "red",
+                      });
                     console.error("Error sending message:", error);
                 }
             }
@@ -137,6 +147,16 @@ export default function Conversation({ collapsed }: any) {
 
                 handleActions(memberShip);
             } catch (error) {
+                toast({
+                    title: 'Error',
+                    description: "Member state change error",
+                    status: 'error',
+                    duration: 9000,
+                    isClosable: true,
+                    position: "bottom-right",
+                    variant: "solid",
+                    colorScheme: "red",
+                  });
                 console.error("Error:", error);
             }
         }

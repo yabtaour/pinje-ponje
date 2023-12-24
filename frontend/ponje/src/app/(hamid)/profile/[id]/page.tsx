@@ -98,30 +98,21 @@ export default function Profile({ params }: { params: { id: number } }) {
             </div>
 
             <div id="biggest wrapper" className="flex flex-col items-center justify-center">
-                <div className="flex justify-center flex-wrap">
-                    <div className="flex justify-center pl-[-8rem]">
+                <div className="flex-auto mb-4 md:mb-0">
+                    <div className="flex flex-col md:flex-row ">
                         <SkillAnalytics user={user} />
-                        <div className="flex justify-center">
-                            <Performance user={user} />
-                            <ProgressBar user={user} />
-                        </div>
+                        <Performance user={user} />
+                        <ProgressBar user={user} />
                     </div>
                 </div>
-                <div className="flex justify-center flex-wrap">
-                    <div className="lg:w-3/5">
-                        <MatchHistory user={user} />
-                    </div>
-                    <div className="w-full lg:w-1/3">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="mb-4 md:mb-0">
                         <FriendsList users={Friends} />
                     </div>
-                </div>
-            </div>
-            <div className="flex justify-center flex-wrap">
-                <div className="lg:w-3/5">
-                    <MatchHistory user={user} />
-                </div>
-                <div className="w-full lg:w-1/3">
-                    <FriendsList users={Friends} />
+                    <div>
+                        <MatchHistory user={user} />
+                    </div>
                 </div>
             </div>
         </div>

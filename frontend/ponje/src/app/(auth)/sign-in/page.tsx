@@ -72,23 +72,11 @@ export default function SignIn() {
       else
         router.push('/profile');
     }
-    // catch (error) {
-    //   toast({
-    //     title: 'Error',
-    //     // description: errorMessage,
-    //     status: 'error',
-    //     duration: 9000,
-    //     isClosable: true,
-    //     position: "bottom-right",
-    //     variant: "solid",
-    //     colorScheme: "red",
-    //   });
-    // }
     catch (error) {
       const errorMessage = typeof error === 'object' && error && 'message' in error ? (error as Error).message : 'An error occurred';
       toast({
         title: 'Error',
-        description: errorMessage,
+        description: "error handling signup",
         status: 'error',
         duration: 9000,
         isClosable: true,

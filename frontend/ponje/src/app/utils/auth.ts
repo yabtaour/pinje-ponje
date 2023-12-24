@@ -8,7 +8,6 @@ export type KeyedObject = {
   [key: string]: string | number | KeyedObject | any;
 };
 
-const toast = useToast();
 export const fetchUserData = async (token: string) => {
   try {
     const response = await axios.get("/users/me", {
@@ -18,16 +17,7 @@ export const fetchUserData = async (token: string) => {
     });
     return response.data;
   } catch (error) {
-    toast({
-      title: 'Error',
-      description: "error getting user data",
-      status: 'error',
-      duration: 9000,
-      isClosable: true,
-      position: "bottom-right",
-      variant: "solid",
-      colorScheme: "red",
-    });
+
     console.log(error);
     return null;
   }
@@ -80,16 +70,6 @@ export const handleSignup = async (
     });
     return await handleLogin(email, password);
   } catch (error) {
-    toast({
-      title: 'Error',
-      description: "error handling signup",
-      status: 'error',
-      duration: 9000,
-      isClosable: true,
-      position: "bottom-right",
-      variant: "solid",
-      colorScheme: "red",
-    });
     const err = error as AxiosError;
     if (err.response && err.response.status === 409) {
       throw new ConflictError("User already exists");
@@ -99,26 +79,6 @@ export const handleSignup = async (
     }
   }
 };
-
-// export const handleLogin = async (email: string, password: string) => {
-//   console.log("this got called :p");
-//   try {
-//     const Response = await axios.post("/auth/login", {
-//       email,
-//       password,
-//     });
-
-//     const { token } = Response.data;
-
-//     const user = await fetchUserData(token);
-//     if (Response.status === 201) {
-//       setSession(token);
-//       return { token, user };
-//     }
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
 
 export const handleLogin = async (email: string, password: string) => {
   try {
@@ -140,16 +100,6 @@ export const handleLogin = async (email: string, password: string) => {
       }
     }
   } catch (error) {
-    toast({
-      title: 'Error',
-      description: "error handling login",
-      status: 'error',
-      duration: 9000,
-      isClosable: true,
-      position: "bottom-right",
-      variant: "solid",
-      colorScheme: "red",
-    });
     console.error(error);
   }
 };

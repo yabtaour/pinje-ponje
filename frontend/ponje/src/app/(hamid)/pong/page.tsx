@@ -39,6 +39,16 @@ export default function Pong() {
       const data = await getGameData(token);
       console.log('GameData:', data);
     } catch (err) {
+      toast({
+        title: 'Error',
+        description: "Game data fetch error",
+        status: 'error',
+        duration: 9000,
+        isClosable: true,
+        position: "bottom-right",
+        variant: "solid",
+        colorScheme: "red",
+      });
       console.error(err);
     }
   };
