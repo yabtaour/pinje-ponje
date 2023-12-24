@@ -4,10 +4,10 @@ import { login } from "@/app/globalRedux/features/authSlice";
 import { useAppSelector } from "@/app/globalRedux/store";
 import { useToast } from '@chakra-ui/react';
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
-import { Link } from "@nextui-org/react";
 import { getCookie } from "cookies-next";
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import Image from "next/image";
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -33,7 +33,7 @@ export default function SignIn() {
   useEffect(() => {
     if (isAithenticated || getCookie('token'))
       router.push('/profile');
-  }, [])
+  }, [isAithenticated, router])
 
 
 

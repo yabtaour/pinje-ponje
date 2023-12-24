@@ -5,39 +5,41 @@ import { useState } from "react";
 
 interface InputCodeProps {
     onSubmit: (code: string) => void;
+    isCodeValid: boolean;
 }
 
 import { useRef } from "react";
 
-const InputCode = ({ onSubmit }: InputCodeProps) => {
+const InputCode = ({ onSubmit, isCodeValid, }: InputCodeProps) => {
     const [code, setCode] = useState<string>("");
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  
+    const [submissionAttempted, setSubmissionAttempted] = useState(false);
+
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const { value, name } = event.target;
-      const index = parseInt(name);
-  
-      if (value.length > 1) {
-        return;
-      }
-  
-      const newCode = code.split("");
-      newCode[index] = value;
-      setCode(newCode.join(""));
-  
-      if (/^\d$/.test(value)) {
-        const nextIndex = index + 1;
-        if (nextIndex < inputRefs.current.length) {
-          inputRefs.current[nextIndex]?.focus();
-        } else if (nextIndex === inputRefs.current.length) {
-          onSubmit(newCode.join(""));
+        const { value, name } = event.target;
+        const index = parseInt(name);
+
+        if (value.length > 1) {
+            return;
         }
-      } else if (value === "" && index > 0) {
-        const prevIndex = index - 1;
-        inputRefs.current[prevIndex]?.focus();
-      } else {
-        inputRefs.current[index]?.focus();
-      }
+
+        const newCode = code.split("");
+        newCode[index] = value;
+        setCode(newCode.join(""));
+
+        if (/^\d$/.test(value)) {
+            const nextIndex = index + 1;
+            if (nextIndex < inputRefs.current.length) {
+                inputRefs.current[nextIndex]?.focus();
+            } else if (nextIndex === inputRefs.current.length) {
+                onSubmit(newCode.join(""));
+            }
+        } else if (value === "" && index > 0) {
+            const prevIndex = index - 1;
+            inputRefs.current[prevIndex]?.focus();
+        } else {
+            inputRefs.current[index]?.focus();
+        }
     };
 
     const handleArrowKey = (event: React.KeyboardEvent<HTMLInputElement>, index: number) => {
@@ -65,11 +67,12 @@ const InputCode = ({ onSubmit }: InputCodeProps) => {
         inputRefs.current[0]?.focus();
     };
 
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (event: React.BaseSyntheticEvent) => {
         event.preventDefault();
+        setSubmissionAttempted(true);
 
         const trimmedCode = code.replace(/\s/g, "");
-
+        console.log("code validation", isCodeValid);
         if (trimmedCode.length !== 6 || !/^\d+$/.test(trimmedCode)) {
             console.log("error");
             Toast({
@@ -80,12 +83,14 @@ const InputCode = ({ onSubmit }: InputCodeProps) => {
                 position: "bottom-right",
                 variant: "solid",
             });
+        } else if (isCodeValid) {
+
+            onSubmit(trimmedCode);
         }
-        onSubmit(trimmedCode);
     };
 
     return (
-        <form className="flex flex-col items-center" onSubmit={handleSubmit}>
+        <div>
             <div className="flex">
                 {Array.from({ length: 6 }, (_, index) => (
                     <input
@@ -111,12 +116,18 @@ const InputCode = ({ onSubmit }: InputCodeProps) => {
                     />
                 ))}
             </div>
-            <button className="mt-10 w bg-indigo-600 w-80 hover:bg-blue-700 px-4 py-3 text-white rounded font-medium text-sm" type="submit">Submit</button>
-        </form>
+            <button
+                className="mt-10 w bg-indigo-600 w-80 hover:bg-blue-700 px-4 py-3 text-white rounded font-medium text-sm"
+                type="button" 
+                disabled={code.trim().length === 0 || code.trim().length < 6 || !isCodeValid}
+                onClick={(event: React.MouseEvent<HTMLButtonElement>) => handleSubmit(event)}            >
+                Submit
+            </button>
+            {submissionAttempted && code.trim().length === 0 && (
+                <p className="text-red-500 text-xs mt-2">Please enter a 6-digit code before submitting.</p>
+            )}
+        </div>
     );
 };
 
 export default InputCode;
-
-
-	

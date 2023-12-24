@@ -51,7 +51,7 @@ export function JoinRooms({ onOpenChange, setAction }: { onOpenChange: () => voi
         };
 
         fetchRooms();
-    }, []);
+    }, [toast]);
 
 
 
@@ -66,7 +66,7 @@ export function JoinRooms({ onOpenChange, setAction }: { onOpenChange: () => voi
         }, 5000);
 
         return () => clearTimeout(timeout);
-    }, [isLoading]);
+    }, [isLoading, rooms.length]);
 
 
 
@@ -159,11 +159,11 @@ export function CreateRoom({ onOpenChange, setAction }: { onOpenChange: () => vo
 
     return (
         <div className="flex flex-col items-center justify-center bg-[#222039] py-8">
-            <img
+            <Image
                 src="/groupChat.svg"
                 alt="groupChat"
                 className="w-10 h-10 "
-            ></img>
+            />
             <h1 className="mb-10 text-2xl text-cyan-300 font-semibold ">
                 Create a new conversation
             </h1>
