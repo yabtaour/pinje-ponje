@@ -7,12 +7,13 @@ import {
   Logger,
 } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
+import { Prisma } from '@prisma/client';
 import { Request, Response } from 'express';
 import { JsonWebTokenError } from 'jsonwebtoken';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
-  catch(exception: HttpException | WsException, host: ArgumentsHost) {
+  catch(exception: HttpException | WsException | any, host: ArgumentsHost) {
     const logger = new Logger('GlobalExceptionFilter');
 
     if (exception instanceof JsonWebTokenError) {
@@ -48,9 +49,33 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         timestamp: new Date().toISOString(),
         path: request.url,
       });
-    } else {
-      Logger.error(exception);
-      console.log(typeof exception);
+    } else if (exception instanceof Prisma.PrismaClientKnownRequestError) {
+      const response = host.switchToHttp().getResponse<Response>();
+      const request = host.switchToHttp().getRequest<Request>();
+
+      const status = HttpStatus.FAILED_DEPENDENCY;
+      const message = exception.meta
+      logger.error(`Error ${status} ${message.details}`);
+      response.status(status).json({
+        statusCode: status,
+        message: message,
+        timestamp: new Date().toISOString(),
+        path: request.url,
+      });
+    } else if (exception instanceof Prisma.PrismaClientUnknownRequestError){
+      const response = host.switchToHttp().getResponse<Response>();
+      const request = host.switchToHttp().getRequest<Request>();
+
+      const status = HttpStatus.FAILED_DEPENDENCY;
+      const message = exception.message;
+      logger.error(`Error ${status} ${message}`);
+      response.status(status).json({
+        statusCode: status,
+        message: message,
+        timestamp: new Date().toISOString(),
+        path: request.url,
+      });
+    }else {
       const response = host.switchToHttp().getResponse<Response>();
       const request = host.switchToHttp().getRequest<Request>();
 
