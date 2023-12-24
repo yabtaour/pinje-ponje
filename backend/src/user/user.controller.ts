@@ -142,7 +142,7 @@ export class UserController {
     return this.userService.BlockUser(user.id, data);
   }
 
-  @Delete('/unblock')
+  @Post('/unblock')
   @ApiOperation({ summary: 'UnBlock Friend', description: 'UnBlock Friend' })
   @ApiBody({ type: blockAndUnblockUserDto })
   async UnBlockFriend(
@@ -183,7 +183,7 @@ export class UserController {
   }
 
   // to do: fix this and optimize it
-  @Delete('/friends/unfriend')
+  @Post('/friends/unfriend')
   @ApiOperation({ summary: 'Unfriend', description: 'Unfriend' })
   @ApiBody({ type: FriendsActionsDto })
   async Unfriend(
@@ -194,7 +194,7 @@ export class UserController {
     return this.userService.Unfriend(user.id, data);
   }
 
-  @Delete('/friends/decline')
+  @Post('/friends/decline')
   @ApiOperation({
     summary: 'Decline Friend Request',
     description: 'Decline Friend Request',
