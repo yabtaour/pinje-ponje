@@ -401,7 +401,7 @@ export function RoomMembers() {
                             ) : (
                                 <div className='w-full '>
                                     {activeConversation?.room?.members?.map((member, index) => (
-                                        <div className='flex justify-around'>
+                                        <div key={index} className='flex justify-around'>
                                             <div key={index} className='flex justify-between  w-full rounded-full '>
 
 

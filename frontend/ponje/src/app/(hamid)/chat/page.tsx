@@ -10,7 +10,7 @@ import uniqolor from 'uniqolor';
 import SocketManager from "@/app/utils/socketManager";
 import { getCookie } from "cookies-next";
 import { useRouter } from "next/navigation";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import ChatInput from "./components/chatInput";
 import { formatMessageDate } from "./components/conversation";
@@ -199,33 +199,23 @@ export default function Chat() {
 
                                     {
 
-                                        (messages ?? []).map((message: any) => (
-                                            // message?.user?.id === me?.id ? (
-
-                                            //     <Mymessage message={message} />
-                                            // ) : (
-
-                                            //     <OtherMessage message={message} />
-                                            // )
-                                            message?.state === "INFORMATION" ? (
-                                                <InformationMessage message={message} />
-                                            ) : (
-                                                message?.user?.id === me?.id ? (
-
-                                                    <Mymessage message={message} />
+                                        (messages ?? []).map((message: any, index: number) => (
+                                            <React.Fragment key={index}>
+                                                {message?.state === "INFORMATION" ? (
+                                                    <InformationMessage key={message.id} message={message} />
                                                 ) : (
-
-                                                    <OtherMessage message={message} />
-                                                )
-                                            )
+                                                    message?.user?.id === me?.id ? (
+                                                        <Mymessage key={message.id} message={message} />
+                                                    ) : (
+                                                        <OtherMessage key={message.id} message={message} />
+                                                    )
+                                                )}
+                                            </React.Fragment>
                                         ))
                                     }
-
                                 </>
                             )
-
                         }
-
                         <div ref={messagesEndRef} />
                     </ScrollShadow>
 
