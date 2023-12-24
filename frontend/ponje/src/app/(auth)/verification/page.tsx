@@ -2,29 +2,106 @@
 import InputCode from '@/app/components/inputCode';
 import axios from '@/app/utils/axios';
 import { Toast } from '@chakra-ui/react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { getCookie } from "cookies-next";
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useRef } from 'react';
 
 
 export default function VerificationPage() {
-    const router  = useRouter();
+    const router = useRouter();
     const token = getCookie("token");
-    const handleSubmit = async (values: any) => {
+    const [twofasuccess, settwofasuccess] = useState(false);
+    const [submissionAttempted, setSubmissionAttempted] = useState(false);
+
+    const verifyCode = async (values: any) => {
         try {
+            console.log('values:', values);
             const res = await axios.post('/auth/2fa', { twofactorcode: values }, {
                 headers: {
                     Authorization: token,
-                  },
+                },
             });
-            console.log(res);
-            if (res.status === 201)
+            if (res.status === 201) {
                 console.log('2fa success');
-
+                router.push('/profile');
+                settwofasuccess(true);
+            }
+        } catch (error) {
+            console.error("2fa error", error);
+            settwofasuccess(false);
         }
-        catch (error) {
+        finally {
+            setSubmissionAttempted(true);
+        }
+    }
+
+
+    const [code, setCode] = useState<string>("");
+    const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const { value, name } = event.target;
+        const index = parseInt(name);
+
+        if (value.length > 1) {
+            return;
+        }
+
+        const newCode = code.split("");
+        newCode[index] = value;
+        setCode(newCode.join(""));
+
+        if (/^\d$/.test(value)) {
+            const nextIndex = index + 1;
+            if (nextIndex < inputRefs.current.length) {
+                inputRefs.current[nextIndex]?.focus();
+            } else if (nextIndex === inputRefs.current.length) {
+                newCode.join("");
+            }
+        } else if (value === "" && index > 0) {
+            const prevIndex = index - 1;
+            inputRefs.current[prevIndex]?.focus();
+        } else {
+            inputRefs.current[index]?.focus();
+        }
+    };
+
+    const handleArrowKey = (event: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+        if (event.key === "ArrowLeft" && index > 0) {
+            event.preventDefault();
+            inputRefs.current[index - 1]?.focus();
+        } else if (event.key === "ArrowRight" && index < 5) {
+            event.preventDefault();
+            inputRefs.current[index + 1]?.focus();
+        }
+        else if (event.key === "Backspace" && index > 0) {
+            const newCode = code.split("");
+            newCode[index - 1] = "";
+            setCode(newCode.join(""));
+            event.preventDefault();
+            inputRefs.current[index - 1]?.focus();
+        }
+    };
+
+    const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
+        event.preventDefault();
+        const pastedText = event.clipboardData.getData("text/plain");
+        const newCode = pastedText.replace(/[^\d]/g, "").slice(0, 6);
+        setCode(newCode.padEnd(6, " "));
+        inputRefs.current[0]?.focus();
+    };
+
+    const handleSubmit = (event: React.BaseSyntheticEvent) => {
+        event.preventDefault();
+        setSubmissionAttempted(true);
+
+        const trimmedCode = code.replace(/\s/g, "");
+        if (trimmedCode.length !== 6 || !/^\d+$/.test(trimmedCode)) {
+            console.log("error");
             Toast({
-                title: 'Error',
+                title: 'Should be 6 digits',
                 status: 'error',
                 duration: 9000,
                 isClosable: true,
@@ -32,7 +109,10 @@ export default function VerificationPage() {
                 variant: "solid",
             });
         }
-    }
+        else {
+            verifyCode(trimmedCode);
+        }
+    };
 
     return (
         <div className='flex h-screen w-screen shadow'>
@@ -54,11 +134,57 @@ export default function VerificationPage() {
                         <h1 className='text-2xl font-bold mb-7 text-white text-center'>Authenticate Your Account</h1>
 
                         <p className='text-white pb-10  text-center'>Protecting your Account is out top priority . <br />
-                            Please comfirm your account by entering the 6-digit code
+                            Please confirm your account by entering the 6-digit code
                         </p>
 
-                        <div className='flex justify-center pb-5'>
-                            <InputCode onSubmit={handleSubmit} />
+                        <div className='flex justify-center pb-5 items-center'>
+                            <div className='flex justify-center flex-col items-center'>
+                                <div>
+                                    <div>
+                                        <div className="flex flex-row items-center">
+                                            {Array.from({ length: 6 }, (_, index) => (
+                                                <input
+                                                    key={index}
+                                                    type="text"
+                                                    name={index.toString()}
+                                                    maxLength={1}
+                                                    value={code[index] || ""}
+                                                    onChange={handleInputChange}
+                                                    onPaste={handlePaste}
+                                                    onKeyDown={(event) => handleArrowKey(event, index)}
+                                                    ref={(el) => (inputRefs.current[index] = el)}
+                                                    style={{
+                                                        marginRight: "0.5rem",
+                                                        width: "3.5rem",
+                                                        height: "5.5rem",
+                                                        textAlign: "center",
+                                                        background: "#1B1A2D",
+                                                        border: "1px solid #3B3A4D",
+                                                        borderRadius: "8px",
+                                                        color: "#FFFFFF",
+                                                    }}
+                                                />
+                                            ))}
+                                        </div>
+                                        <button
+                                            className="mt-10 w bg-indigo-600 w-80 hover:bg-blue-700 px-4 py-3 text-white rounded font-medium text-sm ml-7"
+                                            type="button"
+                                            disabled={code.trim().length === 0 || code.trim().length < 6}
+                                            onClick={(event: React.MouseEvent<HTMLButtonElement>) => handleSubmit(event)}            >
+                                            Submit
+                                        </button>
+                                        {submissionAttempted && code.trim().length === 0 && (
+                                            <p className="text-red-500 text-xs mt-2">Please enter a 6-digit code before submitting.</p>
+                                        )}
+                                    </div>
+                                    {submissionAttempted && !twofasuccess ? (
+                                        <p className='text-red-500 text-xs'>Your code is wrong, enter a new one</p>
+                                    ) : null}
+                                    {submissionAttempted && twofasuccess ? (
+                                        <p className="text-green-500 text-xs">Your code is correct!</p>
+                                    ) : null}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

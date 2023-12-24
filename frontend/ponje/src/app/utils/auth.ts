@@ -4,7 +4,6 @@ import { Toast } from "@chakra-ui/react";
 import { AxiosError } from "axios";
 import { setCookie } from "cookies-next";
 import { JwtPayload, jwtDecode } from "jwt-decode";
-import { useDispatch } from "react-redux";
 export type KeyedObject = {
   [key: string]: string | number | KeyedObject | any;
 };
@@ -149,10 +148,4 @@ export const handleLogin = async (email: string, password: string) => {
   }
 };
 
-export const handleLogout = () => {
-  const dispatch = useDispatch();
-  setSession(null);
-  dispatch({
-    type: "auth/logout",
-  });
-};
+

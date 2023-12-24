@@ -59,8 +59,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         return (element === payload.gameId);
       });
       if (firstIndex != -1) {
-        this.intializeArray.splice(firstIndex, 1);
-        this.initializeClients.splice(clientIndex, 1);
         this.gameService.initializeGame(parseInt(client.id), payload);
       } else {
         this.intializeArray.push(payload.gameId);
@@ -84,6 +82,25 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         throw new WsException("invalid payload");        
       }
       this.gameService.updateScore(parseInt(client.id), payload.gameId);
+    }
+
+    @SubscribeMessage('updateBallPosition')
+    updateBall(client: any, payload: {gameId: number, position: {x: number, y: number}}) {
+      if (!payload || !payload.gameId || !payload.position
+          || typeof payload.gameId != "number") {
+            throw new WsException("invalid payload");
+          }
+        this.gameService.updateBallPosition(parseInt(client.id), payload);
+    }
+
+    @SubscribeMessage('finishGame')
+    finishGame(client: any, payload: {gameId: number, enemy: number}) {
+      if (!payload || !payload.gameId || !payload.enemy
+        || typeof payload.gameId != "number" || typeof payload.enemy != "number") {
+          throw new WsException("Invalid payload");
+        }
+        console.log(payload);
+        this.gameService.finishGame((payload.enemy), parseInt(client.id), payload.gameId)
     }
 
     async handleConnection(client: any) {

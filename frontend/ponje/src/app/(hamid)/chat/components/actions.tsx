@@ -296,7 +296,7 @@ export function Join({ room, removeRoom }: { room: any, removeRoom: any }) {
             <Button onClick={joinRoom} className=" px-5  border hover:bg-blue-700/10 border-blue-700/10">
                 <p className="px-2">Join</p>
                 <svg className="" width="24" height="24" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
-                    <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round">
+                    <g fill="none" stroke="#fff" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M.5 9.5h9a4 4 0 0 0 0-8h-3" />
                         <path d="m3.5 6.5l-3 3l3 3" />
                     </g>

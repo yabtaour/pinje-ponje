@@ -1,10 +1,9 @@
 "use client";
-import React, { useEffect } from 'react';
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, useDisclosure } from "@nextui-org/react";
 import Image from 'next/image';
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure } from "@nextui-org/react";
-import Confetti from 'react-confetti';
-import { useState } from 'react';
+
 import { useRouter } from 'next/navigation';
+import Confetti from 'react-confetti';
 
 
 export default function GameResult(result: any) {
@@ -13,7 +12,7 @@ export default function GameResult(result: any) {
     // const [result, setResult] = useState("");
 
     const handleHomeClick = () => {
-        router.push('/Pong');
+        router.push('/profile');
     }
     // useEffect(() => {
     //     // setResult("win");
@@ -35,9 +34,14 @@ export default function GameResult(result: any) {
     };
 
     return (
-        <>
-            <Button onPress={onOpen}>Open Modal</Button>
-            <Modal isOpen={isOpen} onOpenChange={onOpenChange} className='bg-[#1B1A2D] rounded-lg w-10/12 md:w-1/2 lg:w-1/3'>
+        <div className='w-screen h-screen bg-[#151424] '>
+            <Modal isOpen={true}
+            backdrop='blur'
+            radius="lg"
+            hideCloseButton={true}
+            // onOpenChange={onOpenChange}
+            isDismissable={false}
+            className='bg-[#1B1A2D] rounded-lg w-10/12 md:w-1/2 lg:w-1/3'>
                 <ModalContent>
                     {(onClose) => (
                         <>
@@ -57,13 +61,14 @@ export default function GameResult(result: any) {
                                 </div>
                             </ModalBody>
                             <ModalFooter>
-                            <button className="btn btn-xs md:btn-sm btn-outline md:btn-outline btn-error" onClick={onClose}>close</button>
-                            <button className="btn btn-xs md:btn-sm btn-info" onClick={handleHomeClick}>Back home</button>
+                                <div className='flex w-full justify-center'>
+                                    <button className="btn btn-xs md:btn-sm btn-info" onClick={handleHomeClick}>Back home</button>
+                                </div>
                             </ModalFooter>
                         </>
                     )}
                 </ModalContent>
             </Modal>
-        </>
+        </div>
     );
 }

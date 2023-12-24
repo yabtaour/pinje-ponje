@@ -102,7 +102,7 @@ const SearchPage = () => {
   return (
 
     <div className="container h-screen mx-auto mt-8 p-4">
-      <h1 className="text-2xl font-semibold mb-4">
+      <h1 className="text-2xl font-semibold mb-4 text-white">
         Showing results for:{" "}
         <span className="text-blue-500">{searchQuery}</span>
       </h1>
@@ -110,7 +110,7 @@ const SearchPage = () => {
         {
         data.map((user: any) => (
           <Link key={user.id} href={`/profile/${user.id}`}>
-            <div className="bg-white p-4 rounded shadow-md cursor-pointer transition-transform transform hover:scale-105">
+            <div className="bg-[#272541] p-4 rounded shadow-md cursor-pointer transition-transform transform hover:scale-105">
               <div className="flex items-center flex-wrap justify-center mb-4">
                 <Image
                   src={
@@ -123,7 +123,7 @@ const SearchPage = () => {
                   height={64}
                 />
               </div>
-              <p className="text-lg font-semibold text-center">
+              <p className="text-lg font-semibold text-center text-[#77D7F7]">
                 {user.username}
               </p>
               <p className="text-center mt-2">
@@ -133,7 +133,7 @@ const SearchPage = () => {
               </p>
               {user.profile && (
                 <div className="mt-2">
-                  <p className="text-gray-700 text-center">
+                  <p className="text-gray-300 text-center">
                     {user.profile.bio && user.profile.bio.length > 50
                       ? `${user.profile.bio.substring(0, 50)}...`
                       : user.profile.bio}

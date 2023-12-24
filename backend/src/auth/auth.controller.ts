@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
 import { UserService } from 'src/user/user.service';
@@ -26,10 +26,10 @@ export class AuthController {
         const user = request.user;
         console.log("Copy This Token: ", request.user.token);
 		response.cookie("token", "Bearer " + request.user.token);
-		if (user.twoFactor === true)
+		if (user.user.twoFactor === true)
 			response.redirect('http://localhost:3001/verification');
 		else
-			response.redirect('http://localhost:3001/dashboard');
+			response.redirect('http://localhost:3001/profile');
 	}
 
 	
@@ -42,23 +42,24 @@ export class AuthController {
 		const user = request.user;
 		console.log("Copy This Token: ", request.user.token);
 		response.cookie("token", "Bearer " + request.user.token);
-		if (user.twoFactor === true)
+		if (user.user.twoFactor == true)
 			response.redirect('http://localhost:3001/verification');
-		else
-			response.redirect('http://localhost:3001/dashboard');
+		else 
+			response.redirect('http://localhost:3001/profile');
 	}
 
 	@Post('2fa')
 	@UseGuards(JWTGuard)
 	async handle2fa(
 		@Body() body: {twofactorcode: string},
-		@Req() request: Request
+		@Req() request: Request,
+		@Res() response: Response
 	) {
 		const user = await this.userService.getCurrentUser(request);
     	const isValid = await this.authService.userTwoFaChecker(user, body);
 		if (!isValid)
 			throw new HttpException("invalid verification code", HttpStatus.BAD_REQUEST);
-		return user;
+		response.send(user);
 	}
 
 	@Post('login')
@@ -67,11 +68,6 @@ export class AuthController {
 		const user = request.user;
 	  	console.log("Copy This Token: ", request.user.token);
 		response.cookie("token", "Bearer " + request.user.token);
-		// if (user.twoFactor === true)
-		// 	response.redirect('http://localhost:3001/verification');
-		// else
-		// 	response.redirect('http://localhost:3001/dashboard');
-		console.log("user : ", user);
 		response.send(user);
 	}
 
@@ -79,7 +75,6 @@ export class AuthController {
 	async signUp(@Body() data: SignUpDto, @Req() request: any, @Res() response: Response) {
 		const user = await this.authService.signUp(data);
 		response.cookie("token", "Bearer " + user.token);
-		console.log("user : ", user);
 		response.send(user);
 	}
 }

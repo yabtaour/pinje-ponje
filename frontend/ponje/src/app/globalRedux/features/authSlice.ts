@@ -10,12 +10,12 @@ type User = {
   id: number;
   intraid: number;
   Hashpassword: string | null;
+  username: string;
   email: string;
   twofactor: boolean;
   twoFactorSecret: string | null;
   profile: {
     id: number;
-    username: string;
     login: string;
     avatar: string | null;
     phonenumber: string | null;

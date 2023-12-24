@@ -52,6 +52,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     else {
       Logger.error(exception);
+      console.log(typeof exception);
       const response = host.switchToHttp().getResponse<Response>();
       const request = host.switchToHttp().getRequest<Request>();
 

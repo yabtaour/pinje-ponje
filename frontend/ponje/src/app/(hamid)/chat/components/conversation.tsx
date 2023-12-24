@@ -87,7 +87,7 @@ export default function Conversation({ collapsed }: any) {
         };
 
         fetchNewMessages();
-    }, [conversations]);
+    }, [conversations, dispatch, socketManager]);
 
 
     useEffect(() => {
@@ -141,7 +141,7 @@ export default function Conversation({ collapsed }: any) {
 
         handleMemberStateChanges();
 
-    }, [activeConversation, socketManager, conversations]);
+    }, [activeConversation, socketManager, conversations, dispatch]);
 
 
     return (
@@ -198,13 +198,13 @@ export default function Conversation({ collapsed }: any) {
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-start ">
                                         {conversation?.room?.roomType !== "DM" ? (
-                                            <img
+                                            <Image
                                                 src="/groups.svg"
                                                 alt="avatar"
                                                 className="w-12 h-12 rounded-full"
                                             />
                                         ) : (
-                                            <img
+                                            <Image
                                                 src={`${conversation?.members?.[0]?.user?.profile?.avatar ? conversation?.members?.[0]?.user?.profile?.avatar : "/defaultAvatar.png"}`}
                                                 alt="avatar"
                                                 className="w-12 h-12 rounded-full"
@@ -218,7 +218,7 @@ export default function Conversation({ collapsed }: any) {
                                                     </p>
                                                 ) : (
                                                     <p className="text-white px-2 text-left text-sm font-semibold">
-                                                        {collapsed ? "" : conversation?.room?.members?.[0]?.user?.username}
+                                                        {collapsed ? "" : conversation?.room?.members?.find((member: any) => member?.userId !== activeConversation?.userId)?.user?.username}
                                                     </p>
                                                 )}
                                             </h2>
