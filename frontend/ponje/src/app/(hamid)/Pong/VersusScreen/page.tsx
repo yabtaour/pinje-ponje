@@ -5,9 +5,12 @@ import { Toast } from '@chakra-ui/react';
 import Matter, { Body, Events } from 'matter-js';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from "react";
+
 import GameResult from "../components/GameResult";
+
 import PlayerCard, { PlayerSkeleton } from "../components/PlayerCard";
 import ScoreCard from "../components/ScoreCard";
+
 
 const socketManager = SocketManager.getInstance();
 
@@ -106,7 +109,7 @@ export function sendBallUpdate(gameId: number) {
 const ballReachedLeftThreshold = () => {
     const leftThreshold = 0;
     return ball.position.x <= leftThreshold;
-  };
+};
 
 
 let scoreSent = false;
@@ -163,7 +166,7 @@ export default function VersusScreen() {
                 setLoading(false);
             }
         };
-        
+
         const waitForNewGame = async () => {
             if (socketManager) {
                 socketManager.waitForConnection(async () => {
@@ -241,7 +244,7 @@ export default function VersusScreen() {
                     });
                 });
             }
-          };
+        };
 
         const handleScoreUpdate = () => {
             if (startGame && socketManager) {
@@ -341,7 +344,7 @@ export default function VersusScreen() {
                     });
                 });
 
-                
+
                 return () => {
                     Render.stop(render);
                     World.clear(engine.world, false);
@@ -376,7 +379,7 @@ export default function VersusScreen() {
             if (document.hidden) {
                 console.log(enemyPlayer);
                 console.log(gameId, enemyPlayer.userId);
-                socketManager.sendGameEnd({gameId: gameId, enemy: enemyPlayer.userId})
+                socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer.userId })
                 // Document is hidden, you can pause the game or take other actions here
                 console.log('Document is now hidden. Pausing game or taking other actions...');
             } else {
@@ -386,7 +389,7 @@ export default function VersusScreen() {
         };
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
-    
+
         if (!enemyPlayer && !playerFound) waitForNewGame();
         if (!user && !currentUserId) fetchData();
         if (selectedMap && enemyPlayer && playerFound && !startGame && !gameEnded) initializeGame();
@@ -400,7 +403,7 @@ export default function VersusScreen() {
             socketManager.getGameSocket()?.off('gameOver');
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [gameStarted, user,  enemyPlayer, playerFound, selectedMap, readyToInitialize, startGame, sentInitialize,  myScore, enemyScore, gameEnded, gameResult]);
+    }, [gameStarted, user, enemyPlayer, playerFound, selectedMap, readyToInitialize, startGame, sentInitialize, myScore, enemyScore, gameEnded, gameResult]);
 
 
     const handleMapClick = (map: string) => {

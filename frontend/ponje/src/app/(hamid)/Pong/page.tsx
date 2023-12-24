@@ -13,17 +13,18 @@ import OnlineFriendsInvite from "./components/onlineFriendsInvite";
 
 
 
+
 export default function Pong() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [onlineFriends, setOnlineFriends] = useState([]);
-  const [gameDataFetched, setGameDataFetched] = useState(false); 
+  const [gameDataFetched, setGameDataFetched] = useState(false);
   const router = useRouter();
   const handleMMClick = () => {
-    router.push('/pong/versusScreen');
+    router.push('/Pong/VersusScreen');
     if (!gameDataFetched) {
       getGameDataHandler();
-      
+
     }
   };
 
@@ -42,7 +43,7 @@ export default function Pong() {
       console.error(err);
     }
   };
-  
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -64,7 +65,7 @@ export default function Pong() {
           isClosable: true,
           position: "bottom-right",
           variant: "solid",
-      });
+        });
         console.error(err);
         setLoading(false);
       }
@@ -92,7 +93,7 @@ export default function Pong() {
         isClosable: true,
         position: "bottom-right",
         variant: "solid",
-    });
+      });
       console.error(err);
       setLoading(false);
     }
