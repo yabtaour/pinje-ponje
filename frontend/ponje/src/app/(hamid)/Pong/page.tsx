@@ -1,16 +1,14 @@
 'use client'
 import axios from "@/app/utils/axios";
-import { useEffect, useState } from 'react'
-import Loader from '../../components/loader'
-import { User } from '../../../app/types/user';
-import { useRouter } from 'next/navigation';
 import { getGameData } from '@/app/utils/update';
-import  PlayerCard  from "./components/PlayerCard";
-import OnlineFriendsInvite from "./components/onlineFriendsInvite";
-import ScoreCard from "./components/ScoreCard";
 import { Toast } from '@chakra-ui/react';
-import GameResult from "./components/GameResult";
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import Loader from '../../components/loader';
+import { User } from '../../types/user';
+import PlayerCard from "./components/PlayerCard";
 import Rules from "./components/Rules";
+import OnlineFriendsInvite from "./components/onlineFriendsInvite";
 
 
 
@@ -22,7 +20,7 @@ export default function Pong() {
   const [gameDataFetched, setGameDataFetched] = useState(false); 
   const router = useRouter();
   const handleMMClick = () => {
-    router.push('/Pong/VersusScreen');
+    router.push('/pong/versusScreen');
     if (!gameDataFetched) {
       getGameDataHandler();
       
