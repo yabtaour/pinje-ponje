@@ -2,6 +2,7 @@ type Player = {
     id: number,
     paddlePosition: number,
     score: number,
+    reversed: boolean
 }
 
 export class GameState {
