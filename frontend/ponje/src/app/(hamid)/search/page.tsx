@@ -1,39 +1,15 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import axios from "@/app/utils/axios"
-import useSWR from "swr";
-import Link from "next/link";
-import { useEffect, useState } from "react";
 import Loader from "@/app/components/loader";
+import axios from "@/app/utils/axios";
+import { useToast } from '@chakra-ui/react';
 import Image from "next/image";
-import { Toast } from '@chakra-ui/react';
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import useSWR from "swr";
 
 
-const fetchUsers = async (url: string) => {
-  console.log(url);
-  try {
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `${localStorage.getItem("access_token")}`,
-      },
-    });
-    if (!response) {
-      throw new Error("Failed to fetch posts");
-    }    
-    return response.data;
-  } catch (error: any) {
-    Toast({
-      title: 'Error',
-      status: 'error',
-      duration: 9000,
-      isClosable: true,
-      position: "bottom-right",
-      variant: "solid",
-  });
-    throw new Error(`Failed to fetch posts: ${error.message}`);
-  }
-};
 
 
 const SearchPage = () => {
@@ -42,7 +18,32 @@ const SearchPage = () => {
   const searchQuery = search ? search.get("q") : null;
   const encodedSearchQuery = encodeURI(searchQuery || "");
   const router = useRouter();
-
+  const toast = useToast();
+  const fetchUsers = async (url: string) => {
+    console.log(url);
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `${localStorage.getItem("access_token")}`
+        },
+      });
+      if (!response) {
+        throw new Error("Failed to fetch posts");
+      }
+      return response.data;
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error?.message,
+        status: 'error',
+        duration: 9000,
+        isClosable: true,
+        position: "bottom-right",
+        variant: "solid",
+      });
+      throw new Error(`Failed to fetch posts: ${error.message}`);
+    }
+  };
   const { data, error, isLoading, isValidating } = useSWR(
     `/users?search=${encodedSearchQuery}&take=9&skip=${
       (page - 1) * 9
@@ -72,9 +73,9 @@ const SearchPage = () => {
   if (!data || data.length === 0) {
     return isLoading ? (
       <div className='min-h-screen'>
-      <Loader />;
-    </div>
-  ) : (
+        <Loader />;
+      </div>
+    ) : (
       <div className="flex items-center justify-center h-screen">
         <div className="text-red-500">No users found</div>
       </div>
@@ -108,41 +109,41 @@ const SearchPage = () => {
       </h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {
-        data.map((user: any) => (
-          <Link key={user.id} href={`/profile/${user.id}`}>
-            <div className="bg-[#272541] p-4 rounded shadow-md cursor-pointer transition-transform transform hover:scale-105">
-              <div className="flex items-center flex-wrap justify-center mb-4">
-                <Image
-                  src={
-                    user.profile?.avatar ||
-                    "https://upload.wikimedia.org/wikipedia/commons/1/1e/Default-avatar.jpg"
-                  }
-                  alt={`${user.username}'s avatar`}
-                  className="w-16 h-16 rounded-full object-cover"
-                  width={64}
-                  height={64}
-                />
-              </div>
-              <p className="text-lg font-semibold text-center text-[#77D7F7]">
-                {user.username}
-              </p>
-              <p className="text-center mt-2">
-                <span className={`ml-1 text-lg ${getRankColor(user.rank)}`}>
-                  {user.rank}
-                </span>
-              </p>
-              {user.profile && (
-                <div className="mt-2">
-                  <p className="text-gray-300 text-center">
-                    {user.profile.bio && user.profile.bio.length > 50
-                      ? `${user.profile.bio.substring(0, 50)}...`
-                      : user.profile.bio}
-                  </p>
+          data.map((user: any) => (
+            <Link key={user.id} href={`/profile/${user.id}`}>
+              <div className="bg-[#272541] p-4 rounded shadow-md cursor-pointer transition-transform transform hover:scale-105">
+                <div className="flex items-center flex-wrap justify-center mb-4">
+                  <Image
+                    src={
+                      user.profile?.avatar ||
+                      "https://upload.wikimedia.org/wikipedia/commons/1/1e/Default-avatar.jpg"
+                    }
+                    alt={`${user.username}'s avatar`}
+                    className="w-16 h-16 rounded-full object-cover"
+                    width={64}
+                    height={64}
+                  />
                 </div>
-              )}
-            </div>
-          </Link>
-        ))}
+                <p className="text-lg font-semibold text-center text-[#77D7F7]">
+                  {user.username}
+                </p>
+                <p className="text-center mt-2">
+                  <span className={`ml-1 text-lg ${getRankColor(user.rank)}`}>
+                    {user.rank}
+                  </span>
+                </p>
+                {user.profile && (
+                  <div className="mt-2">
+                    <p className="text-gray-300 text-center">
+                      {user.profile.bio && user.profile.bio.length > 50
+                        ? `${user.profile.bio.substring(0, 50)}...`
+                        : user.profile.bio}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </Link>
+          ))}
       </div>
       <div className="flex justify-center mt-4">
         <button

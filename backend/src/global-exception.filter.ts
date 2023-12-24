@@ -1,6 +1,12 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
-import { Prisma } from '@prisma/client';
 import { Request, Response } from 'express';
 import { JsonWebTokenError } from 'jsonwebtoken';
 
@@ -23,24 +29,18 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         timestamp: new Date().toISOString(),
         path: request.url,
       });
-    }
-  
-    else if (exception instanceof WsException) {
+    } else if (exception instanceof WsException) {
       Logger.error(exception);
       const client = host.switchToWs().getClient();
       client.emit('ErrorEvent', {
         message: exception.message,
       });
-    }
-
-    else if (exception instanceof HttpException) {
+    } else if (exception instanceof HttpException) {
       Logger.error(exception);
       const response = host.switchToHttp().getResponse<Response>();
       const request = host.switchToHttp().getRequest<Request>();
-
-      const status = exception.getStatus() | HttpStatus.CONFLICT;
+      const status = exception.getStatus() || HttpStatus.CONFLICT;
       const message = exception.message;
-
       logger.error(`Error ${status} ${message}`);
       response.status(status).json({
         statusCode: status,
@@ -48,9 +48,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         timestamp: new Date().toISOString(),
         path: request.url,
       });
-    }
-
-    else {
+    } else {
       Logger.error(exception);
       console.log(typeof exception);
       const response = host.switchToHttp().getResponse<Response>();
@@ -67,6 +65,5 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         path: request.url,
       });
     }
-
   }
 }

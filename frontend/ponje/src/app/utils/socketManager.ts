@@ -305,7 +305,7 @@ class SocketManager {
   //     } else {
   //       reject("Socket is not connected");
   //     }
-  //   });    
+  //   });
   // }
 
   // public onBallUpdate(callback: (data: any) => void): void {
@@ -320,8 +320,7 @@ class SocketManager {
   //   }
   // }
 
-
-  public sendGameEnd(payload: {gameId: number, enemy: number}) {
+  public sendGameEnd(payload: { gameId: number; enemy: number }) {
     return new Promise((resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
         this.gameSocket?.emit("finishGame", payload);
@@ -329,9 +328,8 @@ class SocketManager {
         console.log("Socket is not connected yet.");
         reject("Socket is not connected");
       }
-    });    
+    });
   }
-
 
   public sendScoreUpdate(payload: { gameId: number }): Promise<any> {
     return new Promise(async (resolve, reject) => {
@@ -411,7 +409,10 @@ class SocketManager {
     }
   }
 
-  public sendBallUpdate(payload: {gameId: number, direction: string}): Promise <any> {
+  public sendBallUpdate(payload: {
+    gameId: number;
+    direction: string;
+  }): Promise<any> {
     return new Promise(async (resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
         this.gameSocket?.emit("updateBall", payload);
@@ -419,7 +420,7 @@ class SocketManager {
       } else {
         reject("Socket is not connected");
       }
-    });    
+    });
   }
 
   public onStartGame(): Promise<any> {
@@ -434,7 +435,6 @@ class SocketManager {
       }
     });
   }
-
 
   public waitForConnection(callback: () => void) {
     const checkConnection = () => {
