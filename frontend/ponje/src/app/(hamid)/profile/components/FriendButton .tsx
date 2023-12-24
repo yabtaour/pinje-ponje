@@ -50,6 +50,25 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
   };
 
 
+  const handleBlockAction = async (action: 'block' | 'unblock') => {
+    try {
+      setIsLoadingFriendship(true);
+
+      await axios.post(`http://localhost:3000/users/${action}`, {
+        id: userId,
+      }, {
+        headers: {
+          Authorization: `${localStorage.getItem('access_token')}`,
+        },
+      });
+      setFriendshipStatus(true);
+    } catch (error) {
+      console.error(`Error ${action}ing friend request:`, error);
+    } finally {
+      setIsLoadingFriendship(false);
+    }
+  };
+
   useEffect(() => {
     console.log("button clicked\n");
     determineFriendshipButton();
@@ -57,15 +76,11 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
   }, [friendshipStatus])
 
   const handleClick = () => {
-    // Perform actions when the button is clicked
-    // fetchData();
     return determineFriendshipButton();
-    // Add any additional actions here if needed
   };
 
   const determineFriendshipButton = () => {
     if (isLoading || isLoadingFriendship || !userMe) {
-      // Loading state, return a loading indicator or null
       return null;
     }
 
@@ -76,9 +91,6 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
     switch (true) {
       case isFriend:
         return (
-          // <button className="w-[10rem] btn btn-sm btn-friend" disabled={isLoadingFriendship} onClick={handleClick}>
-          //   Friend
-          // </button>
           <Dropdown className='bg-[#1B1A2D]'>
             <DropdownTrigger>
               <Button
@@ -95,7 +107,7 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
                 </button>
               </DropdownItem>
               <DropdownItem className='bg-[#333153] rounded-lg text-cyan-400 hover:bg-slate-600'>
-                <button className="w-[10rem]  " onClick={() => handleFriendAction('cancel')} disabled={isLoadingFriendship}>
+                <button className="w-[10rem]  " onClick={() => handleBlockAction('block')} disabled={isLoadingFriendship}>
                   Block
                 </button>
               </DropdownItem>
