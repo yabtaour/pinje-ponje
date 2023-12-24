@@ -396,8 +396,8 @@ export class GameService {
 		  });
 		const opponentPlayer = player.game.players.map((otherPlayer) => otherPlayer.user);
 		const gameState = new GameState(
-			{id: client, paddlePosition: payload.playerPos, score: 0},
-			{id: opponentPlayer[0].id, paddlePosition: payload.playerPos, score: 0},
+			{id: client, paddlePosition: payload.playerPos, score: 0, reversed: false},
+			{id: opponentPlayer[0].id, paddlePosition: payload.playerPos, score: 0, reversed: true},
 			{x: payload.ballVel, y: payload.ballVel},
 		)
 		this.gameGateway.currentGames.set(payload.gameId, gameState);
@@ -427,11 +427,32 @@ export class GameService {
 		}
 	}
 
-	// async updateBallPosition(x: number, y: number, gameId: number) {
-	// 	this.gameGateway.currentGames.get(gameId).ball.x = x;
-	// 	this.gameGateway.currentGames[gameId].ball.y = y;
-	// 	await this.gameGateway.server.to(String(gameId)).emit('ballUpdate', {x: x, y: y});
-	// }
+
+	async updateBallPosition(client: number, payload: {gameId: number, position: {x: number, y: number}}) {
+		if (this.gameGateway.currentGames.has(payload.gameId)) {
+			if (this.gameGateway.currentGames.get(payload.gameId).player1.id == client) {
+				if (this.gameGateway.currentGames.get(payload.gameId).player1.reversed == false) {
+					await this.gameGateway.server
+						.to(String(this.gameGateway.currentGames.get(payload.gameId).player1.id))
+						.emit('updateBall', payload.position);
+					await this.gameGateway.server
+						.to(String(this.gameGateway.currentGames.get(payload.gameId).player2.id))
+						.emit('updateBall', {x: -payload.position.x, y: payload.position.y});
+				}
+			} else if (this.gameGateway.currentGames.get(payload.gameId).player2.id == client) {
+				if (this.gameGateway.currentGames.get(payload.gameId).player2.reversed == false) {
+					await this.gameGateway.server
+						.to(String(this.gameGateway.currentGames.get(payload.gameId).player2.id))
+						.emit('updateBall', payload.position);
+					await this.gameGateway.server
+						.to(String(this.gameGateway.currentGames.get(payload.gameId).player1.id))
+						.emit('updateBall', {x: -payload.position.x, y: payload.position.y});
+				}
+			} else {
+				throw new WsException("Player Not found");
+			}
+		}
+	}
 
 	async finishGame(winnerId: number, loserId: number, gameId: number) {
 		if (this.gameGateway.currentGames.has(gameId)) {
@@ -495,6 +516,15 @@ export class GameService {
 		console.log(this.gameGateway.currentGames);
 		console.log(gameId);
 		this.gameGateway.currentGames.delete(gameId);
+		this.gameGateway.initializeClients.splice(this.gameGateway.initializeClients.findIndex((element) => {
+			element == winnerId
+		}), 1)
+		this.gameGateway.initializeClients.splice(this.gameGateway.initializeClients.findIndex((element) => {
+			element == loserId
+		}), 1)
+		this.gameGateway.intializeArray.splice(this.gameGateway.intializeArray.findIndex((element) => {
+			element == gameId
+		}), 1)
 		console.log(this.gameGateway.currentGames);
 		}
 	}

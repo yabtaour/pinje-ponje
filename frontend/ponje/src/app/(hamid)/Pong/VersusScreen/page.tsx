@@ -101,14 +101,10 @@ export function updatePaddlesgame(gameId: number) {
 }
 
 const ballReachedLeftThreshold = () => {
-    const leftThreshold = 0; // Adjust this value based on your world setup
+    const leftThreshold = 0;
     return ball.position.x <= leftThreshold;
   };
 
-// const ballReachedRightThreshold = () => {
-//     const leftThreshold = worldWidth;
-//     return ball.position.x >= leftThreshold;
-// }
 
 let scoreSent = false;
 
@@ -133,7 +129,6 @@ export default function VersusScreen() {
     const [gameStarted, setGameStarted] = useState(false);
     const [gameEnded, setGameEnded] = useState(false);
     const [gameResult, setGameResult] = useState('');
-    // let gameResult: any = null;
     const [loading, setLoading] = useState(true);
     let gameEndMessage = null;
     
@@ -176,6 +171,7 @@ export default function VersusScreen() {
                         if (data) {
                             gameId = data.id;
                             const otherUser = data.players.find((player: any) => player.userId !== currentUserId);
+                            console.log(otherUser);
                             setEnemyPlayer(otherUser);
                             setPlayerFound(true);
                         }
@@ -245,7 +241,7 @@ export default function VersusScreen() {
               });
             }
           };
-        
+
         const handleScoreUpdate = () => {
             if (startGame && socketManager) {
                 socketManager.onScoreUpdate((data) => {
@@ -326,23 +322,25 @@ export default function VersusScreen() {
                 });
 
                 Events.on(engine, 'beforeUpdate', () => {
-                    console.log("update");
                     if (ballReachedLeftThreshold())
                         updateScore(gameId);
                     else {
                         updatePaddlesgame(gameId);
                     }
-                });               
-    
+                });
+
+
                 Matter.Runner.run(engine)
                 Render.run(render);
+
                 Events.on(engine, 'collisionStart', (event) => {
                     event.pairs.forEach((pair) => {
                         const { bodyA, bodyB } = pair;
                         handleColision(pair, bodyA, bodyB)
                     });
                 });
-    
+
+                
                 return () => {
                     Render.stop(render);
                     World.clear(engine.world, false);
@@ -372,6 +370,21 @@ export default function VersusScreen() {
                         setReadyToInitialize(true);
                 });
         };
+
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                console.log(enemyPlayer);
+                console.log(gameId, enemyPlayer.userId);
+                socketManager.sendGameEnd({gameId: gameId, enemy: enemyPlayer.userId})
+                // Document is hidden, you can pause the game or take other actions here
+                console.log('Document is now hidden. Pausing game or taking other actions...');
+            } else {
+                // Document is visible again, you can resume the game or take other actions here
+                console.log('Document is now visible.');
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
     
         if (!enemyPlayer && !playerFound) waitForNewGame();
         if (!user && !currentUserId) fetchData();
@@ -384,10 +397,7 @@ export default function VersusScreen() {
 
         return () => {
             socketManager.getGameSocket()?.off('gameOver');
-            // socketManager.getGameSocket()?.off('updateScore');
-            // socketManager.getGameSocket()?.off('gameFound');
-            // socketManager.getGameSocket()?.off('startGame');
-            // socketManager.getGameSocket()?.off('updatePaddle');
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
     }, [user, currentUserId, enemyPlayer, playerFound, selectedMap, readyToInitialize, startGame, sentInitialize, leftPaddle, rightPaddle, myScore, enemyScore, gameEnded, gameResult]);
     
