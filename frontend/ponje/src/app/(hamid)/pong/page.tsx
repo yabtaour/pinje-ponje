@@ -1,17 +1,14 @@
 'use client'
 import axios from "@/app/utils/axios";
-import { useEffect, useState } from 'react'
-import Loader from '../../components/loader'
-import { User } from '../../../app/types/user';
-import { useRouter } from 'next/navigation';
 import { getGameData } from '@/app/utils/update';
-import  PlayerCard  from "./components/PlayerCard";
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import Loader from '../../components/loader';
+import { User } from '../../types/user';
 import OnlineFriendsInvite from "./components/onlineFriendsInvite";
-import ScoreCard from "./components/ScoreCard";
-import GameResult from "./components/GameResult";
 import Rules from "./components/Rules";
+import PlayerCard from "./components/PlayerCard";
 import { useToast } from "@chakra-ui/react";
-
 
 
 
@@ -19,14 +16,14 @@ export default function Pong() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [onlineFriends, setOnlineFriends] = useState([]);
-  const [gameDataFetched, setGameDataFetched] = useState(false); 
+  const [gameDataFetched, setGameDataFetched] = useState(false);
   const router = useRouter();
   const toast = useToast();
   const handleMMClick = () => {
-    router.push('/Pong/VersusScreen');
+    router.push('/pong/versusScreen');
     if (!gameDataFetched) {
       getGameDataHandler();
-      
+
     }
   };
 
@@ -45,7 +42,7 @@ export default function Pong() {
       console.error(err);
     }
   };
-  
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -95,7 +92,6 @@ export default function Pong() {
         isClosable: true,
         position: "bottom-right",
         variant: "solid",
-        colorScheme: "red",
       });
       console.error(err);
       setLoading(false);

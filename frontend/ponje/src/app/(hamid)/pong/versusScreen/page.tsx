@@ -4,10 +4,13 @@ import SocketManager from '@/app/utils/socketManager';
 import Matter, { Body, Events } from 'matter-js';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from "react";
+
 import GameResult from "../components/GameResult";
-import PlayerCard, { PlayerSkeleton } from '../components/PlayerCard';
+import PlayerCard, { PlayerSkeleton } from "../components/PlayerCard";
 import ScoreCard from "../components/ScoreCard";
 import { useToast } from "@chakra-ui/react";
+
+
 
 const socketManager = SocketManager.getInstance();
 
@@ -99,15 +102,15 @@ export function updatePaddlesgame(gameId: number) {
     }
 }
 
+export function sendBallUpdate(gameId: number) {
+
+}
+
 const ballReachedLeftThreshold = () => {
-    const leftThreshold = 0; // Adjust this value based on your world setup
+    const leftThreshold = 0;
     return ball.position.x <= leftThreshold;
 };
 
-// const ballReachedRightThreshold = () => {
-//     const leftThreshold = worldWidth;
-//     return ball.position.x >= leftThreshold;
-// }
 
 let scoreSent = false;
 
@@ -151,8 +154,6 @@ export default function VersusScreen() {
                 });
                 setUser(data.data);
                 setLoading(false);
-                // console.log(data.data);
-                // const loggedUserId = data.data.id;
                 currentUserId = data.data.id
             } catch (err) {
                 toast({
@@ -178,6 +179,7 @@ export default function VersusScreen() {
                         if (data) {
                             gameId = data.id;
                             const otherUser = data.players.find((player: any) => player.userId !== currentUserId);
+                            console.log(otherUser);
                             setEnemyPlayer(otherUser);
                             setPlayerFound(true);
                         }
@@ -327,22 +329,25 @@ export default function VersusScreen() {
                 });
 
                 Events.on(engine, 'beforeUpdate', () => {
-                    console.log("update");
                     if (ballReachedLeftThreshold())
                         updateScore(gameId);
                     else {
+                        sendBallUpdate(gameId);
                         updatePaddlesgame(gameId);
                     }
                 });
 
+
                 Matter.Runner.run(engine)
                 Render.run(render);
+
                 Events.on(engine, 'collisionStart', (event) => {
                     event.pairs.forEach((pair) => {
                         const { bodyA, bodyB } = pair;
                         handleColision(pair, bodyA, bodyB)
                     });
                 });
+
 
                 return () => {
                     Render.stop(render);
@@ -374,6 +379,21 @@ export default function VersusScreen() {
             });
         };
 
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                console.log(enemyPlayer);
+                console.log(gameId, enemyPlayer.userId);
+                socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer.userId })
+                // Document is hidden, you can pause the game or take other actions here
+                console.log('Document is now hidden. Pausing game or taking other actions...');
+            } else {
+                // Document is visible again, you can resume the game or take other actions here
+                console.log('Document is now visible.');
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
         if (!enemyPlayer && !playerFound) waitForNewGame();
         if (!user && !currentUserId) fetchData();
         if (selectedMap && enemyPlayer && playerFound && !startGame && !gameEnded) initializeGame();
@@ -385,12 +405,9 @@ export default function VersusScreen() {
 
         return () => {
             socketManager.getGameSocket()?.off('gameOver');
-            // socketManager.getGameSocket()?.off('updateScore');
-            // socketManager.getGameSocket()?.off('gameFound');
-            // socketManager.getGameSocket()?.off('startGame');
-            // socketManager.getGameSocket()?.off('updatePaddle');
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [gameStarted, user,  enemyPlayer, playerFound, selectedMap, readyToInitialize, startGame, sentInitialize,  myScore, enemyScore, gameEnded, gameResult]);
+    }, [gameStarted, user, enemyPlayer, playerFound, selectedMap, readyToInitialize, startGame, sentInitialize, myScore, enemyScore, gameEnded, gameResult]);
 
 
     const handleMapClick = (map: string) => {

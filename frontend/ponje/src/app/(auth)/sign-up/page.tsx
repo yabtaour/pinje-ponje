@@ -58,7 +58,7 @@ export default function SignUp() {
             .matches(
                 /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/,
                 // "Password must be at least 8 characters long\n and contain at least one lowercase letter, one uppercase letter,\n one number, and one special character (!@#$%^&*)"
-                "Password must be Strong, with at least 8 characters"
+                "Password must be at least 8 characters long\n and contain at least one lowercase letter, one uppercase letter,\n one number, and one special character (!@#$%^&*)"
             )
             .required("Password is required"),
         confirmPassword: Yup.string()
