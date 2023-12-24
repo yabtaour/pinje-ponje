@@ -6,11 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Loader from '../../components/loader';
 import { User } from '../../types/user';
-import PlayerCard from "./components/PlayerCard";
-import Rules from "./components/Rules";
 import OnlineFriendsInvite from "./components/onlineFriendsInvite";
-
-
+import Rules from "./components/Rules";
+import PlayerCard from "./components/PlayerCard";
 
 
 
