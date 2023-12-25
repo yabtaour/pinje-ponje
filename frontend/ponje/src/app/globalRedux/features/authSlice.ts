@@ -14,6 +14,7 @@ type User = {
   email: string;
   twofactor: boolean;
   twoFactorSecret: string | null;
+  twoFactorFlag: boolean | false;
   profile: {
     id: number;
     login: string;
@@ -25,9 +26,9 @@ type User = {
     Friends: [];
     createdAt: string;
     updatedAt: string;
-    friendOf: [],
-    pendingRequest: [],
-    sentRequest: [],
+    friendOf: [];
+    pendingRequest: [];
+    sentRequest: [];
     userid: number;
     bio?: string | null;
   };
