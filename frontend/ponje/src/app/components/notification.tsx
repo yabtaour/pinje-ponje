@@ -126,7 +126,7 @@ export default function Notification({ user }: { user: User | null | undefined }
     };
 
     getMyNotifications();
-  }, [user, formatDate]);
+  }, [user, formatDate, getUserById, toast]);
 
 
   const renderNotifications = () => {

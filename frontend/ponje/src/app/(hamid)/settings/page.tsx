@@ -65,7 +65,7 @@ export default function UserSettings() {
                     position: "bottom-right",
                     variant: "solid",
                     colorScheme: "red",
-                  });
+                });
                 console.error("Error fetching user data:", error);
             }
         };
@@ -95,7 +95,7 @@ export default function UserSettings() {
         oldpassword: Yup.string(),
         newpassword: Yup.string().when("oldpassword", {
             is: (oldpassword: string) => oldpassword && oldpassword.length > 0,
-            then: (schema) => schema.required("New Password is required").min(8, 'Password must be at least 8 characters'),
+            then: (schema) => schema.required("New Password is required").min(8, 'Password must be at least 8 characters').notOneOf([Yup.ref('oldpassword')], 'old and new password cannot be the same'),
         }),
         confirmnewpassword: Yup.string().when("newpassword", {
             is: (newpassword: string) => newpassword && newpassword.length > 0,
@@ -230,10 +230,28 @@ export default function UserSettings() {
             }
 
             if (oldpassword && newpassword) {
-                await resetPassword(oldpassword, newpassword);
-                console.log("Password updated successfully.");
+                try {
+                    const response = await resetPassword(oldpassword, newpassword, userToken);
+                    if (response) {
+                        console.log("response from reset password: ", response);
+                        setShowSuccessBadge(true);
+
+                    }
+                }
+                catch (error) {
+                    console.log("error from reset password: ", error);
+                    toast({
+                        title: 'Error',
+                        description: "error while updating password",
+                        status: 'error',
+                        duration: 9000,
+                        isClosable: true,
+                        position: "bottom-right",
+                        variant: "solid",
+                        colorScheme: "red",
+                    })
+                }
                 setResetPasswordError("");
-                setShowSuccessBadge(true);
                 setTimeout(() => setShowSuccessBadge(false), 5000);
             }
 

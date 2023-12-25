@@ -15,21 +15,12 @@ const SearchInput = () => {
     if (!searchQuery || typeof searchQuery !== "string") {
       {
         setSearchQuery(null);
-        toast({
-          title: 'Error',
-          description: "Invalid search query",
-          status: 'error',
-          duration: 9000,
-          isClosable: true,
-          position: "bottom-right",
-          variant: "solid",
-          colorScheme: "red",
-        });
       }
     } else {
       const encodedSearchQuery = encodeURI(searchQuery);
       router.push(`/search?q=${encodedSearchQuery}`);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {

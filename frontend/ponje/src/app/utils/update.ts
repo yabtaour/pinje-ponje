@@ -104,11 +104,15 @@ export const fetchQRCode = async (token: string | null) => {
 }
 
 
-export const resetPassword = async (old: string, newpass: string) => {
+export const resetPassword = async (old: string, newpass: string, token: string | null) => {
   try {
     const response = await axios.post("/users/resetPassword", {
-      old,
-      newpass,
+      old: old,
+      new: newpass,
+    }, {
+      headers: {
+        Authorization: token,
+      },
     });
     return response.data;
   } catch (error) {
