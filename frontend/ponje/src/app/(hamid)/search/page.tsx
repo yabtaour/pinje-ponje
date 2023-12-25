@@ -10,37 +10,6 @@ import { useState } from "react";
 import useSWR from "swr";
 
 
-const toast = useToast();
-
-const fetchUsers = async (url: string) => {
-  
-  console.log(url);
-  try {
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `${localStorage.getItem("access_token")}`,
-      },
-    });
-    if (!response) {
-      throw new Error("Failed to fetch posts");
-    }    
-    return response.data;
-  } catch (error: any) {
-    toast({
-      title: 'Error',
-      description: "failed to fetch users",
-      status: 'error',
-      duration: 9000,
-      isClosable: true,
-      position: "bottom-right",
-      variant: "solid",
-      colorScheme: "red",
-    });
-    throw new Error(`Failed to fetch posts: ${error.message}`);
-  }
-};
-
-
 
 
 const SearchPage = () => {

@@ -93,7 +93,6 @@ export const Leaderboard = ({ users }: { users: DisplayedInfo[] }) => {
   const [page, setPage] = React.useState(1);
 
 
-  const accessToken = useAppSelector((state) => state.authReducer.value.token);
 
   const rowsPerPage = 20;
 

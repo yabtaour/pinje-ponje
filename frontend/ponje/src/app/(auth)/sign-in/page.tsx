@@ -25,15 +25,15 @@ export default function SignIn() {
   const dispatch = useDispatch();
   const router = useRouter();
   const [errorerrorMessage, setErrorMessage] = useState(null as any)
-  const isAithenticated = useAppSelector((state) => state.authReducer.value.isAuthenticated);
+  const isAuthenticated = useAppSelector((state) => state.authReducer.value.isAuthenticated);
 
 
 
 
   useEffect(() => {
-    if (isAithenticated || getCookie('token'))
+    if (isAuthenticated || getCookie('token'))
       router.push('/profile');
-  }, [isAithenticated, router])
+  }, [isAuthenticated, router])
 
 
 
