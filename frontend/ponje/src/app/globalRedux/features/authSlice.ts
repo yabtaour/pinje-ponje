@@ -7,29 +7,29 @@ type InitialState = {
 };
 
 type User = {
-  id: number;
-  intraid: number;
-  Hashpassword: string | null;
-  username: string;
-  email: string;
-  twofactor: boolean;
-  twoFactorSecret: string | null;
-  twoFactorFlag: boolean | false;
-  profile: {
+  id: number | undefined;
+  intraid?: number;
+  Hashpassword?: string | null;
+  username?: string;
+  email?: string;
+  twofactor?: boolean;
+  twoFactorSecret?: string | null;
+  twoFactorFlag?: boolean;
+  profile?: {
     id: number;
-    login: string;
-    avatar: string | null;
-    phonenumber: string | null;
-    status: string;
-    Rank: string;
-    level: number;
-    Friends: [];
-    createdAt: string;
-    updatedAt: string;
-    friendOf: [];
-    pendingRequest: [];
-    sentRequest: [];
-    userid: number;
+    login?: string;
+    avatar?: string | null;
+    phonenumber?: string | null;
+    status?: string;
+    Rank?: string;
+    level?: number;
+    Friends?: [];
+    createdAt?: string;
+    updatedAt?: string;
+    friendOf?: [];
+    pendingRequest?: [];
+    sentRequest?: [];
+    userid?: number;
     bio?: string | null;
   };
 };
@@ -68,22 +68,40 @@ export const auth = createSlice({
       }
     },
     logout: () => initialState,
-
     UpdateUser(state, action) {
       const newUser = action.payload;
-      const updatedUser = { ...state.value.user, ...newUser };
-      const updatedState = {
-        ...state,
+      if (newUser && newUser.id !== undefined) {
+        const updatedUser = { ...state.value.user, ...newUser };
+        const updatedState: InitialState = {
+          value: {
+            ...state.value,
+            user: updatedUser,
+          },
+        };
+        localStorage.setItem("auth", JSON.stringify(updatedState.value));
+        return updatedState;
+      } else {
+        console.error("Invalid payload structure for UpdateUser");
+        return state;
+      }
+    },
+
+    setVerified(state, action) {
+      const newState: InitialState = {
         value: {
           ...state.value,
-          user: updatedUser,
+          user: {
+            ...state.value.user,
+            id: state.value.user?.id,
+            twoFactorFlag: action.payload,
+          },
         },
       };
-      localStorage.setItem("auth", JSON.stringify(updatedState.value));
-      return updatedState;
+      localStorage.setItem("auth", JSON.stringify(newState.value));
+      return newState;
     },
   },
 });
 
-export const { login, logout, UpdateUser } = auth.actions;
+export const { login, logout, UpdateUser , setVerified } = auth.actions;
 export default auth.reducer;

@@ -1,12 +1,12 @@
 'use client';
-import InputCode from '@/app/components/inputCode';
+import { setVerified } from '@/app/globalRedux/features/authSlice';
 import axios from '@/app/utils/axios';
 import { Toast } from '@chakra-ui/react';
 import { getCookie } from "cookies-next";
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
 
 
 export default function VerificationPage() {
@@ -14,7 +14,7 @@ export default function VerificationPage() {
     const token = getCookie("token");
     const [twofasuccess, settwofasuccess] = useState(false);
     const [submissionAttempted, setSubmissionAttempted] = useState(false);
-
+    const dispatch = useDispatch();
     const verifyCode = async (values: any) => {
         try {
             console.log('values:', values);
@@ -25,6 +25,7 @@ export default function VerificationPage() {
             });
             if (res.status === 201) {
                 console.log('2fa success');
+                dispatch(setVerified(true));
                 router.push('/profile');
                 settwofasuccess(true);
             }

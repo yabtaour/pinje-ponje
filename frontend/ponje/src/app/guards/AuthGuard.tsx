@@ -41,10 +41,9 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
                 console.log("data: ", data);
                 dispatch(login({ user: data, token: accessToken }));
                 setSession(accessToken);
-                //2fa bypass protection
 
-                // if (data?.profile?.twiFactor , twoFactorFlag = false)
-                //     router.push('/2fa');
+                if (data?.profile?.twofactor && data?.profile?.twoFactorFlag === false)
+                    router.push('/2fa');
 
                 // if (!data?.profile?.avatar)
                 //     router.push('/onboarding');
