@@ -55,7 +55,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
       const status = HttpStatus.FAILED_DEPENDENCY;
       const message = exception.meta
-      logger.error(`Error ${status} ${message.details}`);
+      logger.error(`PrismaClientKnownRequestError : ${status} `);
+      logger.error(message)
       response.status(status).json({
         statusCode: status,
         message: message,
@@ -68,7 +69,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
       const status = HttpStatus.FAILED_DEPENDENCY;
       const message = exception.message;
-      logger.error(`Error ${status} ${message}`);
+      logger.error(`PrismaClientUnknownRequestError :  ${status} ${message}`);
       response.status(status).json({
         statusCode: status,
         message: message,
