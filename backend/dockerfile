@@ -1,5 +1,10 @@
 FROM node:20.6-alpine as base
 
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++
+
 WORKDIR /app
 
 COPY package*.json ./
@@ -10,9 +15,4 @@ COPY . .
 
 RUN chmod 777 ./run.sh
 
-# ENTRYPOINT ["sh", "run.sh"]
-CMD ["tail", "-f", "/dev/null"]
-
-
-
-
+ENTRYPOINT ["sh", "run.sh"]
