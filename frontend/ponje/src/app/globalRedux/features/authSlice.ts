@@ -7,7 +7,6 @@ type InitialState = {
 };
 
 type User = {
-  googleId: any;
   id: number | undefined;
   intraid?: number;
   Hashpassword?: string | null;
@@ -16,6 +15,7 @@ type User = {
   twofactor?: boolean;
   twoFactorSecret?: string | null;
   twoFactorFlag?: boolean;
+  googleId?: string | null | undefined;
   profile?: {
     id: number;
     login?: string;
@@ -104,5 +104,5 @@ export const auth = createSlice({
   },
 });
 
-export const { login, logout, UpdateUser , setVerified } = auth.actions;
+export const { login, logout, UpdateUser, setVerified } = auth.actions;
 export default auth.reducer;
