@@ -15,32 +15,34 @@ import { CreateProfileDto } from '../../profiles/dto/create-profile.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDtoIntra {
-    @IsNotEmpty()
-    @IsInt()
+    @IsNotEmpty({ message: 'Intraid cannot be empty.' })
+    @IsInt({ message: 'Intraid must be an integer.' })
     @ApiProperty()
     intraid: number;
 
-    @IsEmail()
+    @IsEmail({}, { message: 'Email must be a valid email address.' })
     @ApiProperty()
     email: string;
 
-    @IsNotEmpty()
-    @IsString()
+    @IsNotEmpty({ message: 'Username cannot be empty.' })
+    @IsString({ message: 'Username must be a string.' })
+    @ApiProperty()
     username: string;
 }
 
 export class CreateUserDtoLocal {
 
-    @IsNotEmpty()
-    @IsString()
+    @IsNotEmpty({ message: 'Password cannot be empty.' })
+    @IsString({ message: 'Password must be a string.' })
     @ApiProperty()
     password: string
 
-    @IsEmail()
+    @IsEmail({}, { message: 'Email must be a valid email address.' })
     @ApiProperty()
     email: string; 
  
-    @IsNotEmpty()
-    @IsString()
+    @IsNotEmpty({ message: 'Username cannot be empty.' })
+    @IsString({ message: 'Username must be a string.' })
+    @ApiProperty()
     username: string;
 }

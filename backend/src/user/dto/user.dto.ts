@@ -9,25 +9,25 @@ import {
 
 export class UserDto {
     
-    @IsInt()
-    sub : number;
+    @IsInt({ message: 'Sub must be an integer.' })
+    sub: number;
 
-    @IsNotEmpty()
-    @IsInt()
+    @IsNotEmpty({ message: 'Intraid cannot be empty.' })
+    @IsInt({ message: 'Intraid must be an integer.' })
     intraid: number;
 
-    @IsNotEmpty()
-    @IsString()
+    @IsNotEmpty({ message: 'Login cannot be empty.' })
+    @IsString({ message: 'Login must be a string.' })
     login: string;
 
-    @IsEmail()
+    @IsEmail({}, { message: 'Email must be a valid email address.' })
     email: string;
 
     @IsOptional()
-    @IsString()
+    @IsString({ message: 'Hashpassword must be a string.' })
     Hashpassword: string;
 
     @IsOptional()
-    @IsString()
+    @IsString({ message: 'Twofactorsecret must be a string.' })
     twofactorsecret: string;
 }

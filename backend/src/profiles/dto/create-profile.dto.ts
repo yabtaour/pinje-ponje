@@ -11,16 +11,16 @@ import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateProfileDto {
-    @IsString()
+    @IsString({ message: 'Username must be a string.' })
     @ApiProperty()
     username: string;
 
-    @IsString()
+    @IsString({ message: 'Avatar must be a string.' })
     @ApiProperty()
     avatar: string;
 
-    @IsNotEmpty()
-    @IsString()
+    @IsNotEmpty({ message: 'Login cannot be empty.' })
+    @IsString({ message: 'Login must be a string.' })
     @ApiProperty()
     login: string;
 }

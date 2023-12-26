@@ -29,6 +29,7 @@ import { FriendsActionsDto } from 'src/user/dto/FriendsActions-user.dto';
 import { chatActionsDto } from './dto/actions-dto';
 import { updateRoomRoleDto } from './dto/update-room-role.dto';
 import { updateRoomDto } from './dto/update-room.dto';
+import { PaginationLimitDto } from './dto/pagination-dto';
 
 export const ChatActions = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): chatActionsDto => {
@@ -45,18 +46,6 @@ export const ChatActions = createParamDecorator(
     return plainToClass(chatActionsDto, dataFromContext);
   },
 );
-
-export class PaginationLimitDto {
-  @IsOptional()
-  @IsInt()
-  @Transform(({ value }) => parseInt(value))
-  skip?: number;
-
-  @IsNumber()
-  @IsOptional()
-  @Transform(({ value }) => parseInt(value))
-  take?: number;
-}
 
 export class joinRoomDto {
   @IsOptional()
@@ -470,6 +459,7 @@ export class ChatService {
           roomType: true,
           updatedAt: true,
           createdAt: true,
+          dm_token: true
         },
       });
 

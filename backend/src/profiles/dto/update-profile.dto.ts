@@ -1,9 +1,7 @@
-import{ PartialType } from '@nestjs/mapped-types';
-import { CreateProfileDto } from './create-profile.dto';
 import { IsOptional, IsString } from 'class-validator';
 
 export class updateProfileDto {
-    @IsOptional()
-    @IsString()
-    bio: string
+    @IsOptional({ message: 'Bio must be a string.' })
+    @IsString({ message: 'Bio must be a string.' })
+    bio: string;
 }

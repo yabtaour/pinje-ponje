@@ -18,11 +18,12 @@ import { JWTGuard } from 'src/auth/guards/jwt.guard';
 import { FriendsActionsDto } from 'src/user/dto/FriendsActions-user.dto';
 import { UserService } from 'src/user/user.service';
 import { ChatGateway } from './chat.gateway';
-import { ChatService, PaginationLimitDto, joinRoomDto } from './chat.service';
+import { ChatService, joinRoomDto } from './chat.service';
 import { chatActionsDto } from './dto/actions-dto';
 import { CreateChatDmRoomDto } from './dto/create-chat.dto';
 import { updateRoomDto } from './dto/update-room.dto';
 import { updateRoomRoleDto } from './dto/update-room-role.dto';
+import { PaginationLimitDto } from './dto/pagination-dto';
 
 @UseGuards(JWTGuard)
 @ApiBearerAuth()
