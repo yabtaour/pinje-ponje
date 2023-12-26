@@ -791,18 +791,12 @@ export class UserService {
     data: FriendsActionsDto,
   ) {
     try {
-      const getFriendRequest = await this.prisma.friendRequest.findFirst({
+      const getFriendRequest = await this.prisma.friendRequest.findUnique({
         where: {
-          OR: [
-            {
-              senderId: data.id,
-              receiverId: user_id,
-            },
-            {
-              senderId: user_id,
-              receiverId: data.id,
-            },
-          ],
+          senderId_receiverId: {
+            senderId: data.id,
+            receiverId: user_id,
+          }
         },
       });
       if (getFriendRequest == null)
