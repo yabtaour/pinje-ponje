@@ -8,6 +8,7 @@ import { getCookie } from "cookies-next";
 import { miyagi } from 'ldrs';
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
+import { useToast } from "@chakra-ui/react";
 
 
 if (typeof window !== 'undefined') {
@@ -33,7 +34,7 @@ export default function ChatInput() {
     const me = useAppSelector(state => state?.authReducer?.value?.user);
     const accessToken = getCookie('token');
     const socketManager = SocketManager.getInstance('http://localhost:3000', accessToken);
-
+    const toast = useToast();
     useEffect(() => {
    
     }, [dispatch ,activeConversation, socketManager, rooms, activeConversation?.state]);
@@ -66,6 +67,16 @@ export default function ChatInput() {
 
 
             } catch (error) {
+                toast({
+                    title: 'Error',
+                    description: "Error sending message",
+                    status: 'error',
+                    duration: 9000,
+                    isClosable: true,
+                    position: "bottom-right",
+                    variant: "solid",
+                    colorScheme: "red",
+                  });
                 console.error("Error sending message:", error);
             }
         }

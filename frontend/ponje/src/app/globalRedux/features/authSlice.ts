@@ -8,7 +8,8 @@ type InitialState = {
 
 type User = {
   id: number;
-  intraid: number;
+  intraid: number | null;
+  googleId: number | null;
   Hashpassword: string | null;
   username: string;
   email: string;

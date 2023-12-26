@@ -4,7 +4,7 @@ import Auth42Button, { AuthGoogleButton } from "@/app/components/buttons";
 import { login } from "@/app/globalRedux/features/authSlice";
 import { useAppSelector } from "@/app/globalRedux/store";
 import { handleSignup } from "@/app/utils/auth";
-import { Toast } from "@chakra-ui/react";
+import {  useToast } from "@chakra-ui/react";
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
 import { AxiosError } from "axios";
 import { getCookie } from "cookies-next";
@@ -28,7 +28,7 @@ export default function SignUp() {
     const [confirmPasswordShown, setConfirmPasswordShown] = useState(false);
     const [userExistsError, setUserExistsError] = useState(false)
     const isAithenticated = useAppSelector((state) => state.authReducer.value.isAuthenticated);
-
+    const toast = useToast();
 
 
     useEffect(() => {
@@ -83,15 +83,16 @@ export default function SignUp() {
                     setUserExistsError(false);
                 }, 4000);
             } else {
-                Toast({
+                toast({
                     title: 'Error',
+                    description: "Signup Error",
                     status: 'error',
                     duration: 9000,
                     isClosable: true,
                     position: "bottom-right",
                     variant: "solid",
                     colorScheme: "red",
-                });
+                  });
             }
         }
     };

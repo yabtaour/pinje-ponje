@@ -1,7 +1,6 @@
 'use client'
 import axios from "@/app/utils/axios";
 import { getGameData } from '@/app/utils/update';
-import { Toast } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Loader from '../../components/loader';
@@ -9,6 +8,7 @@ import { User } from '../../types/user';
 import OnlineFriendsInvite from "./components/onlineFriendsInvite";
 import Rules from "./components/Rules";
 import PlayerCard from "./components/PlayerCard";
+import { useToast } from "@chakra-ui/react";
 
 
 
@@ -18,6 +18,7 @@ export default function Pong() {
   const [onlineFriends, setOnlineFriends] = useState([]);
   const [gameDataFetched, setGameDataFetched] = useState(false);
   const router = useRouter();
+  const toast = useToast();
   const handleMMClick = () => {
     router.push('/pong/versusScreen');
     if (!gameDataFetched) {
@@ -38,6 +39,16 @@ export default function Pong() {
       const data = await getGameData(token);
       console.log('GameData:', data);
     } catch (err) {
+      toast({
+        title: 'Error',
+        description: "Game data fetch error",
+        status: 'error',
+        duration: 9000,
+        isClosable: true,
+        position: "bottom-right",
+        variant: "solid",
+        colorScheme: "red",
+      });
       console.error(err);
     }
   };
@@ -56,14 +67,13 @@ export default function Pong() {
         const loggedUserId = data.data.id;
         fetchOnlineFriends(loggedUserId);
       } catch (err) {
-        Toast({
-          title: 'Error',
-          status: 'error',
-          duration: 9000,
+        toast({
+          title: "Error.",
+          description: "Error while fetching friends",
+          status: "error",
+          duration: 3000,
           isClosable: true,
-          position: "bottom-right",
-          variant: "solid",
-        });
+      })
         console.error(err);
         setLoading(false);
       }
@@ -84,8 +94,9 @@ export default function Pong() {
       setLoading(false);
       console.log(data.data);
     } catch (err) {
-      Toast({
+      toast({
         title: 'Error',
+        description: "error while gettinge friends",
         status: 'error',
         duration: 9000,
         isClosable: true,
