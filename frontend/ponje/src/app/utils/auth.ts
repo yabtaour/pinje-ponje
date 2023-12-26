@@ -1,6 +1,6 @@
 " use client";
 import axios from "@/app/utils/axios";
-import { Toast } from "@chakra-ui/react";
+import { useToast } from "@chakra-ui/react";
 import { AxiosError } from "axios";
 import { setCookie } from "cookies-next";
 import { JwtPayload, jwtDecode } from "jwt-decode";
@@ -17,14 +17,7 @@ export const fetchUserData = async (token: string) => {
     });
     return response.data;
   } catch (error) {
-    Toast({
-      title: "Error",
-      status: "error",
-      duration: 9000,
-      isClosable: true,
-      position: "bottom-right",
-      variant: "solid",
-    });
+
     console.log(error);
     return null;
   }
@@ -77,14 +70,6 @@ export const handleSignup = async (
     });
     return await handleLogin(email, password);
   } catch (error) {
-    Toast({
-      title: "Error",
-      status: "error",
-      duration: 9000,
-      isClosable: true,
-      position: "bottom-right",
-      variant: "solid",
-    });
     const err = error as AxiosError;
     if (err.response && err.response.status === 409) {
       throw new ConflictError("User already exists");
@@ -95,29 +80,8 @@ export const handleSignup = async (
   }
 };
 
-// export const handleLogin = async (email: string, password: string) => {
-//   console.log("this got called :p");
-//   try {
-//     const Response = await axios.post("/auth/login", {
-//       email,
-//       password,
-//     });
-
-//     const { token } = Response.data;
-
-//     const user = await fetchUserData(token);
-//     if (Response.status === 201) {
-//       setSession(token);
-//       return { token, user };
-//     }
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
-
 export const handleLogin = async (email: string, password: string) => {
   try {
-    console.log("this got called :p");
     const response = await axios.post("/auth/login", {
       email,
       password,
@@ -136,14 +100,6 @@ export const handleLogin = async (email: string, password: string) => {
       }
     }
   } catch (error) {
-    Toast({
-      title: "Error",
-      status: "error",
-      duration: 9000,
-      isClosable: true,
-      position: "bottom-right",
-      variant: "solid",
-    });
     console.error(error);
   }
 };

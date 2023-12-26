@@ -265,21 +265,21 @@ export default function RoomOptions({ isOpen, onOpenChange }: { isOpen: boolean,
             <ModalContent>
                 {
                     action === 'create' ? (<CreateRoom onOpenChange={onOpenChange} setAction={setAction} />) : action === 'join' ? (<JoinRooms onOpenChange={onOpenChange} setAction={setAction} />) : (
-                        <div className="flex flex-col items-center justify-center bg-[#222039] py-8">
-                            <h1 className="text-cyan-500 "> Please Choose </h1>
+                        <div className="flex flex-col items-center justify-center bg-[#222039] py-8 rounded-full">
+                            <h1 className="text-cyan-500 text-xl md:text-2xl"> Pick an action </h1>
                             <div className="flex flex-row items-center ">
                                 <Button onClick={() => { setAction('create'); }} >
                                     <Card className="hover:bg-slate-400/10 m-10 rounded-lg  h-full">
-                                        <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
+                                        <CardHeader className="pb-0 pt-2 px-4 flex-col justify-center items-center">
                                             <p className="text-tiny uppercase font-bold text-white">Create a Room</p>
 
                                             <h4 className="font-bold text-large text-gray-400">Create Your own Room</h4>
                                         </CardHeader>
-                                        <CardBody className="overflow-visible py-2">
+                                        <CardBody className="overflow-visible py-2 flex items-center justify-center">
                                             <Image
                                                 alt="Card background"
                                                 className="object-cover rounded-xl"
-                                                src="/groups.svg"
+                                                src="/create_room.png"
                                                 width={100}
                                                 height={100}
                                             />
@@ -288,16 +288,16 @@ export default function RoomOptions({ isOpen, onOpenChange }: { isOpen: boolean,
                                 </Button>
                                 <Button onClick={() => { setAction('join'); }} >
                                     <Card className="hover:bg-slate-400/10 m-10 rounded-lg h-full">
-                                        <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
+                                        <CardHeader className="pb-0 pt-2 px-4 flex-col justify-center items-center">
                                             <p className="text-tiny uppercase font-bold text-white">Join the rooms</p>
 
                                             <h4 className="font-bold text-large text-gray-400">Join Other Roooms</h4>
                                         </CardHeader>
-                                        <CardBody className="overflow-visible py-2">
+                                        <CardBody className="overflow-visible py-2 flex items-center justify-center">
                                             <Image
                                                 alt="Card background"
                                                 className="object-cover rounded-xl"
-                                                src="/groups.svg"
+                                                src="/join_room.png"
                                                 width={100}
                                                 height={100}
                                             />

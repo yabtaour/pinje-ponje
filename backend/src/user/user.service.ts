@@ -38,14 +38,14 @@ export class UserService {
 
   async resetPassword(user: any, old: string, newPass: string) {
     try {
-      const isMatch = await bcrypt.compareSync(old, user.password);
+      const isMatch = bcrypt.compareSync(old, user.password);
       if (!isMatch)
         throw new HttpException(
           'Old password is incorrect',
           HttpStatus.BAD_REQUEST,
         );
-      const rounds = await parseInt(process.env.BCRYPT_ROUNDS);
-      const HashedPassword = await bcrypt.hashSync(newPass, rounds);
+      const rounds =  parseInt(process.env.BCRYPT_ROUNDS);
+      const HashedPassword =  bcrypt.hashSync(newPass, rounds);
       const updatedUser = await this.prisma.user.update({
         where: {
           id: user.id,
@@ -56,6 +56,7 @@ export class UserService {
       });
       return updatedUser;
     } catch (e) {
+      console.error('Error in resetPassword:', e);
       if (
         e instanceof Prisma.PrismaClientUnknownRequestError ||
         e instanceof Prisma.PrismaClientKnownRequestError
@@ -497,7 +498,7 @@ export class UserService {
       });
       if (!user)
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-      delete user.password;
+      // delete user.password;
       // delete user.twoFactorSecret;
       return user;
     } catch (e) {
@@ -509,7 +510,6 @@ export class UserService {
       } else throw e;
     }
   }
-
   async FindAllBlockedUsers(user_id: number) {
     try {
       const blockedList = await this.prisma.userBlocking.findMany({

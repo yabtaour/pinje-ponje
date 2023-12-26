@@ -1,7 +1,8 @@
-import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, User as NextUIUser } from "@nextui-org/react";
+import { Table, TableBody, TableCell, TableColumn,  Pagination ,TableHeader, TableRow, User as NextUIUser } from "@nextui-org/react";
 import React, { useEffect, useState } from "react";
 import { User } from '../../../types/user';
 import { fetchGameHistory } from "@/app/utils/update";
+import { useToast } from "@chakra-ui/react";
 
 const columns = [
   { name: "MODE", uid: "mode" },
@@ -11,8 +12,9 @@ const columns = [
 ];
 
 export default function MatchHistory({ user }: { user: User | null | undefined }) {
-  
   const [matchHistory, setMatchHistory] = useState([]);
+  const [page, setPage] = useState(1);
+  const toast = useToast();
   
   useEffect(() => {
     if (user) {
@@ -22,6 +24,16 @@ export default function MatchHistory({ user }: { user: User | null | undefined }
           setMatchHistory(data || []); 
         } catch (err) {
           console.error(err);
+          toast({
+            title: 'Error',
+            description: "error while fetching game history",
+            status: 'error',
+            duration: 9000,
+            isClosable: true,
+            position: "bottom-right",
+            variant: "solid",
+            colorScheme: "red",
+          });
         }
       };
       fetchData();
@@ -84,6 +96,13 @@ const formatDate = (dateStr: string) => {
     }
   }, []);
 
+  const rowsPerPage = 10;
+  const pages = Math.ceil(matchHistory.length / rowsPerPage);
+  const items = React.useMemo(() => {
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    return matchHistory.slice(start, end);
+  }, [page, matchHistory]);
 
   return (
     <div className="p-0 m-0 ml-5">
@@ -100,20 +119,29 @@ const formatDate = (dateStr: string) => {
             </TableColumn>
           )}
         </TableHeader>
-            {
-                matchHistory.length === 0 ? (
-                    <TableBody style={{ backgroundColor: "#1B1A2D" , color : "#9BA4AF"  }} emptyContent={"This player hasnt played any games yet."}>{[]}</TableBody>
-                ) : (
-                    <TableBody items={matchHistory} style={{ backgroundColor: "#1B1A2D" }}>
-                    {(match) => (
-                      <TableRow key="match">
-                        {(columnKey) => <TableCell>{renderCell(match, columnKey)}</TableCell>}
-                      </TableRow>
-                    )}
-                  </TableBody>
-                )
-            }
+        {matchHistory.length === 0 ? (
+          <TableBody style={{ backgroundColor: "#1B1A2D", color: "#9BA4AF" }} emptyContent={"This player hasn't played any games yet."}>{[]}</TableBody>
+        ) : (
+          <TableBody items={items} style={{ backgroundColor: "#1B1A2D" }}>
+            {(match) => (
+              <TableRow key="match">
+                {(columnKey) => <TableCell>{renderCell(match, columnKey)}</TableCell>}
+              </TableRow>
+            )}
+          </TableBody>
+        )}
       </Table>
+      <div className="flex justify-center mt-4">
+        <Pagination
+          isCompact
+          showControls
+          showShadow
+          style={{ color: "#fff" }}
+          page={page}
+          total={pages}
+          onChange={(page) => setPage(page)}
+        />
+      </div>
     </div>
   );
 }
