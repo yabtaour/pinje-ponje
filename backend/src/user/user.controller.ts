@@ -22,11 +22,10 @@ import {
 import { JWTGuard } from '../auth/guards/jwt.guard';
 import { CreateUserDtoLocal } from './dto/create-user.dto';
 import { updateUserDto } from './dto/update-user.dto';
-import { PaginationLimitDto } from 'src/chat/chat.service';
 import { blockAndUnblockUserDto } from './dto/blockAndUnblock-user.dto';
 import { FriendsActionsDto } from './dto/FriendsActions-user.dto';
 import { UserService } from './user.service';
-
+import { PaginationLimitDto } from 'src/chat/dto/pagination-dto';
 
 @UseGuards(JWTGuard)
 @Controller('users')
@@ -35,25 +34,15 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  // @Post()
-  // @ApiOperation({
-  //   summary: 'Create a new user',
-  //   description: 'Create a new user and return the user created',
-  // })
-  // @ApiBody({ type: CreateUserDtoLocal })
-  // async create(@Body() data: SignUpDto) {
-  //   return this.userService.CreateUserLocal(data);
-  // }
-
   @Get('me')
   @ApiOperation({
     summary: 'Get the current user',
     description: 'Get the current user by token',
   })
-  async FindUserByToken(
-    @Req() request: any
-  ){
-    return this.userService.getCurrentUser(request);
+  async FindUserByToken(@Req() request: any) {
+    const user = await this.userService.getCurrentUser(request);
+    delete user.password;
+    return user;
   }
 
   @Get('QRCode')
@@ -61,9 +50,7 @@ export class UserController {
     summary: 'Get QRCode',
     description: 'Get QRCode and return the QRCode',
   })
-  async getQRCode(
-    @Req() request: any
-  ){
+  async getQRCode(@Req() request: any) {
     const user = await this.userService.getCurrentUser(request);
     return await this.userService.getQRCode(user.id);
   }
@@ -73,9 +60,7 @@ export class UserController {
     summary: 'Delete a user by ID',
     description: 'Delete a user by ID and return the user deleted',
   })
-  async remove(
-    @Req() request: any
-  ){
+  async remove(@Req() request: any) {
     const user = await this.userService.getCurrentUser(request);
     return this.userService.RemoveUsers(user.id);
   }
@@ -86,10 +71,7 @@ export class UserController {
     description: 'Update a user by ID and return the user updated',
   })
   @ApiBody({ type: updateUserDto })
-  async UpdateUser(
-    @Req() request: any,
-    @Body() data: updateUserDto
-  ){
+  async UpdateUser(@Req() request: any, @Body() data: updateUserDto) {
     const user = await this.userService.getCurrentUser(request);
     console.log(user);
     console.log(data);
@@ -100,7 +82,7 @@ export class UserController {
   async resetPassword(
     @Req() request: any,
     @Body() data: { old: string; new: string },
-  ){
+  ) {
     const user = await this.userService.getCurrentUser(request);
     return this.userService.resetPassword(user, data.old, data.new);
   }
@@ -111,10 +93,10 @@ export class UserController {
     description: 'Get all users and return the users',
   })
   async FindAllUsers(
-    @Req() request: any, 
+    @Req() request: any,
     @Query() query: PaginationLimitDto,
-    @Query('search') search?: string
-  ){
+    @Query('search') search?: string,
+  ) {
     const user = await this.userService.getCurrentUser(request);
     return this.userService.FindAllUsers(user.id, query, search);
   }
@@ -124,9 +106,7 @@ export class UserController {
     summary: 'Get all blocked users',
     description: 'Get all blocked users and return the users',
   })
-  async FindAllBlockedUsers(
-    @Req() request: any
-  ){
+  async FindAllBlockedUsers(@Req() request: any) {
     const user = await this.userService.getCurrentUser(request);
     return this.userService.FindAllBlockedUsers(user.id);
   }
@@ -134,10 +114,7 @@ export class UserController {
   @Post('/block')
   @ApiOperation({ summary: 'Block Friend', description: 'Block Friend' })
   @ApiBody({ type: blockAndUnblockUserDto })
-  async BlockFriend(
-    @Req() request: any,
-    @Body() data: blockAndUnblockUserDto
-  ){
+  async BlockFriend(@Req() request: any, @Body() data: blockAndUnblockUserDto) {
     const user = await this.userService.getCurrentUser(request);
     return this.userService.BlockUser(user.id, data);
   }
@@ -148,7 +125,7 @@ export class UserController {
   async UnBlockFriend(
     @Req() request: any,
     @Body() data: blockAndUnblockUserDto,
-  ){
+  ) {
     const user = await this.userService.getCurrentUser(request);
     return await this.userService.UnBlockFriend(user.id, data);
   }
@@ -186,10 +163,7 @@ export class UserController {
   @Post('/friends/unfriend')
   @ApiOperation({ summary: 'Unfriend', description: 'Unfriend' })
   @ApiBody({ type: FriendsActionsDto })
-  async Unfriend(
-    @Req() request: Request,
-    @Body() data: FriendsActionsDto
-  ){
+  async Unfriend(@Req() request: Request, @Body() data: FriendsActionsDto) {
     const user = await this.userService.getCurrentUser(request);
     return this.userService.Unfriend(user.id, data);
   }
@@ -203,7 +177,7 @@ export class UserController {
   async DeclineFriendRequest(
     @Req() request: Request,
     @Body() data: FriendsActionsDto,
-  ){
+  ) {
     const user = await this.userService.getCurrentUser(request);
     return this.userService.DeclineFriendRequest(user.id, data);
   }
@@ -217,7 +191,7 @@ export class UserController {
   async AcceptFriendRequest(
     @Req() request: Request,
     @Body() data: FriendsActionsDto,
-  ){
+  ) {
     const user = await this.userService.getCurrentUser(request);
     return this.userService.AcceptFriendRequest(user.id, data);
   }
@@ -231,7 +205,7 @@ export class UserController {
   async SendFriendRequest(
     @Req() request: Request,
     @Body() data: FriendsActionsDto,
-  ){
+  ) {
     const user = await this.userService.getCurrentUser(request);
     return this.userService.SentFriendRequest(user.id, data);
   }
@@ -245,7 +219,7 @@ export class UserController {
   async FindUserByID(
     @Req() request: any,
     @Param('id', ParseIntPipe) id: number,
-  ){
+  ) {
     const user = await this.userService.getCurrentUser(request);
     return this.userService.FindUserByID(user.id, id);
   }

@@ -7,7 +7,6 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -16,10 +15,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
-  ApiBody,
   ApiConsumes,
-  ApiOperation,
-  ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
 import { JWTGuard } from '../auth/guards/jwt.guard';
@@ -39,7 +35,6 @@ export class ProfilesController {
     private readonly userServices: UserService,
   ) {}
 
-  // Only Update Profile: Avatar - Username - Firstname - Lastname - Email - Phone - Bio
   @Patch()
   @SwaggerUpdateProfile()
   async updateProfile(
@@ -59,7 +54,6 @@ export class ProfilesController {
     return this.profilesService.getAvatar(user.id);
   }
 
-  // storage is defined in the top of the file
   @Post('avatar')
   @UseInterceptors(FileInterceptor('file', storageConfig))
   @SwaggerUploadAvatar()
@@ -81,12 +75,6 @@ export class ProfilesController {
     return this.profilesService.deleteAvatar(user.id);
   }
 
-  // Get Profile By ID
-  // @ApiOperation({
-  //   summary: 'Get Profile By ID',
-  //   description: 'Get Profile By ID',
-  // })
-  // @ApiParam({ name: 'id', description: 'Profile ID' })
   @Get(':id')
   @SwaggerFindProfileById()
   async findProfileById(
