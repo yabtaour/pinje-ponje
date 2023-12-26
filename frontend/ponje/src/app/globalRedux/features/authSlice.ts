@@ -9,6 +9,7 @@ type InitialState = {
 type User = {
   id: number | undefined;
   intraid?: number;
+  googleId?: string;
   Hashpassword?: string | null;
   username?: string;
   email?: string;

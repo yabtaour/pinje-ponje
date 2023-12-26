@@ -47,6 +47,37 @@ export default function Notification({ user }: { user: User | null | undefined }
   }, []);
 
 
+  const changeReadStatus = async (id: number) => {
+    const notification = notifs.find((n) => n.id === id);
+    if (notification && notification.read) {
+      return;
+    }
+    try {
+      const readres = await axios.post(`/notification/read/${id}`, {
+        headers: {
+          Authorization: `${localStorage.getItem('access_token')}`,
+        },
+      });
+
+      if (readres.status === 201) {
+        // console.log("read res", readres);
+      }
+
+    }
+    catch (error) {
+      toast({
+        title: 'Error',
+        description: "notification status change error",
+        status: 'error',
+        duration: 9000,
+        isClosable: true,
+        position: "bottom-right",
+        variant: "solid",
+        colorScheme: "red",
+      });
+    }
+  }
+
   const getUserById = async (userId: number) => {
     try {
       const response = await axios.get(`/users/${userId}`, {
@@ -80,11 +111,19 @@ export default function Notification({ user }: { user: User | null | undefined }
             Authorization: `${localStorage.getItem('access_token')}`,
           },
         });
-
+    
         const notificationsWithUser = await Promise.all(
           response.data.map(async (notification: Notification) => {
             try {
               const user = await getUserById(notification.senderid);
+              const frens = await areFriends(notification.receiverid, user?.id);
+              if (
+                notification.type === "FRIEND_REQUEST" && frens
+              ) {
+                await changeReadStatus(notification.id);
+                return null;
+              }
+    
               return {
                 ...notification,
                 name: user?.username || 'Unknown',
@@ -95,7 +134,7 @@ export default function Notification({ user }: { user: User | null | undefined }
             } catch (error) {
               toast({
                 title: 'Error',
-                description: "error while getting user by id",
+                description: "Error while getting user by id",
                 status: 'error',
                 duration: 9000,
                 isClosable: true,
@@ -108,13 +147,14 @@ export default function Notification({ user }: { user: User | null | undefined }
             }
           })
         );
-        setNotifications(notificationsWithUser);
+    
+        setNotifications(notificationsWithUser.filter(Boolean));
         setLoading(false);
       } catch (err) {
         setLoading(false);
         toast({
           title: 'Error',
-          description: "error getting notifications",
+          description: "Error getting notifications",
           status: 'error',
           duration: 9000,
           isClosable: true,
@@ -124,7 +164,25 @@ export default function Notification({ user }: { user: User | null | undefined }
         });
       }
     };
-
+    
+    const areFriends = async (userId: number, friendId: number) => {
+      try {
+        const response = await axios.get(`http://localhost:3000/users/${userId}/friends`, {
+          headers: {
+            Authorization: `${localStorage.getItem('access_token')}`,
+          },
+        });
+    
+        const friendIds = response.data.map((friend: any) => friend.id);
+    
+        return friendIds.includes(friendId);
+      } catch (error) {
+        console.error("Error checking if users are friends", error);
+        return false; // Return false in case of an error
+      }
+    };
+    
+    
     getMyNotifications();
   }, [user, formatDate, getUserById, toast]);
 
@@ -177,11 +235,12 @@ export default function Notification({ user }: { user: User | null | undefined }
 }
 
 
-export const NotificationComponent = ({ key ,id, name, type, avatar, createdAt, setNotifications, notifs , notifId }:
-  { key : number , id: number, name: string, type: string, avatar: string, createdAt: string, setNotifications: any, notifs: any , notifId : number}) => {
+export const NotificationComponent = ({ id, name, type, avatar, createdAt, setNotifications, notifs , notifId }:
+  { id: number, name: string, type: string, avatar: string, createdAt: string, setNotifications: any, notifs: any , notifId : number}) => {
   const toast = useToast();
 
   const changeReadStatus = async (id: number) => {
+    
     try {
       const readres = await axios.post(`/notification/read/${id}`, {
         headers: {
@@ -190,7 +249,7 @@ export const NotificationComponent = ({ key ,id, name, type, avatar, createdAt, 
       });
 
       if (readres.status === 201) {
-        console.log("read res", readres);
+        // console.log("read res", readres);
       }
 
     }

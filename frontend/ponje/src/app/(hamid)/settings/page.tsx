@@ -12,7 +12,6 @@ import { useDispatch } from 'react-redux';
 import * as Yup from 'yup';
 import { fetchQRCode, resetPassword } from "@/app/utils/update";
 
-import { Modal, ModalContent, useDisclosure } from "@nextui-org/react";
 import { TwoFactorModal, TwoFactorModalDeactivate } from './components/TwoFactorModal';
 import axios from "@/app/utils/axios";
 import { useToast } from "@chakra-ui/react";
