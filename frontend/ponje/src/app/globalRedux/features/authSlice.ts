@@ -7,6 +7,7 @@ type InitialState = {
 };
 
 type User = {
+  googleId: any;
   id: number | undefined;
   intraid?: number;
   Hashpassword?: string | null;

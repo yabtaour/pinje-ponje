@@ -146,14 +146,11 @@ export class GameService {
 				gameInvitesSent: data.userId,
 			}
 		});
-		this.notificationGateway.sendNotificationToUser(
-			String(opponent.id),
-			{
-				senderId: user.id,
-				receiverId: opponent.id,
-				type: NotificationType.GAME_INVITE,
-			}
-		);
+		this.notificationService.create({
+			senderId: user.id,
+			receiverId:	opponent.id,
+			type: NotificationType.GAME_INVITE,
+		})
 	}
 
 	async acceptInvite(data: {userId: number}, user: any) {
