@@ -1,12 +1,14 @@
 import Image from "next/image";
 import { User } from "../../../types/user";
 import axios from "@/app/utils/axios";
+import { useState } from "react";
 
 
 
 
 export default function OnlineFriendsInvite({ users }: { users: User[] }) {
 
+    const [sentRequests, setSentRequests] = useState<number[]>([]);
     const sendGameRequest = async (userid: number) => {
         try {
             let accessToken: string | null = localStorage.getItem('access_token');
@@ -16,11 +18,12 @@ export default function OnlineFriendsInvite({ users }: { users: User[] }) {
                 }
             });
             console.log(res);
+            setSentRequests(prevSentRequests => [...prevSentRequests, userid]);
         } catch (error) {
             console.log("error", error);
         }
     };
-    
+
 
     return (
         <div>
@@ -63,9 +66,15 @@ export default function OnlineFriendsInvite({ users }: { users: User[] }) {
                                         </div>
                                     </td>
                                     <th>
-                                        <button className="btn btn-sm bg-[#3a3861] text-[#73d3ff]" onClick={() => sendGameRequest(user.id)}>
-                                            Invite
-                                        </button>
+                                        {sentRequests.includes(user.id) ? (
+                                            <button className="btn btn-sm bg-[#23a3c3] btn-primary text-white" disabled>
+                                                Pending Invite
+                                            </button>
+                                        ) : (
+                                            <button className="btn btn-sm bg-[#3a3861] text-[#73d3ff]" onClick={() => sendGameRequest(user.id)}>
+                                                Invite
+                                            </button>
+                                        )}
                                     </th>
                                 </tr>
                             ))

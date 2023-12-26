@@ -10,7 +10,6 @@ type User = {
   googleId: any;
   id: number | undefined;
   intraid?: number;
-  googleId?: string;
   Hashpassword?: string | null;
   username?: string;
   email?: string;
