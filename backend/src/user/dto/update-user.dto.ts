@@ -1,4 +1,5 @@
-import { IsBoolean, IsEmail, IsOptional, IsString } from 'class-validator';
+import { Status } from '@prisma/client';
+import { IsBoolean, IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class updateUserDto {
 
@@ -13,4 +14,8 @@ export class updateUserDto {
     @IsOptional({ message: 'TwoFactor must be a boolean value.' })
     @IsBoolean({ message: 'TwoFactor must be a boolean value.' })
     twoFactor: boolean;
+
+
+    @IsOptional()
+    status : Status
 }
