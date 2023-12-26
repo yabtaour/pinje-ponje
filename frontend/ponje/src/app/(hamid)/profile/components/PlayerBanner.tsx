@@ -14,7 +14,6 @@ export default function PlayerBanner({ user }: { user: User | null | undefined }
     const username = user?.username;
     const bio = user?.profile?.bio;
     const Avatar = user?.profile?.avatar;
-    // const Avatar = '/avatars' + user?.profile?.avatar;
 
     const handleBlockAction = async (action: "block" | "unblock", userId: number | undefined) => {
         try {

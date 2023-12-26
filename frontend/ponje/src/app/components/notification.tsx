@@ -1,10 +1,10 @@
 'use client';
 import axios from "@/app/utils/axios";
-import SocketManager from '@/app/utils/socketManager';
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { User } from "../types/user";
 import { useToast } from "@chakra-ui/react";
+import { useRouter } from 'next/navigation';
 
 
 interface Notification {
@@ -237,8 +237,10 @@ export default function Notification({ user }: { user: User | null | undefined }
 
 export const NotificationComponent = ({ id, name, type, avatar, createdAt, setNotifications, notifs, notifId }:
   { id: number, name: string, type: string, avatar: string, createdAt: string, setNotifications: any, notifs: any, notifId: number }) => {
-  const toast = useToast();
+    const toast = useToast();
+    const router = useRouter();
 
+  
   const changeReadStatus = async (id: number) => {
 
     try {
@@ -304,8 +306,9 @@ export const NotificationComponent = ({ id, name, type, avatar, createdAt, setNo
         console.error("friend accept error", error);
       }
     }
-    else{
+    else{ 
       try {
+        router.push('/pong/versusScreen');
         const res = await axios.post('/game/accept', {
           userId: id ,
           headers: {
@@ -337,7 +340,7 @@ export const NotificationComponent = ({ id, name, type, avatar, createdAt, setNo
           variant: "solid",
           colorScheme: "red",
         });
-        console.error("friend reject error", error);
+        console.error("game accept error", error);
       }
 
     }
