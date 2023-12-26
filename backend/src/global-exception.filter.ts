@@ -1,5 +1,6 @@
 import {
   ArgumentsHost,
+  BadRequestException,
   Catch,
   ExceptionFilter,
   HttpException,
@@ -15,7 +16,6 @@ import { JsonWebTokenError } from 'jsonwebtoken';
 export class GlobalExceptionFilter implements ExceptionFilter {
   catch(exception: HttpException | WsException | any, host: ArgumentsHost) {
     const logger = new Logger('GlobalExceptionFilter');
-
     if (exception instanceof JsonWebTokenError) {
       const response = host.switchToHttp().getResponse<Response>();
       const request = host.switchToHttp().getRequest<Request>();
@@ -36,8 +36,22 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       client.emit('ErrorEvent', {
         message: exception.message,
       });
+    } else if (exception instanceof BadRequestException) {
+      Logger.error("BadRequestError: ", exception);
+      const response = host.switchToHttp().getResponse<Response>();
+      const request = host.switchToHttp().getRequest<Request>();
+      const status = exception.getStatus() || HttpStatus.CONFLICT;
+      const message = exception.getResponse();
+      logger.error(`Error ${status}`);
+      logger.error(message)
+      response.status(status).json({
+        statusCode: status,
+        details: message,
+        timestamp: new Date().toISOString(),
+        path: request.url,
+      });
     } else if (exception instanceof HttpException) {
-      Logger.error(exception);
+      Logger.error("HttpError: ", exception);
       const response = host.switchToHttp().getResponse<Response>();
       const request = host.switchToHttp().getRequest<Request>();
       const status = exception.getStatus() || HttpStatus.CONFLICT;
@@ -56,7 +70,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       const status = HttpStatus.FAILED_DEPENDENCY;
       const message = exception.meta
       logger.error(`PrismaClientKnownRequestError : ${status} `);
-      logger.error(message)
+      logger.error('Error Message:', message.details)
       response.status(status).json({
         statusCode: status,
         message: message,
@@ -68,8 +82,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       const request = host.switchToHttp().getRequest<Request>();
 
       const status = HttpStatus.FAILED_DEPENDENCY;
-      const message = exception.message;
-      logger.error(`PrismaClientUnknownRequestError :  ${status} ${message}`);
+      const message = exception;
+      logger.error(`PrismaClientUnknownRequestError :  ${status}`);
+      logger.error('Error Message:', message)
       response.status(status).json({
         statusCode: status,
         message: message,
