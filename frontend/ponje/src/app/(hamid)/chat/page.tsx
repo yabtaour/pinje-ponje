@@ -139,7 +139,7 @@ export default function Chat() {
 
     useLayoutEffect(() => {
         scrollToBottom();
-    }, [messages]);
+    }, [messages, dispatch, socketManager]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' });
@@ -173,7 +173,7 @@ export default function Chat() {
                                         height={100}
                                     />
                                     <p className='text-[#c6c4c499] pb-10  text-center text-sm md:text-lg'>Chat with fellow members in real-time, exchanging thoughts and ideas effortlessly. <br />
-                                    Engage in conversations, make connections, and be a part of our interactive community!
+                                        Engage in conversations, make connections, and be a part of our interactive community!
                                     </p>
                                 </div>
 
