@@ -146,14 +146,11 @@ export class GameService {
 				gameInvitesSent: data.userId,
 			}
 		});
-		this.notificationGateway.sendNotificationToUser(
-			String(opponent.id),
-			{
-				senderId: user.id,
-				receiverId: opponent.id,
-				type: NotificationType.GAME_INVITE,
-			}
-		);
+		this.notificationService.create({
+			senderId: user.id,
+			receiverId:	opponent.id,
+			type: NotificationType.GAME_INVITE,
+		})
 	}
 
 	async acceptInvite(data: {userId: number}, user: any) {
@@ -456,6 +453,8 @@ export class GameService {
 
 	async finishGame(winnerId: number, loserId: number, gameId: number) {
 		if (this.gameGateway.currentGames.has(gameId)) {
+			this.gameGateway.currentGames.delete(gameId);
+		}
 		const winner = await this.prisma.player.update({
 			where: {
 				userId_gameId: {
@@ -529,7 +528,7 @@ export class GameService {
 		this.gameGateway.intializeArray.splice(this.gameGateway.intializeArray.findIndex((element) => {
 				element == gameId;
 		}), 1)
-		this.gameGateway.currentGames.delete(gameId);
+		// this.gameGateway.currentGames.delete(gameId);
 		this.gameGateway.initializeClients.splice(this.gameGateway.initializeClients.findIndex((element) => {
 			element == winnerId
 		}), 1)
@@ -540,7 +539,6 @@ export class GameService {
 			element == gameId
 		}), 1)
 		console.log(this.gameGateway.currentGames);
-		}
 	}
 
 	async updateScore(userId: number, gameId: number) {
