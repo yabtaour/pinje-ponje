@@ -42,7 +42,7 @@ services:
       context: ${BACK_DIR_PATH}
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "3002:3000"
     image: backend_image
     container_name: backend_container
     env_file: 

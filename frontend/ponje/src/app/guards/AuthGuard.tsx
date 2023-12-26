@@ -27,11 +27,6 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
 
 
     useEffect(() => {
-
-
-        console.log("testing the intra login ");
-
-
         let tokenFromCookie = getCookie('token')
         if (tokenFromCookie)
             localStorage.setItem('access_token', tokenFromCookie);
@@ -46,9 +41,16 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
                 console.log("data: ", data);
                 dispatch(login({ user: data, token: accessToken }));
                 setSession(accessToken);
+
+                if (data?.profile?.twofactor && data?.profile?.twoFactorFlag === false)
+                    router.push('/2fa');
+
                 // if (!data?.profile?.avatar)
                 //     router.push('/onboarding');
             })
+
+
+
             socketManager.waitForConnection(async () => {
                 console.log("socketManager: ", socketManager);
                 try {
@@ -64,7 +66,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
             redirect('/sign-in');
             // router.push('/sign-in');
         }
-    }, [isAithenticated, router, dispatch  , tokenFromSlice ]);
+    }, [isAithenticated, router, dispatch, tokenFromSlice]);
 
     return <>{children}</>;
 };

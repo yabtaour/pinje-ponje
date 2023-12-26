@@ -182,7 +182,7 @@ export function Play({ member }: { member: any }) {
                     title: "Invitation sent.",
                     description: "Invitation sent.",
                     status: "success",
-                    duration: 5000,
+                    duration: 2000,
                     isClosable: true,
                 })
             })
@@ -191,7 +191,7 @@ export function Play({ member }: { member: any }) {
                     title: "An error occurred.",
                     description: "Unable to invite.",
                     status: "error",
-                    duration: 5000,
+                    duration: 2000,
                     isClosable: true,
                 })
             });
