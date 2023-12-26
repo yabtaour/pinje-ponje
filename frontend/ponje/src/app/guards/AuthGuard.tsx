@@ -44,8 +44,8 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
 
                 if (data?.profile?.twofactor && data?.profile?.twoFactorFlag === false)
                     router.push('/2fa');
-                // if (!data?.profile?.avatar)
-                //     router.push('/onboarding');
+                if (!data?.profile?.avatar)
+                    router.push('/onboarding');
             })
 
 

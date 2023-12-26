@@ -255,9 +255,11 @@ export default function RankPage() {
 
     fetchUsers()
 
-  }, [users]);
+  }, []);
 
 
+
+  console.log("users: ", users);
   return (
     <div className=''>
       {
@@ -267,15 +269,15 @@ export default function RankPage() {
           </div>
         ) : !isLoading && users.length === 0 ?
           (
-            <div className='text-gray-500 flex flex-col items-center
-          '>
+            <div className='text-gray-500 min-h-screen flex flex-col items-center'>
               <Image
                 className='my-10'
-                width={150}
+                width={300}
+                height={300}
                 alt="NextUI hero Image"
                 src="noData.svg"
               />
-              <h1>NO Room UWU</h1>
+              <h1>NO Users UWU</h1>
             </div>
           ) : (
             <>
