@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "Player" ADD COLUMN     "score" INTEGER NOT NULL DEFAULT 0;

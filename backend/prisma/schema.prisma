@@ -55,7 +55,7 @@ model Friendship {
   friendId  Int
   user      User     @relation("firend", fields: [userId], references: [id])
   friend    User     @relation("frinedof", fields: [friendId], references: [id])
-
+  dm_token  String?   
   @@id([userId, friendId])
 }
 
@@ -122,6 +122,7 @@ model RoomMembership {
   role       ChatRole
   state      MemberState @default(ACTIVE)
   read       Boolean     @default(false)
+  dm_token   String?
   unmuteTime DateTime?
   user       User        @relation(fields: [userId], references: [id])
   userId     Int
@@ -149,6 +150,7 @@ model ChatRoom {
   roomType  RoomType         @default(DM)
   members   RoomMembership[]
   messages  ChatMessage[]
+  dm_token  String?
   updatedAt DateTime         @updatedAt
   createdAt DateTime         @default(now())
 }
