@@ -12,7 +12,7 @@ import { config } from 'dotenv';
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
 import { SignUpDto } from 'src/auth/dto/signUp.dto';
-import { ChatService, PaginationLimitDto } from 'src/chat/chat.service';
+import { ChatService } from 'src/chat/chat.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ProfilesService } from '../profiles/profiles.service';
 import { FriendsActionsDto } from './dto/FriendsActions-user.dto';
@@ -24,6 +24,8 @@ import { NotificationGateway } from 'src/notification/notification.gateway';
 import { ChatRole, NotificationType, Prisma, RoomType } from '@prisma/client';
 import { RoomDto } from 'src/chat/dto/room-dto';
 import { http } from 'winston';
+import { randomBytes } from 'crypto';
+import { PaginationLimitDto } from 'src/chat/dto/pagination-dto';
 
 config();
 
@@ -359,14 +361,7 @@ export class UserService {
     }
   }
 
-  giveRandomAvatar() {
-    const avatar = [
-      'path://shinra.png',
-      'path://stewie.png',
-      'path://escanor.png',
-    ];
-    return avatar[Math.floor(Math.random() * avatar.length)];
-  }
+
 
   async FindUserByIntraId(id: number) {
     try {
@@ -429,9 +424,6 @@ export class UserService {
       });
       if (!userExist)
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-      const profile = await this.prisma.profile.delete({
-        where: { userid: id },
-      });
       const user = await this.prisma.user.delete({
         where: { id: id },
         include: {
@@ -453,7 +445,6 @@ export class UserService {
 
   async getQRCode(id: number) {
     try {
-      console.log('id from user service : ', id);
       const user = await this.prisma.user.findUnique({
         where: {
           id: id,
@@ -497,8 +488,6 @@ export class UserService {
       });
       if (!user)
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-      delete user.password;
-      // delete user.twoFactorSecret;
       return user;
     } catch (e) {
       if (
@@ -517,6 +506,7 @@ export class UserService {
         include: {
           blocked: {
             select: {
+              id: true,
               username: true,
               profile: true,
             },
@@ -570,7 +560,7 @@ export class UserService {
         },
       });
 
-      await this.prisma.friendship.deleteMany({
+      const ifFriends =  await this.prisma.friendship.findFirst({
         where: {
           OR: [
             {
@@ -584,8 +574,28 @@ export class UserService {
           ],
         },
       });
-
-      return 'You have blocked this user';
+      if (ifFriends){
+        await this.prisma.friendship.deleteMany({
+          where: {
+            OR: [
+              {
+                userId: user_id,
+                friendId: data.id,
+              },
+              {
+                userId: data.id,
+                friendId: user_id,
+              },
+            ],
+          },
+        });
+        const deleteDm = await this.prisma.chatRoom.deleteMany({
+          where: {
+            dm_token: ifFriends.dm_token
+          }
+        })
+      }
+        return 'You have blocked this user';
     } catch (e) {
       if (
         e instanceof Prisma.PrismaClientUnknownRequestError ||
@@ -672,7 +682,7 @@ export class UserService {
   }
 
   async Unfriend(
-    @Param('user_id', ParseIntPipe) user_id: Number,
+    @Param('user_id', ParseIntPipe) user_id: number,
     data: any,
   ): Promise<any> {
     try {
@@ -680,16 +690,17 @@ export class UserService {
         where: {
           OR: [
             {
-              userId: user_id as number,
+              userId: user_id,
               friendId: data.id,
             },
             {
               userId: data.id,
-              friendId: user_id as number,
+              friendId: user_id,
             },
           ],
         },
       });
+      console.log(getFriendship)
       if (getFriendship == null)
         throw new HttpException('No user with this id', HttpStatus.NOT_FOUND);
 
@@ -707,6 +718,13 @@ export class UserService {
           ],
         },
       });
+
+      const deleteDm = await this.prisma.chatRoom.deleteMany({
+        where: {
+          dm_token: getFriendship.dm_token
+        }
+      })
+
       return 'Friendship deleted';
     } catch (e) {
       if (
@@ -796,7 +814,7 @@ export class UserService {
           senderId_receiverId: {
             senderId: data.id,
             receiverId: user_id,
-          }
+          },
         },
       });
       if (getFriendRequest == null)
@@ -804,16 +822,18 @@ export class UserService {
           'No request with this id',
           HttpStatus.NOT_FOUND,
         );
-
+      const token = randomBytes(32).toString('hex');
       await this.prisma.friendship.createMany({
         data: [
           {
             userId: user_id,
             friendId: data.id,
+            dm_token: token
           },
           {
             userId: data.id,
             friendId: user_id,
+            dm_token: token
           },
         ],
       });
@@ -831,15 +851,18 @@ export class UserService {
         data: {
           name: '',
           roomType: RoomType.DM,
+          dm_token: token,
           members: {
             create: [
               {
                 user: { connect: { id: data.id } },
                 role: ChatRole.MEMBER,
+                dm_token: token
               },
               {
                 user: { connect: { id: user_id } },
                 role: ChatRole.MEMBER,
+                dm_token: token
               },
             ],
           },
@@ -865,34 +888,51 @@ export class UserService {
   async SentFriendRequest(user_id: number, data: FriendsActionsDto) {
     try {
       const newFriendProfile = await this.prisma.user.findUnique({
-        where: { id: data.id },
+        where: {
+          id: data.id,
+        },
       });
-
       if (!newFriendProfile || newFriendProfile.id === user_id)
         throw new HttpException(
           'No profile with this id',
           HttpStatus.NOT_FOUND,
         );
-
-      const createRequest = await this.prisma.friendRequest.upsert({
-        where: {
-          senderId_receiverId: {
+        const ifexist = await this.prisma.friendRequest.findFirst({
+          where: {
+            OR: [
+              {
+                senderId: user_id,
+                receiverId: data.id,
+              },
+              {
+                senderId: data.id,
+                receiverId: user_id,
+              },
+            ],
+          },
+        });
+      if (ifexist == null) {
+        const createRequest = await this.prisma.friendRequest.upsert({
+          where: {
+            senderId_receiverId: {
+              senderId: user_id,
+              receiverId: data.id,
+            },
+          },
+          update: {},
+          create: {
             senderId: user_id,
             receiverId: data.id,
           },
-        },
-        update: {},
-        create: {
+        });
+        console.log(createRequest);
+        this.notificationService.create({
           senderId: user_id,
           receiverId: data.id,
-        },
-      });
-      this.notificationService.create({
-        senderId: user_id,
-        receiverId: data.id,
-        type: NotificationType.FRIEND_REQUEST,
-      });
-      return 'Friend Request has been sent';
+          type: NotificationType.FRIEND_REQUEST,
+        });
+        return 'Friend Request sent successfully';
+      } else return 'Friend Request already sent';
     } catch (e) {
       if (
         e instanceof Prisma.PrismaClientUnknownRequestError ||
