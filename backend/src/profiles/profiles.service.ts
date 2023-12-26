@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus, Param, ParseIntPipe } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Param, ParseIntPipe } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { updateProfileDto } from './dto/update-profile.dto';
 
@@ -49,7 +49,7 @@ export class ProfilesService {
     if (!file || !file.path || !file.filename)
       throw new HttpException('File not found', HttpStatus.NOT_FOUND);
 
-    const path = "/" + file.filename
+    const path = "/avatars/" + file.filename
     console.log(path, file)
     const profile = await this.prisma.profile.update({
       where: { userid: user_id },

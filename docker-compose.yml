@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   frontend:
@@ -8,8 +8,7 @@ services:
     ports:
       - "3001:3000"
     container_name: frontend_container
-    env_file: 
-      .env
+    env_file: .env
     # environment:
     #   - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     depends_on:
@@ -42,11 +41,10 @@ services:
       context: ${BACK_DIR_PATH}
       dockerfile: Dockerfile
     ports:
-      - "3002:3000"
+      - "3000:3000"
     image: backend_image
     container_name: backend_container
-    env_file: 
-      .env
+    env_file: .env
     depends_on:
       - postgres
       - adminer
@@ -71,7 +69,7 @@ networks:
   backend:
   frontend:
 
-volumes :
+volumes:
   postgres_db_data:
     name: postgres_db_data
 
@@ -82,7 +80,7 @@ volumes :
       o: bind
       device: ${BACK_DIR_PATH:-/tmp/back_vol}
       type: none
-  
+
   avatars_volume:
     name: avatars_volume
     driver: local
