@@ -166,10 +166,10 @@ export function Play({ member }: { member: any }) {
 
 
     const handlePlay = () => {
-
+        console.log("member: ", member);
         axios
             .post(`/game/invite`, {
-                userId: member?.userId
+                userId: member?.id
             },
                 {
                     headers: {

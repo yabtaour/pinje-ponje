@@ -1,6 +1,7 @@
 "use client";
 import { useAppSelector } from "@/app/globalRedux/store";
 import axios from "@/app/utils/axios";
+import { useToast } from "@chakra-ui/react";
 import {
   Avatar,
   Dropdown,
@@ -19,7 +20,6 @@ import { useDispatch } from "react-redux";
 import { logout } from "../globalRedux/features/authSlice";
 import Notification from "./notification";
 import SearchInput from "./search";
-import { useToast } from "@chakra-ui/react";
 
 
 
@@ -89,7 +89,7 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
     <Navbar maxWidth="full" className="bg-[#151424] border-b-[#1A3070]">
       <NavbarContent className="flex justify-between items-center">
         <NavbarItem className="lg:block md:block hidden">
-          <Image src="/Logo.png" alt="PONG Logo" width={90} height={90}></Image>
+          <Image src="/Logo.png" alt="PONG Logo" width={90} height={90} />
         </NavbarItem>
         <button className="lg:hidden md:hidden" onClick={onToggleSidebar}>
           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="16" viewBox="0 0 48 36" fill="none">
