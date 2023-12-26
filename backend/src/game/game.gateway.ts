@@ -95,6 +95,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     @SubscribeMessage('finishGame')
     finishGame(client: any, payload: {gameId: number, enemy: number}) {
+      console.log("hadi : ", payload);
       if (!payload || !payload.gameId || !payload.enemy
         || typeof payload.gameId != "number" || typeof payload.enemy != "number") {
           throw new WsException("Invalid payload");

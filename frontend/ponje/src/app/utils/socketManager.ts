@@ -323,6 +323,7 @@ class SocketManager {
   public sendGameEnd(payload: { gameId: number; enemy: number }) {
     return new Promise((resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
+        console.log("gggggg");
         this.gameSocket?.emit("finishGame", payload);
       } else {
         console.log("Socket is not connected yet.");
