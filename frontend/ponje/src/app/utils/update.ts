@@ -31,6 +31,7 @@ export const updateUser = async (userData: UserData, token: string | null) => {
     return { success: true, message: "Update successful"};
   } catch (error) {
     console.error("Failed to update user:", error);
+    
     const err = error as AxiosError;
     if (err.response?.status === 409) {
       const conflictError = {
@@ -103,11 +104,15 @@ export const fetchQRCode = async (token: string | null) => {
 }
 
 
-export const resetPassword = async (old: string, newpass: string) => {
+export const resetPassword = async (old: string, newpass: string, token: string | null) => {
   try {
     const response = await axios.post("/users/resetPassword", {
-      old,
-      newpass,
+      old: old,
+      new: newpass,
+    }, {
+      headers: {
+        Authorization: token,
+      },
     });
     return response.data;
   } catch (error) {

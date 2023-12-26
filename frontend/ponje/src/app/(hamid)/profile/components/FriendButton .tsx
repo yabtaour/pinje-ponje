@@ -1,13 +1,9 @@
-import { User } from "@/app/types/user";
-import {
-  Button,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-} from "@nextui-org/react";
-import axiosServices from "@/app/utils/axios";
-import { useEffect, useState } from "react";
+import { User } from '@/app/types/user';
+import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@nextui-org/react';
+import { useEffect, useState } from 'react';
+import { useToast } from "@chakra-ui/react";
+
+import axios from "@/app/utils/axios";
 
 const FriendButton = ({ userId }: { userId: number | undefined }) => {
   const [userMe, setUserMe] = useState<User | null>(null);
@@ -15,11 +11,13 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
   const [isLoadingFriendship, setIsLoadingFriendship] =
     useState<boolean>(false);
   const [friendshipStatus, setFriendshipStatus] = useState(false);
+  const toast = useToast();
+
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await axiosServices.get(`/users/me`, {
+        const data = await axios.get(`/users/me`, {
           headers: {
             Authorization: `${localStorage.getItem("access_token")}`,
           },
@@ -29,6 +27,16 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
         setLoading(false);
       } catch (err) {
         setLoading(false);
+        toast({
+          title: 'Error',
+          description: "error while getting user",
+          status: 'error',
+          duration: 9000,
+          isClosable: true,
+          position: "bottom-right",
+          variant: "solid",
+          colorScheme: "red",
+        });
       }
     };
 
@@ -41,7 +49,7 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
     try {
       setIsLoadingFriendship(true);
 
-      await axiosServices.post(
+      await axios.post(
         `/users/friends/${action}`,
         {
           id: userId,
@@ -53,10 +61,19 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
         }
       );
 
-      // Assuming the API response includes the updated friendship status
       setFriendshipStatus(true);
     } catch (error) {
       console.error(`Error ${action}ing friend request:`, error);
+      toast({
+        title: 'Error',
+        description: "error while performing friend action",
+        status: 'error',
+        duration: 9000,
+        isClosable: true,
+        position: "bottom-right",
+        variant: "solid",
+        colorScheme: "red",
+      });
     } finally {
       setIsLoadingFriendship(false);
     }
@@ -66,7 +83,7 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
     try {
       setIsLoadingFriendship(true);
       console.log("Block Called");
-      await axiosServices.post(
+      await axios.post(
         `/users/${action}`,
         {
           id: userId,
@@ -115,20 +132,20 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
         return (
           <Dropdown className="bg-[#1B1A2D]">
             <DropdownTrigger>
-              <Button
-                className="w-[10rem] btn btn-sm bg-yellow-500 text-gray-800 hover:bg-yellow-600"
+              <button
+                className="w-[10rem] btn btn-sm btn-primary"
                 disabled={isLoadingFriendship}
                 onClick={handleClick}
-                variant="bordered"
+                // variant="bordered"
               >
                 Friend
-              </Button>
+              </button>
             </DropdownTrigger>
             <DropdownMenu
               className="flex flex-col justify-center"
               aria-label="Dynamic Actions"
             >
-              <DropdownItem className="bg-[#333153] rounded-lg text-cyan-400 hover:bg-slate-600">
+              <DropdownItem className="bg-[#333153] rounded-lg text-white hover:bg-slate-600" textValue="Unfriend">
                 <button
                   className="w-[10rem] "
                   onClick={() => handleFriendAction("unfriend")}
@@ -137,7 +154,7 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
                   Unfriend
                 </button>
               </DropdownItem>
-              <DropdownItem className="bg-[#333153] rounded-lg text-cyan-400 hover:bg-slate-600">
+              <DropdownItem className="bg-[#EF4C53] rounded-lg text-white hover:bg-slate-600" textValue="block">
                 <button
                   className="w-[10rem]  "
                   onClick={() => handleBlockAction("block")}
@@ -151,16 +168,15 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
         );
       case isPendingRequest:
         return (
-          <Dropdown className="bg-[#1B1A2D]">
+          <Dropdown className="bg-[#1B1A2D] ">
             <DropdownTrigger>
-              <Button
-                className="flex items-center justify-center w-[10rem] btn btn-sm bg-cyan-500 text-gray-800 hover:bg-cyan-800"
+              <button
+                className="flex items-center flex-col text-xs justify-center w-[10rem] btn btn-sm bg-[#23a3c3] btn-primary text-white"
                 disabled={isLoadingFriendship}
                 onClick={handleClick}
-                variant="bordered"
               >
                 <svg
-                  className="w-3 h-3 mr-1"
+                  className="w-3 h-3 "
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -174,13 +190,13 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
                   ></path>
                 </svg>
                 <span className="truncate">Pending Request</span>
-              </Button>
+              </button>
             </DropdownTrigger>
             <DropdownMenu
               className="flex flex-col justify-center"
               aria-label="Dynamic Actions"
             >
-              <DropdownItem className="bg-[#333153] rounded-lg text-cyan-400 hover:bg-slate-600">
+              <DropdownItem className="bg-green-500  rounded-lg text-white hover:bg-slate-600" textValue="accept">
                 <button
                   className="w-[10rem] "
                   onClick={() => handleFriendAction("accept")}
@@ -189,7 +205,7 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
                   accept
                 </button>
               </DropdownItem>
-              <DropdownItem className="bg-[#333153] rounded-lg text-cyan-400 hover:bg-slate-600">
+              <DropdownItem className="bg-red-500 rounded-lg text-white hover:bg-slate-600" textValue="decline">
                 <button
                   className="w-[10rem]  "
                   onClick={() => handleFriendAction("decline")}

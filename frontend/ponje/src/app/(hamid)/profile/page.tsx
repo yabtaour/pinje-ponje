@@ -1,7 +1,6 @@
 'use client';
 import Loader from "@/app/components/loader";
 import axios from "@/app/utils/axios";
-import { Toast } from '@chakra-ui/react';
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import FriendsList from "./components/FriendsList";
@@ -10,6 +9,7 @@ import Performance from "./components/Performance";
 import PlayerBanner from "./components/PlayerBanner";
 import ProgressBar from "./components/ProgressBar";
 import SkillAnalytics from "./components/SkillAnalytics";
+import { useToast } from "@chakra-ui/react";
 
 
 
@@ -18,6 +18,7 @@ export default function Profile() {
     const [loading, setLoading] = useState(true);
     const [Friends, setFriends] = useState([]);
     const router = useRouter();
+    const toast = useToast();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -34,14 +35,16 @@ export default function Profile() {
                 // if (!data?.data?.profile?.avatar) 
                 //     router.push('/onboarding');
             } catch (err) {
-                Toast({
+                toast({
                     title: 'Error',
+                    description: "error while getting user",
                     status: 'error',
                     duration: 9000,
                     isClosable: true,
                     position: "bottom-right",
                     variant: "solid",
-                });
+                    colorScheme: "red",
+                  });
                 console.error(err);
                 setLoading(false);
             }
@@ -65,14 +68,16 @@ export default function Profile() {
             setLoading(false);
             console.log(data.data);
         } catch (err) {
-            Toast({
+            toast({
                 title: 'Error',
+                description: "error while getting friends",
                 status: 'error',
                 duration: 9000,
                 isClosable: true,
                 position: "bottom-right",
                 variant: "solid",
-            });
+                colorScheme: "red",
+              });
             console.error(err);
             setLoading(false);
         }
@@ -115,3 +120,4 @@ export default function Profile() {
 
     );
 }
+

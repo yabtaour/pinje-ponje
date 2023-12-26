@@ -161,22 +161,26 @@ export default function Chat() {
             <div className="">
 
                 <>
-                    <ScrollShadow hideScrollBar className=" h-[75vh]">
+                    <>
                         {
 
                             activeConversation === undefined ? (
-                                <>
+                                <div className="flex flex-col items-center justify-center h-screen">
                                     <Image src="/empty_chat.svg"
                                         alt="hero"
-                                        className="w-full h-full m- rounded-full"
+                                        className="w-96	h-96 rounded-full"
                                         width={100}
                                         height={100}
                                     />
-                                </>
+                                    <p className='text-[#c6c4c499] pb-10  text-center text-sm md:text-lg'>Chat with fellow members in real-time, exchanging thoughts and ideas effortlessly. <br />
+                                    Engage in conversations, make connections, and be a part of our interactive community!
+                                    </p>
+                                </div>
+
 
                             ) : (
 
-                                <>
+                                <ScrollShadow hideScrollBar className=" h-[75vh]">
 
                                     <div className=" flex justify-center   sticky top-0">
                                         <div className="lg:w-1/3 md:2/3 bg-[#1B1A2D] sm:w-full  rounded-b-full hover:bg-[#252341] flex justify-center ">
@@ -213,11 +217,11 @@ export default function Chat() {
                                             </React.Fragment>
                                         ))
                                     }
-                                </>
+                                </ScrollShadow>
                             )
                         }
                         <div ref={messagesEndRef} />
-                    </ScrollShadow>
+                    </>
 
                 </>
                 {

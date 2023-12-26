@@ -1,14 +1,15 @@
 'use client'
 import axios from "@/app/utils/axios";
 import SocketManager from '@/app/utils/socketManager';
-import { Toast } from '@chakra-ui/react';
 import Matter, { Body, Events } from 'matter-js';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from "react";
 
+import { useRouter } from "next/navigation";
+import ScoreCard from "../components/ScoreCard";
 import GameResult from "../components/GameResult";
 import PlayerCard, { PlayerSkeleton } from "../components/PlayerCard";
-import ScoreCard from "../components/ScoreCard";
+import { useToast } from "@chakra-ui/react";
 
 
 
@@ -49,19 +50,19 @@ export function createBodies() {
         frictionAir: 0,
         friction: 0,
         render: {
-            fillStyle: "#73d3ff"
+            fillStyle: "#73ffff"
         }
     });
     rightPaddle = Bodies.rectangle(worldWidth - 20, worldHeight / 2, 20, 100, {
         isStatic: true,
         render: {
-            fillStyle: "#4E40F4",
+            fillStyle: "#4EFFF4",
         }
     });
     leftPaddle = Bodies.rectangle(20, worldHeight / 2, 20, 100, {
         isStatic: true,
         render: {
-            fillStyle: "#4E40F4"
+            fillStyle: "#4EFFF4"
         }
     });
     floor = Bodies.rectangle(0, worldHeight, worldWidth * 2, 5, { isStatic: true });
@@ -135,8 +136,11 @@ export default function VersusScreen() {
     const [gameStarted, setGameStarted] = useState(false);
     const [gameEnded, setGameEnded] = useState(false);
     const [gameResult, setGameResult] = useState('');
+    const toast = useToast();
+    // let gameResult: any = null;
     const [loading, setLoading] = useState(true);
     let gameEndMessage = null;
+    const router = useRouter();
 
     const boxRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -154,14 +158,16 @@ export default function VersusScreen() {
                 setLoading(false);
                 currentUserId = data.data.id
             } catch (err) {
-                Toast({
+                toast({
                     title: 'Error',
+                    description: "error while gettinge friends",
                     status: 'error',
                     duration: 9000,
                     isClosable: true,
                     position: "bottom-right",
                     variant: "solid",
-                });
+                    colorScheme: "red",
+                  });
                 console.error("Error in fetchData:", err);
                 setLoading(false);
             }
@@ -180,6 +186,16 @@ export default function VersusScreen() {
                             setPlayerFound(true);
                         }
                     } catch (error) {
+                        toast({
+                            title: 'Error',
+                            description: "Error in on NewGame",
+                            status: 'error',
+                            duration: 9000,
+                            isClosable: true,
+                            position: "bottom-right",
+                            variant: "solid",
+                            colorScheme: "red",
+                          });
                         console.error("Error in onNewGame:", error);
                     }
                 });
@@ -300,7 +316,7 @@ export default function VersusScreen() {
                         width: worldWidth,
                         height: worldHeight,
                         wireframes: false,
-                        background: '#C2D9FF',
+                        background: 'transparent',
                     },
                 });
                 createBodies();
@@ -375,20 +391,13 @@ export default function VersusScreen() {
             });
         };
 
-        const handleVisibilityChange = () => {
-            if (document.hidden) {
-                console.log(enemyPlayer);
-                console.log(gameId, enemyPlayer.userId);
-                socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer.userId })
-                // Document is hidden, you can pause the game or take other actions here
-                console.log('Document is now hidden. Pausing game or taking other actions...');
-            } else {
-                // Document is visible again, you can resume the game or take other actions here
-                console.log('Document is now visible.');
-            }
-        };
 
-        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    
+        // Add the event listener
+        // window.addEventListener('beforeunload', handleBeforeUnload);
+
+        // document.addEventListener('visibilitychange', handleVisibilityChange);
 
         if (!enemyPlayer && !playerFound) waitForNewGame();
         if (!user && !currentUserId) fetchData();
@@ -401,11 +410,56 @@ export default function VersusScreen() {
 
         return () => {
             socketManager.getGameSocket()?.off('gameOver');
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            // document.removeEventListener('visibilitychange', handleVisibilityChange);
+            // window.removeEventListener('beforeunload', handleBeforeUnload);
+            // socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
         };
+
     }, [gameStarted, user, enemyPlayer, playerFound, selectedMap, readyToInitialize, startGame, sentInitialize, myScore, enemyScore, gameEnded, gameResult]);
 
 
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                console.log(enemyPlayer);
+                console.log(gameId, enemyPlayer.userId);
+                socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer.userId })
+                // Document is hidden, you can pause the game or take other actions here
+                console.log('Document is now hidden. Pausing game or taking other actions...');
+            } else {
+                // Document is visible again, you can resume the game or take other actions here
+                console.log('Document is now visible.');
+            }
+        };
+        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+            // Your logic here, for example:
+            // You can notify the server or perform some cleanup actions.
+            // Note: Prompting a confirmation message is not guaranteed in all browsers.
+            console.log("ghayerha");
+            // event.preventDefault();
+            // event.returnValue = 'Are you sure you want to leave?';
+            
+            // Example: notify the server about the user leaving the game
+            if (socketManager && gameId) {
+                console.log("haha");
+                router.push('/pong');
+                socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
+            }
+        };
+
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            // socketManager.getGameSocket()?.off('gameOver');
+            // document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            console.log("unmount");
+            socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
+        };
+    }, [enemyPlayer])
     const handleMapClick = (map: string) => {
         console.log("map clicked");
         setSelectedMap(() => map);
@@ -419,11 +473,17 @@ export default function VersusScreen() {
         ) : (
             startGame ? (
                 <div className='w-full h-screen flex items-center justify-center'>
-                    <div className='w-2/3 h-2/3 border-2 border-black z-30' ref={boxRef}>
-                        <canvas className='w-full h-full border-2 border-black z-30' id="myCanva" ref={canvasRef} />
-                        <div className="absolute top-0 left-0 p-4 text-white">
-                            <ScoreCard playerOne={user} playerTwo={enemyPlayer} myScore={myScore} enemyScore={enemyScore} />
-                        </div>
+                    <div className='w-2/3 h-2/3 border-2 border-black z-30' ref={boxRef} style={{
+                            backgroundImage: "url('/map1.png')",  // Set background image URL
+                            backgroundSize: "100% 100%",             // Cover the entire canvas
+                            backgroundRepeat: "no-repeat",
+                            backgroundPosition: "center",        // No repeat
+                            position: "relative"                    // To make sure canvas stays on top
+                        }}>
+                        <canvas className='w-full h-full border-2 border-black z-30' id="myCanva" ref={canvasRef}/>
+                    </div>
+                    <div className="absolute top-0 left-0 p-4 text-white">
+                        <ScoreCard playerOne={user} playerTwo={enemyPlayer} myScore={myScore} enemyScore={enemyScore} />
                     </div>
                 </div>
             ) : (
