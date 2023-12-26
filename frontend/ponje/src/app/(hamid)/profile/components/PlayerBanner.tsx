@@ -6,6 +6,7 @@ import { User } from '../../../types/user';
 import bg from '../../../../../public/PlayerBanner.png';
 import { formatMessageDate } from "../../chat/components/conversation";
 import FriendButton from "./FriendButton ";
+import axios from "@/app/utils/axios";
 
 export default function PlayerBanner({ user }: { user: User | null | undefined }) {
 
@@ -13,7 +14,26 @@ export default function PlayerBanner({ user }: { user: User | null | undefined }
     const username = user?.username;
     const bio = user?.profile?.bio;
     const Avatar = user?.profile?.avatar;
-    // const Avatar = '/avatars' + user?.profile?.avatar;
+
+    const handleBlockAction = async (action: "block" | "unblock", userId: number | undefined) => {
+        try {
+            await axios.post(
+                `/users/${action}`,
+                {
+                    id: userId,
+                },
+                {
+                    headers: {
+                        Authorization: `${localStorage.getItem("access_token")}`,
+                    },
+                }
+            );
+
+        } catch (error) {
+            console.error(`Error ${action}ing friend request:`, error);
+        } finally {
+        }
+    };
     return (
         <div className="p-5 flex justify-center flex-row text-center" style={{
 
@@ -37,7 +57,7 @@ export default function PlayerBanner({ user }: { user: User | null | undefined }
                         />
                     ) : (
                         <Image
-                            src="/defaultAvatar.png"
+                            src="/placeholderuser.jpeg"
                             alt="user image"
                             width={50}
                             height={50}
@@ -53,14 +73,26 @@ export default function PlayerBanner({ user }: { user: User | null | undefined }
 
                     {
                         logedUserId !== user?.id ? (
-                            <div className="w-[10rem] btn btn-sm btn-active btn-primary">
-                                {/* <svg width="25" height="15" viewBox="0 0 327 239" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M105.966 116.576C138.157 116.576 164.254 90.4796 164.254 58.2881C164.254 26.0965 138.157 0 105.966 0C73.7744 0 47.6779 26.0965 47.6779 58.2881C47.6779 90.4796 73.7744 116.576 105.966 116.576Z" fill="white" />
-                                    <path d="M105.968 145.72C47.5631 145.72 0 184.889 0 233.152C0 236.416 2.56467 238.981 5.82881 238.981H206.107C209.371 238.981 211.936 236.416 211.936 233.152C211.936 184.889 164.373 145.72 105.968 145.72Z" fill="white" />
-                                    <path d="M320.056 69.4446H208.944C205.148 69.4446 202 66.2964 202 62.5001C202 58.7038 205.148 55.5557 208.944 55.5557H320.056C323.852 55.5557 327 58.7038 327 62.5001C327 66.2964 323.852 69.4446 320.056 69.4446Z" fill="white" />
-                                    <path d="M264.5 125C260.704 125 257.556 121.852 257.556 118.056V6.94444C257.556 3.14815 260.704 0 264.5 0C268.296 0 271.444 3.14815 271.444 6.94444V118.056C271.444 121.852 268.296 125 264.5 125Z" fill="white" />
-                                </svg> */}
-                                <FriendButton userId={user?.id} />
+                            <div className="flex justify-center items-center">
+                                <div className="w-[10rem] btn btn-sm btn-active btn-primary">
+                                    <FriendButton userId={user?.id} />
+                                </div>
+                                <div className="dropdown">
+                                    <div tabIndex={0} role="button" className="btn btn-square bg-transparent hover:bg-transparent">
+                                        <svg tabIndex={0} xmlns="http://www.w3.org/2000/svg" width="4" height="18" viewBox="0 0 4 18" fill="none">
+                                            <path d="M2 11C3.10457 11 4 10.1046 4 9C4 7.89543 3.10457 7 2 7C0.89543 7 0 7.89543 0 9C0 10.1046 0.89543 11 2 11Z" fill="#6563FF" />
+                                            <path d="M2 4C3.10457 4 4 3.10457 4 2C4 0.89543 3.10457 0 2 0C0.89543 0 0 0.89543 0 2C0 3.10457 0.89543 4 2 4Z" fill="#6563FF" />
+                                            <path d="M2 18C3.10457 18 4 17.1046 4 16C4 14.8954 3.10457 14 2 14C0.89543 14 0 14.8954 0 16C0 17.1046 0.89543 18 2 18Z" fill="#6563FF" />
+                                        </svg>
+                                    </div>
+                                    <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-[#252341]/80 rounded-box w-32">
+                                        <li>
+                                            <button onClick={() => handleBlockAction("block", user?.id)} className="text-white hover:bg-slate-600 focus:outline-none">
+                                                Block
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
 
                         ) : (

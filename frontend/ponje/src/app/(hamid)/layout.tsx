@@ -36,12 +36,20 @@ export default function Layout({
 
     useEffect(() => {
         const SocketManagerNotifs = SocketManager.getInstance("http://localhost:3000", `${localStorage.getItem('access_token')}`);
+       
+        console.log("HEEEEEEEEYO");
         const fetchNotifications = async () => {
             if (SocketManagerNotifs) {
                 SocketManagerNotifs.waitForConnection(async () => {
-                    const data = await SocketManagerNotifs.getNotifications();
-                    console.log("HEEEEEEEEYO data i got back from server", data);
-                    setShowToast(true);
+                    console.log("HEEEEEEEEYO 1");
+                    try {
+                        console.log("HEEEEEEEEYO");
+                        const data = await SocketManagerNotifs.getNotifications();
+                        console.log("HEEEEEEEEYO data i got back from server", data);
+                        setShowToast(true);
+                      } catch (error) {
+                        console.error("Error fetching notifications:", error);
+                      }
                 })
             }
 
