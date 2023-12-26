@@ -1,7 +1,6 @@
 'use client'
 import axios from "@/app/utils/axios";
 import SocketManager from '@/app/utils/socketManager';
-import { Toast } from '@chakra-ui/react';
 import Matter, { Body, Events } from 'matter-js';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from "react";
@@ -10,6 +9,7 @@ import { useRouter } from "next/navigation";
 import ScoreCard from "../components/ScoreCard";
 import GameResult from "../components/GameResult";
 import PlayerCard, { PlayerSkeleton } from "../components/PlayerCard";
+import { useToast } from "@chakra-ui/react";
 
 
 
@@ -136,6 +136,8 @@ export default function VersusScreen() {
     const [gameStarted, setGameStarted] = useState(false);
     const [gameEnded, setGameEnded] = useState(false);
     const [gameResult, setGameResult] = useState('');
+    const toast = useToast();
+    // let gameResult: any = null;
     const [loading, setLoading] = useState(true);
     let gameEndMessage = null;
     const router = useRouter();
@@ -156,14 +158,16 @@ export default function VersusScreen() {
                 setLoading(false);
                 currentUserId = data.data.id
             } catch (err) {
-                Toast({
+                toast({
                     title: 'Error',
+                    description: "error while gettinge friends",
                     status: 'error',
                     duration: 9000,
                     isClosable: true,
                     position: "bottom-right",
                     variant: "solid",
-                });
+                    colorScheme: "red",
+                  });
                 console.error("Error in fetchData:", err);
                 setLoading(false);
             }
@@ -182,6 +186,16 @@ export default function VersusScreen() {
                             setPlayerFound(true);
                         }
                     } catch (error) {
+                        toast({
+                            title: 'Error',
+                            description: "Error in on NewGame",
+                            status: 'error',
+                            duration: 9000,
+                            isClosable: true,
+                            position: "bottom-right",
+                            variant: "solid",
+                            colorScheme: "red",
+                          });
                         console.error("Error in onNewGame:", error);
                     }
                 });

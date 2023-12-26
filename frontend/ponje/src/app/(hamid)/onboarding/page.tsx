@@ -7,7 +7,6 @@ import { Textarea, useToast } from "@chakra-ui/react";
 import { Modal, ModalContent, NextUIProvider } from '@nextui-org/react';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 
-import { Toast } from '@chakra-ui/react';
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
@@ -45,14 +44,13 @@ export default function Onboarding() {
                 router.push("/profile");
             }
         } catch (error) {
-            Toast({
-                title: 'Error',
-                status: 'error',
-                duration: 9000,
+            toast({
+                title: "Error.",
+                description: "Error while editing user",
+                status: "error",
+                duration: 3000,
                 isClosable: true,
-                position: "bottom-right",
-                variant: "solid",
-            });
+            })
             console.log(error);
         }
     }

@@ -1,15 +1,10 @@
 "use client"
 
-import { UpdateUser } from '@/app/globalRedux/features/authSlice';
-import { fetchUserData } from '@/app/utils/auth';
 import axios from '@/app/utils/axios';
-import { fetchQRCode } from "@/app/utils/update";
-import { Toast } from '@chakra-ui/react';
-import { user } from '@nextui-org/theme';
 import { getCookie } from "cookies-next";
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-
+import { useToast } from '@chakra-ui/react';
 import { useRef } from "react";
 
 interface TwoFaProps {
@@ -56,6 +51,8 @@ export function TwoFactorModal({
 
     const [code, setCode] = useState<string>("");
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+    const toast = useToast();
+
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { value, name } = event.target;
@@ -116,14 +113,16 @@ export function TwoFactorModal({
         const trimmedCode = code.replace(/\s/g, "");
         if (trimmedCode.length !== 6 || !/^\d+$/.test(trimmedCode)) {
             console.log("error");
-            Toast({
-                title: 'Should be 6 digits',
+            toast({
+                title: 'Error',
+                description: "should be 6 digits",
                 status: 'error',
                 duration: 9000,
                 isClosable: true,
                 position: "bottom-right",
                 variant: "solid",
-            });
+                colorScheme: "red",
+              });
         }
         else {
             verifyCode(trimmedCode);
@@ -166,7 +165,7 @@ export function TwoFactorModal({
                             <div className='flexs flex-col items-center rounded-lg bg-[#1B1A2D]'>
 
                                 <h1 className='text-lg lg:text-xl font-bold mb-7 text-[#77DFF8] text-center'>Activate Two Factor Authentication</h1>
-                                <p className='text-[#706bc6] pb-10 text-sm text-center font-semibold'>Protecting your Account is top priority . <br />
+                                <p className='text-[#706bc6] pb-10 text-sm md:text-lg text-center font-semibold'>Protecting your Account is top priority . <br />
                                     Scan the QR code below with the Google Authenticator App and enter the code.
                                 </p>
                                 <div className='flex flex-col justify-center items-center'>
@@ -181,7 +180,7 @@ export function TwoFactorModal({
                                     }
                                     <div className='flex justify-center flex-col items-center pb-5 mt-4'>
                                         <div>
-                                            <div>
+                                            <div className='flex justify-center flex-col items-center'>
                                                 <div className="flex items-center">
                                                     {Array.from({ length: 6 }, (_, index) => (
                                                         <input
@@ -208,7 +207,7 @@ export function TwoFactorModal({
                                                     ))}
                                                 </div>
                                                 <button
-                                                    className="mt-10 w bg-indigo-600 w-80 hover:bg-blue-700 px-4 py-3 text-white rounded font-medium text-sm ml-7"
+                                                    className="mt-10 w bg-indigo-600 w-60 md:w-80 hover:bg-blue-700 px-4 py-3 text-white rounded font-medium text-sm"
                                                     type="button"
                                                     disabled={code.trim().length === 0 || code.trim().length < 6}
                                                     onClick={(event: React.MouseEvent<HTMLButtonElement>) => handleSubmit(event)}            >
@@ -259,6 +258,8 @@ export function TwoFactorModalDeactivate({
     const [changeSuccess, setChangeSuccess] = useState(false);
     const [submissionAttempted, setSubmissionAttempted] = useState(false);
     const token = getCookie("token");
+    const toast = useToast();
+
 
 
     const handleTwoFactorAuth = async () => {
@@ -275,6 +276,7 @@ export function TwoFactorModalDeactivate({
                 setChangeSuccess(true);
             }
         } catch (error) {
+
             setChangeSuccess(false);
             setSubmissionAttempted(true);
             console.error("Failed to update user 2FA (caught actual error :p):", error);
@@ -336,26 +338,30 @@ export function TwoFactorModalDeactivate({
                                 <div className='flex flex-col justify-center items-center'>
                                     <div className='flex justify-center flex-col items-center pb-5 mt-4'>
                                         {submissionAttempted && !changeSuccess ? (
-                                            Toast({
+                                             toast({
                                                 title: 'Error',
+                                                description: "error while changing TwoFa status",
                                                 status: 'error',
                                                 duration: 9000,
                                                 isClosable: true,
                                                 position: "bottom-right",
                                                 variant: "solid",
-                                            })
+                                                colorScheme: "red",
+                                              })
                                         ) : (
                                             null
                                         )}
                                         {submissionAttempted && changeSuccess ? (
-                                            Toast({
-                                                title: 'TwoFa disabled Successfully :D',
+                                            toast({
+                                                title: 'Success',
+                                                description: "twoFa status changed successfully",
                                                 status: 'success',
                                                 duration: 9000,
                                                 isClosable: true,
                                                 position: "bottom-right",
                                                 variant: "solid",
-                                            })
+                                                colorScheme: "red",
+                                              })
                                         ) : (
                                             null
                                         )}
