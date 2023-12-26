@@ -18,7 +18,11 @@ export default function Pong() {
   const [onlineFriends, setOnlineFriends] = useState([]);
   const [gameDataFetched, setGameDataFetched] = useState(false);
   const router = useRouter();
+
+  console.log("mamaaak");
+
   const handleMMClick = () => {
+    console.log("sadfkjhgasdfkjhasdf");
     router.push('/pong/versusScreen');
     if (!gameDataFetched) {
       getGameDataHandler();
