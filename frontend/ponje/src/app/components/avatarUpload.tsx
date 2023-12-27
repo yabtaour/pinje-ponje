@@ -6,13 +6,14 @@ import { Image } from "@nextui-org/react";
 import { UpdateUser } from '../globalRedux/features/authSlice';
 import { useAppSelector } from '../globalRedux/store';
 import axios from '../utils/axios';
+import { useToast } from '@chakra-ui/react';
 
 
 export default function UploadAvatar() {
     const avatar = useAppSelector((state) => state.authReducer.value.user?.profile?.avatar);
     const dispatch = useDispatch();
     const user = useAppSelector((state) => state.authReducer.value.user);
-
+    const toast = useToast();
 
 
     const handleFileChange = async (event: any) => {
@@ -42,6 +43,16 @@ export default function UploadAvatar() {
             dispatch(UpdateUser(updatedUser));
 
         } catch (error) {
+            toast({
+                title: 'Error',
+                description: "error in uploading avatar",
+                status: 'error',
+                duration: 9000,
+                isClosable: true,
+                position: "bottom-right",
+                variant: "solid",
+                colorScheme: "red",
+              });
             console.log(error);
         }
     };
