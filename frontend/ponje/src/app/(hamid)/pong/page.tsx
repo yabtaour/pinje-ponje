@@ -20,7 +20,6 @@ export default function Pong() {
   const router = useRouter();
   const toast = useToast();
   const handleMMClick = () => {
-    console.log("sadfkjhgasdfkjhasdf");
     router.push('/pong/versusScreen');
     if (!gameDataFetched) {
       getGameDataHandler();

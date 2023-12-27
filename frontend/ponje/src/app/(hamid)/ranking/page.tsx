@@ -1,15 +1,14 @@
 'use client';
 import Loader from '@/app/components/loader';
-import { useAppSelector } from '@/app/globalRedux/store';
 
 import axios from '@/app/utils/axios';
 import { User as NextUIUser, Pagination, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@nextui-org/react';
 
 
+import { useToast } from "@chakra-ui/react";
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useEffect } from 'react';
-import { useToast } from "@chakra-ui/react";
+import React, { useEffect, useState } from 'react';
 
 
 
@@ -38,7 +37,7 @@ export const Podium = ({ users }: { users: DisplayedInfo[] }) => {
                       <div className="w-16 lg:w-24 md:w-32 rounded-full">
                         <Image
                           src={user?.avatar ?? '/placeholderuser.jpeg'}
-                           alt="user image"
+                          alt="user image"
                           fill
                           sizes='(max-width: 768px) 100vw,
                           (max-width: 1200px) 50vw,
@@ -206,7 +205,17 @@ export default function RankPage() {
 
   const [users, setUsers] = React.useState([] as DisplayedInfo[]);
   const toast = useToast();
+  const [isLoading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (isLoading && users.length === 0) {
+        setLoading(false);
+      }
+    }, 5000);
+
+    return () => clearTimeout(timeout);
+  }, [isLoading, users.length]);
 
 
 
@@ -225,7 +234,8 @@ export default function RankPage() {
           rank: user?.rank,
           avatar: user?.profile?.avatar
         }));
-        
+
+        setLoading(false);
         setUsers(transformedUsers);
         return res.data;
       } catch (err) {
@@ -245,29 +255,43 @@ export default function RankPage() {
 
     fetchUsers()
 
-  }, [users]);
+  }, []);
 
 
+
+  console.log("users: ", users);
   return (
     <div className=''>
       {
-        users.length === 0 ? (
+        isLoading && users.length === 0 ? (
           <div className='min-h-screen'>
             <Loader />;
           </div>
-        ) : (
-          <>
-            <div className='w-full min-[320px]:text-center flex justify-center bg-[#151424] '>
-              <Podium users={users.filter(user => user.ex !== undefined && user.ex !== null).slice().sort((a, b) => (b.ex || 0) - (a.ex || 0)).slice(0, 3)} />
+        ) : !isLoading && users.length === 0 ?
+          (
+            <div className='text-gray-500 min-h-screen flex flex-col items-center'>
+              <Image
+                className='my-10'
+                width={300}
+                height={300}
+                alt="NextUI hero Image"
+                src="noData.svg"
+              />
+              <h1>NO Users UWU</h1>
             </div>
-  
-            <div className='bg-[#151424]  w-full flex justify-center'>
-              <Leaderboard users={users.filter(user => user.ex !== undefined && user.ex !== null).slice().sort((a, b) => (b.ex || 0) - (a.ex || 0)).slice(3)} />
-            </div>
-          </>
-        )
+          ) : (
+            <>
+              <div className='w-full min-[320px]:text-center flex justify-center bg-[#151424] '>
+                <Podium users={users.filter(user => user.ex !== undefined && user.ex !== null).slice().sort((a, b) => (b.ex || 0) - (a.ex || 0)).slice(0, 3)} />
+              </div>
+
+              <div className='bg-[#151424]  w-full flex justify-center'>
+                <Leaderboard users={users.filter(user => user.ex !== undefined && user.ex !== null).slice().sort((a, b) => (b.ex || 0) - (a.ex || 0)).slice(3)} />
+              </div>
+            </>
+          )
       }
     </div>
   );
-  
+
 }

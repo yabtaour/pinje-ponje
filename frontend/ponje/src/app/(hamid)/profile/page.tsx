@@ -35,16 +35,6 @@ export default function Profile() {
                 // if (!data?.data?.profile?.avatar) 
                 //     router.push('/onboarding');
             } catch (err) {
-                toast({
-                    title: 'Error',
-                    description: "error while getting user",
-                    status: 'error',
-                    duration: 9000,
-                    isClosable: true,
-                    position: "bottom-right",
-                    variant: "solid",
-                    colorScheme: "red",
-                  });
                 console.error(err);
                 setLoading(false);
             }

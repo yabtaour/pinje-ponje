@@ -9,7 +9,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-# RUN npm install && npm install --dev
+RUN npm install && npm install --dev
 
 COPY . .
 

@@ -1,3 +1,4 @@
+import { Status } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
@@ -22,6 +23,10 @@ export class updateUserDto {
   @IsOptional({ message: 'TwoFactor must be a boolean value.' })
   @IsBoolean({ message: 'TwoFactor must be a boolean value.' })
   twoFactor: boolean;
+
+  @ApiProperty()
+  @IsOptional()
+  status : Status
 }
 
 export class resretPasswordDto {
