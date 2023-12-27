@@ -1,10 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  INestApplication,
-  Injectable,
-  OnModuleInit,
-} from '@nestjs/common';
+import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { Prisma } from '@prisma/client';
 import { Logger } from '@nestjs/common';
@@ -36,8 +30,11 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 
         if (retries === MAX_RETRIES) {
           if (error instanceof Prisma.PrismaClientInitializationError)
-            // // If maximum retries reached, throw an exception
-            logger.error( 'Prisma Error: ' + error.message + "Reset the count and try again");
+            logger.error(
+              'Prisma Error: ' +
+                error.message +
+                'Reset the count and try again',
+            );
           retries = 0;
         }
 

@@ -2,12 +2,9 @@ import { applyDecorators } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
-  ApiConflictResponse,
-  ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiUnauthorizedResponse,
-  ApiHeader,
   ApiBody,
   ApiConsumes,
   ApiOperation,
@@ -15,7 +12,6 @@ import {
 } from '@nestjs/swagger';
 
 import { Prisma } from '@prisma/client';
-import { CreateProfileDto } from './dto/create-profile.dto';
 import { updateProfileDto } from './dto/update-profile.dto';
 
 export function SwaggerUpdateProfile() {
@@ -24,19 +20,19 @@ export function SwaggerUpdateProfile() {
     ApiNotFoundResponse({ description: 'Profile not found' }),
     ApiBearerAuth(),
     ApiBody({
-      type : updateProfileDto
+      type: updateProfileDto,
     }),
     ApiOkResponse({
       description: 'updated profile',
       schema: {
         type: 'object',
-        example : Prisma.ProfileScalarFieldEnum
-      }
-    })
+        example: Prisma.ProfileScalarFieldEnum,
+      },
+    }),
   );
 }
 
-export function SwaggerGetAvatar(){
+export function SwaggerGetAvatar() {
   return applyDecorators(
     ApiBadRequestResponse({ description: 'Bad Request' }),
     ApiNotFoundResponse({ description: 'File not found' }),
@@ -47,9 +43,9 @@ export function SwaggerGetAvatar(){
   );
 }
 
-export function SwaggerUploadAvatar(){
+export function SwaggerUploadAvatar() {
   return (
-    ApiOperation({ summary :"Upload Avatar", description: "Upload Avatar"}),
+    ApiOperation({ summary: 'Upload Avatar', description: 'Upload Avatar' }),
     ApiConsumes('multipart/form-data', 'image/png'),
     ApiBody({
       required: true,
@@ -58,7 +54,7 @@ export function SwaggerUploadAvatar(){
         properties: {
           file: {
             type: 'string',
-            format: 'binary'
+            format: 'binary',
           },
         },
       },
@@ -66,16 +62,16 @@ export function SwaggerUploadAvatar(){
   );
 }
 
-export function SwaggerDeleteAvatar(){
+export function SwaggerDeleteAvatar() {
   return applyDecorators(
-    ApiOperation({summary: "Delete Avatar", description: "Delete Avatar"}),
+    ApiOperation({ summary: 'Delete Avatar', description: 'Delete Avatar' }),
     ApiNotFoundResponse({ description: 'Profile not found' }),
-    ApiOkResponse({description: "updated profile"}),
-    ApiUnauthorizedResponse({description: "Token not found"})
-  )
+    ApiOkResponse({ description: 'updated profile' }),
+    ApiUnauthorizedResponse({ description: 'Token not found' }),
+  );
 }
 
-export function SwaggerFindProfileById(){
+export function SwaggerFindProfileById() {
   return applyDecorators(
     ApiOperation({
       summary: 'Get Profile By ID',
@@ -84,12 +80,12 @@ export function SwaggerFindProfileById(){
     ApiParam({ name: 'id', description: 'Profile ID' }),
     ApiNotFoundResponse({ description: 'Profile not found' }),
     ApiOkResponse({
-      description: "updated profile",
+      description: 'updated profile',
       schema: {
         type: 'object',
-        example : Prisma.ProfileScalarFieldEnum
-      }
+        example: Prisma.ProfileScalarFieldEnum,
+      },
     }),
-    ApiUnauthorizedResponse({description: "Token not found"})
-  )
+    ApiUnauthorizedResponse({ description: 'Token not found' }),
+  );
 }

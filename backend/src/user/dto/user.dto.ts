@@ -4,7 +4,6 @@ import {
     IsInt,
     IsString,
     IsOptional,
-    IsIn
 } from 'class-validator';
 
 export class UserDto {

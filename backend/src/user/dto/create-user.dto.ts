@@ -3,15 +3,9 @@ import {
     IsNotEmpty,
     IsInt,
     IsString,
-    IsOptional,
-    IsObject,
-    ValidateNested,
-    IsEmpty,
-    IsBoolean,
+    MaxLength,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 
-import { CreateProfileDto } from '../../profiles/dto/create-profile.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDtoIntra {
@@ -26,6 +20,7 @@ export class CreateUserDtoIntra {
 
     @IsNotEmpty({ message: 'Username cannot be empty.' })
     @IsString({ message: 'Username must be a string.' })
+    @MaxLength(25, { message: 'username cannot exceed 25 characters.' })
     @ApiProperty()
     username: string;
 }
@@ -43,6 +38,7 @@ export class CreateUserDtoLocal {
  
     @IsNotEmpty({ message: 'Username cannot be empty.' })
     @IsString({ message: 'Username must be a string.' })
+    @MaxLength(25, { message: 'username cannot exceed 25 characters.' })
     @ApiProperty()
     username: string;
 }
