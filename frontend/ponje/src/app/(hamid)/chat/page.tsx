@@ -130,28 +130,18 @@ export default function Chat() {
 
     const socketManager = SocketManager.getInstance("http://localhost:3000", token);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-
-
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
-
 
     useLayoutEffect(() => {
         scrollToBottom();
     }, [messages]);
 
     const scrollToBottom = () => {
-        console.log(messagesEndRef.current);
-        messagesEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' });
+        messagesEndRef.current?.scrollIntoView({ behavior: 'instant', block: 'end' });
     };
 
-
-    useEffect(() => {
-    }, [conversations, dispatch, socketManager, activeConversation]);
-
-
-    //if dm get the member here 
     let member
     if (activeConversation?.room?.roomType === "DM") {
         member = activeConversation?.room?.members?.find((member: any) => member?.user?.id !== me?.id);
@@ -160,11 +150,9 @@ export default function Chat() {
     return (
         <div className="bg-[#151424] h-full  p-2 ">
             <div className="">
-
                 <>
                     <>
                         {
-
                             activeConversation === undefined ? (
                                 <div className="flex flex-col items-center align-middle justify-center h-[90vh]">
                                     <Image src="/empty_chat.svg"
@@ -177,12 +165,8 @@ export default function Chat() {
                                         Engage in conversations, make connections, and be a part of our interactive community!
                                     </p>
                                 </div>
-
-
                             ) : (
-
                                 <ScrollShadow hideScrollBar className=" h-[75vh]">
-
                                     <div className=" flex justify-center   sticky top-0">
                                         <div className="lg:w-1/3 md:2/3 bg-[#1B1A2D] sm:w-full  rounded-b-full hover:bg-[#252341] flex justify-center ">
                                             <Button onPress={onOpen} >
@@ -201,9 +185,7 @@ export default function Chat() {
                                             <RoomOptions isOpen={isOpen} onOpenChange={onOpenChange} />
                                         </div>
                                     </div>
-
                                     {
-
                                         (messages ?? []).map((message: any, index: number) => (
                                             <React.Fragment key={index}>
                                                 {message?.state === "INFORMATION" ? (
@@ -218,10 +200,10 @@ export default function Chat() {
                                             </React.Fragment>
                                         ))
                                     }
+                                    <div ref={messagesEndRef} />
                                 </ScrollShadow>
                             )
                         }
-                        <div ref={messagesEndRef} />
                     </>
 
                 </>
