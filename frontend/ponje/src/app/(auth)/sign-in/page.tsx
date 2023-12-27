@@ -73,7 +73,6 @@ export default function SignIn() {
         router.push('/profile');
     }
     catch (error) {
-      const errorMessage = typeof error === 'object' && error && 'message' in error ? (error as Error).message : 'An error occurred';
       toast({
         title: 'Error',
         description: "error handling signup",
