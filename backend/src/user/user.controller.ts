@@ -7,25 +7,35 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  Put,
   Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiOperation,
-  ApiParam,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JWTGuard } from '../auth/guards/jwt.guard';
-import { CreateUserDtoLocal } from './dto/create-user.dto';
-import { updateUserDto } from './dto/update-user.dto';
+import { resretPasswordDto, updateUserDto } from './dto/update-user.dto';
 import { blockAndUnblockUserDto } from './dto/blockAndUnblock-user.dto';
 import { FriendsActionsDto } from './dto/FriendsActions-user.dto';
 import { UserService } from './user.service';
 import { PaginationLimitDto } from 'src/chat/dto/pagination-dto';
+import {
+  SwaggerAccept,
+  SwaggerBlock,
+  SwaggerBlockedList,
+  SwaggerCancelRequest,
+  SwaggerDecline,
+  SwaggerDeleteUser,
+  SwaggerFindAllFriends,
+  SwaggerFindAllUsers,
+  SwaggerFindUserById,
+  SwaggerGetMe,
+  SwaggerQRcode,
+  SwaggerResetPassword,
+  SwaggerSend,
+  SwaggerUnblock,
+  SwaggerUnfriend,
+  SwaggerUpdateUser,
+} from './user.swagger';
 
 @UseGuards(JWTGuard)
 @Controller('users')
@@ -35,42 +45,30 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('me')
-  @ApiOperation({
-    summary: 'Get the current user',
-    description: 'Get the current user by token',
-  })
+  @SwaggerGetMe()
   async FindUserByToken(@Req() request: any) {
     const user = await this.userService.getCurrentUser(request);
     delete user.password;
+    delete user.twoFactorSecret;
     return user;
   }
 
   @Get('QRCode')
-  @ApiOperation({
-    summary: 'Get QRCode',
-    description: 'Get QRCode and return the QRCode',
-  })
+  @SwaggerQRcode()
   async getQRCode(@Req() request: any) {
     const user = await this.userService.getCurrentUser(request);
     return await this.userService.getQRCode(user.id);
   }
 
   @Delete('delete')
-  @ApiOperation({
-    summary: 'Delete a user by ID',
-    description: 'Delete a user by ID and return the user deleted',
-  })
+  @SwaggerDeleteUser()
   async remove(@Req() request: any) {
     const user = await this.userService.getCurrentUser(request);
     return this.userService.RemoveUsers(user.id);
   }
 
   @Patch()
-  @ApiOperation({
-    summary: 'Update a user by ID',
-    description: 'Update a user by ID and return the user updated',
-  })
-  @ApiBody({ type: updateUserDto })
+  @SwaggerUpdateUser()
   async UpdateUser(@Req() request: any, @Body() data: updateUserDto) {
     const user = await this.userService.getCurrentUser(request);
     console.log(user);
@@ -79,19 +77,14 @@ export class UserController {
   }
 
   @Post('resetPassword')
-  async resetPassword(
-    @Req() request: any,
-    @Body() data: { old: string; new: string },
-  ) {
+  @SwaggerResetPassword()
+  async resetPassword(@Req() request: any, @Body() data: resretPasswordDto) {
     const user = await this.userService.getCurrentUser(request);
     return this.userService.resetPassword(user, data.old, data.new);
   }
 
   @Get()
-  @ApiOperation({
-    summary: 'Get all users',
-    description: 'Get all users and return the users',
-  })
+  @SwaggerFindAllUsers()
   async FindAllUsers(
     @Req() request: any,
     @Query() query: PaginationLimitDto,
@@ -102,26 +95,21 @@ export class UserController {
   }
 
   @Get('/blocked-users')
-  @ApiOperation({
-    summary: 'Get all blocked users',
-    description: 'Get all blocked users and return the users',
-  })
+  @SwaggerBlockedList()
   async FindAllBlockedUsers(@Req() request: any) {
     const user = await this.userService.getCurrentUser(request);
     return this.userService.FindAllBlockedUsers(user.id);
   }
 
   @Post('/block')
-  @ApiOperation({ summary: 'Block Friend', description: 'Block Friend' })
-  @ApiBody({ type: blockAndUnblockUserDto })
+  @SwaggerBlock()
   async BlockFriend(@Req() request: any, @Body() data: blockAndUnblockUserDto) {
     const user = await this.userService.getCurrentUser(request);
     return this.userService.BlockUser(user.id, data);
   }
 
   @Post('/unblock')
-  @ApiOperation({ summary: 'UnBlock Friend', description: 'UnBlock Friend' })
-  @ApiBody({ type: blockAndUnblockUserDto })
+  @SwaggerUnblock()
   async UnBlockFriend(
     @Req() request: any,
     @Body() data: blockAndUnblockUserDto,
@@ -130,12 +118,8 @@ export class UserController {
     return await this.userService.UnBlockFriend(user.id, data);
   }
 
-  @ApiOperation({
-    summary: 'Get All Friends by ID',
-    description: 'Get All Friends by ID',
-  })
-  @ApiParam({ name: 'id', description: 'User ID' })
   @Get(':id/friends')
+  @SwaggerFindAllFriends()
   async FindAllFriends(
     @Req() request: any,
     @Param('id', ParseIntPipe) id: number,
@@ -146,11 +130,7 @@ export class UserController {
   }
 
   @Post('/friends/cancel')
-  @ApiOperation({
-    summary: 'Cancel Friend Request',
-    description: 'Cancel Friend Request',
-  })
-  @ApiBody({ type: FriendsActionsDto })
+  @SwaggerCancelRequest()
   async CancelFriendRequest(
     @Req() request: Request,
     @Body() data: FriendsActionsDto,
@@ -159,21 +139,15 @@ export class UserController {
     return this.userService.CancelFriendRequest(user.id, data);
   }
 
-  // to do: fix this and optimize it
   @Post('/friends/unfriend')
-  @ApiOperation({ summary: 'Unfriend', description: 'Unfriend' })
-  @ApiBody({ type: FriendsActionsDto })
+  @SwaggerUnfriend()
   async Unfriend(@Req() request: Request, @Body() data: FriendsActionsDto) {
     const user = await this.userService.getCurrentUser(request);
     return this.userService.Unfriend(user.id, data);
   }
 
   @Post('/friends/decline')
-  @ApiOperation({
-    summary: 'Decline Friend Request',
-    description: 'Decline Friend Request',
-  })
-  @ApiBody({ type: FriendsActionsDto })
+  @SwaggerDecline()
   async DeclineFriendRequest(
     @Req() request: Request,
     @Body() data: FriendsActionsDto,
@@ -183,11 +157,7 @@ export class UserController {
   }
 
   @Post('/friends/accept')
-  @ApiOperation({
-    summary: 'Accept Friend Request',
-    description: 'Accept Friend Request',
-  })
-  @ApiBody({ type: FriendsActionsDto })
+  @SwaggerAccept()
   async AcceptFriendRequest(
     @Req() request: Request,
     @Body() data: FriendsActionsDto,
@@ -197,11 +167,7 @@ export class UserController {
   }
 
   @Post('/friends/send')
-  @ApiOperation({
-    summary: 'Send Friend Request',
-    description: 'Send Friend Request',
-  })
-  @ApiBody({ type: FriendsActionsDto })
+  @SwaggerSend()
   async SendFriendRequest(
     @Req() request: Request,
     @Body() data: FriendsActionsDto,
@@ -211,11 +177,7 @@ export class UserController {
   }
 
   @Get('/:id/')
-  @ApiOperation({
-    summary: 'Get a user by ID',
-    description: 'Get a user by ID and return the user',
-  })
-  @ApiParam({ name: 'id', type: 'number' })
+  @SwaggerFindUserById()
   async FindUserByID(
     @Req() request: any,
     @Param('id', ParseIntPipe) id: number,
