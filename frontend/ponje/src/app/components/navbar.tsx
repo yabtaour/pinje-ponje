@@ -68,16 +68,6 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
         setUser(data.data);
         setLoading(false);
       } catch (err) {
-        toast({
-          title: 'Error',
-          description: "error while getting current user",
-          status: 'error',
-          duration: 9000,
-          isClosable: true,
-          position: "bottom-right",
-          variant: "solid",
-          colorScheme: "red",
-        });
         console.error(err);
         setLoading(false);
       }
