@@ -4,7 +4,7 @@ import Auth42Button, { AuthGoogleButton } from "@/app/components/buttons";
 import { login } from "@/app/globalRedux/features/authSlice";
 import { useAppSelector } from "@/app/globalRedux/store";
 import { handleSignup } from "@/app/utils/auth";
-import {  useToast } from "@chakra-ui/react";
+import { useToast } from "@chakra-ui/react";
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
 import { AxiosError } from "axios";
 import { getCookie } from "cookies-next";
@@ -55,10 +55,11 @@ export default function SignUp() {
         username: Yup.string().required("Username is required"),
         email: Yup.string().email("Invalid email address").required("Email is required"),
         password: Yup.string()
-            .matches(
-                /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/,
-                "Password must be at least 8 characters long\n and contain at least one lowercase letter, one uppercase letter,\n one number, and one special character (!@#$%^&*)"
-            )
+            .min(8, "Password must be at least 8 characters long")
+            .matches(/[a-z]/, "Password must contain at least one lowercase letter")
+            .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+            .matches(/[0-9]/, "Password must contain at least one number")
+            .matches(/[!@#$%^&*]/, "Password must contain at least one special character")
             .required("Password is required"),
         confirmPassword: Yup.string()
             .oneOf([Yup.ref("password")], "Passwords do not match")
@@ -91,7 +92,7 @@ export default function SignUp() {
                     position: "bottom-right",
                     variant: "solid",
                     colorScheme: "red",
-                  });
+                });
             }
         }
     };
