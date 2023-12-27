@@ -159,7 +159,7 @@ export default function SignIn() {
         <Auth42Button />
         <AuthGoogleButton />
         <div className="mt-4 font-semibold text-sm text-slate-500 mr-28 text-center md:text-left">
-          Don't have an account? <Link className="text-cyan-200 hover:underline hover:underline-offset-4" href="/sign-up">Register</Link>
+          {"Don't have an account?"} <Link className="text-cyan-200 hover:underline hover:underline-offset-4" href="/sign-up">Register</Link>
         </div>
       </div>
     </div>

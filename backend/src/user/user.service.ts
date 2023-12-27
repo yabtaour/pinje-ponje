@@ -1,29 +1,22 @@
 import {
   HttpException,
   HttpStatus,
-  Inject,
   Injectable,
   Param,
   ParseIntPipe,
-  forwardRef,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { config } from 'dotenv';
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
 import { SignUpDto } from 'src/auth/dto/signUp.dto';
-import { ChatService } from 'src/chat/chat.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { ProfilesService } from '../profiles/profiles.service';
 import { FriendsActionsDto } from './dto/FriendsActions-user.dto';
 import { blockAndUnblockUserDto } from './dto/blockAndUnblock-user.dto';
 import { CreateUserDtoIntra } from './dto/create-user.dto';
 import { updateUserDto } from './dto/update-user.dto';
 import { NotificationService } from 'src/notification/notification.service';
-import { NotificationGateway } from 'src/notification/notification.gateway';
 import { ChatRole, NotificationType, Prisma, RoomType } from '@prisma/client';
-import { RoomDto } from 'src/chat/dto/room-dto';
-import { http } from 'winston';
 import { randomBytes } from 'crypto';
 import { PaginationLimitDto } from 'src/chat/dto/pagination-dto';
 
@@ -33,9 +26,7 @@ config();
 export class UserService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly profile: ProfilesService,
     private readonly notificationService: NotificationService,
-    private readonly notificationGateway: NotificationGateway, // private readonly chatservice: ChatService
   ) {}
 
   async resetPassword(user: any, old: string, newPass: string) {
@@ -58,7 +49,6 @@ export class UserService {
       });
       return updatedUser;
     } catch (e) {
-      console.error('Error in resetPassword:', e);
       if (
         e instanceof Prisma.PrismaClientUnknownRequestError ||
         e instanceof Prisma.PrismaClientKnownRequestError
@@ -351,6 +341,7 @@ export class UserService {
       }
       delete user.password;
       delete user.twoFactorSecret;
+      delete user.twoFactor
       return user;
     } catch (e) {
       if (
@@ -361,8 +352,6 @@ export class UserService {
       } else throw e;
     }
   }
-
-
 
   async FindUserByIntraId(id: number) {
     try {
@@ -499,6 +488,7 @@ export class UserService {
       } else throw e;
     }
   }
+
   async FindAllBlockedUsers(user_id: number) {
     try {
       const blockedList = await this.prisma.userBlocking.findMany({
@@ -667,7 +657,7 @@ export class UserService {
       });
 
       const sanitizedFriends = listofFriends.map(({ friend }) => {
-        const { password, twoFactorSecret, ...sanitizedFriend } = friend;
+        const { password, twoFactorSecret, twoFactor, ...sanitizedFriend } = friend;
         return sanitizedFriend;
       });
       return sanitizedFriends;
@@ -700,7 +690,6 @@ export class UserService {
           ],
         },
       });
-      console.log(getFriendship)
       if (getFriendship == null)
         throw new HttpException('No user with this id', HttpStatus.NOT_FOUND);
 
@@ -925,7 +914,6 @@ export class UserService {
             receiverId: data.id,
           },
         });
-        console.log(createRequest);
         this.notificationService.create({
           senderId: user_id,
           receiverId: data.id,

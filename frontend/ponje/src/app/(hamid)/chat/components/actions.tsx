@@ -255,7 +255,7 @@ export function Join({ room, removeRoom }: { room: any, removeRoom: any }) {
 
     const rooms = useAppSelector((state) => state.chatReducer.rooms);
     const [password, setPassword] = useState('');
-
+    const toast = useToast()
     const joinRoom = () => {
         axios
             .post(`/chatapi/rooms/${room.id}/join`, {
@@ -271,6 +271,14 @@ export function Join({ room, removeRoom }: { room: any, removeRoom: any }) {
                 fetchNewMessages();
             })
             .catch((err) => {
+
+                toast({
+                    title: "An error occurred.",
+                    description: err.message,
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                })
             });
     };
 
