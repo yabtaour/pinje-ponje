@@ -148,13 +148,13 @@ export default function Chat() {
     }
 
     return (
-        <div className="bg-[#151424] h-full  p-2 ">
-            <div className="">
+        <div className="bg-[#151424] h-full overflow-x-hidden  p-2 ">
+            <div>
                 <>
                     <>
                         {
                             activeConversation === undefined ? (
-                                <div className="flex flex-col items-center align-middle justify-center h-[90vh]">
+                                <div className="flex  flex-col items-center align-middle justify-center h-[90vh]">
                                     <Image src="/empty_chat.svg"
                                         alt="hero"
                                         className="w-96	h-96 rounded-full"
@@ -166,7 +166,7 @@ export default function Chat() {
                                     </p>
                                 </div>
                             ) : (
-                                <ScrollShadow hideScrollBar className=" h-[75vh]">
+                                <ScrollShadow hideScrollBar className="overflow-x-hidden h-[75vh]">
                                     <div className=" flex justify-center   sticky top-0">
                                         <div className="lg:w-1/3 md:2/3 bg-[#1B1A2D] sm:w-full  rounded-b-full hover:bg-[#252341] flex justify-center ">
                                             <Button onPress={onOpen} >

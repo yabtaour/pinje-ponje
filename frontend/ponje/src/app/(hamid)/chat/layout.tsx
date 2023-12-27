@@ -7,8 +7,7 @@ import { useToast } from "@chakra-ui/react";
 import { ScrollShadow } from "@nextui-org/react";
 import { getCookie } from "cookies-next";
 import { LayoutProps, motion, useAnimation } from "framer-motion";
-import React, { Suspense, useEffect, useState } from "react";
-import Loader from '../../components/loader';
+import React, { useEffect, useState } from "react";
 import Conversation from "./components/conversation";
 
 const socketManager = SocketManager.getInstance('http://localhost:3000', getCookie('token'));
@@ -61,19 +60,18 @@ const Layout: React.FC<LayoutProps> = ({ children }: any) => {
     }, [toast]);
 
     return (
-        <div className=" flex bg-gray-200">
+        <div className=" flex w-full  bg-gray-200">
             <aside className="bg-[#1B1A2D] p-2 overflow-auto">
+
                 <motion.div
                     style={{ width: '15rem' }}
                     animate={controls}
                     transition={{ duration: 0.1 }}
                 >
-                    <ScrollShadow hideScrollBar className=" h-[90vh]">
-                        <Suspense fallback={<Loader />}>
-                            <Conversation collapsed={collapsed} />
-                        </Suspense>
+                    <ScrollShadow hideScrollBar className="w-[17rem] h-[91vh]">
+                        <Conversation collapsed={collapsed} />
                     </ScrollShadow>
-                </motion.div>
+                </motion.div >
             </aside>
             <main className="flex-grow overflow-auto">
                 {children}
