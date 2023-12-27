@@ -75,7 +75,7 @@ export function JoinRooms({ onOpenChange, setAction }: { onOpenChange: () => voi
     }
 
     return (
-        <div className="flex flex-col items-center justify-center bg-[#222039] text-cyan-500 py-8">
+        <div className="flex flex-col items-center  rounded-lg justify-center bg-[#222039] text-cyan-500 py-8">
             <h1 className="m-5">Rooms you can join</h1>
             <ScrollShadow hideScrollBar className="flex items-center flex-col justify-start w-full h-[50vh]">
                 {!isLoading && rooms.length === 0 ? (
@@ -158,7 +158,7 @@ export function CreateRoom({ onOpenChange, setAction }: { onOpenChange: () => vo
 
 
     return (
-        <div className="flex flex-col items-center justify-center bg-[#222039] py-8">
+        <div className="flex flex-col rounded-lg items-center justify-center bg-[#222039] py-8">
             <Image
                 src="/groupChat.svg"
                 alt="groupChat"
@@ -267,10 +267,10 @@ export default function RoomOptions({ isOpen, onOpenChange }: { isOpen: boolean,
                     action === 'create' ? (<CreateRoom onOpenChange={onOpenChange} setAction={setAction} />) : action === 'join' ? (<JoinRooms onOpenChange={onOpenChange} setAction={setAction} />) : (
                         <div className="flex flex-col items-center justify-center bg-[#222039] py-8 rounded-full">
                             <h1 className="text-cyan-500 text-xl md:text-2xl"> Pick an action </h1>
-                            <div className="flex flex-row items-center ">
+                            <div className="flex flex-row flex-wrap items-center ">
                                 <Button onClick={() => { setAction('create'); }} >
                                     <Card className="hover:bg-slate-400/10 m-10 rounded-lg  h-full">
-                                        <CardHeader className="pb-0 pt-2 px-4 flex-col justify-center items-center">
+                                        <CardHeader className=" pb-0 pt-2 px-4 flex-col justify-center items-center">
                                             <p className="text-tiny uppercase font-bold text-white">Create a Room</p>
 
                                             <h4 className="font-bold text-large text-gray-400">Create Your own Room</h4>

@@ -32,8 +32,8 @@ export default function Profile() {
                 fetchFriends(userId);
                 setUser(data.data);
                 setLoading(false);
-                if (!data?.data?.profile?.avatar) 
-                    router.push('/onboarding');
+                // if (!data?.data?.profile?.avatar) 
+                //     router.push('/onboarding');
             } catch (err) {
                 console.error(err);
                 setLoading(false);
