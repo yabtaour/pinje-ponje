@@ -85,8 +85,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
     @SubscribeMessage('updateBallPosition')
-    updateBall(client: any, payload: {gameId: number, position: {x: number, y: number}}) {
-      if (!payload || !payload.gameId || !payload.position
+    updateBall(client: any, payload:  {gameId: number, position: any, velocity: any, edge: string, worldWidth: number}) {
+      if (!payload || !payload.gameId || !payload.position || !payload.edge || !payload.velocity
           || typeof payload.gameId != "number") {
             throw new WsException("invalid payload");
           }
