@@ -1,11 +1,13 @@
 import { GameMode } from "@prisma/client";
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsNotEmpty, IsString, IsArray, ArrayMinSize } from "class-validator";
 
 export class CreateGameDto {
-    @IsNotEmpty()
-    @IsString()
+    @IsNotEmpty({ message: 'Game mode cannot be empty.' })
+    @IsString({ message: 'Game mode must be a string.' })
     mode: GameMode;
 
-    @IsNotEmpty()
+    @IsNotEmpty({ message: 'Players array cannot be empty.' })
+    // @IsArray({ message: 'Players must be an array.' })
+    // @ArrayMinSize(1, { message: 'At least one player must be specified.' })
     players: number[];
 }
