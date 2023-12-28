@@ -14,10 +14,6 @@ export default function GameResult(result: any) {
     const handleHomeClick = () => {
         router.push('/pong');
     }
-    // useEffect(() => {
-    //     // setResult("win");
-    //     setResult("loss");
-    // }, []);
 
     console.log(result);
     console.log(result.result);
