@@ -5,13 +5,11 @@ import Matter, { Body, Events } from 'matter-js';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from "react";
 
+import { useToast } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
-import ScoreCard from "../components/ScoreCard";
 import GameResult from "../components/GameResult";
 import PlayerCard, { PlayerSkeleton } from "../components/PlayerCard";
-import { getToken, useToast } from "@chakra-ui/react";
-import { fetchUserData } from "@/app/utils/auth";
-import { getCookie } from "cookies-next";
+import ScoreCard from "../components/ScoreCard";
 
 
 
@@ -105,9 +103,6 @@ export function updatePaddlesgame(gameId: number) {
     }
 }
 
-export function sendBallUpdate(gameId: number) {
-
-}
 
 const ballReachedLeftThreshold = () => {
     const leftThreshold = 0;
@@ -124,7 +119,6 @@ export function updateScore(gameId: number) {
     }
 }
 
-
 export default function VersusScreen() {
     const [playerFound, setPlayerFound] = useState(false);
     const [enemyPlayer, setEnemyPlayer] = useState<any>(null);
@@ -139,9 +133,6 @@ export default function VersusScreen() {
     const [gameEnded, setGameEnded] = useState(false);
     const [gameResult, setGameResult] = useState('');
     const toast = useToast();
-    // let gameResult: any = null;
-    const [loading, setLoading] = useState(true);
-    let gameEndMessage = null;
     const router = useRouter();
 
     const boxRef = useRef<HTMLDivElement>(null);
@@ -151,13 +142,12 @@ export default function VersusScreen() {
         const token = localStorage.getItem('access_token')
         if (token)
         {
-            const user = await fetchUserData(token);
             axios.patch("/users", { status: 'ONLINE' }, {
                 headers: {
                     Authorization: token,
                 },
             }).then((res)=>{
-                    setUser(res.data)
+                    // setUser(res.data)
                     router.push('/pong');
             }).catch((err)=>{
                 toast({
@@ -170,249 +160,78 @@ export default function VersusScreen() {
                     variant: "solid",
                     colorScheme: "red",
                   });
-    
             });
         }
     }
 
+    const fetchData = async () => {
+        try {
+            const data = await axios.get(`/users/me`, {
+                headers: {
+                    Authorization: `${localStorage.getItem('access_token')}`,
+                },
+            });
+            setUser(data.data);
+            currentUserId = data.data.id
+        } catch (err) {
+            toast({
+                title: 'Error',
+                description: "error while gettinge friends",
+                status: 'error',
+                duration: 9000,
+                isClosable: true,
+                position: "bottom-right",
+                variant: "solid",
+                colorScheme: "red",
+              });
+            console.error("Error in fetchData:", err);
+        }
+    };
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const data = await axios.get(`http://localhost:3000/users/me`, {
-                    headers: {
-                        Authorization: `${localStorage.getItem('access_token')}`,
-                        // Authorization: token,
-                    },
-                });
-                setUser(data.data);
-                setLoading(false);
-                currentUserId = data.data.id
-            } catch (err) {
-                toast({
-                    title: 'Error',
-                    description: "error while gettinge friends",
-                    status: 'error',
-                    duration: 9000,
-                    isClosable: true,
-                    position: "bottom-right",
-                    variant: "solid",
-                    colorScheme: "red",
-                  });
-                console.error("Error in fetchData:", err);
-                setLoading(false);
-            }
-        };
-
-        const waitForNewGame = async () => {
-            if (socketManager) {
-                socketManager.waitForConnection(async () => {
-                    try {
-                        let data = await socketManager.onNewGame();
-                        if (data) {
-                            gameId = data.id;
-                            const otherUser = data.players.find((player: any) => player.userId !== currentUserId);
+    const waitForNewGame = async () => {
+        console.log("setting up game found listener")
+        if (socketManager) {
+            socketManager.waitForConnection(async () => {
+                try {
+                    socketManager.onNewGame((data) => {
+                        console.log("score ja", data);
+                        const { game, id } = data;
+                        if (game) {
+                            gameId = game.id;
+                            const otherUser = game.players.find((player: any) => player.userId !== currentUserId);
                             console.log(otherUser);
                             setEnemyPlayer(otherUser);
                             setPlayerFound(true);
                         }
-                    } catch (error) {
-                        toast({
-                            title: 'Error',
-                            description: "Error in on NewGame",
-                            status: 'error',
-                            duration: 9000,
-                            isClosable: true,
-                            position: "bottom-right",
-                            variant: "solid",
-                            colorScheme: "red",
-                          });
-                        console.error("Error in onNewGame:", error);
-                    }
-                });
-            }
-        };
-
-        const initializeGame = async () => {
-            console.log("setting up start game listener")
-            if (selectedMap && socketManager) {
-                socketManager.waitForConnection(() => {
-                    socketManager.onStartGame()
-                        .then((data) => {
-                            if (data) {
-                                if (data.reversed == true) {
-                                    ballX *= -1;
-                                }
-                                setStartGame(true);
-                            }
-                        })
-                        .catch((error) => {
-                            console.error("Error in sendInitialize:", error);
-                        });
-                    setReadyToInitialize(true);
-                });
-            }
-        };
-
-        const sendInitialization = async () => {
-            console.log("sending game intialization");
-            if (selectedMap && !sentInitialize && socketManager) {
-                socketManager.waitForConnection(async () => {
-                    try {
-                        await socketManager.sendIntialization({ gameId: gameId, playerPos: 30, ballVel: 3 });
-                        setSentInitialize(true);
-                    } catch (error) {
-                        console.error("Error in sendInitialize:", error);
-                    }
-                });
-            }
-        };
-
-        const handlePaddlePosition = () => {
-            console.log("setting up paddle listener")
-            if (startGame && socketManager) {
-                socketManager.waitForConnection(() => {
-                    socketManager.onPaddlePosition((data) => {
-                        const { playerId, direction } = data;
-                        if (playerId == currentUserId) {
-                            if (direction == "up") {
-                                Body.translate(leftPaddle, { x: 0, y: -4 });
-                            } else {
-                                Body.translate(leftPaddle, { x: 0, y: 4 });
-                            }
-                        } else {
-                            if (direction == "up") {
-                                Body.translate(rightPaddle, { x: 0, y: -4 });
-                            } else {
-                                Body.translate(rightPaddle, { x: 0, y: 4 });
-                            }
-                        }
-                        isSent = false;
-                    });
-                });
-            }
-        };
-
-        const handleScoreUpdate = () => {
-            if (startGame && socketManager) {
-                socketManager.onScoreUpdate((data) => {
-                    console.log("score ja", data);
-                    const { player, newScore } = data;
-                    scoreSent = false;
-                    Body.setPosition(ball, { x: worldWidth / 2, y: worldHeight / 2 });
-                    Body.setVelocity(ball, {
-                        x: ballX,
-                        y: ballY
                     })
-                    Body.setPosition(leftPaddle, { x: 20, y: worldHeight / 2 });
-                    Body.setPosition(rightPaddle, { x: worldWidth - 20, y: worldHeight / 2 });
-                    Body.setPosition(floor, { x: 0, y: worldHeight });
-                    Body.setPosition(ceiling, { x: 0, y: 0 });
-                    if (player == currentUserId) {
-                        console.log("current : ", currentUserId, "coming : ", player);
-                        console.log("update me")
-                        setEnemyScore(newScore);
-                    }
-                    else {
-                        console.log("current : ", currentUserId, "coming : ", player);
-                        console.log("update enemy")
-                        setMyScore(newScore);
-                    }
-                })
-                setGameStarted(true);
-            }
-        }
-
-        const createGame = () => {
-            console.log("creating game");
-            worldWidth = canvasRef.current?.width! * 4;
-            worldHeight = canvasRef.current?.height! * 4;
-            canvaWidth = canvasRef.current?.width!;
-            canvaHeight = canvasRef.current?.height!;
-
-            console.log("canva demensions ldakhl : ", canvaWidth, " | ", canvaHeight);
-            console.log("world demensions ldakhl : ", worldWidth, " | ", worldHeight);
-            try {
-                const engine = Engine.create({
-                    gravity: {
-                        x: 0,
-                        y: 0,
-                    }
-                });
-                const render = Render.create({
-                    element: boxRef.current!,
-                    canvas: canvasRef.current!,
-                    engine: engine,
-                    options: {
-                        width: worldWidth,
-                        height: worldHeight,
-                        wireframes: false,
-                        background: 'transparent',
-                    },
-                });
-                createBodies();
-                console.warn("hna : ", ballX, ballY);
-                Body.setVelocity(ball, {
-                    x: ballX,
-                    y: ballY,
-                })
-                World.add(engine.world, [ball, floor, ceiling, leftPaddle, rightPaddle]);
-
-                window.addEventListener('keydown', (event) => {
-                    if (keys.hasOwnProperty(event.code)) {
-                        event.preventDefault();
-                        keys[event.code] = true;
-                    }
-                });
-                window.addEventListener('keyup', (event) => {
-                    if (keys.hasOwnProperty(event.code)) {
-                        event.preventDefault();
-                        keys[event.code] = false;
-                    }
-                });
-
-                Events.on(engine, 'beforeUpdate', () => {
-                    if (ballReachedLeftThreshold())
-                        updateScore(gameId);
-                    else {
-                        sendBallUpdate(gameId);
-                        updatePaddlesgame(gameId);
-                    }
-                });
-
-
-                Matter.Runner.run(engine)
-                Render.run(render);
-
-                Events.on(engine, 'collisionStart', (event) => {
-                    event.pairs.forEach((pair) => {
-                        const { bodyA, bodyB } = pair;
-                        handleColision(pair, bodyA, bodyB)
-                    });
-                });
-
-
-                return () => {
-                    Render.stop(render);
-                    World.clear(engine.world, false);
-                    Engine.clear(engine);
+                } catch (error) {
+                    toast({
+                        title: 'Error',
+                        description: "Error in on NewGame",
+                        status: 'error',
+                        duration: 9000,
+                        isClosable: true,
+                        position: "bottom-right",
+                        variant: "solid",
+                        colorScheme: "red",
+                      });
+                    console.error("Error in onNewGame:", error);
                 }
-            } catch (error) {
-                console.error("Error creating game");
-            }
-            setGameStarted(true);
-        };
+            });
+        }
+    };
 
-        const handleGameEnd = async () => {
-            console.log("setting up end game listener")
+    const waitForStartGame = async () => {
+        console.log("setting up start game listener")
+        if (selectedMap && socketManager) {
             socketManager.waitForConnection(() => {
-                socketManager.onGameFinished()
+                socketManager.onStartGame()
                     .then((data) => {
                         if (data) {
-                            setGameResult(data);
-                            // gameResult = data;
-                            console.log("gameResult : ", gameResult);
-                            setGameEnded(true);
+                            if (data.reversed == true) {
+                                ballX *= -1;
+                            }
+                            setStartGame(true);
                         }
                     })
                     .catch((error) => {
@@ -420,19 +239,208 @@ export default function VersusScreen() {
                     });
                 setReadyToInitialize(true);
             });
-        };
+        }
+    };
+
+    const sendInitialization = async () => {
+        console.log("sending game intialization");
+        if (selectedMap && !sentInitialize && socketManager) {
+            socketManager.waitForConnection(async () => {
+                try {
+                    await socketManager.sendIntialization({ gameId: gameId, playerPos: 30, ballVel: 3 });
+                    setSentInitialize(true);
+                } catch (error) {
+                    console.error("Error in sendInitialize:", error);
+                }
+            });
+        }
+    };
+
+    const handlePaddlePosition = () => {
+        console.log("setting up paddle listener")
+        if (startGame && socketManager) {
+            socketManager.waitForConnection(() => {
+                socketManager.onPaddlePosition((data) => {
+                    const { playerId, direction } = data;
+                    if (playerId == currentUserId) {
+                        if (direction == "up") {
+                            Body.translate(leftPaddle, { x: 0, y: -4 });
+                        } else {
+                            Body.translate(leftPaddle, { x: 0, y: 4 });
+                        }
+                    } else {
+                        if (direction == "up") {
+                            Body.translate(rightPaddle, { x: 0, y: -4 });
+                        } else {
+                            Body.translate(rightPaddle, { x: 0, y: 4 });
+                        }
+                    }
+                    isSent = false;
+                });
+            });
+        }
+    };
+
+    const handleScoreUpdate = () => {
+        if (startGame && socketManager) {
+            socketManager.onScoreUpdate((data) => {
+                console.log("score ja", data);
+                const { player, newScore } = data;
+                scoreSent = false;
+                Body.setPosition(ball, { x: worldWidth / 2, y: worldHeight / 2 });
+                Body.setVelocity(ball, {
+                    x: ballX,
+                    y: ballY
+                })
+                Body.setPosition(leftPaddle, { x: 20, y: worldHeight / 2 });
+                Body.setPosition(rightPaddle, { x: worldWidth - 20, y: worldHeight / 2 });
+                Body.setPosition(floor, { x: 0, y: worldHeight });
+                Body.setPosition(ceiling, { x: 0, y: 0 });
+                if (player == currentUserId) {
+                    console.log("current : ", currentUserId, "coming : ", player);
+                    console.log("update me")
+                    setEnemyScore(newScore);
+                }
+                else {
+                    console.log("current : ", currentUserId, "coming : ", player);
+                    console.log("update enemy")
+                    setMyScore(newScore);
+                }
+            })
+            setGameStarted(true);
+        }
+    }
+
+    const createGame = () => {
+        console.log("creating game");
+        worldWidth = canvasRef.current?.width! * 4;
+        worldHeight = canvasRef.current?.height! * 4;
+        canvaWidth = canvasRef.current?.width!;
+        canvaHeight = canvasRef.current?.height!;
+
+        console.log("canva demensions ldakhl : ", canvaWidth, " | ", canvaHeight);
+        console.log("world demensions ldakhl : ", worldWidth, " | ", worldHeight);
+        try {
+            const engine = Engine.create({
+                gravity: {
+                    x: 0,
+                    y: 0,
+                }
+            });
+            const render = Render.create({
+                element: boxRef.current!,
+                canvas: canvasRef.current!,
+                engine: engine,
+                options: {
+                    width: worldWidth,
+                    height: worldHeight,
+                    wireframes: false,
+                    background: 'transparent',
+                },
+            });
+            createBodies();
+            console.warn("hna : ", ballX, ballY);
+            Body.setVelocity(ball, {
+                x: ballX,
+                y: ballY,
+            })
+            World.add(engine.world, [ball, floor, ceiling, leftPaddle, rightPaddle]);
 
 
+            const handleKeyUp = (event: any) => {
+                if (keys.hasOwnProperty(event.code)) {
+                    event.preventDefault();
+                    keys[event.code] = true;
+                }
+            }
+            window.addEventListener('keydown', handleKeyUp);
+        
+            const handleKeyDown = (event: any) => {
+                if (keys.hasOwnProperty(event.code)) {
+                    event.preventDefault();
+                    keys[event.code] = false;
+                }
+            }
+            window.addEventListener('keyup', handleKeyDown);
 
-    
-        // Add the event listener
-        // window.addEventListener('beforeunload', handleBeforeUnload);
+            Events.on(engine, 'beforeUpdate', () => {
+                if (ballReachedLeftThreshold())
+                    updateScore(gameId);
+                else {
+                    updatePaddlesgame(gameId);
+                }
+            });
 
+
+            Matter.Runner.run(engine)
+            Render.run(render);
+
+            Events.on(engine, 'collisionStart', (event) => {
+                event.pairs.forEach((pair) => {
+                    const { bodyA, bodyB } = pair;
+                    handleColision(pair, bodyA, bodyB)
+                });
+            });
+
+
+            return () => {
+                Render.stop(render);
+                World.clear(engine.world, false);
+                Engine.clear(engine);
+            }
+        } catch (error) {
+            console.error("Error creating game");
+        }
+        setGameStarted(true);
+    };
+
+    const handleGameEnd = async () => {
+        console.log("setting up end game listener")
+        socketManager.waitForConnection(() => {
+            socketManager.onGameFinished()
+                .then((data) => {
+                    if (data) {
+                        setGameResult(data);
+                        console.log("gameResult : ", gameResult);
+                        setGameEnded(true);
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error in sendInitialize:", error);
+                });
+            setReadyToInitialize(true);
+        });
+    };
+
+    const handleVisibilityChange = async () => {
+        if (document.hidden) {
+            router.push('/pong');
+            socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId })
+        }
+    };
+    const handleBeforeUnload = async () => {
+        if (socketManager && gameId) {
+            socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
+        }
+    };
+
+    useEffect(() => {
         // document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('beforeunload', handleBeforeUnload);
 
-        if (!enemyPlayer && !playerFound) waitForNewGame();
-        if (!user && !currentUserId) fetchData();
-        if (selectedMap && enemyPlayer && playerFound && !startGame && !gameEnded) initializeGame();
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            // document.removeEventListener('visibilitychange', handleVisibilityChange);
+            console.log("something hapened hna");
+            socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
+        };
+    }, [enemyPlayer])
+
+    useEffect(() => {
+
+        waitForNewGame();
+        if (!user) fetchData();
+        if (selectedMap && enemyPlayer && playerFound && !startGame && !gameEnded) waitForStartGame();
         if (selectedMap && !startGame && !gameEnded) sendInitialization();
         if (startGame && !gameEnded) handlePaddlePosition();
         if (startGame && !gameEnded) handleScoreUpdate();
@@ -441,40 +449,13 @@ export default function VersusScreen() {
 
         return () => {
             socketManager.getGameSocket()?.off('gameOver');
-            // document.removeEventListener('visibilitychange', handleVisibilityChange);
-            // window.removeEventListener('beforeunload', handleBeforeUnload);
-            // socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
+            socketManager.getGameSocket()?.off('gameFound');
         };
 
     }, [gameStarted, user, enemyPlayer, playerFound, selectedMap, readyToInitialize, startGame, sentInitialize, myScore, enemyScore, gameEnded, gameResult]);
 
 
-    useEffect(() => {
-
-       
-        const handleVisibilityChange = async () => {
-            if (document.hidden) {
-                router.push('/pong');
-                socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId })
-            }
-        };
-        const handleBeforeUnload = async () => {
-            if (socketManager && gameId) {
-                // window.location.href = '/pong';
-                socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
-            }
-        };
-
-
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        window.addEventListener('beforeunload', handleBeforeUnload);
-
-        return () => {
-            window.removeEventListener('beforeunload', handleBeforeUnload);
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
-        };
-    }, [enemyPlayer])
+    
     const handleMapClick = (map: string) => {
         console.log("map clicked");
         setSelectedMap(() => map);

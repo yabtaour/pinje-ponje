@@ -248,23 +248,34 @@ class SocketManager {
     });
   }
 
-  public onNewGame(): Promise<any> {
-    return new Promise(async (resolve, reject) => {
-      if (this.gameSocket && this.gameSocket.connected) {
-        const gameFoundListener = (data: any) => {
-          if (data) {
-            console.log("new game found");
-            resolve(data);
-          }
-          data = null;
-          this.gameSocket?.off("gameFound", gameFoundListener);
-        };
-        this.gameSocket?.on("gameFound", gameFoundListener);
-      } else {
-        console.log("Socket is not connected yet.");
-        reject("Socket is not connected");
-      }
-    });
+  // public onNewGame(): Promise<any> {
+  //   return new Promise(async (resolve, reject) => {
+  //     if (this.gameSocket && this.gameSocket.connected) {
+  //       const gameFoundListener = (data: any) => {
+  //         if (data) {
+  //           console.log("new game found : ", data);
+  //           resolve(data);
+  //         }
+  //         data = null;
+  //         // this.gameSocket?.off("gameFound", gameFoundListener);
+  //       };
+  //       this.gameSocket?.on("gameFound", gameFoundListener);
+  //     } else {
+  //       console.log("Socket is not connected yet.");
+  //       reject("Socket is not connected");
+  //     }
+  //   });
+  // }
+
+  public onNewGame(callback: (data: any) => void): void {
+    if (this.gameSocket && this.gameSocket.connected) {
+      this.gameSocket?.off("gameFound");
+      this.gameSocket?.on("gameFound", (data: any) => {
+        callback(data);
+      });
+    } else {
+      console.error("Socket is not connected");
+    }
   }
 
   public sendIntialization(payload: {
