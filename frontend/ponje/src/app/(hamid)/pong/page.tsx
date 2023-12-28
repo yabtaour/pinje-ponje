@@ -19,14 +19,13 @@ export default function Pong() {
   const [gameDataFetched, setGameDataFetched] = useState(false);
   const router = useRouter();
   const toast = useToast();
+
   const handleMMClick = () => {
     router.push('/pong/versusScreen');
     if (!gameDataFetched) {
       getGameDataHandler();
-
     }
   };
-
 
   const getGameDataHandler = async () => {
     const token = localStorage.getItem('access_token');
@@ -56,7 +55,7 @@ export default function Pong() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await axios.get(`http://localhost:3000/users/me`, {
+        const data = await axios.get(`/users/me`, {
           headers: {
             Authorization: `${localStorage.getItem('access_token')}`,
           },
@@ -84,7 +83,7 @@ export default function Pong() {
 
   const fetchOnlineFriends = async (userId: number) => {
     try {
-      const data = await axios.get(`http://localhost:3000/users/${userId}/friends`, {
+      const data = await axios.get(`/users/${userId}/friends`, {
         headers: {
           Authorization: `${localStorage.getItem('access_token')}`,
         },

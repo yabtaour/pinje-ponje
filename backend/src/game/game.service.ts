@@ -362,8 +362,9 @@ export class GameService {
 				status: "INGAME"
 			}
 		});
-		await this.gameGateway.server.to(String(player.userId)).emit('gameFound', game);
-		await this.gameGateway.server.to(String(opponentPlayer.userId)).emit('gameFound', game);
+		console.log("sending to : ", player.userId, opponentPlayer.userId);
+		await this.gameGateway.server.to(String(player.userId)).emit('gameFound', {game: game, id: player.userId});
+		await this.gameGateway.server.to(String(opponentPlayer.userId)).emit('gameFound', {game: game, id: opponentPlayer.userId});
 	}
 
 	async initializeGame(client: number, payload: any) {
