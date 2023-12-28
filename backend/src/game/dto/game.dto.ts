@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber } from 'class-validator';
 
 export class UpdateScoreDto {
-
   @ApiProperty()
   @IsNotEmpty({ message: 'User ID cannot be empty.' })
   @IsNumber({}, { message: 'User ID must be a number.' })
@@ -15,7 +14,6 @@ export class UpdateScoreDto {
 }
 
 export class UpdatePaddlePositionDto {
-
   @ApiProperty()
   @IsNotEmpty({ message: 'Game ID cannot be empty.' })
   @IsNumber({}, { message: 'Game ID must be a number.' })
@@ -23,7 +21,7 @@ export class UpdatePaddlePositionDto {
 
   @ApiProperty()
   @IsNotEmpty({ message: 'Direction cannot be empty.' })
-  direction: "up" | "down";
+  direction: 'up' | 'down';
 }
 
 export class UpdateBallPositionDto {
@@ -44,9 +42,8 @@ export class UpdateBallPositionDto {
 }
 
 export class GameActionDto {
-
   @ApiProperty()
   @IsNotEmpty({ message: 'userId cannot be empty.' })
   @IsNumber({}, { message: 'userId must be a number.' })
-  userId: number
+  userId: number;
 }

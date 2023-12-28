@@ -20,7 +20,7 @@ import {
   RoomType,
 } from '@prisma/client';
 import { Transform, plainToClass } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 import * as crypto from 'crypto';
 import { GlobalExceptionFilter } from 'src/global-exception.filter';
 import { NotificationService } from 'src/notification/notification.service';
@@ -30,6 +30,7 @@ import { chatActionsDto } from './dto/actions-dto';
 import { updateRoomRoleDto } from './dto/update-room-role.dto';
 import { updateRoomDto } from './dto/update-room.dto';
 import { PaginationLimitDto } from './dto/pagination-dto';
+import { MessageDto, joinRoomDto } from './dto/room-dto';
 
 export const ChatActions = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): chatActionsDto => {
@@ -46,29 +47,6 @@ export const ChatActions = createParamDecorator(
     return plainToClass(chatActionsDto, dataFromContext);
   },
 );
-
-export class joinRoomDto {
-  @IsOptional()
-  @IsNumber()
-  @Transform(({ value }) => parseInt(value))
-  roomId?: number;
-
-  @IsOptional()
-  password?: string;
-}
-
-export class MessageDto {
-  @IsOptional()
-  @IsNumber()
-  @Transform(({ value }) => parseInt(value))
-  id?: number;
-
-  @IsNotEmpty()
-  message: string;
-
-  @IsOptional()
-  state?: MessageState;
-}
 
 @Injectable()
 @UseFilters(new GlobalExceptionFilter())
@@ -459,7 +437,7 @@ export class ChatService {
           roomType: true,
           updatedAt: true,
           createdAt: true,
-          dm_token: true
+          dm_token: true,
         },
       });
 
@@ -810,6 +788,9 @@ export class ChatService {
       payload.message == undefined
     )
       throw new BadRequestException();
+
+    if (Object.values(MessageState).includes(payload.state) === false)
+      throw new HttpException('bad room type', HttpStatus.BAD_REQUEST);
     const room = await this.prisma.chatRoom.findUnique({
       where: {
         id: room_id,
@@ -829,17 +810,24 @@ export class ChatService {
     });
 
     if (!room || !room.members[0])
-      throw new WsException(
+      throw new HttpException(
         `You are not a member of this room or the room doesn't exist`,
+        HttpStatus.BAD_REQUEST,
       );
     if (
       room.members[0].state === 'MUTED' &&
       room.members[0].unmuteTime > new Date()
     )
-      throw new WsException(`You are muted from this room`);
+      throw new HttpException(
+        `You are muted from this room`,
+        HttpStatus.BAD_REQUEST,
+      );
     else await this.updateUserState(user_id, 'ACTIVE');
     if (room.members[0].state === 'BANNED')
-      throw new WsException(`You are banned from this room`);
+      throw new HttpException(
+        `You are banned from this room`,
+        HttpStatus.FORBIDDEN,
+      );
 
     const message = await this.prisma.chatMessage.create({
       data: {
@@ -879,11 +867,10 @@ export class ChatService {
   }
 
   async getMessages(
-    user_id: number,
+    @Param('user_id', ParseIntPipe) user_id: number,
     @Param('room_id', ParseIntPipe) room_id: number,
     params: PaginationLimitDto,
   ) {
-    console.log(params);
     if (Number.isNaN(user_id) || Number.isNaN(room_id))
       throw new BadRequestException();
     const room = await this.prisma.chatRoom.findMany({
@@ -919,14 +906,16 @@ export class ChatService {
               },
             },
           },
+          skip: parseInt(String(params.skip)) || 0,
+          take: parseInt(String(params.take)) || 100,
         },
-        // ...params, // need to be fixed is it used by socket but rest its all good to do
       },
     });
 
     if (room.length === 0 || room[0].members.length === 0) {
-      throw new WsException(
+      throw new HttpException(
         `You are not a member of this room or the room doesn't exist`,
+        HttpStatus.BAD_REQUEST,
       );
     }
 

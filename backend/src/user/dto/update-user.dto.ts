@@ -28,7 +28,7 @@ export class updateUserDto {
 
   @ApiProperty()
   @IsOptional()
-  status : Status
+  status: Status;
 }
 
 export class resretPasswordDto {

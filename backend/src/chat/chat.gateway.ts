@@ -10,11 +10,8 @@ import {
 } from '@nestjs/websockets';
 import { Namespace, Server } from 'socket.io';
 import { GlobalExceptionFilter } from 'src/global-exception.filter';
-import { ChatService, joinRoomDto } from './chat.service';
-import { chatActionsDto } from './dto/actions-dto';
-import { CreateChatDmRoomDto } from './dto/create-chat.dto';
+import { ChatService } from './chat.service';
 import { AuthWithWs } from './dto/user-ws-dto';
-import { isInstance } from 'class-validator';
 
 /**
  * WebSocket Gateway for handling chat-related events.
@@ -92,7 +89,6 @@ export class ChatGateway
         payload,
         true,
       );
-      return "OK";
     } catch (exception) {
       throw new WsException(exception);
     }
@@ -347,7 +343,6 @@ export class ChatGateway
   @SubscribeMessage('getMessages')
   async handleGetMessages(client: AuthWithWs, payload: any) {
     try {
-      console.log("here")
       const messages = await this.chatService.getMessages(
         parseInt(client.id),
         parseInt(payload.id),
