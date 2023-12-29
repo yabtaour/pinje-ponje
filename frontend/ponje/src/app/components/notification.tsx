@@ -1,10 +1,10 @@
 'use client';
 import axios from "@/app/utils/axios";
+import { useToast } from "@chakra-ui/react";
 import Image from "next/image";
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from "react";
 import { User } from "../types/user";
-import { useToast } from "@chakra-ui/react";
-import { useRouter } from 'next/navigation';
 
 
 interface Notification {
@@ -167,7 +167,7 @@ export default function Notification({ user }: { user: User | null | undefined }
 
     const areFriends = async (userId: number, friendId: number) => {
       try {
-        const response = await axios.get(`http://localhost:3000/users/${userId}/friends`, {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/friends`, {
           headers: {
             Authorization: `${localStorage.getItem('access_token')}`,
           },

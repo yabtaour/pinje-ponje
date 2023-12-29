@@ -105,7 +105,7 @@ export default function Game() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   let [gameStarted, setGameStarted] = useState(false);
   let [initialGameData, setInitialGameData] = useState<any>(null);
-  const socketManager = SocketManager.getInstance("http://localhost:3000", token);
+  const socketManager = SocketManager.getInstance(`${process.env.NEXT_PUBLIC_API_URL}`, token);
 
 
 

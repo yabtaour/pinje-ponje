@@ -128,7 +128,7 @@ export default function Chat() {
     const token = getCookie("token");
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
-    const socketManager = SocketManager.getInstance("http://localhost:3000", token);
+    const socketManager = SocketManager.getInstance(`${process.env.NEXT_PUBLIC_API_URL}`, token);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
         scrollToBottom();
