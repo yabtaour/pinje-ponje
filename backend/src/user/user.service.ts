@@ -279,6 +279,26 @@ export class UserService {
                 ? [{ username: { contains: search, mode: 'insensitive' } }]
                 : {},
             },
+            {
+              NOT: {
+                OR: [
+                  {
+                    blockedBy: {
+                      some: {
+                        blockerId: id,
+                      },
+                    },
+                  },
+                  {
+                    blocking: {
+                      some: {
+                        blockedId: id,
+                      },
+                    },
+                  },
+                ],
+              },
+            },
           ],
         },
         include: {
