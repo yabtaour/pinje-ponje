@@ -8,6 +8,7 @@ import { useToast } from '@chakra-ui/react';
 import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input } from "@nextui-org/react";
 
 import { getCookie } from "cookies-next";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 
@@ -163,10 +164,12 @@ export function Mute({ member }: { member: any }) {
 export function Play({ member }: { member: any }) {
     const dispatch = useDispatch()
     const toast = useToast()
+    const router = useRouter()
 
 
     const handlePlay = () => {
         console.log("member: ", member);
+        router.push('/pong/versusScreen');
         axios
             .post(`/game/invite`, {
                 userId: member?.id

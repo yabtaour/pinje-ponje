@@ -271,6 +271,7 @@ class SocketManager {
     if (this.gameSocket && this.gameSocket.connected) {
       this.gameSocket?.off("gameFound");
       this.gameSocket?.on("gameFound", (data: any) => {
+        console.log("game jat : ", data);
         callback(data);
       });
     } else {
