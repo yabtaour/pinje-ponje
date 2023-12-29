@@ -89,7 +89,7 @@ export default function UserSettings() {
     };
 
     const validationSchema = Yup.object().shape({
-        username: Yup.string(),
+        username: Yup.string().max(20, 'Username must be less than 20 characters'),
         email: Yup.string().email("Invalid email address"),
         oldpassword: Yup.string(),
         newpassword: Yup.string().when("oldpassword", {

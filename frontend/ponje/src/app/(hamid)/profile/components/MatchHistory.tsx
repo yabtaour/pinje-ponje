@@ -112,6 +112,12 @@ export default function MatchHistory({ user }: { user: User | null | undefined }
     return matchHistory.slice(start, end);
   }, [page, matchHistory]);
 
+  function generateUniqueKey() {
+    const timestamp = new Date().getTime(); 
+    const random = Math.floor(Math.random() * 1000); 
+    return `${timestamp}-${random}`;
+  }
+
   return (
     <div className="p-0 m-0 ml-5">
       <h2 className="text-2xl font-light text-[#4E40F4] mb-1 ml-4"> Match history </h2>
@@ -132,7 +138,7 @@ export default function MatchHistory({ user }: { user: User | null | undefined }
         ) : (
           <TableBody items={items} style={{ backgroundColor: "#1B1A2D" }}>
             {(match) => (
-              <TableRow key="match">
+              <TableRow key={generateUniqueKey()}>
                 {(columnKey) => <TableCell>{renderCell(match, columnKey)}</TableCell>}
               </TableRow>
             )}

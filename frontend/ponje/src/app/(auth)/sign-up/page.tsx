@@ -52,7 +52,7 @@ export default function SignUp() {
     };
 
     const validationSchema = Yup.object().shape({
-        username: Yup.string().required("Username is required"),
+        username: Yup.string().max(20, "Username must be 20 characters or less").required("Username is required"),
         email: Yup.string().email("Invalid email address").required("Email is required"),
         password: Yup.string()
             .min(8, "Password must be at least 8 characters long")

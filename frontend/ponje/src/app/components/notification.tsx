@@ -167,7 +167,7 @@ export default function Notification({ user }: { user: User | null | undefined }
 
     const areFriends = async (userId: number, friendId: number) => {
       try {
-        const response = await axios.get(`http://localhost:3000/users/${userId}/friends`, {
+        const response = await axios.get(`/users/${userId}/friends`, {
           headers: {
             Authorization: `${localStorage.getItem('access_token')}`,
           },

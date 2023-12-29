@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import * as Yup from 'yup';
 import { handleLogin } from '../../utils/auth';
+import { AxiosError } from "axios";
 
 
 
@@ -73,9 +74,23 @@ export default function SignIn() {
         router.push('/profile');
     }
     catch (error) {
+      const err = error as AxiosError;
+      //check if error code is 404
+      if (err?.response?.status === 404) {
+        toast({
+          title: 'Error',
+          description: "User doesnt exist",
+          status: 'error',
+          duration: 9000,
+          isClosable: true,
+          position: "bottom-right",
+          variant: "solid",
+          colorScheme: "red",
+        });
+      }
       toast({
         title: 'Error',
-        description: "error handling signup",
+        description: "error handling signin",
         status: 'error',
         duration: 9000,
         isClosable: true,
@@ -126,7 +141,7 @@ export default function SignIn() {
                 name="password"
                 type={passwordShown ? "text" : "password"}
                 placeholder=". . . . . . . ."
-                className="text-sm w-80 px-4 py-3 border bg-gray-900 border-solid border-slate-700 placeholder-slate-500 rounded mt-4"
+                className="text-sm w-80 px-4 py-3 border bg-gray-900 border-solid border-slate-700 placeholder-slate-500 text-slate-200 rounded mt-4"
               />
               <ErrorMessage name="password" component="div" className="text-red-500 text-xs" />
               <button
