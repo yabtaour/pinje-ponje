@@ -79,14 +79,14 @@ export function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matter.Body
         let otherBody = bodyA === ball ? bodyB : bodyA;
         // socketManager.sendBallUpdate({position: ball.position, velocity: ball.velocity, edge: "floor"})
         if (otherBody === floor || otherBody === ceiling) {
-            socketManager.sendBallUpdate({gameId: gameId, position: ball.position, velocity: ball.velocity, edge: "floor", worldWidth: worldWidth})
+            socketManager.sendBallUpdate({ gameId: gameId, position: ball.position, velocity: ball.velocity, edge: "floor", worldWidth: worldWidth })
             // Body.setVelocity(ball, {
             //     x: ball.velocity.x,
             //     y: -ball.velocity.y
             // })
         }
         else if (otherBody === leftPaddle || otherBody === rightPaddle) {
-            socketManager.sendBallUpdate({gameId: gameId, position: ball.position, velocity: ball.velocity, edge: "paddle", worldWidth: worldWidth})
+            socketManager.sendBallUpdate({ gameId: gameId, position: ball.position, velocity: ball.velocity, edge: "paddle", worldWidth: worldWidth })
             // Body.setVelocity(ball, {
             //     x: -ball.velocity.x,
             //     y: ball.velocity.y
@@ -317,7 +317,7 @@ export default function VersusScreen() {
     const handleBallUpdate = () => {
         if (startGame && socketManager) {
             socketManager.onBallUpdate((data) => {
-                const {position, velocity} = data;
+                const { position, velocity } = data;
                 Body.setPosition(ball, position);
                 Body.setVelocity(ball, velocity);
             })
@@ -435,13 +435,14 @@ export default function VersusScreen() {
     };
 
     useEffect(() => {
-         window.addEventListener('beforeUnload', handleBeforeUnload);
+        window.addEventListener('beforeunload', handleBeforeUnload);
 
         return () => {
-            window.removeEventListener('beforeUnload', handleBeforeUnload);
             console.log("something hapened hna");
-            if (enemyPlayer)
+            if (enemyPlayer) {
+                ballX = 4;
                 socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
+            }
         };
     }, [enemyPlayer])
 
