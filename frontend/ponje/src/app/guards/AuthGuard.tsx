@@ -28,6 +28,8 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
 
     useEffect(() => {
         let tokenFromCookie = getCookie('token')
+
+
         if (tokenFromCookie)
             localStorage.setItem('access_token', tokenFromCookie);
 

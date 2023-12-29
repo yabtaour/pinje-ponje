@@ -241,8 +241,8 @@ export class GameService {
 		});
 
 		console.log("sending to : ", player.userId, opponentPlayer.userId);
-		await this.gameGateway.server.to(String(player.userId)).emit('gameFound', game);
-		await this.gameGateway.server.to(String(opponentPlayer.userId)).emit('gameFound', game);
+		await this.gameGateway.server.to(String(player.userId)).emit('gameFound', {game: game});
+		await this.gameGateway.server.to(String(opponentPlayer.userId)).emit('gameFound', {game: game});
 	}
 
 	async declineInvite(data: {userId: number}, currentUser: any) {
@@ -580,7 +580,7 @@ export class GameService {
 		});
 		if (!winner || !loser)
 			throw new HttpException(`Error updating players`, HttpStatus.BAD_REQUEST);
-		const winnerUser = this.prisma.user.findUnique({
+		const winnerUser = await this.prisma.user.findUnique({
 			where: {
 				id: winnerId,
 			},
