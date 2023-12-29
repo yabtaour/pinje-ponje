@@ -16,7 +16,7 @@ async function bootstrap() {
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.enableCors({
     credentials: true,
-    origin: '*', 
+    origin: true, 
   });
   app.useGlobalFilters()
   

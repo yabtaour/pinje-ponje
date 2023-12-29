@@ -2,6 +2,7 @@ import Image from "next/image";
 import { User } from "../../../types/user";
 import axios from "@/app/utils/axios";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 
 
@@ -9,9 +10,12 @@ import { useState } from "react";
 export default function OnlineFriendsInvite({ users }: { users: User[] }) {
 
     const [sentRequests, setSentRequests] = useState<number[]>([]);
+    const router = useRouter();
+
     const sendGameRequest = async (userid: number) => {
         try {
             let accessToken: string | null = localStorage.getItem('access_token');
+            router.push('/pong/versusScreen');
             const res = await axios.post('/game/invite', { userId: userid }, {
                 headers: {
                     Authorization: accessToken,

@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
-import { NotificationType, Status } from '@prisma/client';
+import { NotificationType, Rank, Status } from '@prisma/client';
 import { NotificationGateway } from 'src/notification/notification.gateway';
 import { NotificationService } from 'src/notification/notification.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -158,6 +158,7 @@ export class GameService {
 		if (user.id === data.userId)
 			throw new HttpException(`You can't play with yourself`, HttpStatus.BAD_REQUEST);
 
+		console.log(user.id, " accepted ", data.userId);
 		const opponent = await this.prisma.user.findFirst({
 			where: {
 				id: data.userId,
@@ -238,6 +239,8 @@ export class GameService {
 				status: "INGAME"
 			}
 		});
+
+		console.log("sending to : ", player.userId, opponentPlayer.userId);
 		await this.gameGateway.server.to(String(player.userId)).emit('gameFound', game);
 		await this.gameGateway.server.to(String(opponentPlayer.userId)).emit('gameFound', game);
 	}
@@ -549,6 +552,7 @@ export class GameService {
 		}
 		await this.gameGateway.server.to(String(winnerId)).emit('gameOver', "win");
 		await this.gameGateway.server.to(String(loserId)).emit('gameOver', "loss");
+		console.log(loserId, winnerId);
 		const winner = await this.prisma.player.update({
 			where: {
 				userId_gameId: {
@@ -584,15 +588,25 @@ export class GameService {
 		const newWinnerConsitensy = (await winnerUser).consitency + winner.consitency > 100 ? 100 : (await winnerUser).consitency + winner.consitency;
 		const newWinnerReflex = (await winnerUser).reflex + winner.reflex > 100 ? 100 : (await winnerUser).reflex + winner.reflex;
 		const newWinnerAccuracy = (await winnerUser).accuracy + winner.accuracy > 100 ? 100 : (await winnerUser).accuracy + winner.accuracy;
-		const newXp = (await winnerUser).experience + 25 > ((await winnerUser).level * 100) ? 0 : (await winnerUser).experience + 25
+	
+		const newXp = (await winnerUser).experience + 25 >= ((await winnerUser).level * 100) ? 0 : (await winnerUser).experience + 25
 		let newLevel = (await winnerUser).level;
-		const newGamePoints = (await winnerUser).gamePoints + 20 > 0 ? 100 : (await winnerUser).gamePoints + 20;
-		let newRank = (await winnerUser).rank
-		// if (newGamePoints == 0) {
-			
-		// }
 		if (newXp == 0)
 			newLevel = (await winnerUser).level + 1;
+
+		const newGamePoints = (await winnerUser).gamePoints + 20 >= 100 ? 0 : (await winnerUser).gamePoints + 20;
+		let nextRank = (await winnerUser).rank;
+		if (newGamePoints == 0) {
+			const ranks = Object.values(Rank);
+			const currentIndex = ranks.indexOf((await winnerUser).rank);
+			if (currentIndex === -1 || currentIndex === ranks.length - 1) {
+				nextRank = (await winnerUser).rank;
+			}
+			nextRank = ranks[currentIndex + 1];
+		}
+		console.log("old rank : ", (await winnerUser).rank);
+		console.log("new rank : ", nextRank);
+
 		await this.prisma.user.update({
 			where: {
 				id: winnerId,
@@ -605,6 +619,7 @@ export class GameService {
 				level: newLevel,
 				experience: newXp,
 				gameInvitesSent: newGamePoints,
+				rank: nextRank,
 			}
 		});
 		await this.prisma.user.update({
