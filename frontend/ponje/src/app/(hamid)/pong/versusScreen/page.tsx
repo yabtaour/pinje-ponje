@@ -75,17 +75,20 @@ export function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matter.Body
 
     if (bodyA == ball || bodyB == ball) {
         let otherBody = bodyA === ball ? bodyB : bodyA;
+        // socketManager.sendBallUpdate({position: ball.position, velocity: ball.velocity, edge: "floor"})
         if (otherBody === floor || otherBody === ceiling) {
-            Body.setVelocity(ball, {
-                x: ball.velocity.x,
-                y: -ball.velocity.y
-            })
+            socketManager.sendBallUpdate({gameId: gameId, position: ball.position, velocity: ball.velocity, edge: "floor", worldWidth: worldWidth})
+            // Body.setVelocity(ball, {
+            //     x: ball.velocity.x,
+            //     y: -ball.velocity.y
+            // })
         }
         else if (otherBody === leftPaddle || otherBody === rightPaddle) {
-            Body.setVelocity(ball, {
-                x: -ball.velocity.x,
-                y: ball.velocity.y
-            })
+            socketManager.sendBallUpdate({gameId: gameId, position: ball.position, velocity: ball.velocity, edge: "paddle", worldWidth: worldWidth})
+            // Body.setVelocity(ball, {
+            //     x: -ball.velocity.x,
+            //     y: ball.velocity.y
+            // })
         }
     }
 }
@@ -311,6 +314,17 @@ export default function VersusScreen() {
         }
     }
 
+    const handleBallUpdate = () => {
+        if (startGame && socketManager) {
+            socketManager.onBallUpdate((data) => {
+                const {position, velocity} = data;
+                Body.setPosition(ball, position);
+                Body.setVelocity(ball, velocity);
+                // Body.setVelocity(ball, velocity);
+            })
+        }
+    }
+
     const createGame = () => {
         console.log("creating game");
         worldWidth = canvasRef.current?.width! * 4;
@@ -425,14 +439,14 @@ export default function VersusScreen() {
     };
 
     useEffect(() => {
-        // document.addEventListener('visibilitychange', handleVisibilityChange);
-        window.addEventListener('beforeunload', handleBeforeUnload);
+         window.addEventListener('load', handleBeforeUnload);
 
         return () => {
-            window.removeEventListener('beforeunload', handleBeforeUnload);
+            window.removeEventListener('load', handleBeforeUnload);
             // document.removeEventListener('visibilitychange', handleVisibilityChange);
             console.log("something hapened hna");
-            socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
+            if (enemyPlayer)
+                socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
         };
     }, [enemyPlayer])
 
@@ -444,6 +458,7 @@ export default function VersusScreen() {
         if (selectedMap && !startGame && !gameEnded) sendInitialization();
         if (startGame && !gameEnded) handlePaddlePosition();
         if (startGame && !gameEnded) handleScoreUpdate();
+        if (startGame && !gameEnded) handleBallUpdate();
         if (startGame && !gameStarted && !gameEnded) createGame();
         if (!gameEnded) handleGameEnd();
 
