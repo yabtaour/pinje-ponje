@@ -13,7 +13,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 
 
-const socketManager = SocketManager.getInstance("http://localhost:3000", getCookie('token'));
+const socketManager = SocketManager.getInstance(`${process.env.NEXT_PUBLIC_API_URL}`, getCookie('token'));
 // const socketMannager = SocketManager.getInstance()
 
 export function Ban({ member }: { member: any }) {
