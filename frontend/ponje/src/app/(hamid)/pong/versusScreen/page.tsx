@@ -151,9 +151,7 @@ export default function VersusScreen() {
                     Authorization: token,
                 },
             }).then((res) => {
-                // setUser(res.data)
                 window.location.href = '/pong';
-                // router.push('/pong');
             }).catch((err) => {
                 toast({
                     title: 'Error',
@@ -199,7 +197,7 @@ export default function VersusScreen() {
             socketManager.waitForConnection(async () => {
                 try {
                     socketManager.onNewGame((data) => {
-                        console.log("score ja", data);
+                        console.log("game jat", data);
                         const { game, id } = data;
                         if (game) {
                             gameId = game.id;
@@ -322,7 +320,6 @@ export default function VersusScreen() {
                 const {position, velocity} = data;
                 Body.setPosition(ball, position);
                 Body.setVelocity(ball, velocity);
-                // Body.setVelocity(ball, velocity);
             })
         }
     }
@@ -436,12 +433,12 @@ export default function VersusScreen() {
             }, 100);
         }
     };
+
     useEffect(() => {
-         window.addEventListener('load', handleBeforeUnload);
+         window.addEventListener('beforeUnload', handleBeforeUnload);
 
         return () => {
-            // window.removeEventListener('beforeunload', handleBeforeUnload);
-            // document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('beforeUnload', handleBeforeUnload);
             console.log("something hapened hna");
             if (enemyPlayer)
                 socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
