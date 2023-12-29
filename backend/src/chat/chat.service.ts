@@ -487,6 +487,20 @@ export class ChatService {
                   select: {
                     id: true,
                     username: true,
+                    blockedBy : {
+                      where: {
+                        NOT : {
+                          blockerId: userId
+                        }
+                      }
+                    },
+                    blocking : {
+                      where: {
+                        NOT: {
+                          blockedId: userId
+                        }
+                      }
+                    },
                     profile: {
                       select: {
                         avatar: true,

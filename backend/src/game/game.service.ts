@@ -376,24 +376,38 @@ export class GameService {
     });
     if (!opponentPlayer)
       throw new HttpException(`Error creating players`, HttpStatus.BAD_REQUEST);
+		await this.prisma.user.updateMany({
+			where: {
+				id: {
+					in: [user.id, opponent.id],
+				},
+			},
+			data: {
+				status: "INGAME"
+			}
+		});
+		console.log("sending to : ", player.userId, opponentPlayer.userId);
+		await this.gameGateway.server.to(String(player.userId)).emit('gameFound', {game: game, id: player.userId});
+		await this.gameGateway.server.to(String(opponentPlayer.userId)).emit('gameFound', {game: game, id: opponentPlayer.userId});
+	}
 
-    await this.prisma.user.updateMany({
-      where: {
-        id: {
-          in: [user.id, opponent.id],
-        },
-      },
-      data: {
-        status: 'INGAME',
-      },
-    });
-    await this.gameGateway.server
-      .to(String(player.userId))
-      .emit('gameFound', game);
-    await this.gameGateway.server
-      .to(String(opponentPlayer.userId))
-      .emit('gameFound', game);
-  }
+    // await this.prisma.user.updateMany({
+    //   where: {
+    //     id: {
+    //       in: [user.id, opponent.id],
+    //     },
+    //   },
+    //   data: {
+    //     status: 'INGAME',
+    //   },
+    // });
+    // await this.gameGateway.server
+    //   .to(String(player.userId))
+    //   .emit('gameFound', game);
+    // await this.gameGateway.server
+    //   .to(String(opponentPlayer.userId))
+    //   .emit('gameFound', game);
+  // }
 
   async initializeGame(client: number, payload: any) {
     console.log('ha mrra');

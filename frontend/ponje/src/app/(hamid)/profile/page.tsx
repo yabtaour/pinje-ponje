@@ -1,6 +1,7 @@
 'use client';
 import Loader from "@/app/components/loader";
 import axios from "@/app/utils/axios";
+import { useToast } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import FriendsList from "./components/FriendsList";
@@ -9,7 +10,6 @@ import Performance from "./components/Performance";
 import PlayerBanner from "./components/PlayerBanner";
 import ProgressBar from "./components/ProgressBar";
 import SkillAnalytics from "./components/SkillAnalytics";
-import { useToast } from "@chakra-ui/react";
 
 
 

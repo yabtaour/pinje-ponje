@@ -75,16 +75,6 @@ export default function Conversation({ collapsed }: any) {
                 dispatch(setRooms(rooms));
             } catch (error) {
                 setLoading(false);
-                toast({
-                    title: 'Error',
-                    description: "Error fetching messages",
-                    status: 'error',
-                    duration: 9000,
-                    isClosable: true,
-                    position: "bottom-right",
-                    variant: "solid",
-                    colorScheme: "red",
-                });
                 console.error("Error fetching new messages:", error);
             }
         };
@@ -171,9 +161,12 @@ export default function Conversation({ collapsed }: any) {
         <div className=" p-1">
             <div className=" ">
                 <>
-                    <div className="flex justify-between ">
-                        <h1 className="text-white text-3xl">Inbox</h1>
-                        <Button onPress={onOpen} className="hover:bg-blue-300/10  text-white font-bold py-2 px-4 rounded-full border border-blue-700">
+                    <div className="flex flex-col md:flex-row relative flex-grow justify-between">
+                        <h1 className="text-white text-lg md:text-3xl mb-2 md:mb-0">Inbox</h1>
+                        <Button
+                            onPress={onOpen}
+                            className="hover:bg-blue-300/10 text-white font-bold py-1 px-2 md:py-2 md:px-4 rounded-full border border-blue-700 md:ml-2"
+                        >
                             <svg xmlns="http://www.w3.org/2000/svg" width="76" height="77" viewBox="0 0 76 77" fill="none" className="w-6 h-6">
                                 <path d="M22.4 76.4C20 76.4 18.4 74.8 18.4 72.4V58H8C3.6 58 0 54.4 0 50V8C0 3.6 3.6 0 8 0H68C72.4 0 76 3.6 76 8V50C76 54.4 72.4 58 68 58H48L24.4 75.6C24 76 23.2 76.4 22.4 76.4ZM22.4 72.4L46.8 54H68C70.4 54 72 52.4 72 50V8C72 5.6 70.4 4 68 4H8C5.6 4 4 5.6 4 8V50C4 52.4 5.6 54 8 54H22.4V72.4Z" fill="#77DFF8" />
                                 <path d="M38 28.4C34.8 28.4 32 25.6 32 22.4C32 19.2 34.8 16 38 16C41.2 16 44 18.8 44 22C44 25.2 41.2 28.4 38 28.4ZM38 20C36.8 20 36 21.2 36 22C36 23.2 36.8 24 38 24C39.2 24 40 23.2 40 22C40 21.2 39.2 20 38 20Z" fill="#77DFF8" />

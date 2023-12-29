@@ -31,7 +31,7 @@ export function Mymessage({ message }: any) {
                 <p className="text-white text-xs sm:text-sm">{message?.content}</p>
 
                 <div className="flex flex-row justify-between">
-                    <p className="text-[#999] text-xs sm:text-sm">{formatMessageDate(message?.createdAt)}</p>
+                    <p className="mt-2 text-[#999] text-xs sm:text-xs" style={{ fontSize: '0.7rem' }}>{formatMessageDate(message?.createdAt)}</p>
                     {message?.status === "pending" ? (
                         <div className="flex  justify-end mx-3">
                             <l-miyagi
@@ -83,7 +83,7 @@ export function OtherMessage({ message }: any) {
             <div className="bg-[#2F296E] rounded-lg p-2 m-2 max-w-[80%] min-w-[10%] sm:max-w-[60%] md:max-w-[50%] lg:max-w-[40%]">
                 <p className={`text-sm text-cyan-500`}>{message?.user?.username}</p>
                 <p className="text-white text-xs sm:text-sm">{message?.content} </p>
-                <p className="text-[#999] text-xs sm:text-sm" > {formatMessageDate(message?.createdAt)}</p>
+                <p className="mt-2 text-[#999] text-xs sm:text-xs" style={{ fontSize: '0.7rem' }}>{formatMessageDate(message?.createdAt)}</p>
             </div>
         </div>
     );
@@ -130,27 +130,18 @@ export default function Chat() {
 
     const socketManager = SocketManager.getInstance("http://localhost:3000", token);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-
-
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
 
-
     useLayoutEffect(() => {
         scrollToBottom();
-    }, [messages, dispatch, socketManager]);
+    }, [messages]);
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' });
+        messagesEndRef.current?.scrollIntoView({ behavior: 'instant', block: 'end' });
     };
 
-
-    useEffect(() => {
-    }, [conversations, dispatch, socketManager, activeConversation]);
-
-
-    //if dm get the member here 
     let member
     if (activeConversation?.room?.roomType === "DM") {
         member = activeConversation?.room?.members?.find((member: any) => member?.user?.id !== me?.id);
@@ -159,29 +150,23 @@ export default function Chat() {
     return (
         <div className="bg-[#151424] h-full  p-2 ">
             <div className="">
-
                 <>
                     <>
                         {
-
                             activeConversation === undefined ? (
-                                <div className="flex flex-col items-center justify-center h-screen">
+                                <div className="flex flex-col items-center align-middle justify-center h-[90vh]">
                                     <Image src="/empty_chat.svg"
                                         alt="hero"
                                         className="w-96	h-96 rounded-full"
-                                        width={100}
-                                        height={100}
+                                        width={150}
+                                        height={150}
                                     />
                                     <p className='text-[#c6c4c499] pb-10  text-center text-sm md:text-lg'>Chat with fellow members in real-time, exchanging thoughts and ideas effortlessly. <br />
                                         Engage in conversations, make connections, and be a part of our interactive community!
                                     </p>
                                 </div>
-
-
                             ) : (
-
                                 <ScrollShadow hideScrollBar className=" h-[75vh]">
-
                                     <div className=" flex justify-center   sticky top-0">
                                         <div className="lg:w-1/3 md:2/3 bg-[#1B1A2D] sm:w-full  rounded-b-full hover:bg-[#252341] flex justify-center ">
                                             <Button onPress={onOpen} >
@@ -200,9 +185,7 @@ export default function Chat() {
                                             <RoomOptions isOpen={isOpen} onOpenChange={onOpenChange} />
                                         </div>
                                     </div>
-
                                     {
-
                                         (messages ?? []).map((message: any, index: number) => (
                                             <React.Fragment key={index}>
                                                 {message?.state === "INFORMATION" ? (
@@ -217,10 +200,10 @@ export default function Chat() {
                                             </React.Fragment>
                                         ))
                                     }
+                                    <div ref={messagesEndRef} />
                                 </ScrollShadow>
                             )
                         }
-                        <div ref={messagesEndRef} />
                     </>
 
                 </>
