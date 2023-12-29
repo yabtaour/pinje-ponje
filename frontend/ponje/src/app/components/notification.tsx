@@ -309,25 +309,27 @@ export const NotificationComponent = ({ id, name, type, avatar, createdAt, setNo
     else{ 
       try {
         router.push('/pong/versusScreen');
-        const res = await axios.post('/game/accept', {
-          userId: id ,
-          headers: {
-            Authorization: `${localStorage.getItem('access_token')}`,
-          },
-        });
-        if (res.status === 201) {
-          changeReadStatus(notifId);
-          toast({
-            title: 'Success',
-            description: "game request accepted",
-            status: 'success',
-            duration: 9000,
-            isClosable: true,
-            position: "bottom-right",
-            variant: "solid",
-            colorScheme: "green",
+        setTimeout(async () => {
+          const res = await axios.post('/game/accept', {
+            userId: id ,
+            headers: {
+              Authorization: `${localStorage.getItem('access_token')}`,
+            },
           });
-        }
+          if (res.status === 201) {
+            changeReadStatus(notifId);
+            toast({
+              title: 'Success',
+              description: "game request accepted",
+              status: 'success',
+              duration: 9000,
+              isClosable: true,
+              position: "bottom-right",
+              variant: "solid",
+              colorScheme: "green",
+            });
+          }
+        }, 2000);
       }
       catch (error) {
         toast({
