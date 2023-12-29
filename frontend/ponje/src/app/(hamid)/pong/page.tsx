@@ -22,9 +22,11 @@ export default function Pong() {
 
   const handleMMClick = () => {
     router.push('/pong/versusScreen');
-    if (!gameDataFetched) {
-      getGameDataHandler();
-    }
+    setTimeout(() => {
+      if (!gameDataFetched) {
+        getGameDataHandler();
+      }
+    }, 2000)
   };
 
   const getGameDataHandler = async () => {

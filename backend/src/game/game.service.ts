@@ -4,7 +4,6 @@ import { NotificationType, Status } from '@prisma/client';
 import { NotificationGateway } from 'src/notification/notification.gateway';
 import { NotificationService } from 'src/notification/notification.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UpdatePaddlePositionDto } from './dto/game.dto';
 import { GameGateway } from './game.gateway';
 import { GameState } from './gameState';
 
@@ -426,36 +425,130 @@ export class GameService {
 	}
 
 
-	async updateBallPosition(client: number, payload: {gameId: number, position: {x: number, y: number}}) {
+	async updateBallPosition(client: number, payload:  {gameId: number, position: any, velocity: any, edge: string, worldWidth: number}) {
 		if (this.gameGateway.currentGames.has(payload.gameId)) {
 			if (this.gameGateway.currentGames.get(payload.gameId).player1.id == client) {
 				if (this.gameGateway.currentGames.get(payload.gameId).player1.reversed == false) {
+					let velocity = null;
+					if (payload.edge == "floor") {
+						velocity = {
+							x: payload.velocity.x,
+							y: payload.velocity.y * -1,
+					
+						}
+					} else if (payload.edge == "paddle") {
+						velocity = {
+							x: payload.velocity.x * -1,
+							y: payload.velocity.y,
+						}
+					}
 					await this.gameGateway.server
 						.to(String(this.gameGateway.currentGames.get(payload.gameId).player1.id))
-						.emit('updateBall', payload.position);
+						.emit('updateBall', {position: payload.position, velocity: velocity});
+					// if (payload.edge == "floor" || payload.edge == "paddle") {
+					// 	velocity = {
+					// 		x: payload.velocity.x * -1,
+					// 		y: payload.velocity.y * -1,							
+					// 	}
+					// }
+					if (payload.edge == "floor") {
+						velocity = {
+							x: payload.velocity.x * -1,
+							y: payload.velocity.y * -1,
+					
+						}
+					} else if (payload.edge == "paddle") {
+						velocity = {
+							x: payload.velocity.x,
+							y: payload.velocity.y,
+						}
+					}
+					const position = {
+						x: payload.worldWidth - payload.position.x,
+						y: payload.position.y,
+					}
 					await this.gameGateway.server
 						.to(String(this.gameGateway.currentGames.get(payload.gameId).player2.id))
-						.emit('updateBall', {x: -payload.position.x, y: payload.position.y});
+						.emit('updateBall', {position: position, velocity: velocity});
 				}
 			} else if (this.gameGateway.currentGames.get(payload.gameId).player2.id == client) {
 				if (this.gameGateway.currentGames.get(payload.gameId).player2.reversed == false) {
+					let velocity = null;
+					if (payload.edge == "floor") {
+						velocity = {
+							x: payload.velocity.x,
+							y: payload.velocity.y * -1,
+					
+						}
+					} else if (payload.edge == "paddle") {
+						velocity = {
+							x: payload.velocity.x * -1,
+							y: payload.velocity.y,
+						}
+					}
 					await this.gameGateway.server
 						.to(String(this.gameGateway.currentGames.get(payload.gameId).player2.id))
-						.emit('updateBall', payload.position);
+						.emit('updateBall', {position: payload.position, velocity: velocity});
+						if (payload.edge == "floor") {
+							velocity = {
+								x: payload.velocity.x * -1,
+								y: payload.velocity.y * -1,
+						
+							}
+						} else if (payload.edge == "paddle") {
+							velocity = {
+								x: payload.velocity.x,
+								y: payload.velocity.y,
+							}
+						}
+						const position = {
+							x: payload.worldWidth - payload.position.x,
+							y: payload.position.y,
+						}
+					// if (payload.edge == "floor" || payload.edge == "paddle") {
+						// 		velocity = {
+							// 			x: payload.velocity.x * -1,
+					// 			y: payload.velocity.y * -1,							
+					// 		}
+					// }
 					await this.gameGateway.server
 						.to(String(this.gameGateway.currentGames.get(payload.gameId).player1.id))
-						.emit('updateBall', {x: -payload.position.x, y: payload.position.y});
-				}
+						.emit('updateBall', {position: position, velocity: velocity});
+				}				
 			} else {
 				throw new WsException("Player Not found");
 			}
 		}
 	}
+	
+	// if (this.gameGateway.currentGames.get(payload.gameId).player1.id == client) {
+	// 	if (this.gameGateway.currentGames.get(payload.gameId).player1.reversed == false) {
+	// 		await this.gameGateway.server
+	// 			.to(String(this.gameGateway.currentGames.get(payload.gameId).player1.id))
+	// 			.emit('updateBall', payload.position);
+	// 		await this.gameGateway.server
+	// 			.to(String(this.gameGateway.currentGames.get(payload.gameId).player2.id))
+	// 			.emit('updateBall', {x: -payload.position.x, y: payload.position.y});
+	// 	}
+	// } else if (this.gameGateway.currentGames.get(payload.gameId).player2.id == client) {
+	// 	if (this.gameGateway.currentGames.get(payload.gameId).player2.reversed == false) {
+	// 		await this.gameGateway.server
+	// 			.to(String(this.gameGateway.currentGames.get(payload.gameId).player2.id))
+	// 			.emit('updateBall', payload.position);
+	// 		await this.gameGateway.server
+	// 			.to(String(this.gameGateway.currentGames.get(payload.gameId).player1.id))
+	// 			.emit('updateBall', {x: -payload.position.x, y: payload.position.y});
+	// 	}
+	// } else {
+	// 	throw new WsException("Player Not found");
+	// }
 
 	async finishGame(winnerId: number, loserId: number, gameId: number) {
 		if (this.gameGateway.currentGames.has(gameId)) {
 			this.gameGateway.currentGames.delete(gameId);
 		}
+		await this.gameGateway.server.to(String(winnerId)).emit('gameOver', "win");
+		await this.gameGateway.server.to(String(loserId)).emit('gameOver', "loss");
 		const winner = await this.prisma.player.update({
 			where: {
 				userId_gameId: {
@@ -491,6 +584,15 @@ export class GameService {
 		const newWinnerConsitensy = (await winnerUser).consitency + winner.consitency > 100 ? 100 : (await winnerUser).consitency + winner.consitency;
 		const newWinnerReflex = (await winnerUser).reflex + winner.reflex > 100 ? 100 : (await winnerUser).reflex + winner.reflex;
 		const newWinnerAccuracy = (await winnerUser).accuracy + winner.accuracy > 100 ? 100 : (await winnerUser).accuracy + winner.accuracy;
+		const newXp = (await winnerUser).experience + 25 > ((await winnerUser).level * 100) ? 0 : (await winnerUser).experience + 25
+		let newLevel = (await winnerUser).level;
+		const newGamePoints = (await winnerUser).gamePoints + 20 > 0 ? 100 : (await winnerUser).gamePoints + 20;
+		let newRank = (await winnerUser).rank
+		// if (newGamePoints == 0) {
+			
+		// }
+		if (newXp == 0)
+			newLevel = (await winnerUser).level + 1;
 		await this.prisma.user.update({
 			where: {
 				id: winnerId,
@@ -500,6 +602,9 @@ export class GameService {
 				consitency: newWinnerConsitensy,
 				reflex: newWinnerReflex,
 				accuracy: newWinnerAccuracy,
+				level: newLevel,
+				experience: newXp,
+				gameInvitesSent: newGamePoints,
 			}
 		});
 		await this.prisma.user.update({
@@ -511,8 +616,7 @@ export class GameService {
 			}
 		});
 		console.log("loser : ", loserId, " winner : ", winnerId);
-		await this.gameGateway.server.to(String(winnerId)).emit('gameOver', "win");
-		await this.gameGateway.server.to(String(loserId)).emit('gameOver', "loss");
+
 
 		console.log(this.gameGateway.currentGames);
 		console.log(gameId);
