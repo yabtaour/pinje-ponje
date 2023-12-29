@@ -36,7 +36,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
 
         const accessToken: string | null = localStorage.getItem('access_token');
         if (accessToken && !isAithenticated) {
-            const socketManager = SocketManager.getInstance('http://localhost:3000', accessToken);
+            const socketManager = SocketManager.getInstance(`${process.env.NEXT_PUBLIC_API_URL}`, accessToken);
             fetchUserData(accessToken).then((data) => {
                 console.log("data: ", data);
                 dispatch(login({ user: data, token: accessToken }));

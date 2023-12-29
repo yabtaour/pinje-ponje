@@ -1,10 +1,10 @@
 'use client';
 import axios from "@/app/utils/axios";
+import { useToast } from "@chakra-ui/react";
 import Image from "next/image";
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from "react";
 import { User } from "../types/user";
-import { useToast } from "@chakra-ui/react";
-import { useRouter } from 'next/navigation';
 
 
 interface Notification {
@@ -167,7 +167,7 @@ export default function Notification({ user }: { user: User | null | undefined }
 
     const areFriends = async (userId: number, friendId: number) => {
       try {
-        const response = await axios.get(`/users/${userId}/friends`, {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/friends`, {
           headers: {
             Authorization: `${localStorage.getItem('access_token')}`,
           },
@@ -309,25 +309,27 @@ export const NotificationComponent = ({ id, name, type, avatar, createdAt, setNo
     else{ 
       try {
         router.push('/pong/versusScreen');
-        const res = await axios.post('/game/accept', {
-          userId: id ,
-          headers: {
-            Authorization: `${localStorage.getItem('access_token')}`,
-          },
-        });
-        if (res.status === 201) {
-          changeReadStatus(notifId);
-          toast({
-            title: 'Success',
-            description: "game request accepted",
-            status: 'success',
-            duration: 9000,
-            isClosable: true,
-            position: "bottom-right",
-            variant: "solid",
-            colorScheme: "green",
+        setTimeout(async () => {
+          const res = await axios.post('/game/accept', {
+            userId: id ,
+            headers: {
+              Authorization: `${localStorage.getItem('access_token')}`,
+            },
           });
-        }
+          if (res.status === 201) {
+            changeReadStatus(notifId);
+            toast({
+              title: 'Success',
+              description: "game request accepted",
+              status: 'success',
+              duration: 9000,
+              isClosable: true,
+              position: "bottom-right",
+              variant: "solid",
+              colorScheme: "green",
+            });
+          }
+        }, 2000);
       }
       catch (error) {
         toast({

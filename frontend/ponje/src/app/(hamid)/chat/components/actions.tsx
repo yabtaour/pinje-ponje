@@ -8,11 +8,12 @@ import { useToast } from '@chakra-ui/react';
 import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input } from "@nextui-org/react";
 
 import { getCookie } from "cookies-next";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 
 
-const socketManager = SocketManager.getInstance("http://localhost:3000", getCookie('token'));
+const socketManager = SocketManager.getInstance(`${process.env.NEXT_PUBLIC_API_URL}`, getCookie('token'));
 // const socketMannager = SocketManager.getInstance()
 
 export function Ban({ member }: { member: any }) {
@@ -163,10 +164,12 @@ export function Mute({ member }: { member: any }) {
 export function Play({ member }: { member: any }) {
     const dispatch = useDispatch()
     const toast = useToast()
+    const router = useRouter()
 
 
     const handlePlay = () => {
         console.log("member: ", member);
+        router.push('/pong/versusScreen');
         axios
             .post(`/game/invite`, {
                 userId: member?.id

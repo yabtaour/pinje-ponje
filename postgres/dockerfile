@@ -1,7 +1,0 @@
-FROM postgres:16
-
-COPY init/dev_db.sql /docker-entrypoint-initdb.d/dev_db.sql
-
-EXPOSE 5432
-
-CMD ["postgres"]

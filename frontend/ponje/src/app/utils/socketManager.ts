@@ -271,6 +271,7 @@ class SocketManager {
     if (this.gameSocket && this.gameSocket.connected) {
       this.gameSocket?.off("gameFound");
       this.gameSocket?.on("gameFound", (data: any) => {
+        console.log("game jat : ", data);
         callback(data);
       });
     } else {
@@ -414,6 +415,7 @@ class SocketManager {
     if (this.gameSocket && this.gameSocket.connected) {
       this.gameSocket?.off("updateBall");
       this.gameSocket?.on("updateBall", (data: any) => {
+        console.log(data);
         callback(data);
       });
     } else {
@@ -421,13 +423,10 @@ class SocketManager {
     }
   }
 
-  public sendBallUpdate(payload: {
-    gameId: number;
-    direction: string;
-  }): Promise<any> {
+  public sendBallUpdate(payload: {gameId: number, position: any, velocity: any, edge: string, worldWidth: number}): Promise<any> {
     return new Promise(async (resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
-        this.gameSocket?.emit("updateBall", payload);
+        this.gameSocket?.emit("updateBallPosition", payload);
         resolve("done");
       } else {
         reject("Socket is not connected");
