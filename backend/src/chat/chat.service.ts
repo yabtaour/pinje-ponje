@@ -478,6 +478,32 @@ export class ChatService {
         room: {
           include: {
             messages: {
+              where: {
+                user: {
+                  NOT: {
+                    AND: [
+                      {
+                        OR: [
+                          {
+                            blockedBy: {
+                              some: {
+                                blockerId: userId,
+                              },
+                            },
+                          },
+                          {
+                            blocking: {
+                              some: {
+                                blockedId: userId,
+                              },
+                            },
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                },
+              },
               select: {
                 content: true,
                 state: true,
@@ -487,20 +513,6 @@ export class ChatService {
                   select: {
                     id: true,
                     username: true,
-                    blockedBy : {
-                      where: {
-                        NOT : {
-                          blockerId: userId
-                        }
-                      }
-                    },
-                    blocking : {
-                      where: {
-                        NOT: {
-                          blockedId: userId
-                        }
-                      }
-                    },
                     profile: {
                       select: {
                         avatar: true,
@@ -803,7 +815,8 @@ export class ChatService {
     )
       throw new BadRequestException();
 
-    if (Object.values(MessageState).includes(payload.state) === false)
+    console.log(payload.state)
+    if (payload.state != undefined && Object.values(MessageState).includes(payload.state) === false)
       throw new HttpException('bad room type', HttpStatus.BAD_REQUEST);
     const room = await this.prisma.chatRoom.findUnique({
       where: {
