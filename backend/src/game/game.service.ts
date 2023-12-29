@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
-import { NotificationType, Status } from '@prisma/client';
+import { NotificationType, Rank, Status } from '@prisma/client';
 import { NotificationGateway } from 'src/notification/notification.gateway';
 import { NotificationService } from 'src/notification/notification.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -586,11 +586,16 @@ export class GameService {
 		const newWinnerAccuracy = (await winnerUser).accuracy + winner.accuracy > 100 ? 100 : (await winnerUser).accuracy + winner.accuracy;
 		const newXp = (await winnerUser).experience + 25 > ((await winnerUser).level * 100) ? 0 : (await winnerUser).experience + 25
 		let newLevel = (await winnerUser).level;
-		const newGamePoints = (await winnerUser).gamePoints + 20 > 0 ? 100 : (await winnerUser).gamePoints + 20;
-		let newRank = (await winnerUser).rank
-		// if (newGamePoints == 0) {
-			
-		// }
+		const newGamePoints = (await winnerUser).gamePoints + 20 >= 100 ? 0 : (await winnerUser).gamePoints + 20;
+		let nextRank = (await winnerUser).rank;
+		if (newGamePoints == 0) {
+			const ranks = Object.values(Rank);
+			const currentIndex = ranks.indexOf((await winnerUser).rank);
+			if (currentIndex === -1 || currentIndex === ranks.length - 1) {
+				nextRank = (await winnerUser).rank;
+			}
+			nextRank = ranks[currentIndex + 1];
+		}
 		if (newXp == 0)
 			newLevel = (await winnerUser).level + 1;
 		await this.prisma.user.update({
@@ -605,6 +610,7 @@ export class GameService {
 				level: newLevel,
 				experience: newXp,
 				gameInvitesSent: newGamePoints,
+				rank: nextRank,
 			}
 		});
 		await this.prisma.user.update({
