@@ -3,12 +3,12 @@
 import { addMessage, replaceMessage } from "@/app/globalRedux/features/chatSlice";
 import { useAppSelector } from "@/app/globalRedux/store";
 import SocketManager from "@/app/utils/socketManager";
+import { useToast } from "@chakra-ui/react";
 import { Input } from "@nextui-org/react";
 import { getCookie } from "cookies-next";
 import { miyagi } from 'ldrs';
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { useToast } from "@chakra-ui/react";
 
 
 if (typeof window !== 'undefined') {
@@ -33,7 +33,7 @@ export default function ChatInput() {
     const rooms = useAppSelector(state => state?.chatReducer?.rooms);
     const me = useAppSelector(state => state?.authReducer?.value?.user);
     const accessToken = getCookie('token');
-    const socketManager = SocketManager.getInstance('http://localhost:3000', accessToken);
+    const socketManager = SocketManager.getInstance(`${process.env.NEXT_PUBLIC_API_URL}`, accessToken);
     const toast = useToast();
     useEffect(() => {
    

@@ -35,7 +35,7 @@ export default function Layout({
     }, [showToast]);
 
     useEffect(() => {
-        const SocketManagerNotifs = SocketManager.getInstance("http://localhost:3000", `${localStorage.getItem('access_token')}`);
+        const SocketManagerNotifs = SocketManager.getInstance(`${process.env.NEXT_PUBLIC_API_URL}`, `${localStorage.getItem('access_token')}`);
        
         const fetchNotifications = async () => {
             if (SocketManagerNotifs) {

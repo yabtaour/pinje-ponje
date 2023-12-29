@@ -13,7 +13,7 @@ import { useDispatch } from 'react-redux';
 import { HashLoader } from 'react-spinners';
 import * as Yup from 'yup';
 import { Ban, ChangeRole, Invite, Kick, Leave, Mute, Play } from './actions';
-const socketManager = SocketManager.getInstance("http://localhost:3000", getCookie('token'));
+const socketManager = SocketManager.getInstance(`${process.env.NEXT_PUBLIC_API_URL}`, getCookie('token'));
 
 
 
