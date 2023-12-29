@@ -70,7 +70,9 @@ export default function MatchHistory({ user }: { user: User | null | undefined }
 
     switch (columnKey) {
       case "opponent":
-        const opponent = match?.players?.[1];
+        const opponent = match?.players[0].user.username === user?.username
+          ? match?.players[1]
+          : match?.players[0];
         return (
           <div className="p-1 rounded-lg ">
             <Button
@@ -113,8 +115,8 @@ export default function MatchHistory({ user }: { user: User | null | undefined }
   }, [page, matchHistory]);
 
   function generateUniqueKey() {
-    const timestamp = new Date().getTime(); 
-    const random = Math.floor(Math.random() * 1000); 
+    const timestamp = new Date().getTime();
+    const random = Math.floor(Math.random() * 1000);
     return `${timestamp}-${random}`;
   }
 
