@@ -1,9 +1,10 @@
 " use client";
 import axios from "@/app/utils/axios";
-import { useToast } from "@chakra-ui/react";
 import { AxiosError } from "axios";
+
 import { setCookie } from "cookies-next";
 import { JwtPayload, jwtDecode } from "jwt-decode";
+
 export type KeyedObject = {
   [key: string]: string | number | KeyedObject | any;
 };
@@ -17,18 +18,17 @@ export const fetchUserData = async (token: string) => {
     });
     return response.data;
   } catch (error) {
-
     console.log(error);
     return null;
   }
 };
 
 export const Handle42Auth = async () => {
-  window.location.href = "http://localhost:3000/auth/api";
+  window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/api`;
 };
 
 export const HandleGoogleAuth = async () => {
-  window.location.href = "http://localhost:3000/auth/google";
+  window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
 };
 
 export const verifyToken = (access_token?: string | null): boolean => {
@@ -86,6 +86,8 @@ export const handleLogin = async (email: string, password: string) => {
       email,
       password,
     });
+
+    console.log(axios.request);
     console.log(response);
     const { token } = response.data;
     if (response.status === 201) {
@@ -100,8 +102,7 @@ export const handleLogin = async (email: string, password: string) => {
       }
     }
   } catch (error) {
+    console.log(axios.request);
     console.error(error);
   }
 };
-
-

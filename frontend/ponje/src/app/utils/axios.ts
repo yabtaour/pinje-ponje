@@ -1,29 +1,12 @@
 import axios from "axios";
 
+const baseURL = process.env.NEXT_PUBLIC_API_URL;
+
 const axiosServices = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_API_URL}`,
+  baseURL,
+  headers: {
+    "Cache-Control": "no-cache",
+  },
 });
-
-axiosServices.interceptors.request.use(
-  (config) => {
-    // spinning start to show
-    // UPDATE: Add this code to show global loading indicator
-    return config;
-  },
-  function (error) {
-    return Promise.reject(error);
-  }
-);
-
-axiosServices.interceptors.response.use(
-  (response) => {
-    // spinning hide
-    // UPDATE: Add this code to hide global loading indicator
-    return response;
-  },
-  function (error) {
-    return Promise.reject(error);
-  }
-);
 
 export default axiosServices;
