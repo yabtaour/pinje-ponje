@@ -2,11 +2,12 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
+import { useToast } from '@chakra-ui/react';
 import { Image } from "@nextui-org/react";
 import { UpdateUser } from '../globalRedux/features/authSlice';
 import { useAppSelector } from '../globalRedux/store';
+import { getToken } from '../utils/auth';
 import axios from '../utils/axios';
-import { useToast } from '@chakra-ui/react';
 
 
 export default function UploadAvatar() {
@@ -27,7 +28,7 @@ export default function UploadAvatar() {
                 method: 'POST',
                 data: formData,
                 headers: {
-                    Authorization: `${localStorage.getItem('access_token')}`,
+                    Authorization: getToken(),
                     'Content-Type': 'multipart/form-data',
                 },
             });
@@ -52,7 +53,7 @@ export default function UploadAvatar() {
                 position: "bottom-right",
                 variant: "solid",
                 colorScheme: "red",
-              });
+            });
             console.log(error);
         }
     };

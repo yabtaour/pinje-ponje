@@ -2,8 +2,7 @@
 'use strict';
 import { login } from '@/app/globalRedux/features/authSlice';
 import { useAppSelector } from '@/app/globalRedux/store';
-import { fetchUserData, setSession, verifyToken } from '@/app/utils/auth';
-import { getCookie } from 'cookies-next';
+import { fetchUserData, getToken, setSession, verifyToken } from '@/app/utils/auth';
 import { redirect, useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
@@ -27,25 +26,22 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
 
 
     useEffect(() => {
-        let tokenFromCookie = getCookie('token')
+        let accessToken = getToken();
 
-
-        if (tokenFromCookie)
-            localStorage.setItem('access_token', tokenFromCookie);
+        if (!accessToken)
+            router.push('/sign-in');
 
         if (!tokenFromSlice)
-            dispatch(login({ token: tokenFromCookie }));
+            dispatch(login({ token: accessToken }));
 
-        const accessToken: string | null = localStorage.getItem('access_token');
         if (accessToken && !isAithenticated) {
             const socketManager = SocketManager.getInstance(`${process.env.NEXT_PUBLIC_API_URL}`, accessToken);
             fetchUserData(accessToken).then((data) => {
-                console.log("data: ", data);
                 dispatch(login({ user: data, token: accessToken }));
                 setSession(accessToken);
 
-                if (data?.profile?.twofactor && data?.profile?.twoFactorFlag === false)
-                    router.push('/2fa');
+                if (data?.data?.twoFactor && !localStorage.getItem('2fa'))
+                    router.push('/verification');
                 // if (!data?.profile?.avatar)
                 //     router.push('/onboarding');
             })

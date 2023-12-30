@@ -1,12 +1,19 @@
 " use client";
 import axios from "@/app/utils/axios";
 import { AxiosError } from "axios";
-
-import { setCookie } from "cookies-next";
+import { getCookie, setCookie } from "cookies-next";
 import { JwtPayload, jwtDecode } from "jwt-decode";
 
 export type KeyedObject = {
   [key: string]: string | number | KeyedObject | any;
+};
+
+export const getToken = () => {
+  const token = getCookie("token");
+  if (token) {
+    return token;
+  }
+  return null;
 };
 
 export const fetchUserData = async (token: string) => {
@@ -42,10 +49,8 @@ export const verifyToken = (access_token?: string | null): boolean => {
 
 export const setSession = (access_token?: string | null) => {
   if (access_token) {
-    localStorage.setItem("access_token", access_token);
     axios.defaults.headers.common.authorization = `${access_token}`;
   } else {
-    localStorage.removeItem("access_token");
     delete axios.defaults.headers.common.Authorization;
   }
 };

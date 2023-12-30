@@ -1,8 +1,9 @@
-import Image from "next/image";
-import { User } from "../../../types/user";
+import { getToken } from "@/app/utils/auth";
 import axios from "@/app/utils/axios";
-import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { User } from "../../../types/user";
 
 
 
@@ -14,7 +15,11 @@ export default function OnlineFriendsInvite({ users }: { users: User[] }) {
 
     const sendGameRequest = async (userid: number) => {
         try {
-            let accessToken: string | null = localStorage.getItem('access_token');
+            let accessToken: string | null = getToken();
+            if (!accessToken) {
+                console.error('Access token not found in Cookies');
+                return;
+            }
             router.push('/pong/versusScreen');
             const res = await axios.post('/game/invite', { userId: userid }, {
                 headers: {

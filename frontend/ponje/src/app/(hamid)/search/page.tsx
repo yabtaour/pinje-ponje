@@ -1,6 +1,7 @@
 "use client";
 
 import Loader from "@/app/components/loader";
+import { getToken } from "@/app/utils/auth";
 import axios from "@/app/utils/axios";
 import { useToast } from '@chakra-ui/react';
 import Image from "next/image";
@@ -22,9 +23,10 @@ const SearchPage = () => {
   const fetchUsers = async (url: string) => {
     console.log(url);
     try {
+      const token = getToken()
       const response = await axios.get(url, {
         headers: {
-          Authorization: `${localStorage.getItem("access_token")}`
+          Authorization: token
         },
       });
       if (!response) {
@@ -45,8 +47,7 @@ const SearchPage = () => {
     }
   };
   const { data, error, isLoading, isValidating } = useSWR(
-    `/users?search=${encodedSearchQuery}&take=9&skip=${
-      (page - 1) * 9
+    `/users?search=${encodedSearchQuery}&take=9&skip=${(page - 1) * 9
     }`,
     fetchUsers,
     { revalidateOnFocus: false }

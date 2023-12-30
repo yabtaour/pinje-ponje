@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from 'react';
 import { useDispatch } from "react-redux";
 import { logout } from "../globalRedux/features/authSlice";
+import { getToken } from "../utils/auth";
 import Notification from "./notification";
 import SearchInput from "./search";
 
@@ -47,11 +48,11 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
   };
 
   const handleLogoutClick = () => {
+    router.push('/');
     localStorage.removeItem('access_token');
     localStorage.removeItem('auth');
     deleteCookie('token');
     dispatch(logout());
-    router.push('/');
   };
 
 
@@ -61,7 +62,7 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
       try {
         const data = await axios.get(`/users/me`, {
           headers: {
-            Authorization: `${localStorage.getItem('access_token')}`,
+            Authorization: getToken(),
           },
         });
         console.log(data.data);

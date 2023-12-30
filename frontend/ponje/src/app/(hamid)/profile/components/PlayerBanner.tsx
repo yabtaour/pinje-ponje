@@ -1,12 +1,13 @@
 'use client';
 
 import { useAppSelector } from "@/app/globalRedux/store";
+import { getToken } from "@/app/utils/auth";
+import axios from "@/app/utils/axios";
 import Image from "next/image";
-import { User } from '../../../types/user';
 import bg from '../../../../../public/PlayerBanner.png';
+import { User } from '../../../types/user';
 import { formatMessageDate } from "../../chat/components/conversation";
 import FriendButton from "./FriendButton ";
-import axios from "@/app/utils/axios";
 
 export default function PlayerBanner({ user }: { user: User | null | undefined }) {
 
@@ -17,6 +18,7 @@ export default function PlayerBanner({ user }: { user: User | null | undefined }
 
     const handleBlockAction = async (action: "block" | "unblock", userId: number | undefined) => {
         try {
+            const token = getToken();
             await axios.post(
                 `/users/${action}`,
                 {
@@ -24,7 +26,7 @@ export default function PlayerBanner({ user }: { user: User | null | undefined }
                 },
                 {
                     headers: {
-                        Authorization: `${localStorage.getItem("access_token")}`,
+                        Authorization: token,
                     },
                 }
             );
