@@ -47,7 +47,7 @@ let ballY = 4;
 
 
 export function createBodies() {
-    const balldiam = Math.min(canvaWidth, canvaHeight) * 0.25;
+    const balldiam = Math.min(canvaWidth, canvaHeight) * 0.2;
     ball = Bodies.circle(worldWidth / 2, worldHeight / 2, balldiam, {
         restitution: 1,
         frictionAir: 0,
@@ -56,9 +56,9 @@ export function createBodies() {
             fillStyle: "#73ffff"
         }
     });
-    const paddleWidth = Math.min(canvaWidth, canvaHeight) * 0.15; 
-    const paddleHeight = Math.min(canvaWidth, canvaHeight) * 0.5; 
-    
+    const paddleWidth = Math.min(canvaWidth, canvaHeight) * 0.11;
+    const paddleHeight = Math.min(canvaWidth, canvaHeight) * 0.5;
+
     rightPaddle = Bodies.rectangle(canvaWidth - paddleWidth / 2, canvaHeight / 2, paddleWidth, paddleHeight, {
         isStatic: true,
         render: {
@@ -496,7 +496,7 @@ export default function VersusScreen() {
                     <div className="p-4 text-white">
                         <ScoreCard playerOne={user} playerTwo={enemyPlayer} myScore={myScore} enemyScore={enemyScore} />
                     </div>
-                    <div className='w-1/3 h-1/3 md:w-2/3 md:h-2/3 border-2 border-black z-30' ref={boxRef} style={{
+                    <div className='w-2/3 md:w-full h-2/3 md:h-full border-2 border-black z-30' ref={boxRef} style={{
                         backgroundImage: "url('/map1.png')",
                         backgroundSize: "100% 100%",
                         backgroundRepeat: "no-repeat",
@@ -505,6 +505,7 @@ export default function VersusScreen() {
                     }}>
                         <canvas className='w-full h-full border-2 border-black z-30' id="myCanva" ref={canvasRef} />
                     </div>
+
                 </div>
             ) : (
                 <div className='min-h-screen bg-gradient-to-t from-[#2b2948] to-[#141321] flex flex-col justify-center items-center'>
