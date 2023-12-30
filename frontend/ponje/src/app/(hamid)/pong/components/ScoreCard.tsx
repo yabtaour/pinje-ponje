@@ -6,7 +6,7 @@ import Image from "next/image";
 
 export default function ScoreCard({ playerOne, playerTwo, myScore, enemyScore }: { playerOne: User | null | undefined, playerTwo: User | null | undefined, myScore: number, enemyScore: number }) {
     return (
-        <div className="flex justify-between items-center p-4 bg-gray-800 text-white rounded-lg">
+        <div className="flex justify-between items-center p-4 bg-gray-800 text-white rounded-lg aspect-w-2 aspect-h-3 md:aspect-w-16 md:aspect-h-9">
             <div className="flex items-center">
                 {playerOne && (
                     <>

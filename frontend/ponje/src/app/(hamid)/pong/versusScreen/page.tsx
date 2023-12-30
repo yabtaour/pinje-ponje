@@ -47,7 +47,7 @@ let ballY = 4;
 
 
 export function createBodies() {
-    const balldiam = Math.min(canvaWidth, canvaHeight) * 0.2;
+    const balldiam = Math.min(canvaWidth, canvaHeight) * 0.15;
     ball = Bodies.circle(worldWidth / 2, worldHeight / 2, balldiam, {
         restitution: 1,
         frictionAir: 0,
@@ -57,7 +57,7 @@ export function createBodies() {
         }
     });
     const paddleWidth = Math.min(canvaWidth, canvaHeight) * 0.11;
-    const paddleHeight = Math.min(canvaWidth, canvaHeight) * 0.5;
+    const paddleHeight = Math.min(canvaWidth, canvaHeight) * 0.8;
 
     rightPaddle = Bodies.rectangle(canvaWidth - paddleWidth / 2, canvaHeight / 2, paddleWidth, paddleHeight, {
         isStatic: true,
@@ -482,6 +482,7 @@ export default function VersusScreen() {
 
     const handleMapClick = (map: string) => {
         console.log("map clicked");
+        console.log("map clicked", map);
         setSelectedMap(() => map);
     };
 
@@ -496,8 +497,8 @@ export default function VersusScreen() {
                     <div className="p-4 text-white">
                         <ScoreCard playerOne={user} playerTwo={enemyPlayer} myScore={myScore} enemyScore={enemyScore} />
                     </div>
-                    <div className='w-2/3 md:w-full h-2/3 md:h-full border-2 border-black z-30' ref={boxRef} style={{
-                        backgroundImage: "url('/map1.png')",
+                    <div className='aspect-w-2 aspect-h-3 md:aspect-w-16 md:aspect-h-9 border-2 border-black z-30' ref={boxRef} style={{
+                        backgroundImage: `url(${selectedMap})`,
                         backgroundSize: "100% 100%",
                         backgroundRepeat: "no-repeat",
                         backgroundPosition: "center",
@@ -505,6 +506,7 @@ export default function VersusScreen() {
                     }}>
                         <canvas className='w-full h-full border-2 border-black z-30' id="myCanva" ref={canvasRef} />
                     </div>
+
 
                 </div>
             ) : (
@@ -541,8 +543,8 @@ export default function VersusScreen() {
                         <div className="flex flex-col items-center justify-center mt-12 space-y-4">
                             <p className="text-[#77DFF8] text-xl rounded-lg flex flex-row font-semibold"> PICK A GAME MAP </p>
                             <div className="bg-[#201e34] p-2 rounded-lg flex flex-row space-x-4 items-center w-full mt-12 justify-center">
-                                <a onClick={() => handleMapClick('map1')}
-                                    className={`cursor-pointer ${selectedMap === 'map1' ? 'border border-[#77DFF8]' : ''}`}>
+                                <a onClick={() => handleMapClick('/map1.png')}
+                                    className={`cursor-pointer ${selectedMap === '/map1.png' ? 'border border-[#77DFF8]' : ''}`}>
                                     <Image
                                         src="/map_1.png"
                                         alt="Game Map 1"
@@ -552,8 +554,8 @@ export default function VersusScreen() {
                                         style={{ width: 'auto', height: 'auto' }}
                                     />
                                 </a>
-                                <a onClick={() => handleMapClick('map2')}
-                                    className={`cursor-pointer ${selectedMap === 'map2' ? 'border border-[#77DFF8]' : ''}`}>
+                                <a onClick={() => handleMapClick('/map2.png')}
+                                    className={`cursor-pointer ${selectedMap === '/map2.png' ? 'border border-[#77DFF8]' : ''}`}>
                                     <Image
                                         src="/map_2.png"
                                         alt="Game Map 2"
@@ -563,8 +565,8 @@ export default function VersusScreen() {
                                         style={{ width: 'auto', height: 'auto' }}
                                     />
                                 </a>
-                                <a onClick={() => handleMapClick('map3')}
-                                    className={`cursor-pointer ${selectedMap === 'map3' ? 'border border-[#77DFF8]' : ''}`}>
+                                <a onClick={() => handleMapClick('/map3.png')}
+                                    className={`cursor-pointer ${selectedMap === '/map3.png' ? 'border border-[#77DFF8]' : ''}`}>
                                     <Image
                                         src="/map_3.png"
                                         alt="Game Map 3"
