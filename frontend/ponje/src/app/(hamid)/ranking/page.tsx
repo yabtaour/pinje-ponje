@@ -91,6 +91,7 @@ export type DisplayedInfo = {
 
 export const Leaderboard = ({ users }: { users: DisplayedInfo[] }) => {
   const [page, setPage] = React.useState(1);
+  const [isLoading, setLoading] = useState(true);
 
 
 
@@ -107,10 +108,25 @@ export const Leaderboard = ({ users }: { users: DisplayedInfo[] }) => {
 
 
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (isLoading && users.length === 0) {
+        setLoading(false);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timeout);
+  }, [isLoading, users]);
+
+
+
 
 
   const renderCell = React.useCallback((user: any, columnKey: any) => {
     const cellValue = user[columnKey];
+
+
+
 
     switch (columnKey) {
       case "user":
@@ -145,9 +161,20 @@ export const Leaderboard = ({ users }: { users: DisplayedInfo[] }) => {
   return (
     <div className="p-0 m-0 w-full lg:w-2/3 flex " >
       {
-        users.length === 0 ? (
+        isLoading && users.length === 0 ? (
           <div className='min-h-screen'>
-            <Loader />;
+            <Loader />
+          </div>
+        ) : !isLoading && users.length === 0 ? (
+          <div className='text-gray-500 min-h-screen flex flex-col align-middle items-center'>
+            <Image
+              className='my-10'
+              width={300}
+              height={300}
+              alt="NextUI hero Image"
+              src="noData.svg"
+            />
+            <h1>NO Users UWU</h1>
           </div>
         ) : (
           <>
@@ -213,10 +240,10 @@ export default function RankPage() {
       if (isLoading && users.length === 0) {
         setLoading(false);
       }
-    }, 5000);
+    }, 1000);
 
     return () => clearTimeout(timeout);
-  }, [isLoading, users.length]);
+  }, [isLoading, users]);
 
 
 
