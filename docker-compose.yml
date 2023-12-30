@@ -6,7 +6,7 @@ services:
       context: ${FRONT_DIR_PATH}
       dockerfile: Dockerfile
     ports:
-      - "3001:3000"
+      - "3001:3001"
     container_name: frontend_container
     env_file: .env
     # environment:
