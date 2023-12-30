@@ -8,8 +8,12 @@ import { LocalAuthGuard } from './guards/local.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { SignInDto, SignUpDto } from './dto/signUp.dto';
 import { JWTGuard } from './guards/jwt.guard';
+import { config } from 'dotenv';
 
+config()
 
+const VERIFICATION = process.env.VERIFICATION;
+const PROFILE = process.env.PROFILE;
 //talk to anas about new routes
 // @ApiExcludeController()
 @Controller('auth')
@@ -27,9 +31,9 @@ export class AuthController {
         console.log("Copy This Token: ", request.user.token);
 		response.cookie("token", "Bearer " + request.user.token);
 		if (user.user.twoFactor === true)
-			response.redirect('http://localhost:3001/verification');
+			response.redirect(VERIFICATION);
 		else
-			response.redirect('http://localhost:3001/profile');
+			response.redirect(PROFILE);
 	}
 
 	
@@ -43,9 +47,9 @@ export class AuthController {
 		console.log("Copy This Token: ", request.user.token);
 		response.cookie("token", "Bearer " + request.user.token);
 		if (user.user.twoFactor == true)
-			response.redirect('http://localhost:3001/verification');
+			response.redirect(VERIFICATION);
 		else 
-			response.redirect('http://localhost:3001/profile');
+			response.redirect(PROFILE);
 	}
 
 	@Post('2fa')
