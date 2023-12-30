@@ -14,7 +14,7 @@ services:
     depends_on:
       - backend
     volumes:
-      - ${FRONT_DIR_PATH}:/app/public/avatars
+      - ${MAIN_UPLOADS_PATH}:/app/public/avatars
     networks:
       - frontend
       - backend
@@ -48,7 +48,7 @@ services:
       - postgres
       - adminer
     volumes:
-      - ${FRONT_DIR_PATH}:/app/uploads/Avatars
+      - ${MAIN_UPLOADS_PATH}:/app/uploads/Avatars
     networks:
       - backend
       - frontend
