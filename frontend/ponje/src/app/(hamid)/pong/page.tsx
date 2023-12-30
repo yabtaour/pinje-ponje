@@ -1,14 +1,15 @@
 'use client'
+import { getToken } from "@/app/utils/auth";
 import axios from "@/app/utils/axios";
 import { getGameData } from '@/app/utils/update';
+import { useToast } from "@chakra-ui/react";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Loader from '../../components/loader';
 import { User } from '../../types/user';
-import OnlineFriendsInvite from "./components/onlineFriendsInvite";
-import Rules from "./components/Rules";
 import PlayerCard from "./components/PlayerCard";
-import { useToast } from "@chakra-ui/react";
+import Rules from "./components/Rules";
+import OnlineFriendsInvite from "./components/onlineFriendsInvite";
 
 
 
@@ -30,9 +31,9 @@ export default function Pong() {
   };
 
   const getGameDataHandler = async () => {
-    const token = localStorage.getItem('access_token');
+    const token = getToken();
     if (!token) {
-      console.error('Access token not found in local storage');
+      console.error('Access token not found in Cookies');
       return;
     }
     setGameDataFetched(true);
@@ -57,9 +58,14 @@ export default function Pong() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const token = getToken();
+        if (!token) {
+          console.error('Access token not found in Cookies');
+          return;
+        }
         const data = await axios.get(`/users/me`, {
           headers: {
-            Authorization: `${localStorage.getItem('access_token')}`,
+            Authorization: token,
           },
         });
         console.log(data.data);
@@ -74,7 +80,7 @@ export default function Pong() {
           status: "error",
           duration: 3000,
           isClosable: true,
-      })
+        })
         console.error(err);
         setLoading(false);
       }
@@ -85,9 +91,15 @@ export default function Pong() {
 
   const fetchOnlineFriends = async (userId: number) => {
     try {
+
+      const token = getToken();
+      if (!token) {
+        console.error('Access token not found in Cookies');
+        return;
+      }
       const data = await axios.get(`/users/${userId}/friends`, {
         headers: {
-          Authorization: `${localStorage.getItem('access_token')}`,
+          Authorization: token,
         },
       });
       const friends = data.data.filter((friend: User) => friend.status === 'ONLINE');

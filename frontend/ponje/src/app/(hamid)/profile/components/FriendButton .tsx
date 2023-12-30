@@ -1,8 +1,9 @@
 import { User } from '@/app/types/user';
-import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@nextui-org/react';
-import { useEffect, useState } from 'react';
 import { useToast } from "@chakra-ui/react";
+import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@nextui-org/react';
+import { useEffect, useState } from 'react';
 
+import { getToken } from '@/app/utils/auth';
 import axios from "@/app/utils/axios";
 
 const FriendButton = ({ userId }: { userId: number | undefined }) => {
@@ -17,9 +18,10 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const token = getToken();
         const data = await axios.get(`/users/me`, {
           headers: {
-            Authorization: `${localStorage.getItem("access_token")}`,
+            Authorization: token,
           },
         });
 
@@ -48,7 +50,7 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
   ) => {
     try {
       setIsLoadingFriendship(true);
-
+      const token = getToken();
       await axios.post(
         `/users/friends/${action}`,
         {
@@ -56,7 +58,7 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
         },
         {
           headers: {
-            Authorization: `${localStorage.getItem("access_token")}`,
+            Authorization: token,
           },
         }
       );
@@ -82,6 +84,7 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
   const handleBlockAction = async (action: "block" | "unblock") => {
     try {
       setIsLoadingFriendship(true);
+      const token = getToken();
       console.log("Block Called");
       await axios.post(
         `/users/${action}`,
@@ -90,7 +93,7 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
         },
         {
           headers: {
-            Authorization: `${localStorage.getItem("access_token")}`,
+            Authorization: token,
           },
         }
       );
@@ -136,7 +139,7 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
                 className="w-[10rem] btn btn-sm btn-primary"
                 disabled={isLoadingFriendship}
                 onClick={handleClick}
-                // variant="bordered"
+              // variant="bordered"
               >
                 Friend
               </button>

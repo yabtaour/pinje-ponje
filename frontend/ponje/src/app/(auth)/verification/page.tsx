@@ -27,6 +27,7 @@ export default function VerificationPage() {
             if (res.status === 201) {
                 console.log('2fa success');
                 dispatch(setVerified(true));
+                localStorage.setItem('2fa', 'true');
                 router.push('/profile');
                 settwofasuccess(true);
             }

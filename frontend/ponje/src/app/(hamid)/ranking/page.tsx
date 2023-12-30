@@ -5,6 +5,7 @@ import axios from '@/app/utils/axios';
 import { User as NextUIUser, Pagination, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@nextui-org/react';
 
 
+import { getToken } from '@/app/utils/auth';
 import { useToast } from "@chakra-ui/react";
 import Image from 'next/image';
 import Link from 'next/link';
@@ -223,9 +224,11 @@ export default function RankPage() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
+
+        const token = getToken();
         const res = await axios.get('/users', {
           headers: {
-            'Authorization': `${localStorage.getItem('access_token')}`
+            Authorization: token
           }
         });
         const transformedUsers = res.data.map((user: any) => ({

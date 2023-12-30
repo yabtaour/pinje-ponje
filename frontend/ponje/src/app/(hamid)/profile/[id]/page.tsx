@@ -1,5 +1,6 @@
 'use client';
 import Loader from "@/app/components/loader";
+import { getToken } from "@/app/utils/auth";
 import axios from "@/app/utils/axios";
 import { useToast } from '@chakra-ui/react';
 import { useRouter } from "next/navigation";
@@ -27,9 +28,16 @@ export default function Profile({ params }: { params: { id: number } }) {
 
         const fetchData = async () => {
             try {
+
+                const token = getToken();
+
+                if (!token) {
+                    console.error('Access token not found in Cookies');
+                    return;
+                }
                 const data = await axios.get(`/users/${params.id}`, {
                     headers: {
-                        Authorization: `${localStorage.getItem('access_token')}`,
+                        Authorization: getToken(),
                     },
                 });
                 setUser(data.data);
@@ -59,9 +67,17 @@ export default function Profile({ params }: { params: { id: number } }) {
 
     const fetchFriends = async (userId: number) => {
         try {
+
+            const token = getToken();
+
+            if (!token) {
+                console.error('Access token not found in Cookies');
+                return;
+            }
+
             const data = await axios.get(`/users/${userId}/friends`, {
                 headers: {
-                    Authorization: `${localStorage.getItem('access_token')}`,
+                    Authorization: token,
                 },
             });
             const friends = data.data;
