@@ -42,8 +42,8 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
 
                 if (data?.data?.twoFactor && !localStorage.getItem('2fa'))
                     router.push('/verification');
-                // if (!data?.profile?.avatar)
-                //     router.push('/onboarding');
+                if (!data?.profile?.avatar)
+                    router.push('/onboarding');
             })
 
 

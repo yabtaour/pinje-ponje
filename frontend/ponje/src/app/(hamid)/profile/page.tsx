@@ -41,8 +41,8 @@ export default function Profile() {
                 if (data?.data?.twoFactor && !localStorage.getItem('2fa'))
                     router.push('/verification');
 
-                // if (!data?.data?.profile?.avatar) 
-                //     router.push('/onboarding');
+                if (!data?.data?.profile?.avatar) 
+                    router.push('/onboarding');
 
             } catch (err) {
                 console.error(err);
