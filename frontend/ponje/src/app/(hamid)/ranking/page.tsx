@@ -23,7 +23,8 @@ export const Podium = ({ users }: { users: DisplayedInfo[] }) => {
   const rankedUsers = users;
   const updatedUsers = rankedUsers.slice();
   updatedUsers.splice(1, 0, updatedUsers.splice(0, 1)[0]);
-
+  //check if users array is empty
+  console.log("updatedUsers: ", updatedUsers);
   return (
     <div className="flex flex-row mt-16 space-x-6">
       {updatedUsers.map((user, index) => (

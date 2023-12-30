@@ -14,7 +14,7 @@ services:
     depends_on:
       - backend
     volumes:
-      - front_public_dir:/app/public
+      # - front_public_dir:/app/public
       - avatars_volume:/app/public/avatars
     networks:
       - frontend
@@ -86,21 +86,5 @@ volumes:
     driver: local
     driver_opts:
       o: bind
-      device: ${MAIN_UPLOADS_PATH:-/tmp/avatars_vol}
-      type: none
-
-  frontend_volume:
-    name: frontend_volume
-    driver: local
-    driver_opts:
-      o: bind
-      device: ${FRONT_DIR_PATH:-/tmp/frontend_vol}
-      type: none
-
-  front_public_dir:
-    name: front_public_dir
-    driver: local
-    driver_opts:
-      o: bind
-      device: ${FRONTEND_PUBLIC_DIR:-/tmp/front_public_dir_vol}
+      device: ${MAIN_UPLOADS_PATH:-/tmp/back_vol}
       type: none

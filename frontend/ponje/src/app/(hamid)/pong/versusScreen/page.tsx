@@ -45,9 +45,9 @@ let ballY = 4;
 
 
 
-
 export function createBodies() {
-    ball = Bodies.circle(worldWidth / 2, worldHeight / 2, 15, {
+    const balldiam = Math.min(canvaWidth, canvaHeight) * 0.25;
+    ball = Bodies.circle(worldWidth / 2, worldHeight / 2, balldiam, {
         restitution: 1,
         frictionAir: 0,
         friction: 0,
@@ -55,13 +55,17 @@ export function createBodies() {
             fillStyle: "#73ffff"
         }
     });
-    rightPaddle = Bodies.rectangle(worldWidth - 20, worldHeight / 2, 20, 100, {
+    const paddleWidth = Math.min(canvaWidth, canvaHeight) * 0.15; 
+    const paddleHeight = Math.min(canvaWidth, canvaHeight) * 0.5; 
+    
+    rightPaddle = Bodies.rectangle(canvaWidth - paddleWidth / 2, canvaHeight / 2, paddleWidth, paddleHeight, {
         isStatic: true,
         render: {
             fillStyle: "#4EFFF4",
         }
     });
-    leftPaddle = Bodies.rectangle(20, worldHeight / 2, 20, 100, {
+
+    leftPaddle = Bodies.rectangle(paddleWidth / 2, canvaHeight / 2, paddleWidth, paddleHeight, {
         isStatic: true,
         render: {
             fillStyle: "#4EFFF4"
@@ -482,8 +486,11 @@ export default function VersusScreen() {
             </div>
         ) : (
             startGame ? (
-                <div className='w-full h-screen flex items-center justify-center'>
-                    <div className='w-2/3 h-2/3 border-2 border-black z-30' ref={boxRef} style={{
+                <div className='w-full h-screen flex flex-col items-center justify-center'>
+                    <div className="p-4 text-white">
+                        <ScoreCard playerOne={user} playerTwo={enemyPlayer} myScore={myScore} enemyScore={enemyScore} />
+                    </div>
+                    <div className='w-1/3 h-1/3 md:w-2/3 md:h-2/3 border-2 border-black z-30' ref={boxRef} style={{
                         backgroundImage: "url('/map1.png')",
                         backgroundSize: "100% 100%",
                         backgroundRepeat: "no-repeat",
@@ -491,9 +498,6 @@ export default function VersusScreen() {
                         position: "relative"
                     }}>
                         <canvas className='w-full h-full border-2 border-black z-30' id="myCanva" ref={canvasRef} />
-                    </div>
-                    <div className="absolute top-0 left-0 p-4 text-white">
-                        <ScoreCard playerOne={user} playerTwo={enemyPlayer} myScore={myScore} enemyScore={enemyScore} />
                     </div>
                 </div>
             ) : (
