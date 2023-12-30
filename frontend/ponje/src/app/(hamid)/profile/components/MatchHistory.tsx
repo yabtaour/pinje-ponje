@@ -70,12 +70,12 @@ export default function MatchHistory({ user }: { user: User | null | undefined }
   const renderCell = React.useCallback((match: any, columnKey: any) => {
 
     const cellValue = match[columnKey];
+    const opponent = match?.players[0].user.username === user?.username
+      ? match?.players[1]
+      : match?.players[0];
 
     switch (columnKey) {
       case "opponent":
-        const opponent = match?.players[0].user.username === user?.username
-          ? match?.players[1]
-          : match?.players[0];
         return (
           <div className="p-1 rounded-lg ">
             <Button
@@ -95,13 +95,13 @@ export default function MatchHistory({ user }: { user: User | null | undefined }
       case "date":
         return <p className="text-default-400">{formatDate(match.createdAt)}</p>;
       case "result":
-        const bgColor = match.players[0].status === "WINNER" ? "bg-green-300" : "bg-red-300";
-        const textColor = match.players[0].status === "WINNER" ? "text-green-700" : "text-red-700";
+        const bgColor = opponent.status === "WINNER" ? "bg-green-300" : "bg-red-300";
+        const textColor = opponent.status === "WINNER" ? "text-green-700" : "text-red-700";
         return (
           <span
             className={`px-1 py-0.5 font-semibold text-sm leading-tight ${textColor} rounded-sm ${bgColor}`}
           >
-            {match.players[0].status}
+            {opponent.status}
           </span>
         );
       default:

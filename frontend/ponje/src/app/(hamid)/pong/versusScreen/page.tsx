@@ -423,9 +423,10 @@ export default function VersusScreen() {
             socketManager.onGameFinished()
                 .then((data) => {
                     if (data) {
-                        setGameResult(data);
-                        console.log("gameResult : ", gameResult);
-                        setGameEnded(true);
+                        router.push('/profile');
+                        // setGameResult(data);
+                        // console.log("gameResult : ", gameResult);
+                        // setGameEnded(true);
                     }
                 })
                 .catch((error) => {
@@ -446,7 +447,6 @@ export default function VersusScreen() {
 
     useEffect(() => {
         window.addEventListener('beforeunload', handleBeforeUnload);
-
         return () => {
             console.log("something hapened hna");
             if (enemyPlayer) {
@@ -487,11 +487,11 @@ export default function VersusScreen() {
     };
 
     return (
-        (gameEnded && gameResult) ? (
-            <div>
-                <GameResult result={gameResult} />
-            </div>
-        ) : (
+        // (gameEnded && gameResult) ? (
+        //     <div>
+        //         <GameResult result={gameResult} />
+        //     </div>
+        // ) : (
             startGame ? (
                 <div className='w-full h-screen flex flex-col items-center justify-center'>
                     <div className="p-4 text-white">
@@ -594,5 +594,5 @@ export default function VersusScreen() {
                 </div>
             )
         )
-    );
+    // );
 }
