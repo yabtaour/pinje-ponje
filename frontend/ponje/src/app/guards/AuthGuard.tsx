@@ -37,12 +37,11 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
         if (accessToken && !isAithenticated) {
             const socketManager = SocketManager.getInstance(`${process.env.NEXT_PUBLIC_API_URL}`, accessToken);
             fetchUserData(accessToken).then((data) => {
-                console.log("data: ", data);
                 dispatch(login({ user: data, token: accessToken }));
                 setSession(accessToken);
 
-                // if (data?.data?.twoFactor && !localStorage.getItem('2fa'))
-                //     router.push('/verification');
+                if (data?.data?.twoFactor && !localStorage.getItem('2fa'))
+                    router.push('/verification');
                 // if (!data?.profile?.avatar)
                 //     router.push('/onboarding');
             })
