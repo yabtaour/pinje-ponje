@@ -3,18 +3,19 @@ import UploadAvatar from '@/app/components/avatarUpload';
 import Loader from '@/app/components/loader';
 import { UpdateUser } from '@/app/globalRedux/features/authSlice';
 import { useAppSelector } from '@/app/globalRedux/store';
-import { fetchUserData } from '@/app/utils/auth';
+import { fetchUserData, getToken } from '@/app/utils/auth';
+import { fetchQRCode, resetPassword } from "@/app/utils/update";
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
 import { AxiosError } from 'axios';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import * as Yup from 'yup';
-import { fetchQRCode, resetPassword } from "@/app/utils/update";
 
-import { TwoFactorModal, TwoFactorModalDeactivate } from './components/TwoFactorModal';
 import axios from "@/app/utils/axios";
-import { useToast } from "@chakra-ui/react";
+import { useToast } from '@chakra-ui/react';
+import { TwoFactorModal, TwoFactorModalDeactivate } from './components/TwoFactorModal';
+
 
 
 
@@ -45,7 +46,7 @@ export default function UserSettings() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                let accessToken: string | null = localStorage.getItem('access_token');
+                let accessToken: string | null = getToken();
                 if (accessToken) {
                     const userData = await fetchUserData(accessToken);
                     const userChanged = JSON.stringify(user) !== JSON.stringify(userData);
@@ -112,7 +113,7 @@ export default function UserSettings() {
 
     const activateTwoFa = async () => {
         try {
-            let accessToken: string | null = localStorage.getItem('access_token');
+            let accessToken: string | null = getToken();
             const newStatus = true;
             const response = await axios.patch("/users", { twoFactor: newStatus }, {
                 headers: {

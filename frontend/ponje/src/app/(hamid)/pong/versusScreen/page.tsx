@@ -5,6 +5,7 @@ import Matter, { Body, Events } from 'matter-js';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from "react";
 
+import { getToken } from "@/app/utils/auth";
 import { useToast } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import GameResult from "../components/GameResult";
@@ -144,7 +145,7 @@ export default function VersusScreen() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     const handleCancel = async () => {
-        const token = localStorage.getItem('access_token')
+        const token = getToken();
         if (token) {
             axios.patch("/users", { status: 'ONLINE' }, {
                 headers: {
@@ -169,9 +170,14 @@ export default function VersusScreen() {
 
     const fetchData = async () => {
         try {
+            const token = getToken();
+            if (!token) {
+                console.error('Access token not found in Cookies');
+                return;
+            }
             const data = await axios.get(`/users/me`, {
                 headers: {
-                    Authorization: `${localStorage.getItem('access_token')}`,
+                    Authorization: token,
                 },
             });
             setUser(data.data);

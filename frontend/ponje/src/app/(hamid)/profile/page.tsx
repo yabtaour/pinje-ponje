@@ -1,5 +1,6 @@
 'use client';
 import Loader from "@/app/components/loader";
+import { getToken } from "@/app/utils/auth";
 import axios from "@/app/utils/axios";
 import { useToast } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
@@ -23,17 +24,26 @@ export default function Profile() {
     useEffect(() => {
         const fetchData = async () => {
             try {
+                const token = getToken();
+                if (!token) {
+                    console.error('Access token not found in Cookies');
+                    return;
+                }
                 const data = await axios.get(`/users/me`, {
                     headers: {
-                        authorization: `${localStorage.getItem('access_token')}`,
+                        authorization: token,
                     },
                 });
                 const userId = data.data.id;
                 fetchFriends(userId);
                 setUser(data.data);
                 setLoading(false);
+                if (data?.data?.twoFactor && !localStorage.getItem('2fa'))
+                    router.push('/verification');
+
                 // if (!data?.data?.profile?.avatar) 
                 //     router.push('/onboarding');
+
             } catch (err) {
                 console.error(err);
                 setLoading(false);
@@ -48,9 +58,16 @@ export default function Profile() {
 
     const fetchFriends = async (userId: number) => {
         try {
+
+            const token = getToken();
+
+            if (!token) {
+                console.error('Access token not found in Cookies');
+                return;
+            }
             const data = await axios.get(`/users/${userId}/friends`, {
                 headers: {
-                    Authorization: `${localStorage.getItem('access_token')}`,
+                    Authorization: token,
                 },
             });
             const friends = data.data;
@@ -67,7 +84,7 @@ export default function Profile() {
                 position: "bottom-right",
                 variant: "solid",
                 colorScheme: "red",
-              });
+            });
             console.error(err);
             setLoading(false);
         }

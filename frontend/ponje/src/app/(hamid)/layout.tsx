@@ -1,13 +1,16 @@
 'use strict';
 'use client';
 import SocketManager from '@/app/utils/socketManager';
+import { useToast } from '@chakra-ui/react';
 import { NextUIProvider } from "@nextui-org/system";
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from "react";
 import NavBar from '../components/navbar';
 import SideBar, { Collapse } from '../components/sidebar';
 import { AuthProvider } from "../globalRedux/provider";
 import { useAppSelector } from "../globalRedux/store";
 import AuthGuard from "../guards/AuthGuard";
+import { getToken } from '../utils/auth';
 
 
 export default function Layout({
@@ -18,7 +21,8 @@ export default function Layout({
     const [collapsed, setCollapsed] = useState(true);
     const token = useAppSelector((state) => state.authReducer.value.token);
     const [showToast, setShowToast] = useState(false);
-
+    const toast = useToast();
+    const router = useRouter();
 
     const toggleSidebar = () => {
         setCollapsed(!collapsed);
@@ -27,7 +31,7 @@ export default function Layout({
     useEffect(() => {
         const timeoutId = setTimeout(() => {
             setShowToast(false);
-        }, 3000); 
+        }, 3000);
 
         return () => {
             clearTimeout(timeoutId);
@@ -35,8 +39,25 @@ export default function Layout({
     }, [showToast]);
 
     useEffect(() => {
-        const SocketManagerNotifs = SocketManager.getInstance(`${process.env.NEXT_PUBLIC_API_URL}`, `${localStorage.getItem('access_token')}`);
-       
+
+        const token = getToken();
+        if (!token) {
+            toast({
+                title: 'Error',
+                description: "user not logged in",
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+                position: "bottom-right",
+                variant: "solid",
+                colorScheme: "red",
+            });
+            router.push('/sign-in');
+            return;
+        }
+
+        const SocketManagerNotifs = SocketManager.getInstance(`${process.env.NEXT_PUBLIC_API_URL}`, token);
+
         const fetchNotifications = async () => {
             if (SocketManagerNotifs) {
                 SocketManagerNotifs.waitForConnection(async () => {
@@ -44,9 +65,9 @@ export default function Layout({
                         const data = await SocketManagerNotifs.getNotifications();
                         console.log("data i got back from server", data);
                         setShowToast(true);
-                      } catch (error) {
+                    } catch (error) {
                         console.error("Error fetching notifications:", error);
-                      }
+                    }
                 })
             }
 

@@ -1,3 +1,4 @@
+import { getToken } from "@/app/utils/auth";
 import { fetchGameHistory } from "@/app/utils/update";
 import { useToast } from "@chakra-ui/react";
 import { Button, User as NextUIUser, Pagination, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
@@ -22,7 +23,9 @@ export default function MatchHistory({ user }: { user: User | null | undefined }
     if (user) {
       const fetchData = async () => {
         try {
-          const data = await fetchGameHistory(user.id, localStorage.getItem("access_token"));
+
+          const token = getToken();
+          const data = await fetchGameHistory(user.id, token);
           setMatchHistory(data || []);
         } catch (err) {
           console.error(err);
