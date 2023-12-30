@@ -72,11 +72,11 @@ export default function Pong() {
         setUser(data.data);
         setLoading(false);
         const loggedUserId = data.data.id;
-        fetchOnlineFriends(loggedUserId);
+        // fetchOnlineFriends(loggedUserId);
       } catch (err) {
         toast({
           title: "Error.",
-          description: "Error while fetching friends",
+          description: "While fetching user",
           status: "error",
           duration: 3000,
           isClosable: true,
@@ -151,13 +151,13 @@ export default function Pong() {
         <div className="hidden lg:flex items-center justify-center col-span-1">
           <div className="flex items-center justify-center flex-col">
             <Rules />
-            <OnlineFriendsInvite users={onlineFriends} />
+            {/* <OnlineFriendsInvite users={onlineFriends} /> */}
           </div>
         </div>
       </div>
       <div className="lg:hidden flex items-center justify-center flex-col">
         <Rules />
-        <OnlineFriendsInvite users={onlineFriends} />
+        {/* <OnlineFriendsInvite users={onlineFriends} /> */}
       </div>
     </div>
   );

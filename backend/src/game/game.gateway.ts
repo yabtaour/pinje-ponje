@@ -85,7 +85,7 @@ export class GameGateway
     if (!payload || !payload.gameId || !payload.direction
       || typeof payload.gameId != "number" || typeof payload.direction != "string") {
         console.log("payload is not valid !", payload);
-        throw new WsException("invalid payload");
+        throw new WsException("invalid payload 1");
       }
     this.gameService.updatePlayerPosition(parseInt(client.id), payload);
   }
@@ -94,7 +94,7 @@ export class GameGateway
   updateScore(client: any, payload: {gameId: number}): void {
     if (!payload || !payload.gameId || typeof payload.gameId != "number") {
       console.log("payload is not valid !", payload);
-      throw new WsException("invalid payload");        
+      throw new WsException("invalid payload 2");        
     }
     this.gameService.updateScore(parseInt(client.id), payload.gameId);
   }
@@ -103,21 +103,31 @@ export class GameGateway
   updateBall(client: any, payload:  {gameId: number, position: any, velocity: any, edge: string, worldWidth: number}) {
     if (!payload || !payload.gameId || !payload.position || !payload.edge || !payload.velocity
         || typeof payload.gameId != "number") {
-          throw new WsException("invalid payload");
+          throw new WsException("invalid payload 3");
         }
       this.gameService.updateBallPosition(parseInt(client.id), payload);
   }
+
+  @SubscribeMessage('testingBallUpdate')
+  testingBallUpdate(client: any, payload:  {gameId: number, position: any, velocity: any, edge: string, worldWidth: number}) {
+    if (!payload || !payload.gameId || !payload.position || !payload.edge || !payload.velocity
+        || typeof payload.gameId != "number") {
+          throw new WsException("invalid payload 4");
+        }
+      this.gameService.testingBallUpdate(parseInt(client.id), payload);
+  }
+
   @SubscribeMessage('finishGame')
   finishGame(client: any, payload: { gameId: number; enemy: number }) {
     console.log('hadi : ', payload);
     if (
-      !payload ||
+      !payload || 
       !payload.gameId ||
       !payload.enemy ||
       typeof payload.gameId != 'number' ||
       typeof payload.enemy != 'number'
     ) {
-      throw new WsException('Invalid payload');
+      throw new WsException('Invalid payload 5');
     }
     console.log(payload);
     this.gameService.finishGame(
