@@ -6,12 +6,14 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  MaxLength,
 } from 'class-validator';
 
 export class updateUserDto {
   @ApiProperty()
   @IsOptional({ message: 'Username must be a string.' })
   @IsString({ message: 'Username must be a string.' })
+  @MaxLength(25, { message: 'username cannot exceed 25 characters.' })
   username: string;
 
   @ApiProperty()
@@ -26,7 +28,7 @@ export class updateUserDto {
 
   @ApiProperty()
   @IsOptional()
-  status : Status
+  status: Status;
 }
 
 export class resretPasswordDto {

@@ -1,7 +1,6 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { ProfilesService } from './profiles.service';
 import { ProfilesController } from './profiles.controller';
-import { PrismaService } from '../prisma/prisma.service';
 import { UserService } from '../user/user.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { UserModule } from '../user/user.module';
@@ -11,12 +10,8 @@ import { NotificationModule } from 'src/notification/notification.module';
 
 @Module({
   imports: [PrismaModule, forwardRef(() => UserModule), NotificationModule],
-  providers: [
-    ProfilesService, UserService,
-    JwtAuthService, JwtService,
-  ],
+  providers: [ProfilesService, UserService, JwtAuthService, JwtService],
   controllers: [ProfilesController],
-  exports: [ProfilesService]
+  exports: [ProfilesService],
 })
 export class ProfilesModule {}
-

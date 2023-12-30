@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpException,
   Param,
@@ -13,21 +12,23 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JWTGuard } from 'src/auth/guards/jwt.guard';
 import { FriendsActionsDto } from 'src/user/dto/FriendsActions-user.dto';
 import { UserService } from 'src/user/user.service';
 import { ChatGateway } from './chat.gateway';
-import { ChatService, joinRoomDto } from './chat.service';
+import { ChatService } from './chat.service';
 import { chatActionsDto } from './dto/actions-dto';
 import { CreateChatDmRoomDto } from './dto/create-chat.dto';
 import { updateRoomDto } from './dto/update-room.dto';
 import { updateRoomRoleDto } from './dto/update-room-role.dto';
 import { PaginationLimitDto } from './dto/pagination-dto';
+import { joinRoomDto } from './dto/room-dto';
 
 @UseGuards(JWTGuard)
 @ApiBearerAuth()
 @Controller('chatapi')
+@ApiTags('chatapi')
 export class ChatController {
   constructor(
     private readonly chatService: ChatService,
@@ -121,7 +122,11 @@ export class ChatController {
     @Body() payload: updateRoomRoleDto,
   ) {
     const user = await this.userService.getCurrentUser(request);
-    const updateRole = await this.chatService.updateRoomRole(user.id, room_id, payload);
+    const updateRole = await this.chatService.updateRoomRole(
+      user.id,
+      room_id,
+      payload,
+    );
     this.chatgateway.server
       .to(String(payload.userId))
       .emit('roomBroadcast', updateRole);
@@ -140,9 +145,7 @@ export class ChatController {
       room_id,
       payload,
     );
-    this.chatgateway.server
-      .to(String(payload.id))
-      .emit('roomBroadcast', room);
+    this.chatgateway.server.to(String(payload.id)).emit('roomBroadcast', room);
     return room;
   }
 
