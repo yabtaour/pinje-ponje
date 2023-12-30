@@ -29,16 +29,6 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
         setLoading(false);
       } catch (err) {
         setLoading(false);
-        toast({
-          title: 'Error',
-          description: "error while getting user",
-          status: 'error',
-          duration: 9000,
-          isClosable: true,
-          position: "bottom-right",
-          variant: "solid",
-          colorScheme: "red",
-        });
       }
     };
 
