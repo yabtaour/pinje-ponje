@@ -36,8 +36,8 @@ export default function ChatInput() {
     const socketManager = SocketManager.getInstance(`${process.env.NEXT_PUBLIC_API_URL}`, accessToken);
     const toast = useToast();
     useEffect(() => {
-   
-    }, [dispatch ,activeConversation, socketManager, rooms, activeConversation?.state]);
+
+    }, [dispatch, activeConversation, socketManager, rooms, activeConversation?.state]);
 
 
     const handleSend = async () => {
@@ -61,9 +61,10 @@ export default function ChatInput() {
             setValue('');
 
             try {
-                socketManager.sendMessage(value, activeConversation?.room?.id);
+
+                const newMessage = await socketManager.sendMessage(value, activeConversation?.room?.id);
                 const foundIndex = activeConversation?.room?.messages.findIndex((message: any) => message.id === messageId);
-                dispatch(replaceMessage(draftmessage))
+                dispatch(replaceMessage(newMessage))
 
 
             } catch (error) {
@@ -76,7 +77,7 @@ export default function ChatInput() {
                     position: "bottom-right",
                     variant: "solid",
                     colorScheme: "red",
-                  });
+                });
                 console.error("Error sending message:", error);
             }
         }
