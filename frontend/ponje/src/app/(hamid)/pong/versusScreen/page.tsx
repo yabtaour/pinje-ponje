@@ -45,9 +45,10 @@ let ballY = 4;
 
 
 
-
 export function createBodies() {
     const balldiam = Math.min(canvaWidth, canvaHeight) * 0.15;
+    const originalPaddleHeight = Math.min(canvaWidth, canvaHeight) * 0.5;
+    
     ball = Bodies.circle(worldWidth / 2, worldHeight / 2, balldiam, {
         restitution: 1,
         frictionAir: 0,
@@ -56,27 +57,26 @@ export function createBodies() {
             fillStyle: "#73ffff"
         }
     });
-    const paddleWidth = Math.min(canvaWidth, canvaHeight) * 0.11;
-    const paddleHeight = Math.min(canvaWidth, canvaHeight) * 0.8;
 
-    rightPaddle = Bodies.rectangle(canvaWidth - paddleWidth / 2, canvaHeight / 2, paddleWidth, paddleHeight, {
+    rightPaddle = Bodies.rectangle(worldWidth - 20, worldHeight / 2, 20, 100, {
         isStatic: true,
         render: {
             fillStyle: "#4EFFF4",
         }
     });
-
-    leftPaddle = Bodies.rectangle(paddleWidth / 2, canvaHeight / 2, paddleWidth, paddleHeight, {
+    leftPaddle = Bodies.rectangle(20, worldHeight / 2, 20, 100, {
         isStatic: true,
         render: {
             fillStyle: "#4EFFF4"
         }
     });
+    
     floor = Bodies.rectangle(0, worldHeight, worldWidth * 2, 5, { isStatic: true });
     ceiling = Bodies.rectangle(0, 0, worldWidth * 2, 5, { isStatic: true });
 
-    return ([rightPaddle, leftPaddle, ball, floor, ceiling])
+    return [rightPaddle, leftPaddle, ball, floor, ceiling];
 }
+
 
 export function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matter.Body) {
 
@@ -446,16 +446,16 @@ export default function VersusScreen() {
 
     useEffect(() => {
         window.addEventListener('beforeunload', handleBeforeUnload);
-
+    
         return () => {
-            console.log("something hapened hna");
+            console.log("cleanup function");
             if (enemyPlayer) {
                 ballX = 4;
                 socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
             }
         };
-    }, [enemyPlayer])
-
+    }, [socketManager, gameId, enemyPlayer]);
+    
 
 
 
