@@ -20,10 +20,10 @@ import { ChatGateway } from './chat.gateway';
 import { ChatService } from './chat.service';
 import { chatActionsDto } from './dto/actions-dto';
 import { CreateChatDmRoomDto } from './dto/create-chat.dto';
-import { updateRoomDto } from './dto/update-room.dto';
-import { updateRoomRoleDto } from './dto/update-room-role.dto';
 import { PaginationLimitDto } from './dto/pagination-dto';
 import { joinRoomDto } from './dto/room-dto';
+import { updateRoomRoleDto } from './dto/update-room-role.dto';
+import { updateRoomDto } from './dto/update-room.dto';
 
 @UseGuards(JWTGuard)
 @ApiBearerAuth()
@@ -157,7 +157,7 @@ export class ChatController {
   ) {
     const user = await this.userService.getCurrentUser(request);
     const room = await this.chatService.leave_room(user.id, payload, room_id);
-    this.chatgateway.server.to(String(user.id)).emit('leave the room', room);
+    this.chatgateway.server.to(String(room_id)).emit('roomBroadcast', room);
     return room;
   }
 

@@ -19,18 +19,17 @@ import {
   Prisma,
   RoomType,
 } from '@prisma/client';
-import { Transform, plainToClass } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { plainToClass } from 'class-transformer';
 import * as crypto from 'crypto';
 import { GlobalExceptionFilter } from 'src/global-exception.filter';
 import { NotificationService } from 'src/notification/notification.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FriendsActionsDto } from 'src/user/dto/FriendsActions-user.dto';
 import { chatActionsDto } from './dto/actions-dto';
-import { updateRoomRoleDto } from './dto/update-room-role.dto';
-import { updateRoomDto } from './dto/update-room.dto';
 import { PaginationLimitDto } from './dto/pagination-dto';
 import { MessageDto, joinRoomDto } from './dto/room-dto';
+import { updateRoomRoleDto } from './dto/update-room-role.dto';
+import { updateRoomDto } from './dto/update-room.dto';
 
 export const ChatActions = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): chatActionsDto => {
@@ -383,6 +382,18 @@ export class ChatService {
 
   async leave_room(userid: number, payload: joinRoomDto, roomId: number) {
     try {
+      await this.prisma.roomMembership.update({
+        where: {
+          userId_roomId: {
+            userId: userid,
+            roomId: roomId,
+          },
+        },
+        data: {
+          state: 'OTHER'
+        },
+      });
+
       const roomMembership = await this.prisma.roomMembership.delete({
         where: {
           userId_roomId: {
@@ -413,6 +424,7 @@ export class ChatService {
           });
         }
       }
+      return roomMembership;
     } catch (e) {
       if (e instanceof Prisma.PrismaClientUnknownRequestError) {
         throw new HttpException(
@@ -815,8 +827,11 @@ export class ChatService {
     )
       throw new BadRequestException();
 
-    console.log(payload.state)
-    if (payload.state != undefined && Object.values(MessageState).includes(payload.state) === false)
+    console.log(payload.state);
+    if (
+      payload.state != undefined &&
+      Object.values(MessageState).includes(payload.state) === false
+    )
       throw new HttpException('bad room type', HttpStatus.BAD_REQUEST);
     const room = await this.prisma.chatRoom.findUnique({
       where: {

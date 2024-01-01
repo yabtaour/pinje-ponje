@@ -1,5 +1,7 @@
 FROM node:20.6-alpine as base
 
+RUN apk add --no-cache tini
+
 RUN apk add --no-cache \
     python3 \
     make \
@@ -15,4 +17,4 @@ COPY . .
 
 RUN chmod 777 ./run.sh
 
-ENTRYPOINT ["sh", "run.sh"]
+ENTRYPOINT ["/sbin/tini", "--", "sh", "run.sh"]
