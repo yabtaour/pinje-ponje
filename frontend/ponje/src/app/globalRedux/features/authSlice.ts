@@ -39,6 +39,7 @@ type AuthState = {
   isAuthenticated: boolean;
   token: string | null;
   user: User | null;
+  newNotification: boolean | null;
 };
 
 const initialState = {
@@ -46,6 +47,7 @@ const initialState = {
     isAuthenticated: false,
     token: null,
     user: null,
+    newNotification: false,
   } as AuthState,
 } as InitialState;
 
@@ -60,6 +62,7 @@ export const auth = createSlice({
           isAuthenticated: true,
           token: action.payload.token,
           user: action.payload.user,
+          newNotification: false,
         };
         localStorage.setItem("auth", JSON.stringify(newState));
         return { ...state, value: newState };
@@ -101,8 +104,20 @@ export const auth = createSlice({
       localStorage.setItem("auth", JSON.stringify(newState.value));
       return newState;
     },
+
+    setNewNotification(state, action) {
+      const newState: InitialState = {
+        value: {
+          ...state.value,
+          newNotification: action.payload,
+        },
+      };
+      localStorage.setItem("auth", JSON.stringify(newState.value));
+      return newState;
+    },
   },
 });
 
-export const { login, logout, UpdateUser, setVerified } = auth.actions;
+export const { login, logout, UpdateUser, setVerified, setNewNotification } =
+  auth.actions;
 export default auth.reducer;

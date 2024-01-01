@@ -6,4 +6,4 @@ npx prisma generate
 
 echo "========================================================== Done here"
 
-npm run start
+npm run start:dev
