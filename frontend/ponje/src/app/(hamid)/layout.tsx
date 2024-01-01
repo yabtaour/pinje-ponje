@@ -5,8 +5,10 @@ import { useToast } from '@chakra-ui/react';
 import { NextUIProvider } from "@nextui-org/system";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from "react";
+import { useDispatch } from 'react-redux';
 import NavBar from '../components/navbar';
 import SideBar, { Collapse } from '../components/sidebar';
+import { setNewNotification } from '../globalRedux/features/authSlice';
 import { AuthProvider } from "../globalRedux/provider";
 import { useAppSelector } from "../globalRedux/store";
 import AuthGuard from "../guards/AuthGuard";
@@ -20,23 +22,23 @@ export default function Layout({
 }) {
     const [collapsed, setCollapsed] = useState(true);
     const token = useAppSelector((state) => state.authReducer.value.token);
-    const [showToast, setShowToast] = useState(false);
+    // const [showToast, setShowToast] = useState(false);
     const toast = useToast();
     const router = useRouter();
-
+    const dispatch = useDispatch()
     const toggleSidebar = () => {
         setCollapsed(!collapsed);
     };
 
-    useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            setShowToast(false);
-        }, 3000);
+    // useEffect(() => {
+    //     const timeoutId = setTimeout(() => {
+    //         setShowToast(false);
+    //     }, 3000);
 
-        return () => {
-            clearTimeout(timeoutId);
-        };
-    }, [showToast]);
+    //     return () => {
+    //         clearTimeout(timeoutId);
+    //     };
+    // }, [showToast]);
 
     useEffect(() => {
 
@@ -56,15 +58,15 @@ export default function Layout({
             return;
         }
 
-        const SocketManagerNotifs = SocketManager.getInstance(`${process.env.NEXT_PUBLIC_API_URL}`, token);
 
         const fetchNotifications = async () => {
+            const SocketManagerNotifs = SocketManager.getInstance(`${process.env.NEXT_PUBLIC_API_URL}`, token);
             if (SocketManagerNotifs) {
                 SocketManagerNotifs.waitForConnection(async () => {
                     try {
                         const data = await SocketManagerNotifs.getNotifications();
                         console.log("data i got back from server", data);
-                        setShowToast(true);
+                        dispatch(setNewNotification(true));
                     } catch (error) {
                         console.error("Error fetching notifications:", error);
                     }
@@ -103,12 +105,12 @@ export default function Layout({
                                 <SideBar collapsed={collapsed} toggleSidebar={toggleSidebar} />
                             </aside>
                             <div className="flex-1 ml-0 transition-all duration-300 ease-in-out relative z-0 overflow-x-hidden">
-                                {showToast &&
+                                {/* {showToast &&
                                     <div className="toast toast-end">
                                         <div className="alert alert-info">
                                             <span>New notification arrived.</span>
                                         </div>
-                                    </div>}
+                                    </div>} */}
                                 {children}
                             </div>
                         </div>

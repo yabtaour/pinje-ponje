@@ -78,7 +78,7 @@ export default function Pong() {
         }
         const data = await axios.get(`/users/me`, {
           headers: {
-            Authorization: token,
+            authorization: token,
           },
         });
         console.log(data.data);

@@ -4,6 +4,8 @@ import { useToast } from "@chakra-ui/react";
 import Image from "next/image";
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { setNewNotification } from "../globalRedux/features/authSlice";
 import { User } from "../types/user";
 import { getToken } from "../utils/auth";
 
@@ -26,6 +28,7 @@ export default function Notification({ user }: { user: User | null | undefined }
   const [notifs, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
+  const dispatch = useDispatch();
 
 
 
@@ -54,6 +57,7 @@ export default function Notification({ user }: { user: User | null | undefined }
       return;
     }
     try {
+
       const readres = await axios.post(`/notification/read/${id}`, {
         headers: {
           Authorization: getToken(),
@@ -61,6 +65,7 @@ export default function Notification({ user }: { user: User | null | undefined }
       });
 
       if (readres.status === 201) {
+        dispatch(setNewNotification(false));
         // console.log("read res", readres);
       }
 
