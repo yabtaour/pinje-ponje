@@ -194,6 +194,7 @@ enum MemberState {
   MUTED
   BANNED
   KICKED
+  OTHER
 }
 
 enum ChatRole {

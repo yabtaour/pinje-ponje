@@ -61,10 +61,11 @@ export default function ChatInput() {
             setValue('');
 
             try {
-
-                const newMessage = await socketManager.sendMessage(value, activeConversation?.room?.id);
-                const foundIndex = activeConversation?.room?.messages.findIndex((message: any) => message.id === messageId);
-                dispatch(replaceMessage(newMessage))
+                socketManager.waitForConnection(async () => {
+                    const newMessage = await socketManager.sendMessage(value, activeConversation?.room?.id);
+                    // const foundIndex = activeConversation?.room?.messages.findIndex((message: any) => message.id === messageId);
+                    dispatch(replaceMessage(newMessage))
+                });
 
 
             } catch (error) {

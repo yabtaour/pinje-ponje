@@ -5,20 +5,21 @@ import {
   Param,
   ParseIntPipe,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ChatRole, NotificationType, Prisma, RoomType } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
 import { config } from 'dotenv';
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
 import { SignUpDto } from 'src/auth/dto/signUp.dto';
+import { PaginationLimitDto } from 'src/chat/dto/pagination-dto';
+import { NotificationService } from 'src/notification/notification.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { FriendsActionsDto } from './dto/FriendsActions-user.dto';
 import { blockAndUnblockUserDto } from './dto/blockAndUnblock-user.dto';
 import { CreateUserDtoIntra } from './dto/create-user.dto';
 import { updateUserDto } from './dto/update-user.dto';
-import { NotificationService } from 'src/notification/notification.service';
-import { ChatRole, NotificationType, Prisma, RoomType } from '@prisma/client';
-import { randomBytes } from 'crypto';
-import { PaginationLimitDto } from 'src/chat/dto/pagination-dto';
 
 config();
 
@@ -27,6 +28,7 @@ export class UserService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificationService: NotificationService,
+    private readonly eventEmmiter: EventEmitter2,
   ) {}
 
   async resetPassword(user: any, old: string, newPass: string) {
@@ -37,8 +39,8 @@ export class UserService {
           'Old password is incorrect',
           HttpStatus.BAD_REQUEST,
         );
-      const rounds =  parseInt(process.env.BCRYPT_ROUNDS);
-      const HashedPassword =  bcrypt.hashSync(newPass, rounds);
+      const rounds = parseInt(process.env.BCRYPT_ROUNDS);
+      const HashedPassword = bcrypt.hashSync(newPass, rounds);
       const updatedUser = await this.prisma.user.update({
         where: {
           id: user.id,
@@ -361,7 +363,7 @@ export class UserService {
       }
       delete user.password;
       delete user.twoFactorSecret;
-      delete user.twoFactor
+      delete user.twoFactor;
       return user;
     } catch (e) {
       if (
@@ -570,7 +572,7 @@ export class UserService {
         },
       });
 
-      const ifFriends =  await this.prisma.friendship.findFirst({
+      const ifFriends = await this.prisma.friendship.findFirst({
         where: {
           OR: [
             {
@@ -584,7 +586,7 @@ export class UserService {
           ],
         },
       });
-      if (ifFriends){
+      if (ifFriends) {
         await this.prisma.friendship.deleteMany({
           where: {
             OR: [
@@ -601,11 +603,11 @@ export class UserService {
         });
         const deleteDm = await this.prisma.chatRoom.deleteMany({
           where: {
-            dm_token: ifFriends.dm_token
-          }
-        })
+            dm_token: ifFriends.dm_token,
+          },
+        });
       }
-        return 'You have blocked this user';
+      return 'You have blocked this user';
     } catch (e) {
       if (
         e instanceof Prisma.PrismaClientUnknownRequestError ||
@@ -677,7 +679,8 @@ export class UserService {
       });
 
       const sanitizedFriends = listofFriends.map(({ friend }) => {
-        const { password, twoFactorSecret, twoFactor, ...sanitizedFriend } = friend;
+        const { password, twoFactorSecret, twoFactor, ...sanitizedFriend } =
+          friend;
         return sanitizedFriend;
       });
       return sanitizedFriends;
@@ -730,9 +733,14 @@ export class UserService {
 
       const deleteDm = await this.prisma.chatRoom.deleteMany({
         where: {
-          dm_token: getFriendship.dm_token
-        }
-      })
+          dm_token: getFriendship.dm_token,
+        },
+      });
+
+      this.eventEmmiter.emit('conversationUpdate', {
+        senderId: user_id,
+        receiverId: data.id,
+      });
 
       return 'Friendship deleted';
     } catch (e) {
@@ -837,12 +845,12 @@ export class UserService {
           {
             userId: user_id,
             friendId: data.id,
-            dm_token: token
+            dm_token: token,
           },
           {
             userId: data.id,
             friendId: user_id,
-            dm_token: token
+            dm_token: token,
           },
         ],
       });
@@ -866,12 +874,12 @@ export class UserService {
               {
                 user: { connect: { id: data.id } },
                 role: ChatRole.MEMBER,
-                dm_token: token
+                dm_token: token,
               },
               {
                 user: { connect: { id: user_id } },
                 role: ChatRole.MEMBER,
-                dm_token: token
+                dm_token: token,
               },
             ],
           },
@@ -882,6 +890,11 @@ export class UserService {
         senderId: user_id,
         receiverId: data.id,
         type: NotificationType.FRIEND_REQUEST_ACCEPTED,
+      });
+
+      this.eventEmmiter.emit('conversationUpdate', {
+        senderId: user_id,
+        receiverId: data.id,
       });
       return 'Friend request accepted';
     } catch (e) {
@@ -906,20 +919,20 @@ export class UserService {
           'No profile with this id',
           HttpStatus.NOT_FOUND,
         );
-        const ifexist = await this.prisma.friendRequest.findFirst({
-          where: {
-            OR: [
-              {
-                senderId: user_id,
-                receiverId: data.id,
-              },
-              {
-                senderId: data.id,
-                receiverId: user_id,
-              },
-            ],
-          },
-        });
+      const ifexist = await this.prisma.friendRequest.findFirst({
+        where: {
+          OR: [
+            {
+              senderId: user_id,
+              receiverId: data.id,
+            },
+            {
+              senderId: data.id,
+              receiverId: user_id,
+            },
+          ],
+        },
+      });
       if (ifexist == null) {
         const createRequest = await this.prisma.friendRequest.upsert({
           where: {

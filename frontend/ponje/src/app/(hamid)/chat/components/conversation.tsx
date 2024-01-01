@@ -12,6 +12,7 @@ import moment from 'moment';
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { HashLoader } from "react-spinners";
+import { fetchUserData, getToken } from '../../../utils/auth';
 import CreateConversation from "./roomOptions";
 
 export type conversationType = {
@@ -54,8 +55,7 @@ export default function Conversation({ collapsed }: any) {
     const toast = useToast()
     const [isLoading, setLoading] = useState(true);
     const [messageDispatched, setMessageDispatched] = useState(false);
-
-
+    const [me, setMe] = useState(null) as any;
     useEffect(() => {
         const timeout = setTimeout(() => {
             if (isLoading && conversations.length === 0) {
@@ -68,17 +68,38 @@ export default function Conversation({ collapsed }: any) {
 
 
     useEffect(() => {
+
+        const getMe = async () => {
+            let token = getToken();
+            if (token) {
+                fetchUserData(token).then((ret) => {
+                    setMe(ret);
+                }).catch(() => {
+                    console.log('error fetching me ');
+                })
+            }
+        }
+
         const fetchNewMessages = async () => {
             try {
-                await socketManager.getNewMessages();
-                const rooms = await socketManager.getConversations();
-                dispatch(setRooms(rooms));
+                console.log('fetching new messages');
+                if (!socketManager.getMainSocket()?.connected) {
+                    console.log('socket not connected');
+                    socketManager.getMainSocket()?.connect();
+                }
+                socketManager.waitForConnection(async () => {
+                    await socketManager.getNewMessages();
+                    const rooms = await socketManager.getConversations();
+                    console.log('rooms: ', rooms);
+                    dispatch(setRooms(rooms));
+                })
             } catch (error) {
                 setLoading(false);
                 console.error("Error fetching new messages:", error);
             }
         };
 
+        getMe();
         fetchNewMessages();
     }, [conversations, dispatch, socketManager]);
 
@@ -129,13 +150,20 @@ export default function Conversation({ collapsed }: any) {
 
         const handleMemberStateChanges = async () => {
             try {
-                const memberShip = await socketManager.listenOnUpdates();
+                console.log('listening on updates');
+                socketManager.waitForConnection(async () => {
+                    const memberShip = await socketManager.listenOnUpdates();
 
-                if (memberShip?.id === activeConversation?.id) {
-                    dispatch(setActiveConversation(memberShip));
-                }
+                    if (memberShip?.id === activeConversation?.id) {
+                        dispatch(setActiveConversation(memberShip));
+                    }
 
-                handleActions(memberShip);
+                    const rooms = await socketManager.getConversations();
+                    console.log('rooms: ', rooms);
+                    dispatch(setRooms(rooms));
+
+                    handleActions(memberShip);
+                })
             } catch (error) {
                 console.error("Error:", error);
             }
@@ -220,7 +248,7 @@ export default function Conversation({ collapsed }: any) {
                                             </p>
                                         ) : (
                                             <p className="text-white px-2 text-left text-sm font-semibold">
-                                                {collapsed ? "" : conversation?.room?.members?.find((member: any) => member?.userId !== activeConversation?.userId)?.user?.username}
+                                                {collapsed ? "" : conversation?.room?.members?.find((member: any) => member?.userId !== me?.id)?.user?.username}
                                             </p>
                                         )}
                                     </h2>
