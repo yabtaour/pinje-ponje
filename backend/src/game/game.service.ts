@@ -593,7 +593,6 @@ export class GameService {
 	async finishGame(winnerId: number, loserId: number, gameId: number) {
 		if (this.gameGateway.currentGames.has(gameId)) {
 			this.gameGateway.currentGames.delete(gameId);
-		}
 		console.log(loserId, winnerId);
 		const winner = await this.prisma.player.update({
 			where: {
@@ -627,20 +626,22 @@ export class GameService {
 				id: winnerId,
 			},
 		});
+		console.log("winner : ", winnerUser.username);
 		const newWinnerConsitensy = (await winnerUser).consitency + winner.consitency > 100 ? 100 : (await winnerUser).consitency + winner.consitency;
 		const newWinnerReflex = (await winnerUser).reflex + winner.reflex > 100 ? 100 : (await winnerUser).reflex + winner.reflex;
 		const newWinnerAccuracy = (await winnerUser).accuracy + winner.accuracy > 100 ? 100 : (await winnerUser).accuracy + winner.accuracy;
-	
 		const newXp = (await winnerUser).experience + 25 >= ((await winnerUser).level * 100) ? 0 : (await winnerUser).experience + 25
+		const newGamePoints = (await winnerUser).gamePoints + 20 >= 100 ? 0 : (await winnerUser).gamePoints + 20;
+	
 		let newLevel = (await winnerUser).level;
 		if (newXp == 0)
 			newLevel = (await winnerUser).level + 1;
 
-		const newGamePoints = (await winnerUser).gamePoints + 20 >= 100 ? 0 : (await winnerUser).gamePoints + 20;
 		let nextRank = (await winnerUser).rank;
 		if (newGamePoints == 0) {
 			const ranks = Object.values(Rank);
 			const currentIndex = ranks.indexOf((await winnerUser).rank);
+			console.log(ranks, currentIndex, nextRank)
 			if (currentIndex === -1 || currentIndex === ranks.length - 1) {
 				nextRank = (await winnerUser).rank;
 			}
@@ -660,7 +661,7 @@ export class GameService {
 				accuracy: newWinnerAccuracy,
 				level: newLevel,
 				experience: newXp,
-				gameInvitesSent: newGamePoints,
+				gamePoints: newGamePoints,
 				rank: nextRank,
 			}
 		});
@@ -699,9 +700,11 @@ export class GameService {
 		this.gameGateway.intializeArray.splice(this.gameGateway.intializeArray.findIndex((element) => {
 			element == gameId
 		}), 1)
+		this.gameGateway.currentGames.delete(gameId);
 		console.log(this.gameGateway.currentGames);
 		await this.gameGateway.server.to(String(winnerId)).emit('gameOver', "win");
 		await this.gameGateway.server.to(String(loserId)).emit('gameOver', "loss");
+	}
 	}
 
 	async updateScore(userId: number, gameId: number) {

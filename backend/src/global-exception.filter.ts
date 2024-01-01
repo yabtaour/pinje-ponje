@@ -16,6 +16,9 @@ import { JsonWebTokenError } from 'jsonwebtoken';
 export class GlobalExceptionFilter implements ExceptionFilter {
   catch(exception: HttpException | WsException | any, host: ArgumentsHost) {
     const logger = new Logger('GlobalExceptionFilter');
+
+    console.log(exception);
+
     if (exception instanceof JsonWebTokenError) {
       const response = host.switchToHttp().getResponse<Response>();
       const request = host.switchToHttp().getRequest<Request>();

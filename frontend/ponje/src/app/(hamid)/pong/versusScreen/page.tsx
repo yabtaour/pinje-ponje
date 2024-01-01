@@ -46,7 +46,7 @@ let ballY = 4;
 
 
 export function createBodies() {
-    const balldiam = Math.min(canvaWidth, canvaHeight) * 0.15;
+    const balldiam = Math.min(canvaWidth, canvaHeight) * 0.1;
     const originalPaddleHeight = Math.min(canvaWidth, canvaHeight) * 0.5;
     
     ball = Bodies.circle(worldWidth / 2, worldHeight / 2, balldiam, {
