@@ -344,7 +344,7 @@ class SocketManager {
     });
   }
 
-  public sendScoreUpdate(payload: { gameId: number }): Promise<any> {
+  public sendScoreUpdate(payload: { gameId: number}): Promise<any> {
     return new Promise(async (resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
         this.gameSocket?.emit("updateScore", payload);
@@ -421,6 +421,17 @@ class SocketManager {
     } else {
       console.error("Socket is not connected");
     }
+  }
+
+  public sendTestingSendBallUpdate(payload: {gameId: number, position: any, velocity: any, edge: string, worldWidth: number}) {
+    return new Promise(async (resolve, reject) => {
+      if (this.gameSocket && this.gameSocket.connected) {
+        this.gameSocket?.emit("testingBallUpdate", payload);
+        resolve("done");
+      } else {
+        reject("Socket is not connected");
+      }
+    });
   }
 
   public sendBallUpdate(payload: {gameId: number, position: any, velocity: any, edge: string, worldWidth: number}): Promise<any> {

@@ -85,17 +85,9 @@ export function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matter.Body
         // socketManager.sendBallUpdate({position: ball.position, velocity: ball.velocity, edge: "floor"})
         if (otherBody === floor || otherBody === ceiling) {
             socketManager.sendBallUpdate({ gameId: gameId, position: ball.position, velocity: ball.velocity, edge: "floor", worldWidth: worldWidth })
-            // Body.setVelocity(ball, {
-            //     x: ball.velocity.x,
-            //     y: -ball.velocity.y
-            // })
         }
         else if (otherBody === leftPaddle || otherBody === rightPaddle) {
             socketManager.sendBallUpdate({ gameId: gameId, position: ball.position, velocity: ball.velocity, edge: "paddle", worldWidth: worldWidth })
-            // Body.setVelocity(ball, {
-            //     x: -ball.velocity.x,
-            //     y: ball.velocity.y
-            // })
         }
     }
 }
@@ -119,12 +111,11 @@ const ballReachedLeftThreshold = () => {
     return ball.position.x <= leftThreshold;
 };
 
-
 let scoreSent = false;
 
 export function updateScore(gameId: number) {
     if (scoreSent == false) {
-        socketManager.sendScoreUpdate({ gameId: gameId });
+        socketManager.sendScoreUpdate({gameId: gameId});
         scoreSent = true;
     }
 }
@@ -140,7 +131,6 @@ export default function VersusScreen() {
     const [myScore, setMyScore] = useState(0);
     const [enemyScore, setEnemyScore] = useState(0);
     const [gameStarted, setGameStarted] = useState(false);
-    const [gameEnded, setGameEnded] = useState(false);
     const [gameResult, setGameResult] = useState('');
     const toast = useToast();
     const router = useRouter();
@@ -369,7 +359,6 @@ export default function VersusScreen() {
             })
             World.add(engine.world, [ball, floor, ceiling, leftPaddle, rightPaddle]);
 
-
             const handleKeyUp = (event: any) => {
                 if (keys.hasOwnProperty(event.code)) {
                     event.preventDefault();
@@ -386,10 +375,33 @@ export default function VersusScreen() {
             }
             window.addEventListener('keyup', handleKeyDown);
 
+            let intervalId: NodeJS.Timeout | null = null;
             Events.on(engine, 'beforeUpdate', () => {
+
+                if (intervalId) {
+                    clearInterval(intervalId);
+                }
                 if (ballReachedLeftThreshold())
                     updateScore(gameId);
                 else {
+                    if (ballX > 0) {
+                        intervalId = setInterval(() => {
+                            socketManager.sendTestingSendBallUpdate({
+                                gameId: gameId,
+                                position: ball.position,
+                                velocity: ball.velocity,
+                                edge: "paddle",
+                                worldWidth: worldWidth
+                            });
+                        }, 1000); // Execute every 1.5 seconds
+                            socketManager.sendTestingSendBallUpdate({
+                            gameId: gameId,
+                            position: ball.position,
+                            velocity: ball.velocity,
+                            edge: "paddle",
+                            worldWidth: worldWidth
+                        });
+                    }
                     updatePaddlesgame(gameId);
                 }
             });
@@ -423,18 +435,19 @@ export default function VersusScreen() {
             socketManager.onGameFinished()
                 .then((data) => {
                     if (data) {
-                        setGameResult(data);
-                        console.log("gameResult : ", gameResult);
-                        setGameEnded(true);
+                        router.push('/profile');
+                        // setGameResult(data);
+                        // console.log("gameResult : ", gameResult);
+                        // setGameEnded(true);
                     }
                 })
                 .catch((error) => {
                     console.error("Error in sendInitialize:", error);
                 });
-            setReadyToInitialize(true);
         });
     };
 
+    
     const unloadFlag = useRef(false);
     
 
@@ -467,26 +480,27 @@ export default function VersusScreen() {
       }, [enemyPlayer, socketManager, gameId]);
     
     
+    
 
 
     useEffect(() => {
 
         waitForNewGame();
         if (!user) fetchData();
-        if (selectedMap && enemyPlayer && playerFound && !startGame && !gameEnded) waitForStartGame();
-        if (selectedMap && !startGame && !gameEnded) sendInitialization();
-        if (startGame && !gameEnded) handlePaddlePosition();
-        if (startGame && !gameEnded) handleScoreUpdate();
-        if (startGame && !gameEnded) handleBallUpdate();
-        if (startGame && !gameStarted && !gameEnded) createGame();
-        if (!gameEnded) handleGameEnd();
+        if (selectedMap && enemyPlayer && playerFound && !startGame) waitForStartGame();
+        if (selectedMap && !startGame) sendInitialization();
+        if (startGame) handlePaddlePosition();
+        if (startGame) handleScoreUpdate();
+        if (startGame) handleBallUpdate();
+        if (startGame && !gameStarted) createGame();
+        handleGameEnd();
 
         return () => {
             socketManager.getGameSocket()?.off('gameOver');
             socketManager.getGameSocket()?.off('gameFound');
         };
 
-    }, [gameStarted, user, enemyPlayer, playerFound, selectedMap, readyToInitialize, startGame, sentInitialize, myScore, enemyScore, gameEnded, gameResult]);
+    }, [gameStarted, user, enemyPlayer, playerFound, selectedMap, readyToInitialize, startGame, sentInitialize, myScore, enemyScore, gameResult]);
 
 
 
@@ -497,11 +511,11 @@ export default function VersusScreen() {
     };
 
     return (
-        (gameEnded && gameResult) ? (
-            <div>
-                <GameResult result={gameResult} />
-            </div>
-        ) : (
+        // (gameEnded && gameResult) ? (
+        //     <div>
+        //         <GameResult result={gameResult} />
+        //     </div>
+        // ) : (
             startGame ? (
                 <div className='w-full h-screen flex flex-col items-center justify-center'>
                     <div className="p-4 text-white">
@@ -604,5 +618,5 @@ export default function VersusScreen() {
                 </div>
             )
         )
-    );
+    // );
 }
