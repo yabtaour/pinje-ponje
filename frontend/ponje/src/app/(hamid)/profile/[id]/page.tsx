@@ -11,11 +11,12 @@ import Performance from "../components/Performance";
 import PlayerBanner from "../components/PlayerBanner";
 import ProgressBar from "../components/ProgressBar";
 import SkillAnalytics from "../components/SkillAnalytics";
+import { User } from '../../../types/user';
 
 
 
 export default function Profile({ params }: { params: { id: number } }) {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [Friends, setFriends] = useState([]);
     const router = useRouter();
