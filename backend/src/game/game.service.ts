@@ -523,6 +523,50 @@ export class GameService {
 			}
 		}
 	}
+
+	async testingBallUpdate(client: number, payload:  {gameId: number, position: any, velocity: any, edge: string, worldWidth: number}) {
+		if (this.gameGateway.currentGames.has(payload.gameId)) {
+			if (this.gameGateway.currentGames.get(payload.gameId).player1.id == client) {
+				if (this.gameGateway.currentGames.get(payload.gameId).player1.reversed == false) {
+					let velocity = null;
+					// await this.gameGateway.server
+					// 	.to(String(this.gameGateway.currentGames.get(payload.gameId).player1.id))
+					// 	.emit('updateBall', {position: payload.position, velocity: payload.velocity});
+						velocity = {
+							x: payload.velocity.x * -1,
+							y: payload.velocity.y,
+						}
+						const position = {
+							x: payload.worldWidth - payload.position.x,
+							y: payload.position.y,
+						}
+					await this.gameGateway.server
+						.to(String(this.gameGateway.currentGames.get(payload.gameId).player2.id))
+						.emit('updateBall', {position: position, velocity: velocity});
+				}
+			} else if (this.gameGateway.currentGames.get(payload.gameId).player2.id == client) {
+				if (this.gameGateway.currentGames.get(payload.gameId).player2.reversed == false) {
+					let velocity = null;
+					// await this.gameGateway.server
+					// 	.to(String(this.gameGateway.currentGames.get(payload.gameId).player2.id))
+					// 	.emit('updateBall', {position: payload.position, velocity: payload.velocity});
+						velocity = {
+							x: payload.velocity.x * -1,
+							y: payload.velocity.y,
+						}
+						const position = {
+							x: payload.worldWidth - payload.position.x,
+							y: payload.position.y,
+						}
+					await this.gameGateway.server
+						.to(String(this.gameGateway.currentGames.get(payload.gameId).player1.id))
+						.emit('updateBall', {position: position, velocity: velocity});
+				}				
+			} else {
+				throw new WsException("Player Not found");
+			}
+		}
+	}
 	
 	// if (this.gameGateway.currentGames.get(payload.gameId).player1.id == client) {
 	// 	if (this.gameGateway.currentGames.get(payload.gameId).player1.reversed == false) {
@@ -550,8 +594,6 @@ export class GameService {
 		if (this.gameGateway.currentGames.has(gameId)) {
 			this.gameGateway.currentGames.delete(gameId);
 		}
-		await this.gameGateway.server.to(String(winnerId)).emit('gameOver', "win");
-		await this.gameGateway.server.to(String(loserId)).emit('gameOver', "loss");
 		console.log(loserId, winnerId);
 		const winner = await this.prisma.player.update({
 			where: {
@@ -632,7 +674,6 @@ export class GameService {
 		});
 		console.log("loser : ", loserId, " winner : ", winnerId);
 
-
 		console.log(this.gameGateway.currentGames);
 		console.log(gameId);
 		this.gameGateway.initializeClients.splice(
@@ -659,6 +700,8 @@ export class GameService {
 			element == gameId
 		}), 1)
 		console.log(this.gameGateway.currentGames);
+		await this.gameGateway.server.to(String(winnerId)).emit('gameOver', "win");
+		await this.gameGateway.server.to(String(loserId)).emit('gameOver', "loss");
 	}
 
 	async updateScore(userId: number, gameId: number) {

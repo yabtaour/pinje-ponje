@@ -10,6 +10,7 @@ config();
 
 const guid = process.env.GUID;
 const gsid = process.env.GSECRET;
+const gcback = process.env.GCALLBACK;
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -21,7 +22,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         super({
         clientID: guid,
         clientSecret: gsid,
-        callbackURL: 'http://localhost:3000/auth/google',
+        callbackURL: gcback,
         scope: ['email', 'profile'],
         });
     }

@@ -11,6 +11,7 @@ config(); // This loads the .env file
 
 const uid = process.env.UID;
 const sid = process.env.SECRET;
+const callBack = process.env.INTRACALLBACK;
 
 @Injectable()
 export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
@@ -21,7 +22,7 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
         super({
             clientID: uid,
             clientSecret: sid,
-            callbackURL: "http://localhost:3000/auth/api",
+            callbackURL: callBack,
         });
     }
 
