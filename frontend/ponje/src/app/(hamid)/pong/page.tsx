@@ -14,7 +14,7 @@ import OnlineFriendsInvite from "./components/onlineFriendsInvite";
 
 
 export default function Pong() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [onlineFriends, setOnlineFriends] = useState([]);
   const [gameDataFetched, setGameDataFetched] = useState(false);
@@ -22,6 +22,19 @@ export default function Pong() {
   const toast = useToast();
 
   const handleMMClick = () => {
+    if (user?.status === 'INGAME' || user?.status === 'OFFLINE') {
+      toast({
+        title: 'Error',
+        description: "you are already in a game",
+        status: 'error',
+        duration: 9000,
+        isClosable: true,
+        position: "bottom-right",
+        variant: "solid",
+        colorScheme: "red",
+      });
+      return;
+    }
     router.push('/pong/versusScreen');
     setTimeout(() => {
       if (!gameDataFetched) {

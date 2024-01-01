@@ -74,6 +74,9 @@ export default function MatchHistory({ user }: { user: User | null | undefined }
       ? match?.players[1]
       : match?.players[0];
 
+    const opponent = match?.players[0].user.id === user?.id
+      ? match?.players[1]
+      : match?.players[0];
     switch (columnKey) {
       case "opponent":
         return (
