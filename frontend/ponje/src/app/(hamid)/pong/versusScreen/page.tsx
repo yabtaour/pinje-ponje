@@ -435,28 +435,38 @@ export default function VersusScreen() {
         });
     };
 
-    const handleBeforeUnload = async () => {
-        if (socketManager && gameId) {
-            socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
-            setTimeout(() => {
-                window.location.href = '/pong';
-            }, 100);
-        }
-    };
+    const unloadFlag = useRef(false);
+    
 
-    useEffect(() => {
-        window.addEventListener('beforeunload', handleBeforeUnload);
+    
+      const handleBeforeUnload = async () => {
+        if (socketManager && gameId && !unloadFlag.current) {
+          unloadFlag.current = true;
+          socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
+          setTimeout(() => {
+            window.location.href = '/pong';
+          }, 100);
+        }
+      };
+    
+      useEffect(() => {
+        const unloadListener = () => {
+          handleBeforeUnload();
+        };
+    
+        window.addEventListener('unload', unloadListener);
     
         return () => {
-            console.log("cleanup function");
-            if (enemyPlayer) {
-                ballX = 4;
-                socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
-            }
+          console.log("something happened hna");
+          if (enemyPlayer) {
+            ballX = 4;
+            socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
+          }
+          window.removeEventListener('unload', unloadListener);
         };
-    }, [socketManager, gameId, enemyPlayer]);
+      }, [enemyPlayer, socketManager, gameId]);
     
-
+    
 
 
     useEffect(() => {
