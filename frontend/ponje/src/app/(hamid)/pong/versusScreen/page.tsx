@@ -45,9 +45,10 @@ let ballY = 4;
 
 
 
-
 export function createBodies() {
     const balldiam = Math.min(canvaWidth, canvaHeight) * 0.15;
+    const originalPaddleHeight = Math.min(canvaWidth, canvaHeight) * 0.5;
+    
     ball = Bodies.circle(worldWidth / 2, worldHeight / 2, balldiam, {
         restitution: 1,
         frictionAir: 0,
@@ -56,27 +57,26 @@ export function createBodies() {
             fillStyle: "#73ffff"
         }
     });
-    const paddleWidth = Math.min(canvaWidth, canvaHeight) * 0.11;
-    const paddleHeight = Math.min(canvaWidth, canvaHeight) * 0.8;
 
-    rightPaddle = Bodies.rectangle(canvaWidth - paddleWidth / 2, canvaHeight / 2, paddleWidth, paddleHeight, {
+    rightPaddle = Bodies.rectangle(worldWidth - 20, worldHeight / 2, 20, 100, {
         isStatic: true,
         render: {
             fillStyle: "#4EFFF4",
         }
     });
-
-    leftPaddle = Bodies.rectangle(paddleWidth / 2, canvaHeight / 2, paddleWidth, paddleHeight, {
+    leftPaddle = Bodies.rectangle(20, worldHeight / 2, 20, 100, {
         isStatic: true,
         render: {
             fillStyle: "#4EFFF4"
         }
     });
+    
     floor = Bodies.rectangle(0, worldHeight, worldWidth * 2, 5, { isStatic: true });
     ceiling = Bodies.rectangle(0, 0, worldWidth * 2, 5, { isStatic: true });
 
-    return ([rightPaddle, leftPaddle, ball, floor, ceiling])
+    return [rightPaddle, leftPaddle, ball, floor, ceiling];
 }
+
 
 export function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matter.Body) {
 
@@ -85,17 +85,9 @@ export function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matter.Body
         // socketManager.sendBallUpdate({position: ball.position, velocity: ball.velocity, edge: "floor"})
         if (otherBody === floor || otherBody === ceiling) {
             socketManager.sendBallUpdate({ gameId: gameId, position: ball.position, velocity: ball.velocity, edge: "floor", worldWidth: worldWidth })
-            // Body.setVelocity(ball, {
-            //     x: ball.velocity.x,
-            //     y: -ball.velocity.y
-            // })
         }
         else if (otherBody === leftPaddle || otherBody === rightPaddle) {
             socketManager.sendBallUpdate({ gameId: gameId, position: ball.position, velocity: ball.velocity, edge: "paddle", worldWidth: worldWidth })
-            // Body.setVelocity(ball, {
-            //     x: -ball.velocity.x,
-            //     y: ball.velocity.y
-            // })
         }
     }
 }
@@ -119,12 +111,11 @@ const ballReachedLeftThreshold = () => {
     return ball.position.x <= leftThreshold;
 };
 
-
 let scoreSent = false;
 
 export function updateScore(gameId: number) {
     if (scoreSent == false) {
-        socketManager.sendScoreUpdate({ gameId: gameId });
+        socketManager.sendScoreUpdate({gameId: gameId});
         scoreSent = true;
     }
 }
@@ -140,7 +131,6 @@ export default function VersusScreen() {
     const [myScore, setMyScore] = useState(0);
     const [enemyScore, setEnemyScore] = useState(0);
     const [gameStarted, setGameStarted] = useState(false);
-    const [gameEnded, setGameEnded] = useState(false);
     const [gameResult, setGameResult] = useState('');
     const toast = useToast();
     const router = useRouter();
@@ -369,7 +359,6 @@ export default function VersusScreen() {
             })
             World.add(engine.world, [ball, floor, ceiling, leftPaddle, rightPaddle]);
 
-
             const handleKeyUp = (event: any) => {
                 if (keys.hasOwnProperty(event.code)) {
                     event.preventDefault();
@@ -386,10 +375,33 @@ export default function VersusScreen() {
             }
             window.addEventListener('keyup', handleKeyDown);
 
+            let intervalId: NodeJS.Timeout | null = null;
             Events.on(engine, 'beforeUpdate', () => {
+
+                if (intervalId) {
+                    clearInterval(intervalId);
+                }
                 if (ballReachedLeftThreshold())
                     updateScore(gameId);
                 else {
+                    if (ballX > 0) {
+                        intervalId = setInterval(() => {
+                            socketManager.sendTestingSendBallUpdate({
+                                gameId: gameId,
+                                position: ball.position,
+                                velocity: ball.velocity,
+                                edge: "paddle",
+                                worldWidth: worldWidth
+                            });
+                        }, 1000); // Execute every 1.5 seconds
+                            socketManager.sendTestingSendBallUpdate({
+                            gameId: gameId,
+                            position: ball.position,
+                            velocity: ball.velocity,
+                            edge: "paddle",
+                            worldWidth: worldWidth
+                        });
+                    }
                     updatePaddlesgame(gameId);
                 }
             });
@@ -432,51 +444,63 @@ export default function VersusScreen() {
                 .catch((error) => {
                     console.error("Error in sendInitialize:", error);
                 });
-            setReadyToInitialize(true);
         });
     };
 
-    const handleBeforeUnload = async () => {
-        if (socketManager && gameId) {
-            socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
-            setTimeout(() => {
-                window.location.href = '/pong';
-            }, 100);
+    
+    const unloadFlag = useRef(false);
+    
+
+    
+      const handleBeforeUnload = async () => {
+        if (socketManager && gameId && !unloadFlag.current) {
+          unloadFlag.current = true;
+          socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
+          setTimeout(() => {
+            window.location.href = '/pong';
+          }, 100);
         }
-    };
-
-    useEffect(() => {
-        window.addEventListener('beforeunload', handleBeforeUnload);
-        return () => {
-            console.log("something hapened hna");
-            if (enemyPlayer) {
-                ballX = 4;
-                socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
-            }
+      };
+    
+      useEffect(() => {
+        const unloadListener = () => {
+          handleBeforeUnload();
         };
-    }, [enemyPlayer])
-
-
+    
+        window.addEventListener('unload', unloadListener);
+    
+        return () => {
+          console.log("something happened hna");
+          if (enemyPlayer) {
+            ballX = 4;
+            socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
+          }
+          window.removeEventListener('unload', unloadListener);
+        };
+      }, [enemyPlayer, socketManager, gameId]);
+    
+    
+    
 
 
     useEffect(() => {
 
         waitForNewGame();
         if (!user) fetchData();
-        if (selectedMap && enemyPlayer && playerFound && !startGame && !gameEnded) waitForStartGame();
-        if (selectedMap && !startGame && !gameEnded) sendInitialization();
-        if (startGame && !gameEnded) handlePaddlePosition();
-        if (startGame && !gameEnded) handleScoreUpdate();
-        if (startGame && !gameEnded) handleBallUpdate();
-        if (startGame && !gameStarted && !gameEnded) createGame();
-        if (!gameEnded) handleGameEnd();
+        if (selectedMap && enemyPlayer && playerFound && !startGame) waitForStartGame();
+        if (selectedMap && !startGame) sendInitialization();
+        if (startGame) handlePaddlePosition();
+        if (startGame) handleScoreUpdate();
+        if (startGame) handleBallUpdate();
+        if (startGame && !gameStarted) createGame();
+        handleGameEnd();
 
         return () => {
             socketManager.getGameSocket()?.off('gameOver');
             socketManager.getGameSocket()?.off('gameFound');
         };
 
-    }, [gameStarted, user, enemyPlayer, playerFound, selectedMap, readyToInitialize, startGame, sentInitialize, myScore, enemyScore, gameEnded, gameResult]);
+    }, [gameStarted, user, enemyPlayer, playerFound, selectedMap, readyToInitialize, startGame, sentInitialize, myScore, enemyScore, gameResult]);
 
 
 
