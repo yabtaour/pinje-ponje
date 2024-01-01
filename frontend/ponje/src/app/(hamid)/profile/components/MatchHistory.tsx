@@ -70,6 +70,9 @@ export default function MatchHistory({ user }: { user: User | null | undefined }
   const renderCell = React.useCallback((match: any, columnKey: any) => {
 
     const cellValue = match[columnKey];
+    const opponent = match?.players[0].user.username === user?.username
+      ? match?.players[1]
+      : match?.players[0];
 
     const opponent = match?.players[0].user.id === user?.id
       ? match?.players[1]
