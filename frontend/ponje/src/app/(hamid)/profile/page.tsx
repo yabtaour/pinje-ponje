@@ -11,50 +11,53 @@ import Performance from "./components/Performance";
 import PlayerBanner from "./components/PlayerBanner";
 import ProgressBar from "./components/ProgressBar";
 import SkillAnalytics from "./components/SkillAnalytics";
+import { User } from '../../types/user';
 
 
 
 export default function Profile() {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [Friends, setFriends] = useState([]);
     const router = useRouter();
     const toast = useToast();
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const token = getToken();
-                if (!token) {
-                    console.error('Access token not found in Cookies');
-                    return;
-                }
-                const data = await axios.get(`/users/me`, {
-                    headers: {
-                        authorization: token,
-                    },
-                });
-                const userId = data.data.id;
-                fetchFriends(userId);
-                setUser(data.data);
-                setLoading(false);
-                if (data?.data?.twoFactor && !localStorage.getItem('2fa'))
-                    router.push('/verification');
-
-                if (!data?.data?.profile?.avatar) 
-                    router.push('/onboarding');
-
-            } catch (err) {
-                console.error(err);
-                setLoading(false);
+    const fetchData = async () => {
+        try {
+            const token = getToken();
+            if (!token) {
+                console.error('Access token not found in Cookies');
+                return;
             }
-        };
+            const data = await axios.get(`/users/me`, {
+                headers: {
+                    authorization: token,
+                },
+            });
+            setUser(data.data);
+            setLoading(false);
+            if (data?.data?.twoFactor && !localStorage.getItem('2fa'))
+                router.push('/verification');
 
+            if (!data?.data?.profile?.avatar) 
+                router.push('/onboarding');
+
+        } catch (err) {
+            console.error(err);
+            setLoading(false);
+        }
+    };
+
+
+    useEffect(() => {
         fetchData();
-
-
-
     }, []);
+
+    useEffect(() => {
+        if (user) {
+            fetchFriends(user?.id);
+        }
+    }, [user]);
 
     const fetchFriends = async (userId: number) => {
         try {
