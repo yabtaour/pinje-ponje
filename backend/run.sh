@@ -1,6 +1,6 @@
 #!/bin/bash
 
-npx prisma migrate dev reset
+npx prisma migrate deploy
 
 npx prisma generate
 

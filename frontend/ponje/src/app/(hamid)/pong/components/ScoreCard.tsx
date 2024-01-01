@@ -39,7 +39,7 @@ export default function ScoreCard({ playerOne, playerTwo, myScore, enemyScore }:
                             <p className="text-lg md:text-lg font-bold ml-3 ">{playerTwo.username}</p>
                         </div>
                         <Image
-                            src={playerOne?.profile?.avatar ?? "/placeholderuser.jpeg"}
+                            src={playerTwo?.profile?.avatar ?? "/placeholderuser.jpeg"}
                             alt="User Avatar"
                             width={18}
                             height={18}

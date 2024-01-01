@@ -1,6 +1,6 @@
 'use client';
 import Loader from "@/app/components/loader";
-import { getToken } from "@/app/utils/auth";
+import { fetchUserData, getToken } from "@/app/utils/auth";
 import axios from "@/app/utils/axios";
 import { useToast } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
@@ -11,6 +11,7 @@ import Performance from "./components/Performance";
 import PlayerBanner from "./components/PlayerBanner";
 import ProgressBar from "./components/ProgressBar";
 import SkillAnalytics from "./components/SkillAnalytics";
+import { useAppSelector } from '@/app/globalRedux/store';
 
 
 
@@ -56,24 +57,29 @@ export default function Profile() {
 
     }, []);
 
+    // const me = useAppSelector(state => state?.authReducer?.value?.user);
+
     const fetchFriends = async (userId: number) => {
         try {
-
+            let me  = null;
             const token = getToken();
+                if (token !== null)
+                     me  = await fetchUserData(token)
+
 
             if (!token) {
                 console.error('Access token not found in Cookies');
                 return;
             }
-            const data = await axios.get(`/users/${userId}/friends`, {
-                headers: {
-                    Authorization: token,
-                },
-            });
-            const friends = data.data;
-            setFriends(friends);
-            setLoading(false);
-            console.log(data.data);
+
+            if (me)
+            {
+                const res = await axios.get(`/users/${me?.id}/friends`);
+                const friends = res.data;
+                setFriends(friends);
+                setLoading(false);
+                console.log(res.data);
+            }
         } catch (err) {
             toast({
                 title: 'Error',
