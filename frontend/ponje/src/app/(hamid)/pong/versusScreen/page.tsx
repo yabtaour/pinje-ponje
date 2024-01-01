@@ -85,17 +85,9 @@ export function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matter.Body
         // socketManager.sendBallUpdate({position: ball.position, velocity: ball.velocity, edge: "floor"})
         if (otherBody === floor || otherBody === ceiling) {
             socketManager.sendBallUpdate({ gameId: gameId, position: ball.position, velocity: ball.velocity, edge: "floor", worldWidth: worldWidth })
-            // Body.setVelocity(ball, {
-            //     x: ball.velocity.x,
-            //     y: -ball.velocity.y
-            // })
         }
         else if (otherBody === leftPaddle || otherBody === rightPaddle) {
             socketManager.sendBallUpdate({ gameId: gameId, position: ball.position, velocity: ball.velocity, edge: "paddle", worldWidth: worldWidth })
-            // Body.setVelocity(ball, {
-            //     x: -ball.velocity.x,
-            //     y: ball.velocity.y
-            // })
         }
     }
 }
@@ -119,12 +111,11 @@ const ballReachedLeftThreshold = () => {
     return ball.position.x <= leftThreshold;
 };
 
-
 let scoreSent = false;
 
 export function updateScore(gameId: number) {
     if (scoreSent == false) {
-        socketManager.sendScoreUpdate({ gameId: gameId });
+        socketManager.sendScoreUpdate({gameId: gameId});
         scoreSent = true;
     }
 }
@@ -140,7 +131,6 @@ export default function VersusScreen() {
     const [myScore, setMyScore] = useState(0);
     const [enemyScore, setEnemyScore] = useState(0);
     const [gameStarted, setGameStarted] = useState(false);
-    // const [gameEnded, setGameEnded] = useState(false);
     const [gameResult, setGameResult] = useState('');
     const toast = useToast();
     const router = useRouter();
@@ -369,7 +359,6 @@ export default function VersusScreen() {
             })
             World.add(engine.world, [ball, floor, ceiling, leftPaddle, rightPaddle]);
 
-
             const handleKeyUp = (event: any) => {
                 if (keys.hasOwnProperty(event.code)) {
                     event.preventDefault();
@@ -396,7 +385,6 @@ export default function VersusScreen() {
                     updateScore(gameId);
                 else {
                     if (ballX > 0) {
-                        // Start a new interval to execute testingSendBallUpdate every 1.5 seconds
                         intervalId = setInterval(() => {
                             socketManager.sendTestingSendBallUpdate({
                                 gameId: gameId,
@@ -405,18 +393,16 @@ export default function VersusScreen() {
                                 edge: "paddle",
                                 worldWidth: worldWidth
                             });
-                        }, 1500); // Execute every 1.5 seconds
-            
-                        // Call testingSendBallUpdate once immediately before the interval starts
-                        socketManager.sendTestingSendBallUpdate({
+                        }, 1000); // Execute every 1.5 seconds
+                            socketManager.sendTestingSendBallUpdate({
                             gameId: gameId,
                             position: ball.position,
                             velocity: ball.velocity,
                             edge: "paddle",
                             worldWidth: worldWidth
                         });
-                        updatePaddlesgame(gameId);
                     }
+                    updatePaddlesgame(gameId);
                 }
             });
 

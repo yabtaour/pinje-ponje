@@ -344,7 +344,7 @@ class SocketManager {
     });
   }
 
-  public sendScoreUpdate(payload: { gameId: number }): Promise<any> {
+  public sendScoreUpdate(payload: { gameId: number}): Promise<any> {
     return new Promise(async (resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
         this.gameSocket?.emit("updateScore", payload);
