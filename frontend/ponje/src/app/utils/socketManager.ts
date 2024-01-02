@@ -141,7 +141,7 @@ class SocketManager {
     });
   }
 
-  public getNotifications(): Promise<any[]> {
+  public async getNotifications(): Promise<any[]> {
     return new Promise((resolve, reject) => {
       if (this.notificationSocket && this.notificationSocket.connected) {
         console.log("Socket is connected.", this.notificationSocket);
@@ -157,12 +157,12 @@ class SocketManager {
     });
   }
 
-  public getConversations(): Promise<any[]> {
+  public async getConversations(): Promise<any[]> {
+    console.log("getConversations");
     return new Promise((resolve, reject) => {
       if (this.chatSocket && this.chatSocket.connected) {
         this.chatSocket?.emit("getRooms", (rooms: any) => {
           //get rooms members
-
           resolve(rooms);
         });
       } else {
@@ -226,6 +226,7 @@ class SocketManager {
         console.log("Socket is connected.", this.chatSocket);
         console.log("Connected to chat namespace");
         this.chatSocket?.emit("readMessages", { roomId });
+        resolve("done");
       } else {
         console.log("Socket is not connected yet.");
         reject("Socket is not connected");
@@ -233,19 +234,16 @@ class SocketManager {
     });
   }
 
-  public getNewMessages(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (this.chatSocket && this.chatSocket.connected) {
-        console.log("Socket is connected.", this.chatSocket);
-        this.chatSocket?.off("message");
-        this.chatSocket?.on("message", (data: any) => {
-          resolve(data);
-        });
-      } else {
-        console.log("Socket is not connected yet.");
-        reject("Socket is not connected");
-      }
-    });
+  public getNewMessages(callback: (data: any) => void) {
+    if (this.chatSocket && this.chatSocket.connected) {
+      console.log("Socket is connected.", this.chatSocket);
+      this.chatSocket?.off("message");
+      this.chatSocket?.on("message", (data: any) => {
+        callback(data); 
+      });
+    } else {
+      console.log("Socket is not connected yet.");
+    }
   }
 
   // public onNewGame(): Promise<any> {
@@ -344,7 +342,7 @@ class SocketManager {
     });
   }
 
-  public sendScoreUpdate(payload: { gameId: number}): Promise<any> {
+  public sendScoreUpdate(payload: { gameId: number }): Promise<any> {
     return new Promise(async (resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
         this.gameSocket?.emit("updateScore", payload);
@@ -423,7 +421,13 @@ class SocketManager {
     }
   }
 
-  public sendTestingSendBallUpdate(payload: {gameId: number, position: any, velocity: any, edge: string, worldWidth: number}) {
+  public sendTestingSendBallUpdate(payload: {
+    gameId: number;
+    position: any;
+    velocity: any;
+    edge: string;
+    worldWidth: number;
+  }) {
     return new Promise(async (resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
         this.gameSocket?.emit("testingBallUpdate", payload);
@@ -434,7 +438,13 @@ class SocketManager {
     });
   }
 
-  public sendBallUpdate(payload: {gameId: number, position: any, velocity: any, edge: string, worldWidth: number}): Promise<any> {
+  public sendBallUpdate(payload: {
+    gameId: number;
+    position: any;
+    velocity: any;
+    edge: string;
+    worldWidth: number;
+  }): Promise<any> {
     return new Promise(async (resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
         this.gameSocket?.emit("updateBallPosition", payload);

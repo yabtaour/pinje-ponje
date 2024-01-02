@@ -215,6 +215,9 @@ export default function Notification({ user }: { user: User | null | undefined }
           .filter((notification) => !notification.read)
           .slice()
           .reverse()
+          .sort((a, b) => {
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          })
           .map((notification) => (
             <NotificationComponent
               key={notification.id}

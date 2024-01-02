@@ -96,6 +96,7 @@ export class ChatController {
       room_id,
       payload,
     );
+    this.chatgateway.server.to(String(room_id)).emit('roomBroadcast', room);
     return room;
   }
 
