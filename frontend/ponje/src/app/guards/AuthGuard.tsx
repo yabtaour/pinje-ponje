@@ -6,7 +6,6 @@ import { fetchUserData, getToken, setSession, verifyToken } from '@/app/utils/au
 import { redirect, useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { setRooms } from '../globalRedux/features/chatSlice';
 import SocketManager from '../utils/socketManager';
 
 
@@ -48,15 +47,17 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
 
 
 
-            socketManager.waitForConnection(async () => {
-                console.log("socketManager: ", socketManager);
-                try {
-                    const rooms = await socketManager.getConversations();
-                    dispatch(setRooms(rooms));
-                } catch (error) {
-                    console.error("Error fetching rooms:", error);
-                }
-            });
+            // socketManager.waitForConnection(async () => {
+            //     console.log("socketManager: ", socketManager);
+            //     try {
+            //         // socketManager.getNewMessages();
+            //         console.log("socketManager: ", socketManager);
+            //         const rooms = await socketManager.getConversations();
+            //         dispatch(setRooms(rooms));
+            //     } catch (error) {
+            //         console.error("Error fetching rooms:", error);
+            //     }
+            // });
         }
 
         if (!isAithenticated && !accessToken && !verifyToken(accessToken)) {
