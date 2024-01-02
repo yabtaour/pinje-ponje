@@ -56,12 +56,12 @@ export default function Profile() {
 
     useEffect(() => {
         if (user) {
-            fetchFriends(user?.id);
+            fetchFriends();
         }
     }, [user]);
     // const me = useAppSelector(state => state?.authReducer?.value?.user);
 
-    const fetchFriends = async (userId: number) => {
+    const fetchFriends = async () => {
         try {
             let me  = null;
             const token = getToken();
