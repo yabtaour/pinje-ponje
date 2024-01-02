@@ -23,6 +23,8 @@ export type conversationType = {
 }
 
 
+
+
 export const formatMessageDate = (createdAt: any) => {
     // const messageDate = moment(createdAt);
     // const formattedDate = messageDate.format('LT');
@@ -67,6 +69,14 @@ export default function Conversation({ collapsed }: any) {
     }, [isLoading, conversations.length]);
 
 
+    const handleNewMessageAsync = async (newMessage: any) => {
+        console.log('newMessage: ', newMessage);
+        console.log('messageDispatched: ', messageDispatched);
+        const rooms = await socketManager.getConversations();
+        console.log('rooms: ', rooms);
+        dispatch(setRooms(rooms));
+    };
+
     useEffect(() => {
 
         const getMe = async () => {
@@ -88,7 +98,9 @@ export default function Conversation({ collapsed }: any) {
                     socketManager.getMainSocket()?.connect();
                 }
                 socketManager.waitForConnection(async () => {
-                    await socketManager.getNewMessages();
+                    console.log('socket connected');
+
+                    socketManager.getNewMessages(handleNewMessageAsync);
                     const rooms = await socketManager.getConversations();
                     console.log('rooms: ', rooms);
                     dispatch(setRooms(rooms));
@@ -101,7 +113,7 @@ export default function Conversation({ collapsed }: any) {
 
         getMe();
         fetchNewMessages();
-    }, [conversations, dispatch, socketManager]);
+    }, []);
 
 
     useEffect(() => {
@@ -127,8 +139,8 @@ export default function Conversation({ collapsed }: any) {
                 dispatch(addMessage(draftMessage));
                 try {
                     if (activeConversation) {
-                        socketManager.sendMessage(draftMessage.content, activeConversation.roomId, 'INFORMATION');
-                        dispatch(replaceMessage(draftMessage))
+                        const newMessage = socketManager.sendMessage(draftMessage.content, activeConversation.roomId, 'INFORMATION');
+                        dispatch(replaceMessage(newMessage))
                     }
 
                 } catch (error) {
@@ -136,7 +148,7 @@ export default function Conversation({ collapsed }: any) {
                         title: 'Error',
                         description: "Error sending message",
                         status: 'error',
-                        duration: 9000,
+                        duration: 1000,
                         isClosable: true,
                         position: "bottom-right",
                         variant: "solid",
@@ -150,7 +162,7 @@ export default function Conversation({ collapsed }: any) {
 
         const handleMemberStateChanges = async () => {
             try {
-                console.log('listening on updates');
+                console.log('fetching new messages');
                 socketManager.waitForConnection(async () => {
                     const memberShip = await socketManager.listenOnUpdates();
 
@@ -168,17 +180,14 @@ export default function Conversation({ collapsed }: any) {
                 console.error("Error:", error);
             }
         }
-
-
         handleMemberStateChanges();
-
-    }, [activeConversation, socketManager, conversations, dispatch]);
+    }, [conversations, dispatch, socketManager]);
 
 
     return (
         <div className="overflow-x-hidden">
-            <div className="flex w-full justify-between ">
-                <h1 className="text-white text-3xl">Inbox</h1>
+            <div className="hidden md:flex w-full justify-between flex-wrapp ">
+                <h1 className="text-white text-3xl mx-5">Inbox</h1>
                 <Button onPress={onOpen} className="hover:bg-blue-300/10  text-white font-bold py-2 px-4 rounded-full border border-blue-700">
                     <svg xmlns="http://www.w3.org/2000/svg" width="76" height="77" viewBox="0 0 76 77" fill="none" className="w-6 h-6">
                         <path d="M22.4 76.4C20 76.4 18.4 74.8 18.4 72.4V58H8C3.6 58 0 54.4 0 50V8C0 3.6 3.6 0 8 0H68C72.4 0 76 3.6 76 8V50C76 54.4 72.4 58 68 58H48L24.4 75.6C24 76 23.2 76.4 22.4 76.4ZM22.4 72.4L46.8 54H68C70.4 54 72 52.4 72 50V8C72 5.6 70.4 4 68 4H8C5.6 4 4 5.6 4 8V50C4 52.4 5.6 54 8 54H22.4V72.4Z" fill="#77DFF8" />
