@@ -388,7 +388,9 @@ export default function VersusScreen() {
                 }
                 if (ballReachedLeftThreshold())
                     updateScore(gameId);
-                // if (ballReachedRightThreshold()) {
+                if (ballReachedRightThreshold()) {
+                    Body.setPosition(ball, { x: ball.position.x - 1, y: ball.position.y });
+                }
                 //     Body.setPosition(ball, { x: worldWidth / 2, y: worldHeight / 2 });
                 //     Body.setVelocity(ball, {
                 //         x: ballX,
