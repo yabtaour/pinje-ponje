@@ -111,6 +111,11 @@ const ballReachedLeftThreshold = () => {
     return ball.position.x <= leftThreshold;
 };
 
+const ballReachedRightThreshold = () => {
+    const leftThreshold = worldWidth;
+    return ball.position.x >= leftThreshold;
+};
+
 let scoreSent = false;
 
 export function updateScore(gameId: number) {
@@ -383,6 +388,17 @@ export default function VersusScreen() {
                 }
                 if (ballReachedLeftThreshold())
                     updateScore(gameId);
+                if (ballReachedRightThreshold()) {
+                    Body.setPosition(ball, { x: worldWidth / 2, y: worldHeight / 2 });
+                    Body.setVelocity(ball, {
+                        x: ballX,
+                        y: ballY
+                    })
+                    Body.setPosition(leftPaddle, { x: 20, y: worldHeight / 2 });
+                    Body.setPosition(rightPaddle, { x: worldWidth - 20, y: worldHeight / 2 });
+                    Body.setPosition(floor, { x: 0, y: worldHeight });
+                    Body.setPosition(ceiling, { x: 0, y: 0 });
+                }
                 else {
                     if (ballX > 0) {
                         intervalId = setInterval(() => {
