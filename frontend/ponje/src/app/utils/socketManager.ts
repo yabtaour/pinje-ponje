@@ -141,20 +141,18 @@ class SocketManager {
     });
   }
 
-  public async getNotifications(): Promise<any[]> {
-    return new Promise((resolve, reject) => {
-      if (this.notificationSocket && this.notificationSocket.connected) {
-        console.log("Socket is connected.", this.notificationSocket);
-        console.log("Connected to notification namespace");
-        this.notificationSocket?.on("notification", (notifications: any) => {
-          console.log("Notifications:", notifications);
-          resolve(notifications);
-        });
-      } else {
-        console.log("Socket is not connected yet.");
-        reject("Socket is not connected");
-      }
-    });
+  public async getNotifications(callback: () => void) {
+    if (this.notificationSocket && this.notificationSocket.connected) {
+      console.log("Socket is connected.", this.notificationSocket);
+      console.log("Connected to notification namespace");
+      this.notificationSocket?.off("notification");
+      this.notificationSocket?.on("notification", (notifications: any) => {
+        console.log("Notifications:", notifications);
+        callback();
+      });
+    } else {
+      console.log("Socket is not connected yet.");
+    }
   }
 
   public async getConversations(): Promise<any[]> {
