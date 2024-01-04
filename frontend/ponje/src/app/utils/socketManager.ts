@@ -141,20 +141,18 @@ class SocketManager {
     });
   }
 
-  public async getNotifications(): Promise<any[]> {
-    return new Promise((resolve, reject) => {
-      if (this.notificationSocket && this.notificationSocket.connected) {
-        console.log("Socket is connected.", this.notificationSocket);
-        console.log("Connected to notification namespace");
-        this.notificationSocket?.on("notification", (notifications: any) => {
-          console.log("Notifications:", notifications);
-          resolve(notifications);
-        });
-      } else {
-        console.log("Socket is not connected yet.");
-        reject("Socket is not connected");
-      }
-    });
+  public async getNotifications(callback: () => void) {
+    if (this.notificationSocket && this.notificationSocket.connected) {
+      console.log("Socket is connected.", this.notificationSocket);
+      console.log("Connected to notification namespace");
+      this.notificationSocket?.off("notification");
+      this.notificationSocket?.on("notification", (notifications: any) => {
+        console.log("Notifications:", notifications);
+        callback();
+      });
+    } else {
+      console.log("Socket is not connected yet.");
+    }
   }
 
   public async getConversations(): Promise<any[]> {
@@ -171,17 +169,15 @@ class SocketManager {
     });
   }
 
-  public listenOnUpdates(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (this.chatSocket && this.chatSocket.connected) {
-        this.chatSocket?.off("roomBroadcast");
-        this.chatSocket?.on("roomBroadcast", (updatedMember: any) => {
-          resolve(updatedMember);
-        });
-      } else {
-        reject("Socket is not connected");
-      }
-    });
+  public listenOnUpdates(callback: (data: any) => void) {
+    if (this.chatSocket && this.chatSocket.connected) {
+      this.chatSocket?.off("roomBroadcast");
+      this.chatSocket?.on("roomBroadcast", (updatedMember: any) => {
+        callback(updatedMember);
+      });
+    } else {
+      console.log("Socket is not connected yet.");
+    }
   }
 
   public joinRoom(roomId: number): Promise<any> {
@@ -234,12 +230,12 @@ class SocketManager {
     });
   }
 
-  public getNewMessages(callback: (data: any) => void) {
+  public getNewMessages(callback: () => void) {
     if (this.chatSocket && this.chatSocket.connected) {
       console.log("Socket is connected.", this.chatSocket);
       this.chatSocket?.off("message");
-      this.chatSocket?.on("message", (data: any) => {
-        callback(data); 
+      this.chatSocket?.on("message", () => {
+        callback();
       });
     } else {
       console.log("Socket is not connected yet.");
