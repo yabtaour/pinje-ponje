@@ -413,7 +413,7 @@ class SocketManager {
     if (this.gameSocket && this.gameSocket.connected) {
       this.gameSocket?.off("updateBall");
       this.gameSocket?.on("updateBall", (data: any) => {
-        console.log(data);
+        // console.log(data);
         callback(data);
       });
     } else {
