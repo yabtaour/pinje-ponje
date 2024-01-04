@@ -87,7 +87,7 @@ export default function Profile() {
         } catch (err) {
             toast({
                 title: 'Error',
-                description: "error while getting friends",
+                description: "error while getting current friends",
                 status: 'error',
                 duration: 9000,
                 isClosable: true,
