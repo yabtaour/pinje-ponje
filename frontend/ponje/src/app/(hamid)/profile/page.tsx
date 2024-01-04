@@ -52,12 +52,14 @@ export default function Profile() {
 
     useEffect(() => {
         fetchData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
         if (user) {
             fetchFriends();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
     // const me = useAppSelector(state => state?.authReducer?.value?.user);
 

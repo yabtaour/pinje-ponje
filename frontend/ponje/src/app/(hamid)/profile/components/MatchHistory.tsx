@@ -49,7 +49,7 @@ export default function MatchHistory({ user }: { user: User | null | undefined }
       };
       fetchData();
     }
-  }, [user]);
+  }, [user, toast]);
   
 
 

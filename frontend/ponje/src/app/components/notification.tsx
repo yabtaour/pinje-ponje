@@ -190,7 +190,7 @@ export default function Notification({ user }: { user: User | null | undefined }
 
 
     getMyNotifications();
-  }, [user, formatDate, getUserById, toast]);
+  }, [user, formatDate, getUserById, toast, changeReadStatus]);
 
 
   const renderNotifications = () => {
