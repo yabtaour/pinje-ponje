@@ -30,16 +30,16 @@ export class NotificationGateway implements OnGatewayInit, OnGatewayConnection, 
 	server:	Namespace;
 
 
-	afterInit(server: Namespace) {
+	async afterInit(server: Namespace) {
 		console.log('NotificationGateway Init');
 		// this.motificationService.server = server;
 	}
 
-	handleDisconnect(client: any) {
+	async handleDisconnect(client: any) {
 		console.log('NotificationGateway Disconnect');
 	}
 
-	handleConnection(client: any, ...args: any[]) {
+	async handleConnection(client: any, ...args: any[]) {
 		console.log('NotificationGateway Connection');
 	}
 
