@@ -386,6 +386,8 @@ export default function VersusScreen() {
                         x: 0,
                         y: 0
                     })
+                    Body.setPosition(floor, { x: 0, y: worldHeight });
+                    Body.setPosition(ceiling, { x: 0, y: 0 });
                     updateScore(gameId);
                 }
                 else if (ballReachedRightThreshold()) {
@@ -399,6 +401,8 @@ export default function VersusScreen() {
                         x: 0,
                         y: 0
                     })
+                    Body.setPosition(floor, { x: 0, y: worldHeight });
+                    Body.setPosition(ceiling, { x: 0, y: 0 });
                 }
                 else {
                     if (ballX > 0) {

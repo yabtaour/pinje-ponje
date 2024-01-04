@@ -37,7 +37,7 @@ export class NotificationController {
   @Get()
   @SwaggerNotifindAll()
   async findAll() {
-    return this.notificationService.findAll();
+    return await this.notificationService.findAll();
   }
 
   @Post()
