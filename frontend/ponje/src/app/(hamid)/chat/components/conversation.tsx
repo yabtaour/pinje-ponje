@@ -69,13 +69,63 @@ export default function Conversation({ collapsed }: any) {
     }, [isLoading, conversations.length]);
 
 
-    const handleNewMessageAsync = async (newMessage: any) => {
-        console.log('newMessage: ', newMessage);
-        console.log('messageDispatched: ', messageDispatched);
+    const handleNewMessageAsync = async () => {
         const rooms = await socketManager.getConversations();
-        console.log('rooms: ', rooms);
         dispatch(setRooms(rooms));
     };
+
+
+
+
+
+    const handleNewActions = async (memberShip: any) => {
+        handleNewMessageAsync();
+
+        const { state } = memberShip;
+
+        if ((state === "BANNED" || state === "MUTED" || state === "KICKED" || state === "ACTIVE")) {
+
+            const generateUniqueId = (flag = '_') => flag + Math.random().toString(36).substr(2, 9);
+
+            const messageId = generateUniqueId('_new_message__');
+            const draftNewMessage = (status: any) => ({
+                id: messageId,
+                roomId: activeConversation?.roomId,
+                user: null,
+                content: activeConversation?.userId === memberShip?.userId ? `you have been ${state}` : `${memberShip?.user?.username} has been ${state}`,
+                createdAt: new Date(),
+                state: 'INFORMATION'
+            });
+
+            const draftMessage = draftNewMessage('INFORMATION');
+
+            dispatch(addMessage(draftMessage));
+            try {
+                if (activeConversation) {
+                    const newMessage = socketManager.sendMessage(draftMessage.content, activeConversation.roomId, 'INFORMATION');
+                    dispatch(replaceMessage(newMessage))
+                }
+
+            } catch (error) {
+                toast({
+                    title: 'Error',
+                    description: "Error sending message",
+                    status: 'error',
+                    duration: 1000,
+                    isClosable: true,
+                    position: "bottom-right",
+                    variant: "solid",
+                    colorScheme: "red",
+                });
+                console.error("Error sending message:", error);
+            }
+        }
+
+        if (activeConversationId === memberShip?.roomId) {
+            dispatch(setActiveConversation(memberShip));
+        }
+    };
+
 
     useEffect(() => {
 
@@ -117,64 +167,15 @@ export default function Conversation({ collapsed }: any) {
 
 
     useEffect(() => {
-        const handleActions = (memberShip: any) => {
-            const { state } = memberShip;
 
-            if ((state === "BANNED" || state === "MUTED" || state === "KICKED" || state === "ACTIVE")) {
-
-                const generateUniqueId = (flag = '_') => flag + Math.random().toString(36).substr(2, 9);
-
-                const messageId = generateUniqueId('_new_message__');
-                const draftNewMessage = (status: any) => ({
-                    id: messageId,
-                    roomId: activeConversation?.roomId,
-                    user: null,
-                    content: activeConversation?.userId === memberShip?.userId ? `you have been ${state}` : `${memberShip?.user?.username} has been ${state}`,
-                    createdAt: new Date(),
-                    state: 'INFORMATION'
-                });
-
-                const draftMessage = draftNewMessage('INFORMATION');
-
-                dispatch(addMessage(draftMessage));
-                try {
-                    if (activeConversation) {
-                        const newMessage = socketManager.sendMessage(draftMessage.content, activeConversation.roomId, 'INFORMATION');
-                        dispatch(replaceMessage(newMessage))
-                    }
-
-                } catch (error) {
-                    toast({
-                        title: 'Error',
-                        description: "Error sending message",
-                        status: 'error',
-                        duration: 1000,
-                        isClosable: true,
-                        position: "bottom-right",
-                        variant: "solid",
-                        colorScheme: "red",
-                    });
-                    console.error("Error sending message:", error);
-                }
-            }
-        };
 
 
         const handleMemberStateChanges = async () => {
             try {
                 console.log('fetching new messages');
                 socketManager.waitForConnection(async () => {
-                    const memberShip = await socketManager.listenOnUpdates();
+                    socketManager.listenOnUpdates(handleNewActions);
 
-                    if (memberShip?.id === activeConversation?.id) {
-                        dispatch(setActiveConversation(memberShip));
-                    }
-
-                    const rooms = await socketManager.getConversations();
-                    console.log('rooms: ', rooms);
-                    dispatch(setRooms(rooms));
-
-                    handleActions(memberShip);
                 })
             } catch (error) {
                 console.error("Error:", error);
@@ -244,7 +245,7 @@ export default function Conversation({ collapsed }: any) {
                                     />
                                 ) : (
                                     <Image
-                                        src={`${conversation?.members?.[0]?.user?.profile?.avatar ? conversation?.members?.[0]?.user?.profile?.avatar : "/defaultAvatar.png"}`}
+                                        src={`${conversation?.room?.members?.find((member: any) => member?.userId !== me?.id)?.user?.profile?.avatar ? conversation?.room?.members?.find((member: any) => member?.userId !== me?.id)?.user?.profile?.avatar : "/defaultAvatar.png"}`}
                                         alt="avatar"
                                         className="w-12 h-12 rounded-full"
                                     />

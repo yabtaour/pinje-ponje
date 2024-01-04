@@ -109,7 +109,7 @@ export class ChatController {
     try {
       const user = await this.userService.getCurrentUser(request);
       const room = await this.chatService.joinRoom(user.id, payload, room_id);
-      this.chatgateway.server.to(String(user.id)).emit('joinedRoom', room);
+      this.chatgateway.server.to(String(user.id)).emit('roomBroadcast', room);
       return room;
     } catch (exception: any) {
       throw new HttpException(exception, exception.status);
