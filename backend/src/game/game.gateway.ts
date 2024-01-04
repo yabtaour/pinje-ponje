@@ -96,6 +96,7 @@ export class GameGateway
       console.log("payload is not valid !", payload);
       throw new WsException("invalid payload 2");        
     }
+    console.log("update score : ", payload, client.id);
     this.gameService.updateScore(parseInt(client.id), payload.gameId);
   }
 

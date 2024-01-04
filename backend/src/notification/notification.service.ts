@@ -39,7 +39,7 @@ export class NotificationService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    this.notificationGateway.sendNotificationToUser(
+    await this.notificationGateway.sendNotificationToUser(
       createNotificationDto.receiverId.toString(),
       notification,
     );

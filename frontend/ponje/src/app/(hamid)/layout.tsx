@@ -62,11 +62,12 @@ export default function Layout({
         const fetchNotifications = async () => {
             const SocketManagerNotifs = SocketManager.getInstance(`${process.env.NEXT_PUBLIC_API_URL}`, token);
             if (SocketManagerNotifs) {
-                SocketManagerNotifs.waitForConnection(async () => {
+                SocketManagerNotifs.waitForConnection(() => {
                     try {
-                        const data = await SocketManagerNotifs.getNotifications();
-                        console.log("data i got back from server", data);
-                        dispatch(setNewNotification(true));
+                        SocketManagerNotifs.getNotifications(() => {
+                            dispatch(setNewNotification(true));
+                        });
+
                     } catch (error) {
                         console.error("Error fetching notifications:", error);
                     }

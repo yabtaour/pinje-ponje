@@ -14,6 +14,7 @@ export class SocketIOAdapter extends IoAdapter {
   }
 
   createIOServer(port: number, options?: ServerOptions) {
+    try {
     const cors = {
       origin: '*',
     };
@@ -36,5 +37,9 @@ export class SocketIOAdapter extends IoAdapter {
 		server.of('notification').use(createTokenMiddleware(jwtService, this.logger, prisma));
 
     return server;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 }

@@ -8,10 +8,8 @@ import { useEffect, useRef, useState } from "react";
 import { getToken } from "@/app/utils/auth";
 import { useToast } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
-import GameResult from "../components/GameResult";
 import PlayerCard, { PlayerSkeleton } from "../components/PlayerCard";
 import ScoreCard from "../components/ScoreCard";
-
 
 
 const socketManager = SocketManager.getInstance();
@@ -20,6 +18,10 @@ export const Engine = Matter.Engine;
 export const Render = Matter.Render;
 export const World = Matter.World;
 export const Bodies = Matter.Bodies;
+
+let engine: Matter.Engine;
+let render: Matter.Render;
+let world: Matter.World;
 
 let ball: Matter.Body;
 let floor: Matter.Body;
@@ -78,29 +80,28 @@ export function createBodies() {
 }
 
 
-export function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matter.Body) {
+export async function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matter.Body) {
 
     if (bodyA == ball || bodyB == ball) {
         let otherBody = bodyA === ball ? bodyB : bodyA;
-        // socketManager.sendBallUpdate({position: ball.position, velocity: ball.velocity, edge: "floor"})
         if (otherBody === floor || otherBody === ceiling) {
-            socketManager.sendBallUpdate({ gameId: gameId, position: ball.position, velocity: ball.velocity, edge: "floor", worldWidth: worldWidth })
+            await socketManager.sendBallUpdate({ gameId: gameId, position: ball.position, velocity: ball.velocity, edge: "floor", worldWidth: worldWidth })
         }
         else if (otherBody === leftPaddle || otherBody === rightPaddle) {
-            socketManager.sendBallUpdate({ gameId: gameId, position: ball.position, velocity: ball.velocity, edge: "paddle", worldWidth: worldWidth })
+            await socketManager.sendBallUpdate({ gameId: gameId, position: ball.position, velocity: ball.velocity, edge: "paddle", worldWidth: worldWidth })
         }
     }
 }
 
 let isSent = false;
 
-export function updatePaddlesgame(gameId: number) {
+export async function updatePaddlesgame(gameId: number) {
     if (!isSent && keys['ArrowUp'] && leftPaddle.position.y - 100 / 2 > 10) {
-        socketManager.sendPaddlePosition({ gameId: gameId, direction: 'up' });
+        await socketManager.sendPaddlePosition({ gameId: gameId, direction: 'up' });
         isSent = true;
     }
     if (!isSent && keys['ArrowDown'] && leftPaddle.position.y + 100 / 2 < worldHeight - 10) {
-        socketManager.sendPaddlePosition({ gameId: gameId, direction: 'down' });
+        await socketManager.sendPaddlePosition({ gameId: gameId, direction: 'down' });
         isSent = true;
     }
 }
@@ -111,13 +112,13 @@ const ballReachedLeftThreshold = () => {
     return ball.position.x <= leftThreshold;
 };
 
-let scoreSent = false;
+const ballReachedRightThreshold = () => {
+    const leftThreshold = worldWidth;
+    return ball.position.x >= leftThreshold;
+};
 
-export function updateScore(gameId: number) {
-    if (scoreSent == false) {
-        socketManager.sendScoreUpdate({gameId: gameId});
-        scoreSent = true;
-    }
+export async function updateScore(gameId: number) {
+    await socketManager.sendScoreUpdate({gameId: gameId});
 }
 
 export default function VersusScreen() {
@@ -289,24 +290,19 @@ export default function VersusScreen() {
             socketManager.onScoreUpdate((data) => {
                 console.log("score ja", data);
                 const { player, newScore } = data;
-                scoreSent = false;
-                Body.setPosition(ball, { x: worldWidth / 2, y: worldHeight / 2 });
                 Body.setVelocity(ball, {
                     x: ballX,
                     y: ballY
                 })
+                Body.setPosition(ball, { x: worldWidth / 2, y: worldHeight / 2 });
                 Body.setPosition(leftPaddle, { x: 20, y: worldHeight / 2 });
                 Body.setPosition(rightPaddle, { x: worldWidth - 20, y: worldHeight / 2 });
                 Body.setPosition(floor, { x: 0, y: worldHeight });
                 Body.setPosition(ceiling, { x: 0, y: 0 });
                 if (player == currentUserId) {
-                    console.log("current : ", currentUserId, "coming : ", player);
-                    console.log("update me")
                     setEnemyScore(newScore);
                 }
                 else {
-                    console.log("current : ", currentUserId, "coming : ", player);
-                    console.log("update enemy")
                     setMyScore(newScore);
                 }
             })
@@ -325,23 +321,21 @@ export default function VersusScreen() {
     }
 
     const createGame = () => {
-        console.log("creating game");
         worldWidth = canvasRef.current?.width! * 4;
         worldHeight = canvasRef.current?.height! * 4;
         canvaWidth = canvasRef.current?.width!;
         canvaHeight = canvasRef.current?.height!;
 
-        console.log("canva demensions ldakhl : ", canvaWidth, " | ", canvaHeight);
-        console.log("world demensions ldakhl : ", worldWidth, " | ", worldHeight);
         try {
-            const engine = Engine.create({
+            engine = Engine.create({
                 gravity: {
                     x: 0,
                     y: 0,
                 }
             });
-            const render = Render.create({
-                element: boxRef.current!,
+        
+            render = Render.create({
+            element: boxRef.current!,
                 canvas: canvasRef.current!,
                 engine: engine,
                 options: {
@@ -351,8 +345,9 @@ export default function VersusScreen() {
                     background: 'transparent',
                 },
             });
+
+            world = engine.world;
             createBodies();
-            console.warn("hna : ", ballX, ballY);
             Body.setVelocity(ball, {
                 x: ballX,
                 y: ballY,
@@ -366,7 +361,7 @@ export default function VersusScreen() {
                 }
             }
             window.addEventListener('keydown', handleKeyUp);
-
+    
             const handleKeyDown = (event: any) => {
                 if (keys.hasOwnProperty(event.code)) {
                     event.preventDefault();
@@ -375,14 +370,40 @@ export default function VersusScreen() {
             }
             window.addEventListener('keyup', handleKeyDown);
 
-            let intervalId: NodeJS.Timeout | null = null;
-            Events.on(engine, 'beforeUpdate', () => {
-
+            const beforeUpdateHnadler = () => {
+                let intervalId: NodeJS.Timeout | null = null;
                 if (intervalId) {
                     clearInterval(intervalId);
                 }
-                if (ballReachedLeftThreshold())
+                if (ballReachedLeftThreshold()) {
+                    console.log("mchat mn lisr !! ")
+                    Body.setPosition(ball, { x: worldWidth / 2, y: worldHeight / 2 });
+                    Body.setPosition(leftPaddle, { x: 20, y: worldHeight / 2 });
+                    Body.setPosition(rightPaddle, { x: worldWidth - 20, y: worldHeight / 2 });
+                    Body.setPosition(floor, { x: 0, y: worldHeight });
+                    Body.setPosition(ceiling, { x: 0, y: 0 });
+                    Body.setVelocity(ball, {
+                        x: 0,
+                        y: 0
+                    })
+                    Body.setPosition(floor, { x: 0, y: worldHeight });
+                    Body.setPosition(ceiling, { x: 0, y: 0 });
                     updateScore(gameId);
+                }
+                else if (ballReachedRightThreshold()) {
+                    console.log("mchat mn limn !! ")
+                    Body.setPosition(ball, { x: worldWidth / 2, y: worldHeight / 2 });
+                    Body.setPosition(leftPaddle, { x: 20, y: worldHeight / 2 });
+                    Body.setPosition(rightPaddle, { x: worldWidth - 20, y: worldHeight / 2 });
+                    Body.setPosition(floor, { x: 0, y: worldHeight });
+                    Body.setPosition(ceiling, { x: 0, y: 0 });
+                    Body.setVelocity(ball, {
+                        x: 0,
+                        y: 0
+                    })
+                    Body.setPosition(floor, { x: 0, y: worldHeight });
+                    Body.setPosition(ceiling, { x: 0, y: 0 });
+                }
                 else {
                     if (ballX > 0) {
                         intervalId = setInterval(() => {
@@ -393,7 +414,7 @@ export default function VersusScreen() {
                                 edge: "paddle",
                                 worldWidth: worldWidth
                             });
-                        }, 1000); // Execute every 1.5 seconds
+                        }, 1000);
                             socketManager.sendTestingSendBallUpdate({
                             gameId: gameId,
                             position: ball.position,
@@ -404,24 +425,25 @@ export default function VersusScreen() {
                     }
                     updatePaddlesgame(gameId);
                 }
-            });
+            }
+            Events.on(engine, 'beforeUpdate', beforeUpdateHnadler);
 
-
-            Matter.Runner.run(engine)
-            Render.run(render);
-
-            Events.on(engine, 'collisionStart', (event) => {
-                event.pairs.forEach((pair) => {
+            const colisionHandler = (event: any) => {
+                event.pairs.forEach((pair: any) => {
                     const { bodyA, bodyB } = pair;
                     handleColision(pair, bodyA, bodyB)
                 });
-            });
+            }
+            Events.on(engine, 'collisionStart', colisionHandler);
 
+            Matter.Runner.run(engine)
+            Render.run(render);
 
             return () => {
                 Render.stop(render);
                 World.clear(engine.world, false);
                 Engine.clear(engine);
+                Events.off(engine, 'beforeUpdate', beforeUpdateHnadler);
             }
         } catch (error) {
             console.error("Error creating game");
@@ -436,9 +458,6 @@ export default function VersusScreen() {
                 .then((data) => {
                     if (data) {
                         router.push('/profile');
-                        // setGameResult(data);
-                        // console.log("gameResult : ", gameResult);
-                        // setGameEnded(true);
                     }
                 })
                 .catch((error) => {
@@ -450,17 +469,17 @@ export default function VersusScreen() {
     
     const unloadFlag = useRef(false);
     
-
-    
-      const handleBeforeUnload = async () => {
+    const handleBeforeUnload = async () => {
         if (socketManager && gameId && !unloadFlag.current) {
-          unloadFlag.current = true;
-          socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
-          setTimeout(() => {
-            window.location.href = '/pong';
-          }, 100);
+            unloadFlag.current = true;
+            isSent = false;
+            ballX = 4;
+            socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
+            setTimeout(() => {
+                window.location.href = '/pong';
+            }, 100);
         }
-      };
+    };
     
       useEffect(() => {
         const unloadListener = () => {
@@ -473,15 +492,13 @@ export default function VersusScreen() {
           console.log("something happened hna");
           if (enemyPlayer) {
             ballX = 4;
+            isSent = false;
             socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
           }
           window.removeEventListener('unload', unloadListener);
         };
       }, [enemyPlayer, socketManager, gameId]);
     
-    
-    
-
 
     useEffect(() => {
 
@@ -498,6 +515,7 @@ export default function VersusScreen() {
         return () => {
             socketManager.getGameSocket()?.off('gameOver');
             socketManager.getGameSocket()?.off('gameFound');
+            isSent = false;
         };
 
     }, [gameStarted, user, enemyPlayer, playerFound, selectedMap, readyToInitialize, startGame, sentInitialize, myScore, enemyScore, gameResult]);
@@ -505,8 +523,6 @@ export default function VersusScreen() {
 
 
     const handleMapClick = (map: string) => {
-        console.log("map clicked");
-        console.log("map clicked", map);
         setSelectedMap(() => map);
     };
 
