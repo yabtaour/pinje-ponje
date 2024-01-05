@@ -529,9 +529,6 @@ export class GameService {
 			if (this.gameGateway.currentGames.get(payload.gameId).player1.id == client) {
 				if (this.gameGateway.currentGames.get(payload.gameId).player1.reversed == false) {
 					let velocity = null;
-					// await this.gameGateway.server
-					// 	.to(String(this.gameGateway.currentGames.get(payload.gameId).player1.id))
-					// 	.emit('updateBall', {position: payload.position, velocity: payload.velocity});
 						velocity = {
 							x: payload.velocity.x * -1,
 							y: payload.velocity.y,
@@ -547,9 +544,6 @@ export class GameService {
 			} else if (this.gameGateway.currentGames.get(payload.gameId).player2.id == client) {
 				if (this.gameGateway.currentGames.get(payload.gameId).player2.reversed == false) {
 					let velocity = null;
-					// await this.gameGateway.server
-					// 	.to(String(this.gameGateway.currentGames.get(payload.gameId).player2.id))
-					// 	.emit('updateBall', {position: payload.position, velocity: payload.velocity});
 						velocity = {
 							x: payload.velocity.x * -1,
 							y: payload.velocity.y,
