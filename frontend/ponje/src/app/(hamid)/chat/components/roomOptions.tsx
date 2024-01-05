@@ -158,13 +158,13 @@ export function CreateRoom({ onOpenChange, setAction }: { onOpenChange: () => vo
 
 
     return (
-        <div className="flex flex-col rounded-lg items-center justify-center bg-[#222039] py-8">
+        <div className="flex flex-col rounded-lg items-center justify-center bg-[#222039] py-8 px-8">
             <Image
                 src="/groupChat.svg"
                 alt="groupChat"
                 className="w-10 h-10 "
             />
-            <h1 className="mb-10 text-2xl text-cyan-300 font-semibold ">
+            <h1 className="mb-10 text-lg md:text-2xl text-cyan-300 font-semibold ">
                 Create a new conversation
             </h1>
             <Formik
@@ -182,7 +182,7 @@ export function CreateRoom({ onOpenChange, setAction }: { onOpenChange: () => vo
                                 name="name"
                                 type="text"
                                 placeholder="Room Name"
-                                className="text-sm font-light w-80 px-4 py-3 text-white bg-[#222038] border border-solid placeholder-slate-600 border-slate-700  rounded pl-10"
+                                className="text-sm font-light w-72 md:w-80 px-4 py-3 text-white bg-[#222038] border border-solid placeholder-slate-600 border-slate-700  rounded pl-10"
                             />
                             <ErrorMessage name="name" component="div" className="text-red-500 text-sm" />
                         </div>
@@ -194,7 +194,7 @@ export function CreateRoom({ onOpenChange, setAction }: { onOpenChange: () => vo
                                 name="type"
                                 type="text"
                                 placeholder="Room Type"
-                                className="text-sm font-light w-80 px-4 py-3 text-white bg-[#222038] border border-solid placeholder-slate-600 border-slate-700  rounded pl-10"
+                                className="text-sm font-light w-72 md:w-80 px-4 py-3 text-white bg-[#222038] border border-solid placeholder-slate-600 border-slate-700  rounded pl-10"
                             >
                                 <option value="">Select Room Type</option>
                                 <option value="PUBLIC">Public</option>
@@ -250,8 +250,9 @@ export default function RoomOptions({ isOpen, onOpenChange }: { isOpen: boolean,
     }
 
     return (
+        <div className="flex flex-col items-center justify-center mb-20">
         <Modal
-            className="max-w-4xl max-h-5xl "
+            className="max-w-4xl max-h-5xl flex flex-col items-center justify-center"
             backdrop='blur'
             isOpen={isOpen}
             onOpenChange={handleOnOpenChange}
@@ -265,50 +266,50 @@ export default function RoomOptions({ isOpen, onOpenChange }: { isOpen: boolean,
             <ModalContent>
                 {
                     action === 'create' ? (<CreateRoom onOpenChange={onOpenChange} setAction={setAction} />) : action === 'join' ? (<JoinRooms onOpenChange={onOpenChange} setAction={setAction} />) : (
-                        <div className="flex flex-col items-center justify-center bg-[#222039] py-8 rounded-full">
-                            <h1 className="text-cyan-500 text-xl md:text-2xl"> Pick an action </h1>
-                            <div className="flex flex-row flex-wrap items-center ">
-                                <Button onClick={() => { setAction('create'); }} >
-                                    <Card className="hover:bg-slate-400/10 m-10 rounded-lg  h-full">
-                                        <CardHeader className=" pb-0 pt-2 px-4 flex-col justify-center items-center">
-                                            <p className="text-tiny uppercase font-bold text-white">Create a Room</p>
-
-                                            <h4 className="font-bold text-large text-gray-400">Create Your own Room</h4>
-                                        </CardHeader>
-                                        <CardBody className="overflow-visible py-2 flex items-center justify-center">
-                                            <Image
-                                                alt="Card background"
-                                                className="object-cover rounded-xl"
-                                                src="/create_room.png"
-                                                width={100}
-                                                height={100}
-                                            />
-                                        </CardBody>
-                                    </Card>
-                                </Button>
-                                <Button onClick={() => { setAction('join'); }} >
-                                    <Card className="hover:bg-slate-400/10 m-10 rounded-lg h-full">
-                                        <CardHeader className="pb-0 pt-2 px-4 flex-col justify-center items-center">
-                                            <p className="text-tiny uppercase font-bold text-white">Join the rooms</p>
-
-                                            <h4 className="font-bold text-large text-gray-400">Join Other Roooms</h4>
-                                        </CardHeader>
-                                        <CardBody className="overflow-visible py-2 flex items-center justify-center">
-                                            <Image
-                                                alt="Card background"
-                                                className="object-cover rounded-xl"
-                                                src="/join_room.png"
-                                                width={100}
-                                                height={100}
-                                            />
-                                        </CardBody>
-                                    </Card>
-                                </Button>
-                            </div>
-                        </div>)
+                        <div className="flex flex-col items-center justify-center w-[50vw] bg-[#222039] py-8 rounded-xl">
+                        <h1 className="text-cyan-500 text-xl md:text-2xl"> Pick an action </h1>
+                        <div className="flex md:flex-row flex-col items-center mt-4">
+                          <Button onClick={() => { setAction('create'); }} >
+                            <Card className="hover:bg-slate-400/10 m-10 rounded-lg h-full">
+                              <CardHeader className="pb-0 pt-2 px-4 flex-col justify-center items-center text-center">
+                                <p className="text-tiny uppercase font-bold text-white text-base md:text-lg">Create a Room</p>
+                                <h4 className="font-bold text-large text-gray-400 text-sm md:text-base">Create Your own Room</h4>
+                              </CardHeader>
+                              <CardBody className="overflow-visible py-2 flex items-center justify-center">
+                                <Image
+                                  alt="Card background"
+                                  className="object-cover rounded-xl w-16 md:w-28"
+                                  src="/create_room.png"
+                                  width={100}
+                                  height={100}
+                                />
+                              </CardBody>
+                            </Card>
+                          </Button>
+                          <Button onClick={() => { setAction('join'); }} >
+                            <Card className="hover:bg-slate-400/10 m-10 rounded-lg h-full">
+                              <CardHeader className="pb-0 pt-2 px-4 flex-col justify-center items-center text-center">
+                                <p className="text-tiny uppercase font-bold text-white text-base md:text-lg">Join the rooms</p>
+                                <h4 className="font-bold text-large text-gray-400 text-sm md:text-base">Join Other Rooms</h4>
+                              </CardHeader>
+                              <CardBody className="overflow-visible py-2 flex items-center justify-center">
+                                <Image
+                                  alt="Card background"
+                                  className="object-cover rounded-xl w-16 md:w-28"
+                                  src="/join_room.png"
+                                  width={100}
+                                  height={100}
+                                />
+                              </CardBody>
+                            </Card>
+                          </Button>
+                        </div>
+                      </div>)
+                      
                 }
 
             </ModalContent>
         </Modal>
+        </div>
     );
 }

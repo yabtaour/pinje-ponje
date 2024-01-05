@@ -13,7 +13,7 @@ import Conversation from "./components/conversation";
 const socketManager = SocketManager.getInstance(`${process.env.NEXT_PUBLIC_API_URL}`, getCookie('token'));
 
 
-const Layout: React.FC<LayoutProps> = ({ children }: any) => {
+const Layout = ({ children }: any) => {
 
     const [collapsed, setCollapsed] = useState(false);
     const controls = useAnimation();
