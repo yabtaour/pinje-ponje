@@ -84,7 +84,7 @@ export function RoomSettings({ room, onOpenChange }: { room: any, onOpenChange: 
 
     };
     return (
-        <div className='flex flex-row items-center  justify-around py-12 bg-[#222039]'>
+        <div className='flex flex-col md:flex-row items-center  justify-around py-12 bg-[#222039] px-6 rounded-3xl'>
             {
                 activeConversation?.role !== "MEMBER" ? (
 
@@ -96,7 +96,7 @@ export function RoomSettings({ room, onOpenChange }: { room: any, onOpenChange: 
                                 alt="groupChat"
                                 className="w-10 h-10 "
                             />
-                            <h1 className="my-10 text-2xl text-cyan-300 font-semibold ">
+                            <h1 className="my-6  mb-16 text-lg md:text-2xl text-cyan-300 font-semibold ">
                                 Room Settings
                             </h1>
 
@@ -115,7 +115,7 @@ export function RoomSettings({ room, onOpenChange }: { room: any, onOpenChange: 
                                                 name="name"
                                                 type="text"
                                                 placeholder="Room Name"
-                                                className="text-sm font-light w-80 px-4 py-3 text-white bg-[#222038] border border-solid placeholder-slate-600 border-slate-700  rounded pl-10"
+                                                className="text-sm font-light w-72 md:w-80 px-4 py-3 text-white bg-[#222038] border border-solid placeholder-slate-600 border-slate-700  rounded pl-10"
                                             />
                                             <ErrorMessage name="name" component="div" className="text-red-500 text-sm" />
                                         </div>
@@ -127,7 +127,7 @@ export function RoomSettings({ room, onOpenChange }: { room: any, onOpenChange: 
                                                 name="roomType"
                                                 type="text"
                                                 placeholder="Room Type"
-                                                className="text-sm font-light w-80 px-4 py-3 text-white bg-[#222038] border border-solid placeholder-slate-600 border-slate-700  rounded pl-10"
+                                                className="text-sm font-light w-72 md:w-80 px-4 py-3 text-white bg-[#222038] border border-solid placeholder-slate-600 border-slate-700  rounded pl-10"
                                             >
                                                 <option value="">Select Room Type</option>
                                                 <option value="PUBLIC">Public</option>
@@ -145,7 +145,7 @@ export function RoomSettings({ room, onOpenChange }: { room: any, onOpenChange: 
                                                         name="password"
                                                         type="password"
                                                         placeholder="password"
-                                                        className="text-sm font-light w-80 px-4 py-3 text-white bg-[#222038] border border-solid placeholder-slate-600 border-slate-700  rounded pl-10"
+                                                        className="text-sm font-light w-72 md:w-80 px-4 py-3 text-white bg-[#222038] border border-solid placeholder-slate-600 border-slate-700  rounded pl-10"
                                                     />
                                                     <ErrorMessage name="password" component="div" className="text-red-500 text-sm" />
                                                 </>
@@ -165,7 +165,7 @@ export function RoomSettings({ room, onOpenChange }: { room: any, onOpenChange: 
                             </Formik>
                         </div>
 
-
+                        <div className="divider lg:divider-horizontal"></div> 
                         <div className='text-white w-1/2 '>
                             <RoomMembers />
                             <Leave room={activeConversation} closeModal={onOpenChange} />
@@ -371,7 +371,7 @@ export function RoomMembers() {
                 showInviteFriends ? (
                     <h1 className='text-center text-cyan-300'>Invite Friends</h1>
                 ) : (
-                    <h1 className='text-center text-cyan-300'>Room Members</h1>
+                    <h1 className='text-center text-cyan-300  text-sm md:text-lg'>Room Members</h1>
                 )
             }</h1>
             <Button className='text-end hover:text-cyan-100  text-cyan-500' onClick={() => { showInviteFriends ? setShowInviteFriends(false) : setShowInviteFriends(true) }}>
@@ -401,7 +401,7 @@ export function RoomMembers() {
                             ) : (
                                 <div className='w-full '>
                                     {activeConversation?.room?.members?.map((member, index) => (
-                                        <div key={index} className='flex justify-around'>
+                                        <div key={index} className='flex justify-around border rounded-xl border-[#46427a] '>
                                             <div key={index} className='flex justify-between  w-full rounded-full '>
 
 
@@ -426,7 +426,7 @@ export function RoomMembers() {
                                                 {
                                                     activeConversation?.role === 'MEMBER' || (activeConversation?.role === 'OWNER' && activeConversation?.userId === member?.userId || activeConversation?.role === "ADMIN" && member.role === "OWNER") ? (
                                                         <div key={index} className='mr-5 mx-2 flex flex-col justify-center border-cyan-300'>
-                                                            <p className='text-cyan-500 border text-sm border-cyan-300 rounded-full p-1'>{member?.role}</p>
+                                                            <p className='text-cyan-500 border text-xs md:text-sm border-cyan-300 rounded-full p-1'>{member?.role}</p>
                                                         </div>
 
                                                     ) : (<>

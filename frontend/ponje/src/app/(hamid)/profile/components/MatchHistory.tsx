@@ -23,10 +23,16 @@ export default function MatchHistory({ user }: { user: User | null | undefined }
     if (user) {
       const fetchData = async () => {
         try {
-
           const token = getToken();
           const data = await fetchGameHistory(user.id, token);
-          setMatchHistory(data || []);
+  
+          const sortedMatchHistory = data.sort((a : any, b : any) => {
+            const dateA = new Date(a.createdAt).getTime();
+            const dateB = new Date(b.createdAt).getTime();
+            return dateB - dateA; 
+          });
+  
+          setMatchHistory(sortedMatchHistory || []);
         } catch (err) {
           console.error(err);
           toast({
@@ -42,11 +48,9 @@ export default function MatchHistory({ user }: { user: User | null | undefined }
         }
       };
       fetchData();
-
-
-
     }
-  }, [user]);
+  }, [user, toast]);
+  
 
 
   const formatDate = (dateStr: string) => {
