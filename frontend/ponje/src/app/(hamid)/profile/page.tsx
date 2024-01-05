@@ -52,16 +52,18 @@ export default function Profile() {
 
     useEffect(() => {
         fetchData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
         if (user) {
-            fetchFriends(user?.id);
+            fetchFriends();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
     // const me = useAppSelector(state => state?.authReducer?.value?.user);
 
-    const fetchFriends = async (userId: number) => {
+    const fetchFriends = async () => {
         try {
             let me  = null;
             const token = getToken();
@@ -85,7 +87,7 @@ export default function Profile() {
         } catch (err) {
             toast({
                 title: 'Error',
-                description: "error while getting friends",
+                description: "error while getting current friends",
                 status: 'error',
                 duration: 9000,
                 isClosable: true,

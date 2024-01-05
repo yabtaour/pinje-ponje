@@ -71,7 +71,7 @@ export default function UserSettings() {
         };
 
         fetchData();
-    }, [user, dispatch, twoFactorAuth]);
+    }, [user, dispatch, twoFactorAuth, toast]);
 
 
 
