@@ -50,7 +50,7 @@ let ballY = 4;
 export function createBodies() {
     const balldiam = Math.min(canvaWidth, canvaHeight) * 0.1;
     const originalPaddleHeight = Math.min(canvaWidth, canvaHeight) * 0.5;
-    
+
     ball = Bodies.circle(worldWidth / 2, worldHeight / 2, balldiam, {
         restitution: 1,
         frictionAir: 0,
@@ -72,7 +72,7 @@ export function createBodies() {
             fillStyle: "#4EFFF4"
         }
     });
-    
+
     floor = Bodies.rectangle(0, worldHeight, worldWidth * 2, 5, { isStatic: true });
     ceiling = Bodies.rectangle(0, 0, worldWidth * 2, 5, { isStatic: true });
 
@@ -118,7 +118,7 @@ const ballReachedRightThreshold = () => {
 };
 
 export async function updateScore(gameId: number) {
-    await socketManager.sendScoreUpdate({gameId: gameId});
+    await socketManager.sendScoreUpdate({ gameId: gameId });
 }
 
 export default function VersusScreen() {
@@ -203,9 +203,18 @@ export default function VersusScreen() {
                         if (game) {
                             gameId = game.id;
                             const otherUser = game.players.find((player: any) => player.userId !== currentUserId);
-                            console.log(otherUser);
-                            setEnemyPlayer(otherUser);
-                            setPlayerFound(true);
+                            axios.get(`/users/${otherUser.userId}`, {
+                                headers: {
+                                    Authorization: getToken(),
+                                },
+                            }).then((res) => {
+                                setEnemyPlayer(otherUser);
+                                setPlayerFound(true);
+                                return res.data;
+                            }).catch((err) => {
+                                console.error("Error in fetchData:", err);
+                            }
+                            );
                         }
                     })
                 } catch (error) {
@@ -333,9 +342,9 @@ export default function VersusScreen() {
                     y: 0,
                 }
             });
-        
+
             render = Render.create({
-            element: boxRef.current!,
+                element: boxRef.current!,
                 canvas: canvasRef.current!,
                 engine: engine,
                 options: {
@@ -361,7 +370,7 @@ export default function VersusScreen() {
                 }
             }
             window.addEventListener('keydown', handleKeyUp);
-    
+
             const handleKeyDown = (event: any) => {
                 if (keys.hasOwnProperty(event.code)) {
                     event.preventDefault();
@@ -415,7 +424,7 @@ export default function VersusScreen() {
                                 worldWidth: worldWidth
                             });
                         }, 1000);
-                            socketManager.sendTestingSendBallUpdate({
+                        socketManager.sendTestingSendBallUpdate({
                             gameId: gameId,
                             position: ball.position,
                             velocity: ball.velocity,
@@ -466,9 +475,9 @@ export default function VersusScreen() {
         });
     };
 
-    
+
     const unloadFlag = useRef(false);
-    
+
     const handleBeforeUnload = async () => {
         if (socketManager && gameId && !unloadFlag.current) {
             unloadFlag.current = true;
@@ -480,25 +489,25 @@ export default function VersusScreen() {
             }, 100);
         }
     };
-    
-      useEffect(() => {
+
+    useEffect(() => {
         const unloadListener = () => {
-          handleBeforeUnload();
+            handleBeforeUnload();
         };
-    
+
         window.addEventListener('unload', unloadListener);
-    
+
         return () => {
-          console.log("something happened hna");
-          if (enemyPlayer) {
-            ballX = 4;
-            isSent = false;
-            socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
-          }
-          window.removeEventListener('unload', unloadListener);
+            console.log("something happened hna");
+            if (enemyPlayer) {
+                ballX = 4;
+                isSent = false;
+                socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
+            }
+            window.removeEventListener('unload', unloadListener);
         };
-      }, [enemyPlayer, socketManager, gameId]);
-    
+    }, [enemyPlayer, socketManager, gameId]);
+
 
     useEffect(() => {
 
@@ -532,107 +541,107 @@ export default function VersusScreen() {
         //         <GameResult result={gameResult} />
         //     </div>
         // ) : (
-            startGame ? (
-                <div className='w-full h-screen flex flex-col items-center justify-center'>
-                    <div className="p-4 text-white">
-                        <ScoreCard playerOne={user} playerTwo={enemyPlayer} myScore={myScore} enemyScore={enemyScore} />
-                    </div>
-                    <div className='aspect-w-2 aspect-h-3 md:aspect-w-16 md:aspect-h-9 border-2 border-black z-30' ref={boxRef} style={{
-                        backgroundImage: `url(${selectedMap})`,
-                        backgroundSize: "100% 100%",
-                        backgroundRepeat: "no-repeat",
-                        backgroundPosition: "center",
-                        position: "relative"
-                    }}>
-                        <canvas className='w-full h-full border-2 border-black z-30' id="myCanva" ref={canvasRef} />
-                    </div>
-
-
+        startGame ? (
+            <div className='w-full h-screen flex flex-col items-center justify-center'>
+                <div className="p-4 text-white">
+                    <ScoreCard playerOne={user} playerTwo={enemyPlayer} myScore={myScore} enemyScore={enemyScore} />
                 </div>
-            ) : (
-                <div className='min-h-screen bg-gradient-to-t from-[#2b2948] to-[#141321] flex flex-col justify-center items-center'>
-                    <div className='grid grid-cols-3'>
-                        <PlayerCard user={user} cardColor="#4A40BF" />
-                        <div className="flex items-center justify-center">
-                            <svg width="208" height="189" viewBox="0 0 308 289" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M233 9L156 36.5L115.5 176L156 169L127.5 278L166.5 220.5C149 178 161 202.5 157.5 193C154.7 185.4 157.667 184 160 184L188 180.5L226.5 114L182.5 121L233 9Z" fill="#77DFF8" />
-                                <path d="M231 58.5008C250.167 56.3341 291.3 63.2008 302.5 108.001L257.5 113C251 100.5 232.2 81.5 209 105.5" stroke="#4A40BF" strokeWidth="5" />
-                                <path d="M232.5 128C257.5 128.333 301.289 141.003 305 188.5C310 252.5 167.5 273 156 186.5L199 182.5C205.333 194.833 221.507 213.843 244.5 205C270.5 195 260 166.5 218 165.5" stroke="#4A40BF" strokeWidth="5" />
-                                <path d="M140 59.5H133L92.5 198L51 59.5H4L64 235H119.5L137.5 183.5" stroke="#4A40BF" strokeWidth="5" />
-                                <path d="M87.9492 31.0117C93.5519 31.4267 96.7159 38.1084 101.725 39.7782" stroke="white" strokeWidth="3" strokeLinecap="round" />
-                                <path d="M144.305 1.58203V19.7411" stroke="white" strokeWidth="3" strokeLinecap="round" />
-                                <path d="M164.969 268.959C162.455 274.316 160.146 279.896 157.002 284.926C156.477 285.767 156.202 286.159 156.202 287.118" stroke="white" strokeWidth="3" strokeLinecap="round" />
-                                <path d="M212.558 260.818C213.933 264.347 218.193 268.98 218.193 272.716" stroke="white" strokeWidth="3" strokeLinecap="round" />
-                            </svg>
-                        </div>
-                        {playerFound && enemyPlayer ? (
-                            <PlayerCard user={enemyPlayer.user} cardColor="#CE4242" />
-                        ) : (
-                            <div className="flex flex-col items-center">
-                                <PlayerSkeleton />
-                                <p className="text-[#77DFF8] text-sm bg-[#201e34] p-4 rounded-lg flex flex-row animate-pulse font-semibold">Looking for opponent
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" className="ml-2">
-                                        <path d="M11.7671 20.7563C16.7316 20.7563 20.7561 16.7318 20.7561 11.7673C20.7561 6.80283 16.7316 2.77832 11.7671 2.77832C6.80259 2.77832 2.77808 6.80283 2.77808 11.7673C2.77808 16.7318 6.80259 20.7563 11.7671 20.7563Z" stroke="#77DFF8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                        <path d="M18.0181 18.4854L21.5421 22.0004" stroke="#77DFF8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                </p>
-                            </div>
-                        )}
+                <div className='aspect-w-2 aspect-h-3 md:aspect-w-16 md:aspect-h-9 border-2 border-black z-30' ref={boxRef} style={{
+                    backgroundImage: `url(${selectedMap})`,
+                    backgroundSize: "100% 100%",
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "center",
+                    position: "relative"
+                }}>
+                    <canvas className='w-full h-full border-2 border-black z-30' id="myCanva" ref={canvasRef} />
+                </div>
+
+
+            </div>
+        ) : (
+            <div className='min-h-screen bg-gradient-to-t from-[#2b2948] to-[#141321] flex flex-col justify-center items-center'>
+                <div className='grid grid-cols-3'>
+                    <PlayerCard user={user} cardColor="#4A40BF" />
+                    <div className="flex items-center justify-center">
+                        <svg width="208" height="189" viewBox="0 0 308 289" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M233 9L156 36.5L115.5 176L156 169L127.5 278L166.5 220.5C149 178 161 202.5 157.5 193C154.7 185.4 157.667 184 160 184L188 180.5L226.5 114L182.5 121L233 9Z" fill="#77DFF8" />
+                            <path d="M231 58.5008C250.167 56.3341 291.3 63.2008 302.5 108.001L257.5 113C251 100.5 232.2 81.5 209 105.5" stroke="#4A40BF" strokeWidth="5" />
+                            <path d="M232.5 128C257.5 128.333 301.289 141.003 305 188.5C310 252.5 167.5 273 156 186.5L199 182.5C205.333 194.833 221.507 213.843 244.5 205C270.5 195 260 166.5 218 165.5" stroke="#4A40BF" strokeWidth="5" />
+                            <path d="M140 59.5H133L92.5 198L51 59.5H4L64 235H119.5L137.5 183.5" stroke="#4A40BF" strokeWidth="5" />
+                            <path d="M87.9492 31.0117C93.5519 31.4267 96.7159 38.1084 101.725 39.7782" stroke="white" strokeWidth="3" strokeLinecap="round" />
+                            <path d="M144.305 1.58203V19.7411" stroke="white" strokeWidth="3" strokeLinecap="round" />
+                            <path d="M164.969 268.959C162.455 274.316 160.146 279.896 157.002 284.926C156.477 285.767 156.202 286.159 156.202 287.118" stroke="white" strokeWidth="3" strokeLinecap="round" />
+                            <path d="M212.558 260.818C213.933 264.347 218.193 268.98 218.193 272.716" stroke="white" strokeWidth="3" strokeLinecap="round" />
+                        </svg>
                     </div>
                     {playerFound && enemyPlayer ? (
-                        <div className="flex flex-col items-center justify-center mt-12 space-y-4">
-                            <p className="text-[#77DFF8] text-xl rounded-lg flex flex-row font-semibold"> PICK A GAME MAP </p>
-                            <div className="bg-[#201e34] p-2 rounded-lg flex flex-row space-x-4 items-center w-full mt-12 justify-center">
-                                <a onClick={() => handleMapClick('/map1.png')}
-                                    className={`cursor-pointer ${selectedMap === '/map1.png' ? 'border border-[#77DFF8]' : ''}`}>
-                                    <Image
-                                        src="/map_1.png"
-                                        alt="Game Map 1"
-                                        width={100}
-                                        height={100}
-                                        className="cursor-pointer"
-                                        style={{ width: 'auto', height: 'auto' }}
-                                    />
-                                </a>
-                                <a onClick={() => handleMapClick('/map2.png')}
-                                    className={`cursor-pointer ${selectedMap === '/map2.png' ? 'border border-[#77DFF8]' : ''}`}>
-                                    <Image
-                                        src="/map_2.png"
-                                        alt="Game Map 2"
-                                        width={100}
-                                        height={100}
-                                        className="cursor-pointer"
-                                        style={{ width: 'auto', height: 'auto' }}
-                                    />
-                                </a>
-                                <a onClick={() => handleMapClick('/map3.png')}
-                                    className={`cursor-pointer ${selectedMap === '/map3.png' ? 'border border-[#77DFF8]' : ''}`}>
-                                    <Image
-                                        src="/map_3.png"
-                                        alt="Game Map 3"
-                                        width={100}
-                                        height={100}
-                                        className="cursor-pointer"
-                                        style={{ width: 'auto', height: 'auto' }}
-                                    />
-                                </a>
-                            </div>
-                        </div>
+                        <PlayerCard user={enemyPlayer.user} cardColor="#CE4242" />
                     ) : (
-                        <div>
-                            <button className="btn  lg:h-12 bg-red-500 mt-10 mb-10 text-xs lg:text-sm" onClick={handleCancel}>
-                                Cancel matchmaking
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none" className="ml-2 w-4 h-4 md:w-8 md:h-8 hidden lg:block">
-                                    <path fillRule="evenodd" clipRule="evenodd" d="M16 2C8.55 2 2.5 8.05 2.5 15.5C2.5 22.95 8.55 29 16 29C16.53 29 17.051 28.962 17.566 28.902L17.582 28.918L17.6 28.898C24.296 28.105 29.5 22.408 29.5 15.5C29.5 8.593 24.296 2.9 17.602 2.105C17.585 2.091 17.57 2.075 17.552 2.061V2.055L17.522 2.092C17.021 2.035 16.514 2 16 2ZM15.5 3.025V8H11.16C12.077 6.057 13.334 4.372 14.836 3.059C15.055 3.039 15.278 3.034 15.5 3.025ZM16.5 3.025C16.723 3.035 16.947 3.038 17.166 3.059C18.671 4.372 19.931 6.054 20.85 8H16.5V3.025ZM13.076 3.357C11.8117 4.72297 10.7873 6.29273 10.046 8H6.015C7.75713 5.67785 10.2535 4.03592 13.076 3.357ZM18.922 3.357C21.7453 4.03541 24.2434 5.67741 25.986 8H21.96C21.2167 6.29216 20.1889 4.72235 18.922 3.357ZM5.336 9H9.646C8.94326 10.9247 8.56086 12.9516 8.514 15H3.525C3.60535 12.8781 4.22953 10.8123 5.336 9ZM10.738 9H15.5V15H9.514C9.56888 12.9439 9.98313 10.9133 10.738 9ZM16.5 9H21.27C22.025 10.9133 22.4392 12.9439 22.494 15H16.5V9ZM22.36 9H26.664C27.7705 10.8123 28.3937 12.8781 28.474 15H23.494C23.4462 12.9514 23.0628 10.9245 22.359 9H22.36ZM3.524 16H8.513C8.55979 18.0484 8.94219 20.0753 9.645 22H5.334C4.22809 20.1875 3.60527 18.1217 3.525 16H3.524ZM9.513 16H15.5V22H10.738C9.98315 20.0867 9.5689 18.0561 9.514 16H9.513ZM16.499 16H22.468C22.362 17.883 21.848 19.953 20.95 22H16.5L16.499 16ZM23.469 16H28.474C28.3937 18.1217 27.7709 20.1875 26.665 22H22.036C22.879 19.97 23.371 17.916 23.469 16ZM6.015 23H10.048C10.7893 24.7073 11.8137 26.277 13.078 27.643C10.2543 26.965 7.75565 25.323 6.013 23H6.015ZM11.161 23H15.501V27.975C15.28 27.965 15.057 27.961 14.839 27.941C13.335 26.628 12.079 24.945 11.161 23ZM16.501 23H20.464C19.5719 24.7929 18.4406 26.4564 17.101 27.945C16.903 27.963 16.701 27.967 16.501 27.975V23ZM21.589 23H25.987C24.1797 25.4155 21.5581 27.0942 18.608 27.725C19.7872 26.2754 20.7874 24.6889 21.587 23H21.589Z" fill="white" />
-                                    <circle cx="23" cy="11" r="2" fill="#77DFF8" />
-                                    <circle cx="9" cy="17" r="2" fill="#77DFF8" />
-                                    <circle cx="23" cy="23" r="2" fill="#77DFF8" />
+                        <div className="flex flex-col items-center">
+                            <PlayerSkeleton />
+                            <p className="text-[#77DFF8] text-sm bg-[#201e34] p-4 rounded-lg flex flex-row animate-pulse font-semibold">Looking for opponent
+                                <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" className="ml-2">
+                                    <path d="M11.7671 20.7563C16.7316 20.7563 20.7561 16.7318 20.7561 11.7673C20.7561 6.80283 16.7316 2.77832 11.7671 2.77832C6.80259 2.77832 2.77808 6.80283 2.77808 11.7673C2.77808 16.7318 6.80259 20.7563 11.7671 20.7563Z" stroke="#77DFF8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    <path d="M18.0181 18.4854L21.5421 22.0004" stroke="#77DFF8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
-                            </button>
+                            </p>
                         </div>
                     )}
                 </div>
-            )
+                {playerFound && enemyPlayer ? (
+                    <div className="flex flex-col items-center justify-center mt-12 space-y-4">
+                        <p className="text-[#77DFF8] text-xl rounded-lg flex flex-row font-semibold"> PICK A GAME MAP </p>
+                        <div className="bg-[#201e34] p-2 rounded-lg flex flex-row space-x-4 items-center w-full mt-12 justify-center">
+                            <a onClick={() => handleMapClick('/map1.png')}
+                                className={`cursor-pointer ${selectedMap === '/map1.png' ? 'border border-[#77DFF8]' : ''}`}>
+                                <Image
+                                    src="/map_1.png"
+                                    alt="Game Map 1"
+                                    width={100}
+                                    height={100}
+                                    className="cursor-pointer"
+                                    style={{ width: 'auto', height: 'auto' }}
+                                />
+                            </a>
+                            <a onClick={() => handleMapClick('/map2.png')}
+                                className={`cursor-pointer ${selectedMap === '/map2.png' ? 'border border-[#77DFF8]' : ''}`}>
+                                <Image
+                                    src="/map_2.png"
+                                    alt="Game Map 2"
+                                    width={100}
+                                    height={100}
+                                    className="cursor-pointer"
+                                    style={{ width: 'auto', height: 'auto' }}
+                                />
+                            </a>
+                            <a onClick={() => handleMapClick('/map3.png')}
+                                className={`cursor-pointer ${selectedMap === '/map3.png' ? 'border border-[#77DFF8]' : ''}`}>
+                                <Image
+                                    src="/map_3.png"
+                                    alt="Game Map 3"
+                                    width={100}
+                                    height={100}
+                                    className="cursor-pointer"
+                                    style={{ width: 'auto', height: 'auto' }}
+                                />
+                            </a>
+                        </div>
+                    </div>
+                ) : (
+                    <div>
+                        <button className="btn  lg:h-12 bg-red-500 mt-10 mb-10 text-xs lg:text-sm" onClick={handleCancel}>
+                            Cancel matchmaking
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none" className="ml-2 w-4 h-4 md:w-8 md:h-8 hidden lg:block">
+                                <path fillRule="evenodd" clipRule="evenodd" d="M16 2C8.55 2 2.5 8.05 2.5 15.5C2.5 22.95 8.55 29 16 29C16.53 29 17.051 28.962 17.566 28.902L17.582 28.918L17.6 28.898C24.296 28.105 29.5 22.408 29.5 15.5C29.5 8.593 24.296 2.9 17.602 2.105C17.585 2.091 17.57 2.075 17.552 2.061V2.055L17.522 2.092C17.021 2.035 16.514 2 16 2ZM15.5 3.025V8H11.16C12.077 6.057 13.334 4.372 14.836 3.059C15.055 3.039 15.278 3.034 15.5 3.025ZM16.5 3.025C16.723 3.035 16.947 3.038 17.166 3.059C18.671 4.372 19.931 6.054 20.85 8H16.5V3.025ZM13.076 3.357C11.8117 4.72297 10.7873 6.29273 10.046 8H6.015C7.75713 5.67785 10.2535 4.03592 13.076 3.357ZM18.922 3.357C21.7453 4.03541 24.2434 5.67741 25.986 8H21.96C21.2167 6.29216 20.1889 4.72235 18.922 3.357ZM5.336 9H9.646C8.94326 10.9247 8.56086 12.9516 8.514 15H3.525C3.60535 12.8781 4.22953 10.8123 5.336 9ZM10.738 9H15.5V15H9.514C9.56888 12.9439 9.98313 10.9133 10.738 9ZM16.5 9H21.27C22.025 10.9133 22.4392 12.9439 22.494 15H16.5V9ZM22.36 9H26.664C27.7705 10.8123 28.3937 12.8781 28.474 15H23.494C23.4462 12.9514 23.0628 10.9245 22.359 9H22.36ZM3.524 16H8.513C8.55979 18.0484 8.94219 20.0753 9.645 22H5.334C4.22809 20.1875 3.60527 18.1217 3.525 16H3.524ZM9.513 16H15.5V22H10.738C9.98315 20.0867 9.5689 18.0561 9.514 16H9.513ZM16.499 16H22.468C22.362 17.883 21.848 19.953 20.95 22H16.5L16.499 16ZM23.469 16H28.474C28.3937 18.1217 27.7709 20.1875 26.665 22H22.036C22.879 19.97 23.371 17.916 23.469 16ZM6.015 23H10.048C10.7893 24.7073 11.8137 26.277 13.078 27.643C10.2543 26.965 7.75565 25.323 6.013 23H6.015ZM11.161 23H15.501V27.975C15.28 27.965 15.057 27.961 14.839 27.941C13.335 26.628 12.079 24.945 11.161 23ZM16.501 23H20.464C19.5719 24.7929 18.4406 26.4564 17.101 27.945C16.903 27.963 16.701 27.967 16.501 27.975V23ZM21.589 23H25.987C24.1797 25.4155 21.5581 27.0942 18.608 27.725C19.7872 26.2754 20.7874 24.6889 21.587 23H21.589Z" fill="white" />
+                                <circle cx="23" cy="11" r="2" fill="#77DFF8" />
+                                <circle cx="9" cy="17" r="2" fill="#77DFF8" />
+                                <circle cx="23" cy="23" r="2" fill="#77DFF8" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
+            </div>
         )
+    )
     // );
 }
