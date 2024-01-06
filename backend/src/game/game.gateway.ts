@@ -13,6 +13,8 @@ import { GlobalExceptionFilter } from 'src/global-exception.filter';
 import { GameService } from './game.service';
 import { GameState } from './gameState';
 
+export let currentGames: Map<number, GameState>;
+
 @UseFilters(new GlobalExceptionFilter())
 @WebSocketGateway({
   namespace: 'game',
@@ -27,7 +29,7 @@ export class GameGateway
   @WebSocketServer()
   server: Server;
 
-  currentGames: Map<number, GameState>;
+  // currentGames: Map<number, GameState>;
   intializeArray: number[];
   initializeClients: number[];
 
@@ -36,7 +38,7 @@ export class GameGateway
     private gameService: GameService,
   ) {
     this.intializeArray = [];
-    this.currentGames = new Map();
+    currentGames = new Map();
     this.initializeClients = [];
   }
 
@@ -60,7 +62,7 @@ export class GameGateway
     ) {
       throw new WsException('Bad request');
     }
-    if (this.currentGames.has(payload.gameId)) {
+    if (currentGames.has(payload.gameId)) {
       throw new WsException('Game already initiated');
     }
 
@@ -81,48 +83,86 @@ export class GameGateway
   }
 
   @SubscribeMessage('updatePlayerPosition')
-  updatePlayerPosition(client: any, payload: {gameId: number, direction: string}): void {
-    if (!payload || !payload.gameId || !payload.direction
-      || typeof payload.gameId != "number" || typeof payload.direction != "string") {
-        console.log("payload is not valid !", payload);
-        throw new WsException("invalid payload 1");
-      }
+  updatePlayerPosition(
+    client: any,
+    payload: { gameId: number; direction: string },
+  ): void {
+    if (
+      !payload ||
+      !payload.gameId ||
+      !payload.direction ||
+      typeof payload.gameId != 'number' ||
+      typeof payload.direction != 'string'
+    ) {
+      console.log('payload is not valid !', payload);
+      throw new WsException('invalid payload 1');
+    }
     this.gameService.updatePlayerPosition(parseInt(client.id), payload);
   }
-  
+
   @SubscribeMessage('updateScore')
-  updateScore(client: any, payload: {gameId: number}): void {
-    if (!payload || !payload.gameId || typeof payload.gameId != "number") {
-      console.log("payload is not valid !", payload);
-      throw new WsException("invalid payload 2");        
+  updateScore(client: any, payload: { gameId: number }): void {
+    if (!payload || !payload.gameId || typeof payload.gameId != 'number') {
+      console.log('payload is not valid !', payload);
+      throw new WsException('invalid payload 2');
     }
-    console.log("update score : ", payload, client.id);
+    console.log('update score : ', payload, client.id);
     this.gameService.updateScore(parseInt(client.id), payload.gameId);
   }
 
   @SubscribeMessage('updateBallPosition')
-  updateBall(client: any, payload:  {gameId: number, position: any, velocity: any, edge: string, worldWidth: number}) {
-    if (!payload || !payload.gameId || !payload.position || !payload.edge || !payload.velocity
-        || typeof payload.gameId != "number") {
-          throw new WsException("invalid payload 3");
-        }
-      this.gameService.updateBallPosition(parseInt(client.id), payload);
+  updateBall(
+    client: any,
+    payload: {
+      gameId: number;
+      position: any;
+      velocity: any;
+      edge: string;
+      worldWidth: number;
+    },
+  ) {
+    if (
+      !payload ||
+      !payload.gameId ||
+      !payload.position ||
+      !payload.edge ||
+      !payload.velocity ||
+      typeof payload.gameId != 'number'
+    ) {
+      throw new WsException('invalid payload 3');
+    }
+    this.gameService.updateBallPosition(parseInt(client.id), payload);
   }
 
   @SubscribeMessage('testingBallUpdate')
-  testingBallUpdate(client: any, payload:  {gameId: number, position: any, velocity: any, edge: string, worldWidth: number}) {
-    if (!payload || !payload.gameId || !payload.position || !payload.edge || !payload.velocity
-        || typeof payload.gameId != "number") {
-          throw new WsException("invalid payload 4");
-        }
-      this.gameService.testingBallUpdate(parseInt(client.id), payload);
+  testingBallUpdate(
+    client: any,
+    payload: {
+      gameId: number;
+      position: any;
+      velocity: any;
+      edge: string;
+      worldWidth: number;
+    },
+  ) {
+    if (
+      !payload ||
+      !payload.gameId ||
+      !payload.position ||
+      !payload.edge ||
+      !payload.velocity ||
+      typeof payload.gameId != 'number'
+    ) {
+      throw new WsException('invalid payload 4');
+    }
+    this.gameService.testingBallUpdate(parseInt(client.id), payload);
   }
 
   @SubscribeMessage('finishGame')
   finishGame(client: any, payload: { gameId: number; enemy: number }) {
     console.log('hadi : ', payload);
     if (
-      !payload || 
+      !payload ||
       !payload.gameId ||
       !payload.enemy ||
       typeof payload.gameId != 'number' ||
@@ -147,4 +187,5 @@ export class GameGateway
     console.log(`Client disconnected: ${client.id}`);
     console.log('khsrti awldi');
   }
+
 }
