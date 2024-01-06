@@ -105,7 +105,7 @@ export default function MatchHistory({ user }: { user: User | null | undefined }
           <span
             className={`px-1 py-0.5 font-semibold text-sm leading-tight ${textColor} rounded-sm ${bgColor}`}
           >
-            {opponent.status}
+            {user?.status}
           </span>
         );
       default:
