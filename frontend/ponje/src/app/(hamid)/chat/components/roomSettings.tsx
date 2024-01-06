@@ -254,7 +254,7 @@ export function InviteFriends() {
         };
 
         fetchFriends();
-    }, [activeConversationId, me, toast]);
+    }, []);
 
     const filteredFriends = friends.filter(friend => {
         return !activeConversation?.room?.members?.some(member => member?.user?.id === friend.id);

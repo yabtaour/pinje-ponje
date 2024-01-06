@@ -679,7 +679,7 @@ export class UserService {
       });
       console.log(listofFriends);
       if (!listofFriends)
-        return listofFriends
+        return listofFriendss
 
       const sanitizedFriends = listofFriends.map(({ friend }) => {
         const { password, twoFactorSecret, twoFactor, ...sanitizedFriend } =

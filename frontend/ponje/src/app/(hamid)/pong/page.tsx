@@ -102,37 +102,37 @@ export default function Pong() {
     fetchData();
   }, []);
 
-  const fetchOnlineFriends = async (userId: number) => {
-    try {
+  // const fetchOnlineFriends = async (userId: number) => {
+  //   try {
 
-      const token = getToken();
-      if (!token) {
-        console.error('Access token not found in Cookies');
-        return;
-      }
-      const data = await axios.get(`/users/${userId}/friends`, {
-        headers: {
-          Authorization: token,
-        },
-      });
-      const friends = data.data.filter((friend: User) => friend.status === 'ONLINE');
-      setOnlineFriends(friends);
-      setLoading(false);
-      console.log(data.data);
-    } catch (err) {
-      toast({
-        title: 'Error',
-        description: "error while gettinge friends",
-        status: 'error',
-        duration: 9000,
-        isClosable: true,
-        position: "bottom-right",
-        variant: "solid",
-      });
-      console.error(err);
-      setLoading(false);
-    }
-  };
+  //     const token = getToken();
+  //     if (!token) {
+  //       console.error('Access token not found in Cookies');
+  //       return;
+  //     }
+  //     const data = await axios.get(`/users/${userId}/friends`, {
+  //       headers: {
+  //         Authorization: token,
+  //       },
+  //     });
+  //     const friends = data.data.filter((friend: User) => friend.status === 'ONLINE');
+  //     setOnlineFriends(friends);
+  //     setLoading(false);
+  //     console.log(data.data);
+  //   } catch (err) {
+  //     toast({
+  //       title: 'Error',
+  //       description: "error while gettinge friends",
+  //       status: 'error',
+  //       duration: 9000,
+  //       isClosable: true,
+  //       position: "bottom-right",
+  //       variant: "solid",
+  //     });
+  //     console.error(err);
+  //     setLoading(false);
+  //   }
+  // };
 
   if (loading) {
 
