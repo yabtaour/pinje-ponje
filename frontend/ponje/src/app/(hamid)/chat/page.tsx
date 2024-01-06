@@ -68,7 +68,7 @@ export function OtherMessage({ message }: any) {
     const activeConversation = useAppSelector(state => state?.chatReducer?.rooms?.find((room: any) => room?.id === activeConversationId));
 
     return (
-        <div className="flex p-3 flex-row justify-start">
+        <div className="flex p-3 flex-row justify-start relative -z-10">
             <Button onClick={() => {
                 router.push(`/profile/${message?.user?.id}`);
             }}>
@@ -161,14 +161,23 @@ export default function Chat() {
                                         width={150}
                                         height={150}
                                     />
+             
                                     <p className='text-[#c6c4c499] pb-10  text-center text-sm md:text-lg'>Chat with fellow members in real-time, exchanging thoughts and ideas effortlessly. <br />
                                         Engage in conversations, make connections, and be a part of our interactive community!
                                     </p>
                                 </div>
                             ) : (
-                                <ScrollShadow hideScrollBar className="overflow-x-hidden h-[75vh]">
+                                <ScrollShadow hideScrollBar className="overflow-x-hidden h-[96vh]">
+                                    <Image
+                                src="/chat_bg.png"
+                                alt="Background Image"
+                                layout="fill"
+                                objectFit="cover"
+                                quality={100}
+                                className="bg-cover opacity-30 bg-fixed max-w-screen bg-center bg-no-repeat relative -z-50 mb-8 md:h-[350px]"
+                            />
                                     <div className=" flex justify-center   sticky top-0">
-                                        <div className="lg:w-1/3 md:2/3 bg-[#1B1A2D] sm:w-full  rounded-b-full hover:bg-[#252341] flex justify-center ">
+                                        <div className="lg:w-full md:2/3 relative z-10 bg-[#1B1A2D] sm:w-full w-full  hover:bg-[#252341] flex justify-center ">
                                             <Button onPress={onOpen} >
                                                 <User
                                                     className="text-white my-2 p-4"
@@ -176,7 +185,7 @@ export default function Chat() {
                                                     avatarProps={
                                                         activeConversation?.room?.roomType !== "DM"
                                                             ?
-                                                            { src: "/groups.svg" }
+                                                            { src: "/gc_icon.png" }
                                                             :
                                                             { src: member?.user?.profile?.avatar ?? "/defaultAvatar.png" }
                                                     }

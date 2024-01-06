@@ -151,7 +151,7 @@ export function Mute({ member }: { member: any }) {
                         <>
                             <h1 className="px-2">Mute</h1>
                             <svg width="24" height="24" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                                <path fill="currentColor" fill-rule="evenodd" d="M1.5 5h2.79l3.86-3.83l.85.35v13l-.85.33L4.29 11H1.5l-.5-.5v-5l.5-.5zm3.35 5.17L8 13.31V2.73L4.85 5.85L4.5 6H2v4h2.5l.35.17zm9.381-4.108l.707.707L13.207 8.5l1.731 1.732l-.707.707L12.5 9.207l-1.732 1.732l-.707-.707L11.793 8.5L10.06 6.77l.707-.707l1.733 1.73l1.731-1.731z" clipRule="evenodd" />
+                                <path fill="currentColor" fillRule="evenodd" d="M1.5 5h2.79l3.86-3.83l.85.35v13l-.85.33L4.29 11H1.5l-.5-.5v-5l.5-.5zm3.35 5.17L8 13.31V2.73L4.85 5.85L4.5 6H2v4h2.5l.35.17zm9.381-4.108l.707.707L13.207 8.5l1.731 1.732l-.707.707L12.5 9.207l-1.732 1.732l-.707-.707L11.793 8.5L10.06 6.77l.707-.707l1.733 1.73l1.731-1.731z" clipRule="evenodd" />
                             </svg>
                         </>
                     )
@@ -297,16 +297,16 @@ export function Join({ room, removeRoom }: { room: any, removeRoom: any }) {
                     color="primary"
                     size="lg"
                     placeholder="password"
-                    className="rounded-full p-1 border border-blue-700/10 hover:bg-blue-700/10"
+                    className="rounded-full p-1 "
                     value={password}
                     onChange={(e) => {
                         setPassword(e.target.value)
                     }}
                 />
             )}
-            <Button onClick={joinRoom} className=" px-5  border hover:bg-blue-700/10 border-blue-700/10">
-                <p className="px-2">Join</p>
-                <svg className="" width="24" height="24" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
+            <Button onClick={joinRoom} className=" px-5  ">
+                <p className="px-2 text-md md:text-base">Join</p>
+                <svg className="w-4 h-4 md:h-6 md:w-6" width="24" height="24" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
                     <g fill="none" stroke="#fff" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M.5 9.5h9a4 4 0 0 0 0-8h-3" />
                         <path d="m3.5 6.5l-3 3l3 3" />
@@ -345,7 +345,7 @@ export function Leave({ room, closeModal }: { room: any, closeModal: any }) {
             <Button onClick={LeaveRoom} className=" rounded-lg w-4/5 py-2  border hover:bg-red-500 border-[#77d6ff]">
                 <h1 className="px-2 text-xs md:text-sm">LEAVE CHATROOM</h1>
                 <svg width="32" height="32" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" className=" w-6 h-6 md:w-8 md:h-8">
-                    <g fill="#fff" fill-rule="#fff" clipRule="evenodd">
+                    <g fill="#fff"  clipRule="evenodd">
                         <path d="M15.027 7.232a1 1 0 0 1 1.408.128l2.083 2.5a1 1 0 0 1-1.536 1.28l-2.083-2.5a1 1 0 0 1 .128-1.408" />
                         <path d="M15.027 13.768a1 1 0 0 1-.129-1.408l2.084-2.5a1 1 0 1 1 1.536 1.28l-2.083 2.5a1 1 0 0 1-1.408.128" />
                         <path d="M17.5 10.5a1 1 0 0 1-1 1H10a1 1 0 1 1 0-2h6.5a1 1 0 0 1 1 1M3 3.5a1 1 0 0 1 1-1h9a1 1 0 1 1 0 2H4a1 1 0 0 1-1-1m0 14a1 1 0 0 1 1-1h9a1 1 0 1 1 0 2H4a1 1 0 0 1-1-1" />
