@@ -1,9 +1,9 @@
 import {
-	HttpException,
-	HttpStatus,
-	Inject,
-	Injectable,
-	forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  forwardRef,
 } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
 import { NotificationType, Rank, Status } from '@prisma/client';
@@ -763,43 +763,98 @@ export class GameService {
 
       console.log(currentGames);
       console.log(gameId);
-      this.gameGateway.initializeClients.splice(
-        this.gameGateway.initializeClients.findIndex((element) => {
-          element == winnerId;
-        }),
-        1,
-      );
+      if (this.gameGateway.intializeArray.findIndex((element) => {
+        return element == gameId;
+      }) != -1) {
+        this.gameGateway.intializeArray.splice(
+          this.gameGateway.intializeArray.findIndex((element) => {
+            element == gameId;
+          }),
+          1,
+        );
+      }
+      // this.gameGateway.initializeClients.splice(
+      //   this.gameGateway.initializeClients.findIndex((element) => {
+      //     element == winnerId;
+      //   }),
+      //   1,
+      // );
+      if (this.gameGateway.intializeArray.findIndex((element) => {
+        return element == gameId;
+      }) != -1) {
+        this.gameGateway.intializeArray.splice(
+          this.gameGateway.intializeArray.findIndex((element) => {
+            element == gameId;
+          }),
+          1,
+        );
+      }
       this.gameGateway.initializeClients.splice(
         this.gameGateway.initializeClients.findIndex((element) => {
           element == loserId;
         }),
         1,
       );
-      this.gameGateway.intializeArray.splice(
-        this.gameGateway.intializeArray.findIndex((element) => {
-          element == gameId;
-        }),
-        1,
-      );
+      if (this.gameGateway.intializeArray.findIndex((element) => {
+        return element == gameId;
+      }) != -1) {
+        this.gameGateway.intializeArray.splice(
+          this.gameGateway.intializeArray.findIndex((element) => {
+            element == gameId;
+          }),
+          1,
+        );
+      }
+      // this.gameGateway.intializeArray.splice(
+      //   this.gameGateway.intializeArray.findIndex((element) => {
+      //     element == gameId;
+      //   }),
+      //   1,
+      // );
       // currentGames.delete(gameId);
-      this.gameGateway.initializeClients.splice(
-        this.gameGateway.initializeClients.findIndex((element) => {
-          element == winnerId;
-        }),
-        1,
-      );
-      this.gameGateway.initializeClients.splice(
-        this.gameGateway.initializeClients.findIndex((element) => {
-          element == loserId;
-        }),
-        1,
-      );
-      this.gameGateway.intializeArray.splice(
-        this.gameGateway.intializeArray.findIndex((element) => {
-          element == gameId;
-        }),
-        1,
-      );
+      if (this.gameGateway.intializeArray.findIndex((element) => {
+        return element == gameId;
+      }
+      ) != -1) {
+        this.gameGateway.intializeArray.splice(
+          this.gameGateway.intializeArray.findIndex((element) => {
+            element == gameId;
+          }),
+          1,
+        );
+      }
+      // this.gameGateway.initializeClients.splice(
+      //   this.gameGateway.initializeClients.findIndex((element) => {
+      //     element == winnerId;
+      //   }),
+      //   1,
+      // );
+      if (this.gameGateway.intializeArray.findIndex((element) => {
+        return element == gameId;
+      }) != -1) {
+        this.gameGateway.intializeArray.splice(
+          this.gameGateway.intializeArray.findIndex((element) => {
+            element == gameId;
+          }),
+          1,
+        );
+      }
+      // this.gameGateway.initializeClients.splice(
+      //   this.gameGateway.initializeClients.findIndex((element) => {
+      //     element == loserId;
+      //   }),
+      //   1,
+      // );
+      if (this.gameGateway.intializeArray.findIndex((element) => {
+        return element == gameId;
+      }) != -1) {
+        this.gameGateway.intializeArray.splice(
+          this.gameGateway.intializeArray.findIndex((element) => {
+            element == gameId;
+          }),
+          1,
+        );
+      }
       currentGames.delete(gameId);
       console.log(
         currentGames,
