@@ -1,5 +1,5 @@
 'use client'
-import { getToken } from "@/app/utils/auth";
+import { fetchUserData, getToken } from "@/app/utils/auth";
 import axios from "@/app/utils/axios";
 import { getGameData } from '@/app/utils/update';
 import { useToast } from "@chakra-ui/react";
@@ -20,12 +20,19 @@ export default function Pong() {
   const [gameDataFetched, setGameDataFetched] = useState(false);
   const router = useRouter();
   const toast = useToast();
+  const [me, setMe] = useState(null) as any;
 
-  const handleMMClick = () => {
-    if (user?.status === 'INGAME' || user?.status === 'OFFLINE') {
+const handleMMClick = async () => {
+  try {
+    if (token) {
+      const ret = await fetchUserData(token);
+      setMe(ret);
+    }
+
+    if (me?.status === 'INGAME' || me?.status === 'OFFLINE' || me?.status === 'INQUEUE') {
       toast({
         title: 'Error',
-        description: "you are already in a game",
+        description: "You are already in a game",
         status: 'error',
         duration: 9000,
         isClosable: true,
@@ -35,16 +42,21 @@ export default function Pong() {
       });
       return;
     }
+
     router.push('/pong/versusScreen');
+
     setTimeout(() => {
       if (!gameDataFetched) {
         getGameDataHandler();
       }
-    }, 2000)
-  };
+    }, 2000);
+  } catch (error) {
+    console.log('Error fetching user data:', error);
+  }
+};
 
+  const token = getToken();
   const getGameDataHandler = async () => {
-    const token = getToken();
     if (!token) {
       console.error('Access token not found in Cookies');
       return;
