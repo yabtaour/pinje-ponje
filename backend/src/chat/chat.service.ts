@@ -30,6 +30,8 @@ import { PaginationLimitDto } from './dto/pagination-dto';
 import { MessageDto, joinRoomDto } from './dto/room-dto';
 import { updateRoomRoleDto } from './dto/update-room-role.dto';
 import { updateRoomDto } from './dto/update-room.dto';
+import * as bcrypt from 'bcrypt';
+
 
 export const ChatActions = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): chatActionsDto => {
@@ -255,12 +257,13 @@ export class ChatService {
 
     if (Object.values(RoomType).includes(payload.type) === false)
       throw new HttpException('bad room type', HttpStatus.BAD_REQUEST);
-
+    const rounds = parseInt(process.env.BCRYPT_ROUNDS);
+    const HashedPassword = bcrypt.hashSync(payload.password, rounds);
     const room = await this.prisma.chatRoom.create({
       data: {
         name: payload.name || roomId,
         roomType: (payload.type as RoomType) || 'PUBLIC',
-        password: payload.password,
+        password: HashedPassword,
         members: {
           create: [
             {
@@ -295,11 +298,16 @@ export class ChatService {
       if (!room)
         throw new HttpException(`Room not found`, HttpStatus.NOT_FOUND);
 
-      if (room.roomType === 'PROTECTED' && room.password !== payload.password)
-        throw new HttpException(
+        console.log(room.roomType)
+      if (room.roomType === 'PROTECTED'){
+        console.log(room.password)
+        if (bcrypt.compareSync(payload.password, room.password) == false){
+          throw new HttpException(
           `valid password is required`,
           HttpStatus.FORBIDDEN,
         );
+      }
+    }
 
       if ((await this.isUserInRoom(roomid, userid)) === true)
         throw new HttpException(
