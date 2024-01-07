@@ -93,7 +93,7 @@ export default function Profile() {
             fetchFriends();
         }
 
-    }, [user, newNotification]);
+    }, []);
 
 
     if (loading) {

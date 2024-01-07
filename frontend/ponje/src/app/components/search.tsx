@@ -24,7 +24,11 @@ const SearchInput = () => {
   }, []);
 
   const onInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
+    const inputText = event.target.value;
+
+    // Limit input to 20 characters
+    const truncatedInput = inputText.slice(0, 20);
+    setSearchQuery(truncatedInput);
   };
   
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {

@@ -7,6 +7,8 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { AxiosError } from "axios";
+
 
 
 export default function VerificationPage() {
@@ -32,9 +34,10 @@ export default function VerificationPage() {
                 settwofasuccess(true);
             }
         } catch (error) {
+            const err = error as AxiosError;
             toast({
                 title: 'Error',
-                description: "2FA error",
+                description: `2FA error : ${err.message}`,
                 status: 'error',
                 duration: 9000,
                 isClosable: true,
