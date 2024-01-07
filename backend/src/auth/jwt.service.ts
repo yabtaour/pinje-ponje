@@ -35,6 +35,5 @@ export class JwtAuthService {
       if (!user)
 				 return null;
 			return decodedToken;
-
   }
 }

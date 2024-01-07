@@ -28,6 +28,7 @@ model User {
   rank            Rank    @default(UNRANKED)
   level           Int     @default(0)
   experience      Int     @default(0)
+  isVerified      Boolean @default(false)
 
   profile Profile?
 
