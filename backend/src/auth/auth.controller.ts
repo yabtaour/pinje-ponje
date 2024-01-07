@@ -36,6 +36,8 @@ export class AuthController {
 			response.redirect(PROFILE);
 	}
 
+
+
 	
 	@Get('google')
 	@UseGuards(AuthGuard('google'))
@@ -81,6 +83,14 @@ export class AuthController {
 		response.cookie("token", "Bearer " + user.token);
 		response.send(user);
 	}
+
+	@Post('logout')
+	@UseGuards(JWTGuard)
+	async logout(@Req() request  : Request)	{
+	const user = await this.userService.getCurrentUser(request);
+	return await this.authService.logout(user);
+	}
+
 }
 
 

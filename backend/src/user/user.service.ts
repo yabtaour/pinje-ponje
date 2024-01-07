@@ -20,8 +20,10 @@ import { FriendsActionsDto } from './dto/FriendsActions-user.dto';
 import { blockAndUnblockUserDto } from './dto/blockAndUnblock-user.dto';
 import { CreateUserDtoIntra } from './dto/create-user.dto';
 import { updateUserDto } from './dto/update-user.dto';
+import { clearConfigCache } from 'prettier';
 
 config();
+
 
 @Injectable()
 export class UserService {
@@ -194,7 +196,8 @@ export class UserService {
 
       let secret = null;
       if (data.twoFactor && data.twoFactor == true) {
-        secret = authenticator.generateSecret();
+
+        secret = authenticator.generateSecret() 
         // const otpauth = authenticator.keyuri(user.email, 'pinje-ponge', secret);
         // const generatedQR = await toDataURL(otpauth);
       } else {

@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import * as Yup from 'yup';
-import { fetchUserData, handleLogin } from '../../utils/auth';
+import { fetchUserData, handleLogin, setSession } from '../../utils/auth';
 
 
 
@@ -45,6 +45,7 @@ export default function SignIn() {
           if (accessToken) {
             fetchUserData(accessToken).then((data) => {
               dispatch(login({ user: data, token: accessToken }));
+              setSession(accessToken);
               console.log("data: ", data);
               if (data?.twoFactor && !localStorage.getItem('2fa'))
                 router.push('/verification');

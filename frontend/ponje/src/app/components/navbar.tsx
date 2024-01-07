@@ -49,12 +49,22 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
   };
 
   const handleLogoutClick = () => {
-    router.push('/');
-    localStorage.removeItem('2fa');
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('auth');
-    deleteCookie('token');
-    dispatch(logout());
+    const token = getToken();
+
+    axios.post('/auth/logout' , {
+      headers : {
+        Authorization : token
+      }
+    }).then(()=>{
+      router.push('/');
+      localStorage.removeItem('2fa');
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('auth');
+      deleteCookie('token');
+      dispatch(logout());
+    }).catch(()=> {
+      console.log('hamid machina fiha ');
+    })
   };
 
 

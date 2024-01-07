@@ -4,18 +4,24 @@ import { authenticator } from 'otplib';
 import { UserService } from 'src/user/user.service';
 import { SignUpDto } from './dto/signUp.dto';
 import { JwtAuthService } from './jwt.service';
+import { Prisma, Status } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly userService: UserService,
-				private readonly jwtService: JwtAuthService
+				private readonly jwtService: JwtAuthService,
+        private readonly prismaService : PrismaService
+        
     ) {}
 
     async isTwiFactorCodeValid(user: any, twofactorcode: string){
       console.log('Entered Code:', twofactorcode);
       console.log('User Secret:', user.twoFactorSecret);
       try {
+
+
         const result = await authenticator.verify({
           token: twofactorcode,
           secret: user.twoFactorSecret,
@@ -29,6 +35,7 @@ export class AuthService {
     }
 
     async userTwoFaChecker(user: any, body: { twofactorcode: string }) {
+
       const validCode = await this.isTwiFactorCodeValid(user, body.twofactorcode);
       if (validCode) {
         return true;
@@ -73,5 +80,19 @@ export class AuthService {
       const user = await this.userService.CreateUserLocal(data);
 			const token = "Bearer " + await this.jwtService.generateToken(String(user.id));
       return { user, token };
+    }
+    
+    async logout(user: any)
+    {
+      await this.prismaService.user.update({
+        where: {
+          id : user.id ?? undefined
+        },
+        data: {
+          status : Status.OFFLINE,
+          isVerified : false
+        }
+      })
+    
     }
 }

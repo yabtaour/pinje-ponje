@@ -16,7 +16,6 @@ export class JWTGuard implements CanActivate {
 
 	async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest();
-	const response = context.switchToHttp().getResponse();
     const headers = request.headers;
     const token = headers.authorization;
     if (!token)
@@ -27,18 +26,6 @@ export class JWTGuard implements CanActivate {
 			throw new HttpException("Invalid token", HttpStatus.UNAUTHORIZED);
 		}
 		context.switchToHttp().getRequest().user = decodedToken;
-		const user = this.prismaService.user.findUnique({
-			where: {
-				id: parseInt(decodedToken.sub)
-			}
-		});
-		if (!user)
-			throw new HttpException("Invalid token", HttpStatus.UNAUTHORIZED);
-		if ((await user).twoFactor === true) {
-			if ((await user).isVerified === false) {
-				response.redirect(VERIFICATION);
-			}
-		}
 		return true;
 	}
 }

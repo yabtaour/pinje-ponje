@@ -41,4 +41,6 @@ export class resretPasswordDto {
   @IsNotEmpty({ message: 'New value cannot be empty.' })
   @IsString({ message: 'New value must be a string.' })
   new: string;
+
+  
 }

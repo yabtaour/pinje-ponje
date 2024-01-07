@@ -3,7 +3,7 @@
 import Auth42Button, { AuthGoogleButton } from "@/app/components/buttons";
 import { login } from "@/app/globalRedux/features/authSlice";
 import { useAppSelector } from "@/app/globalRedux/store";
-import { fetchUserData, handleSignup } from "@/app/utils/auth";
+import { fetchUserData, handleSignup, setSession } from "@/app/utils/auth";
 import { useToast } from "@chakra-ui/react";
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
 import axios, { AxiosError } from "axios";
@@ -46,6 +46,7 @@ export default function SignUp() {
                     if (accessToken) {
                         fetchUserData(accessToken).then((data) => {
                             dispatch(login({ user: data, token: accessToken }));
+                            setSession(accessToken);
                             console.log("data: ", data);
                             if (data?.twoFactor && !localStorage.getItem('2fa'))
                                 router.push('/verification');

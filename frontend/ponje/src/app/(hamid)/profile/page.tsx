@@ -1,6 +1,6 @@
 'use client';
 import Loader from "@/app/components/loader";
-import { fetchUserData, getToken } from "@/app/utils/auth";
+import { fetchUserData, getToken, setSession } from "@/app/utils/auth";
 import axios from "@/app/utils/axios";
 import { useToast } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
@@ -13,6 +13,9 @@ import Performance from "./components/Performance";
 import PlayerBanner from "./components/PlayerBanner";
 import ProgressBar from "./components/ProgressBar";
 import SkillAnalytics from "./components/SkillAnalytics";
+import { getCookie } from "cookies-next";
+import { useDispatch } from "react-redux";
+import { login } from "@/app/globalRedux/features/authSlice";
 
 
 
@@ -23,9 +26,43 @@ export default function Profile() {
     const router = useRouter();
     const toast = useToast();
     const newNotification = useAppSelector((state) => state?.authReducer?.value?.newNotification);
+    const dispatch = useDispatch();
+
 
     useEffect(() => {
 
+        let accessToken = getCookie('token');
+    
+        const tokenVerification = async (token?: string | null | undefined) => {
+          await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/users/verify-token`, {}, {
+            headers: {
+              Authorization: `${token}`,
+            },
+          })
+            .then(() => {
+              if (accessToken) {
+                fetchUserData(accessToken).then((data) => {
+                  dispatch(login({ user: data, token: accessToken }));
+                  setSession(accessToken);
+                  console.log("data: ", data);
+                  if (data?.twoFactor && !localStorage.getItem('2fa'))
+                    router.push('/verification');
+                  if (!data?.profile?.avatar)
+                    router.push('/onboarding');
+                })
+              }
+              router.push('/profile');
+            })
+            .catch(() => {
+              console.log("do nothing",);
+            });
+        };
+    
+        tokenVerification(accessToken);
+      }, [])
+
+
+    useEffect(() => {
         const fetchFriends = async (userId: number) => {
             try {
 
