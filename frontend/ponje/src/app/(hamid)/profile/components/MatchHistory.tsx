@@ -75,8 +75,8 @@ export default function MatchHistory({ user }: { user: User | null | undefined }
 
     const cellValue = match[columnKey];
     const opponent = match?.players[0].user.username === user?.username
-      ? match?.players[1]
-      : match?.players[0];
+      ? match?.players[0]
+      : match?.players[1];
 
     switch (columnKey) {
       case "opponent":
@@ -105,7 +105,7 @@ export default function MatchHistory({ user }: { user: User | null | undefined }
           <span
             className={`px-1 py-0.5 font-semibold text-sm leading-tight ${textColor} rounded-sm ${bgColor}`}
           >
-            {user?.status}
+            {opponent?.status}
           </span>
         );
       default:
