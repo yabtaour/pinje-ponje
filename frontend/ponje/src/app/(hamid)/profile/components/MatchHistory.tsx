@@ -75,8 +75,12 @@ export default function MatchHistory({ user }: { user: User | null | undefined }
 
     const cellValue = match[columnKey];
     const opponent = match?.players[0].user.username === user?.username
-      ? match?.players[0]
-      : match?.players[1];
+      ? match?.players[1]
+      : match?.players[0];
+    
+      const moi = match?.players[0].user.username === user?.username
+    ? match?.players[0]
+    : match?.players[1];
 
     switch (columnKey) {
       case "opponent":
@@ -87,7 +91,6 @@ export default function MatchHistory({ user }: { user: User | null | undefined }
               onClick={() => {
                 router.push(`/profile/${opponent.user.id}`);
               }}>
-
               <NextUIUser
                 avatarProps={{ size: "sm", radius: "lg", src: opponent?.user?.profile?.avatar ?? "https://cdn-icons-png.flaticon.com/512/149/149071.png" }}
                 name={opponent?.user?.username}
@@ -99,13 +102,13 @@ export default function MatchHistory({ user }: { user: User | null | undefined }
       case "date":
         return <p className="text-default-400">{formatDate(match.createdAt)}</p>;
       case "result":
-        const bgColor = opponent.status === "WINNER" ? "bg-green-300" : "bg-red-300";
-        const textColor = opponent.status === "WINNER" ? "text-green-700" : "text-red-700";
+        const bgColor = moi.status === "WINNER" ? "bg-green-300" : "bg-red-300";
+        const textColor = moi.status === "WINNER" ? "text-green-700" : "text-red-700";
         return (
           <span
             className={`px-1 py-0.5 font-semibold text-sm leading-tight ${textColor} rounded-sm ${bgColor}`}
           >
-            {opponent?.status}
+            {moi?.status}
           </span>
         );
       default:

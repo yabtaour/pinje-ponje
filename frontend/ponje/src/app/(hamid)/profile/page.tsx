@@ -24,76 +24,156 @@ export default function Profile() {
     const toast = useToast();
     const newNotification = useAppSelector((state) => state?.authReducer?.value?.newNotification);
 
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         try {
+    //             const token = getToken();
+    //             if (!token) {
+    //                 console.error('Access token not found in Cookies');
+    //                 return;
+    //             }
+    //             const data = await axios.get(`/users/me`, {
+    //                 headers: {
+    //                     authorization: token,
+    //                 },
+    //             });
+    //             setUser(data.data);
+    //             setLoading(false);
+    //             if (data?.data?.twoFactor && !localStorage.getItem('2fa'))
+    //                 router.push('/verification');
+
+    //             if (!data?.data?.profile?.avatar)
+    //                 router.push('/onboarding');
+
+    //         } catch (err) {
+    //             console.error(err);
+    //             setLoading(false);
+    //         }
+    //     };
+    //     fetchData();
+    // }, [newNotification]);
+
+    // useEffect(() => {
+    //     const fetchFriends = async () => {
+    //         try {
+    //             let me = null;
+    //             const token = getToken();
+    //             if (token !== null)
+    //                 me = await fetchUserData(token)
+
+
+    //             if (!token) {
+    //                 console.error('Access token not found in Cookies');
+    //                 return;
+    //             }
+
+    //             if (me) {
+    //                 const res = await axios.get(`/users/${me?.id}/friends`);
+    //                 const friends = res.data;
+    //                 setFriends(friends);
+    //                 setLoading(false);
+    //                 console.log(res.data);
+    //             }
+    //         } catch (err) {
+    //             toast({
+    //                 title: 'Error',
+    //                 description: "error while getting current friends",
+    //                 status: 'error',
+    //                 duration: 9000,
+    //                 isClosable: true,
+    //                 position: "bottom-right",
+    //                 variant: "solid",
+    //                 colorScheme: "red",
+    //             });
+    //             console.error(err);
+    //             setLoading(false);
+    //         }
+    //     };
+    //     if (user) {
+    //         fetchFriends();
+    //     }
+
+    // }, []);
+
     useEffect(() => {
+
+        const fetchFriends = async (userId: number) => {
+            try {
+
+                const token = getToken();
+
+                if (!token) {
+                    console.error('Access token not found in Cookies');
+                    return;
+                }
+
+                const data = await axios.get(`/users/${userId}/friends`, {
+                    headers: {
+                        Authorization: token,
+                    },
+                });
+                const friends = data.data;
+                setFriends(friends);
+                setLoading(false);
+                console.log(data.data);
+            } catch (err) {
+                toast({
+                    title: 'Error',
+                    description: "error while getting friends",
+                    status: 'error',
+                    duration: 9000,
+                    isClosable: true,
+                    position: "bottom-right",
+                    variant: "solid",
+                });
+                console.error(err);
+                setLoading(false);
+            }
+        };
+
+
+
         const fetchData = async () => {
             try {
+
                 const token = getToken();
+
                 if (!token) {
                     console.error('Access token not found in Cookies');
                     return;
                 }
                 const data = await axios.get(`/users/me`, {
                     headers: {
-                        authorization: token,
+                        Authorization: getToken(),
                     },
                 });
-                setUser(data.data);
+                setUser(() => data.data);
+
+                fetchFriends(data.data.id);
+                console.log(data.data);
                 setLoading(false);
-                if (data?.data?.twoFactor && !localStorage.getItem('2fa'))
-                    router.push('/verification');
-
-                if (!data?.data?.profile?.avatar)
-                    router.push('/onboarding');
-
-            } catch (err) {
-                console.error(err);
+                console.log(data.data);
+            } catch (Error: any) {
+                if (Error.isAxiosError && Error.response && Error.response.status === 404) {
+                    router.push('/404');
+                } else {
+                    toast({
+                        title: 'Error',
+                        status: 'error',
+                        duration: 9000,
+                        isClosable: true,
+                        position: "bottom-right",
+                        variant: "solid",
+                    });
+                }
+                console.error(Error);
                 setLoading(false);
             }
         };
         fetchData();
-    }, [newNotification]);
+        console.log(newNotification);
+    }, [ newNotification]);
 
-    useEffect(() => {
-        const fetchFriends = async () => {
-            try {
-                let me = null;
-                const token = getToken();
-                if (token !== null)
-                    me = await fetchUserData(token)
-
-
-                if (!token) {
-                    console.error('Access token not found in Cookies');
-                    return;
-                }
-
-                if (me) {
-                    const res = await axios.get(`/users/${me?.id}/friends`);
-                    const friends = res.data;
-                    setFriends(friends);
-                    setLoading(false);
-                    console.log(res.data);
-                }
-            } catch (err) {
-                toast({
-                    title: 'Error',
-                    description: "error while getting current friends",
-                    status: 'error',
-                    duration: 9000,
-                    isClosable: true,
-                    position: "bottom-right",
-                    variant: "solid",
-                    colorScheme: "red",
-                });
-                console.error(err);
-                setLoading(false);
-            }
-        };
-        if (user) {
-            fetchFriends();
-        }
-
-    }, []);
 
 
     if (loading) {
