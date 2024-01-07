@@ -21,6 +21,7 @@ export default function RootLayout({
   return (
 
     <html lang="en">
+      {/* <body className={inter.className}> */}
       <body className={inter.className} style={{ padding: '0', backgroundColor: '#151424' }}>
         <AuthProvider>
           <NextUIProvider>

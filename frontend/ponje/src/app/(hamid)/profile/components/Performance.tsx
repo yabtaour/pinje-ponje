@@ -85,6 +85,7 @@ export default function Performance({ user }: { user: User | null | undefined })
               alt="empty"
               width={120}
               height={120}
+              style={{ width: 'auto', height: 'auto' }}
             />
             <p className="text-center text-gray-400 text-sm mt-3">No win/loss data for this user</p>
           </div>

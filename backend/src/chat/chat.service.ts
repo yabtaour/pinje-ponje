@@ -241,10 +241,11 @@ export class ChatService {
     return roomMemberShip;
   }
 
-  async createRoom(userid: number, payload: any) {
+  async  createRoom(userid: number, payload: any) {
     const roomId = await this.generateUniqueRoomId();
     const role = payload.type !== 'DM' ? 'OWNER' : 'MEMBER';
-
+    let rounds : number;
+    let HashedPassword : string | undefined;
     if (payload.type === 'DM' && payload.peer_id === undefined)
       throw new HttpException(`Peer id is required`, HttpStatus.BAD_REQUEST);
 
@@ -253,12 +254,16 @@ export class ChatService {
         `Room password is required`,
         HttpStatus.BAD_REQUEST,
       );
-    } else if (payload.type !== 'PROTECTED') delete payload.password;
+    } else if (payload.type === 'PROTECTED') {
+      rounds = parseInt(process.env.BCRYPT_ROUNDS)
+      HashedPassword = bcrypt.hashSync(payload.password, rounds)
+      delete payload.password
+    } else if (payload.type !== 'PROTECTED') {
+      delete payload.password
+    }
 
     if (Object.values(RoomType).includes(payload.type) === false)
       throw new HttpException('bad room type', HttpStatus.BAD_REQUEST);
-    const rounds = parseInt(process.env.BCRYPT_ROUNDS);
-    const HashedPassword = bcrypt.hashSync(payload.password, rounds);
     const room = await this.prisma.chatRoom.create({
       data: {
         name: payload.name || roomId,

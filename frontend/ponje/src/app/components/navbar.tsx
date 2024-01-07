@@ -141,7 +141,7 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
               variant="flat"
               closeOnSelect={false}
             >
-              <DropdownItem>
+              <DropdownItem textValue="notif">
                 <Notification user={user} />
               </DropdownItem>
             </DropdownMenu>
