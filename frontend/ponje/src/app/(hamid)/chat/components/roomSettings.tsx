@@ -4,17 +4,17 @@ import { useAppSelector } from '@/app/globalRedux/store';
 import axios from '@/app/utils/axios';
 import SocketManager from '@/app/utils/socketManager';
 import { useToast } from '@chakra-ui/react';
-import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Image, Modal, ModalContent, ScrollShadow, User, useDisclosure } from '@nextui-org/react';
+import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Image, Modal, ModalContent, ScrollShadow, useDisclosure } from '@nextui-org/react';
+import { AxiosError } from 'axios';
 import { getCookie } from 'cookies-next';
 import { ErrorMessage, Field, Form, Formik, FormikProps } from 'formik';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { HashLoader } from 'react-spinners';
-import { AxiosError } from 'axios';
-import { CustomUser } from './customUser';
 import * as Yup from 'yup';
 import { Ban, ChangeRole, Invite, Kick, Leave, Mute, Play } from './actions';
+import { CustomUser } from './customUser';
 const socketManager = SocketManager.getInstance(`${process.env.NEXT_PUBLIC_API_URL}`, getCookie('token'));
 
 
@@ -240,7 +240,13 @@ export function InviteFriends() {
     useEffect(() => {
         const fetchFriends = async () => {
             try {
-                const res = await axios.get(`/users/${me?.id}/friends`);
+                const token = getCookie('token');
+                const res = await axios.get(`/users/${me?.id}/friends`, {
+                    headers: {
+                        authorization: token
+                    },
+                });
+
                 setLoading(false);
                 setFriends(res.data);
             } catch (err) {
