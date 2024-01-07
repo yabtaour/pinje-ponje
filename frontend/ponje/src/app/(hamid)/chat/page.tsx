@@ -96,8 +96,8 @@ function InformationMessage({ message }: any) {
         <>
             {
                 message?.state === "INFORMATION" && message?.content?.includes("ACTIVE") ? (<></>) : (
-                    <div className="flex flex-row justify-center">
-                        <div className="bg-[#252341]/40 rounded-lg p-2 m-2 max-w-[80%] sm:max-w-[60%] md:max-w-[50%] lg:max-w-[40%]">
+                    <div className="flex flex-row justify-center z-40">
+                        <div className="bg-[#252341]/40 rounded-lg p-2 m-2 max-w-[80%] sm:max-w-[60%] md:max-w-[50%] lg:max-w-[40%] z-40">
                             <div className="flex w-full flex-row justify-between items-center">
                                 <svg className="mx-2" width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <g fill="" stroke="white" strokeWidth="2">
