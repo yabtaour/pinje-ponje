@@ -48,7 +48,6 @@ export default function Profile({ params }: { params: { id: number } }) {
                 const friends = data.data;
                 setFriends(friends);
                 setLoading(false);
-                console.log(data.data);
             } catch (err) {
                 toast({
                     title: 'Error',
@@ -83,9 +82,7 @@ export default function Profile({ params }: { params: { id: number } }) {
                 setUser(() => data.data);
 
                 fetchFriends(data.data.id);
-                console.log(data.data);
                 setLoading(false);
-                console.log(data.data);
             } catch (Error: any) {
                 if (Error.isAxiosError && Error.response && Error.response.status === 404) {
                     router.push('/404');
@@ -104,7 +101,6 @@ export default function Profile({ params }: { params: { id: number } }) {
             }
         };
         fetchData();
-        console.log(newNotification);
     }, [params.id, dispatch, newNotification]);
 
 

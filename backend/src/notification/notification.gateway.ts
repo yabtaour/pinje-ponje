@@ -38,30 +38,30 @@ export class NotificationGateway
   server: Namespace;
 
   async afterInit(server: Namespace) {
-    console.log('NotificationGateway Init');
+    // console.log('NotificationGateway Init');
     // this.motificationService.server = server;
   }
 
   async handleDisconnect(client: any) {
-    console.log('NotificationGateway Disconnect');
+    // console.log('NotificationGateway Disconnect');
     this.notificationService.getGameIdUsingCurrentGames(parseInt(client.id));
     const clientId = client.id;
   }
 
   async handleConnection(client: any, ...args: any[]) {
     this.notificationService.updateUserStatus(parseInt(client.id), 'ONLINE');
-    console.log('NotificationGateway Connection');
+    // console.log('NotificationGateway Connection');
   }
 
   @OnEvent('notification', { promisify: true, async: true })
   async sendNotificationToUser(userId: string, notification: any) {
-    console.log('NotificationGateway sendNotificationToUser');
+    // console.log('NotificationGateway sendNotificationToUser');
     this.server.to(userId).emit('notification', notification);
   }
 
   @SubscribeMessage('notification')
   async notification(client: any, payload: any) {
-    console.log('NotificationGateway notification');
+    // console.log('NotificationGateway notification');
     // return await this.notificationService.create(payload);
   }
 }

@@ -54,7 +54,6 @@ export class GameController {
     @Body() data: GameActionDto,
     @Req() request: Request,
   ) {
-	console.log(data)
     const user = await this.userService.getCurrentUser(request);
     return this.gameService.invitePlayer(data, user);
   }

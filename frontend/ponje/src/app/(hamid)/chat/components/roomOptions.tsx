@@ -146,7 +146,7 @@ export function CreateRoom({ onOpenChange, setAction }: { onOpenChange: () => vo
         }).catch((err) => {
             toast({
                 title: "Error.",
-                description: "Counldn't create a room.",
+                description: `Couldn't create a room. : ${err.message}`,
                 status: "error",
                 duration: 3000,
                 isClosable: true,

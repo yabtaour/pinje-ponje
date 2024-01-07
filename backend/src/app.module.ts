@@ -12,6 +12,7 @@ import { NotificationModule } from './notification/notification.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProfilesModule } from './profiles/profiles.module';
 import { UserModule } from './user/user.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -24,10 +25,10 @@ import { UserModule } from './user/user.module';
 		GameModule,
 		ChatModule,
 		NotificationModule,
-    // ThrottlerModule.forRoot({
-    //   ttl: 1, // seconds
-    //   limit: 1000, // requests
-    // }),
+    ThrottlerModule.forRoot({
+      ttl: 1, // seconds
+      limit: 10, // requests
+    }),
   ],
     controllers: [AuthController, GameController],
     providers: [

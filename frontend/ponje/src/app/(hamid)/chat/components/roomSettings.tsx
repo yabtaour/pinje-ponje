@@ -36,7 +36,7 @@ export function RoomSettings({ room, onOpenChange }: { room: any, onOpenChange: 
     const toast = useToast();
     const initialValues = {
         name: activeConversation?.room.name,
-        password: activeConversation?.room.password,
+        password: "",
         roomType: activeConversation?.room.roomType
     };
 
@@ -378,7 +378,6 @@ export function RoomMembers() {
     const [muted, setMuted] = useState(false);
     const router = useRouter();
 
-    console.log("activeConversation: ", activeConversation);
     return (
         <div className='w-full  p-4'>
             <h1 className='text-center text-cyan-300'>{

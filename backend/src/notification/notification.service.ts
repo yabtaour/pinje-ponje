@@ -44,9 +44,8 @@ export class NotificationService {
     let gameId = -1;
     let enemyId = -1;
     currentGames.forEach(async (gameState, key) => {
-      console.log("key : ", key , "gameState : ", gameState )
       if (gameState.player1.id === userId || gameState.player2.id === userId) {
-        console.log('Game found');
+        // console.log('Game found');
         if (gameState.player1.id === userId) {
           enemyId = gameState.player2.id;
           gameId = key;
@@ -54,7 +53,7 @@ export class NotificationService {
           enemyId = gameState.player1.id;
           gameId = key;
         }
-        console.log('Game found');
+        // console.log('Game found');
         await this.gameService.finishGame(enemyId, userId, gameId);
       }
     });
@@ -190,7 +189,7 @@ export class NotificationService {
         status: status,
       },
     });
-    console.log('changed status to online ');
+    // console.log('changed status to online ');
     return user;
   }
 }

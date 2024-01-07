@@ -36,6 +36,7 @@ export default function SignIn() {
     let accessToken = getCookie('token');
 
     const tokenVerification = async (token?: string | null | undefined) => {
+      if (token) {
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/users/verify-token`, {}, {
         headers: {
           Authorization: `${token}`,
@@ -46,7 +47,6 @@ export default function SignIn() {
             fetchUserData(accessToken).then((data) => {
               dispatch(login({ user: data, token: accessToken }));
               setSession(accessToken);
-              console.log("data: ", data);
               if (data?.twoFactor && !localStorage.getItem('2fa'))
                 router.push('/verification');
               if (!data?.profile?.avatar)
@@ -58,6 +58,7 @@ export default function SignIn() {
         .catch(() => {
           console.log("do nothing",);
         });
+      }
     };
 
     tokenVerification(accessToken);

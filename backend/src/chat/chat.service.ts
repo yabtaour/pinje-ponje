@@ -203,7 +203,6 @@ export class ChatService {
     const peer_id = parseInt(String(payload.id));
     if (Number.isNaN(peer_id)) throw new BadRequestException();
 
-    console.log(userid, room_id);
     const membershipInTheRoom = await this.prisma.roomMembership.findFirst({
       where: {
         userId: userid,
@@ -310,9 +309,7 @@ export class ChatService {
       if (!room)
         throw new HttpException(`Room not found`, HttpStatus.NOT_FOUND);
 
-        console.log(room.roomType)
       if (room.roomType === 'PROTECTED'){
-        console.log(room.password)
         if (bcrypt.compareSync(payload.password, room.password) == false){
           throw new HttpException(
           `valid password is required`,
@@ -839,7 +836,6 @@ export class ChatService {
   }
 
   async createMessage(user_id: number, room_id: number, payload: MessageDto) {
-    console.log('here', user_id, room_id);
     if (
       Number.isNaN(user_id) ||
       Number.isNaN(room_id) ||
@@ -847,7 +843,6 @@ export class ChatService {
     )
       throw new BadRequestException();
 
-    console.log(payload.state);
     if (
       payload.state != undefined &&
       Object.values(MessageState).includes(payload.state) === false

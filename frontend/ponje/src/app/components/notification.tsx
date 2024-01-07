@@ -67,7 +67,6 @@ export default function Notification({ user }: { user: User | null | undefined }
 
       if (readres.status === 201) {
         dispatch(setNewNotification(false));
-        // console.log("read res", readres);
       }
 
     }
@@ -262,7 +261,6 @@ export const NotificationComponent = ({ id, name, type, avatar, createdAt, setNo
       });
 
       if (readres.status === 201) {
-        // console.log("read res", readres);
       }
 
     }
@@ -289,7 +287,7 @@ export const NotificationComponent = ({ id, name, type, avatar, createdAt, setNo
           id: id,
         });
         if (res.status === 201) {
-          changeReadStatus(notifId);
+          await changeReadStatus(notifId);
           toast({
             title: 'Success',
             description: "friend request accepted",
@@ -328,8 +326,8 @@ export const NotificationComponent = ({ id, name, type, avatar, createdAt, setNo
               Authorization: getToken(),
             },
           });
+          await changeReadStatus(notifId);
           if (res.status === 201) {
-            changeReadStatus(notifId);
             toast({
               title: 'Success',
               description: "game request accepted",
@@ -371,8 +369,18 @@ export const NotificationComponent = ({ id, name, type, avatar, createdAt, setNo
           },
           id: id,
         });
+        await changeReadStatus(notifId);
         if (res.status === 201) {
-          changeReadStatus(notifId);
+          toast({
+            title: 'Success',
+            description: "friend request rejected",
+            status: 'success',
+            duration: 9000,
+            isClosable: true,
+            position: "bottom-right",
+            variant: "solid",
+            colorScheme: "green",
+          });
         }
       } catch (error) {
         const err = error as AxiosError;
@@ -397,8 +405,18 @@ export const NotificationComponent = ({ id, name, type, avatar, createdAt, setNo
           },
           userId: id,
         });
+        await changeReadStatus(notifId);
         if (res.status === 201) {
-          changeReadStatus(notifId);
+          toast({
+            title: 'Success',
+            description: "game request rejected",
+            status: 'success',
+            duration: 9000,
+            isClosable: true,
+            position: "bottom-right",
+            variant: "solid",
+            colorScheme: "green",
+          });
         }
       } catch (error) {
         const err = error as AxiosError;

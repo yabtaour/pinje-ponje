@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useAppSelector } from '@/app/globalRedux/store';
 import { getToken } from '@/app/utils/auth';
 import axios from "@/app/utils/axios";
+import { AxiosError } from 'axios';
 
 const FriendButton = ({ userId }: { userId: number | undefined }) => {
   const [userMe, setUserMe] = useState<User | null>(null);
@@ -32,7 +33,6 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
         setLoading(false);
       }
     };
-    console.log("fetching data", newNotification);
     fetchData();
   }, [friendshipStatus, newNotification]);
 
@@ -56,10 +56,11 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
 
       setFriendshipStatus(true);
     } catch (error) {
+      const err = error as AxiosError;
       console.error(`Error ${action}ing friend request:`, error);
       toast({
         title: 'Error',
-        description: "error while performing friend action",
+        description: `error while ${action}ing friend request : ${err.message}`,
         status: 'error',
         duration: 9000,
         isClosable: true,
@@ -76,7 +77,6 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
     try {
       setIsLoadingFriendship(true);
       const token = getToken();
-      console.log("Block Called");
       await axios.post(
         `/users/${action}`,
         {
@@ -90,6 +90,17 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
       );
       setFriendshipStatus(true);
     } catch (error) {
+      const err = error as AxiosError;
+      toast({
+        title: 'Error',
+        description: `error blocking user : ${err.message}`,
+        status: 'error',
+        duration: 9000,
+        isClosable: true,
+        position: "bottom-right",
+        variant: "solid",
+        colorScheme: "red",
+    });
       console.error(`Error ${action}ing friend request:`, error);
     } finally {
       setIsLoadingFriendship(false);
@@ -97,7 +108,7 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
   };
 
   useEffect(() => {
-    console.log("button clicked\n");
+    // console.log("button clicked\n");
     determineFriendshipButton();
     setFriendshipStatus(false);
   }, [friendshipStatus]);

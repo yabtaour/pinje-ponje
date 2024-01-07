@@ -54,7 +54,6 @@ export default function SideBar(Props: any) {
     const [activePage, setActivePage] = useState('home');
 
     const handleMenuItemClick = (id: string) => {
-        console.log("this is the id: ", id);
         setActivePage(id);
         router.push(id);
     };

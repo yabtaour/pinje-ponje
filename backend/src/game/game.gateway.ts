@@ -43,7 +43,6 @@ export class GameGateway
   }
 
   async afterInit(server: Server) {
-    console.log('GameGateway initialized');
   }
 
   @SubscribeMessage('initialize')
@@ -51,9 +50,6 @@ export class GameGateway
     client: any,
     payload: { gameId: number; ballVel: number; playerPos: number },
   ) {
-    console.log(payload);
-    console.log("Initialize array : ", this.intializeArray);
-    console.log("initialize clients : ", this.initializeClients);
     if (
       !payload ||
       !payload.gameId ||
@@ -65,9 +61,6 @@ export class GameGateway
     ) {
       throw new WsException('Bad request');
     }
-    console.log(payload);
-    console.log("Initialize array : ", this.intializeArray);
-    console.log("initialize clients : ", this.initializeClients);
     if (currentGames.has(payload.gameId)) {
       throw new WsException('Game already initiated');
     }
@@ -86,8 +79,6 @@ export class GameGateway
     } else {
       this.intializeArray.push(payload.gameId);
     }
-    console.log("Initialize array : ", this.intializeArray);
-    console.log("initialize clients : ", this.initializeClients);
   }
 
   @SubscribeMessage('updatePlayerPosition')
@@ -102,7 +93,6 @@ export class GameGateway
       typeof payload.gameId != 'number' ||
       typeof payload.direction != 'string'
     ) {
-      console.log('payload is not valid !', payload);
       throw new WsException('invalid payload 1');
     }
     await this.gameService.updatePlayerPosition(parseInt(client.id), payload);
@@ -111,10 +101,8 @@ export class GameGateway
   @SubscribeMessage('updateScore')
   async updateScore(client: any, payload: { gameId: number }) {
     if (!payload || !payload.gameId || typeof payload.gameId != 'number') {
-      console.log('payload is not valid !', payload);
       throw new WsException('invalid payload 2');
     }
-    console.log('update score : ', payload, client.id);
     await this.gameService.updateScore(parseInt(client.id), payload.gameId);
   }
 
@@ -168,7 +156,6 @@ export class GameGateway
 
   @SubscribeMessage('finishGame')
   async finishGame(client: any, payload: { gameId: number; enemy: number }) {
-    console.log('hadi : ', payload);
     if (
       !payload ||
       !payload.gameId ||
@@ -178,7 +165,6 @@ export class GameGateway
     ) {
       throw new WsException('Invalid payload 5');
     }
-    console.log(payload);
     this.gameService.finishGame(
       payload.enemy,
       parseInt(client.id),
@@ -193,7 +179,6 @@ export class GameGateway
 
   async handleDisconnect(client: any) {
     console.log(`Client disconnected: ${client.id}`);
-    console.log('khsrti awldi');
   }
 
 }

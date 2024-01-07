@@ -162,13 +162,13 @@ export default function UserSettings() {
                         Authorization: token,
                     },
                 });
-                console.log("updated bio", bioResponse.data);
             }
             return { success: true, message: "Update successful" };
         } catch (error) {
+            const err = error as AxiosError;
             toast({
                 title: 'Error',
-                description: "error while updating user",
+                description: `error while updating user data : ${err.message}`,
                 status: 'error',
                 duration: 9000,
                 isClosable: true,
@@ -177,7 +177,6 @@ export default function UserSettings() {
                 colorScheme: "red",
             });
             console.error("Failed to update user:", error);
-            const err = error as AxiosError;
             if (err.response?.status === 409) {
                 const conflictError = {
                     success: false,
@@ -214,7 +213,6 @@ export default function UserSettings() {
                     };
 
                     dispatch(UpdateUser(updatedUser));
-                    console.log("updatedUser : ", updatedUser);
                     setShowSuccessBadge(true);
                     setTimeout(() => setShowSuccessBadge(false), 5000);
                 } catch (error) {
