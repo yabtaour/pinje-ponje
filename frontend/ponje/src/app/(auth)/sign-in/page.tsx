@@ -4,6 +4,7 @@ import { login } from "@/app/globalRedux/features/authSlice";
 import { useAppSelector } from "@/app/globalRedux/store";
 import { useToast } from '@chakra-ui/react';
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
+import axios, { AxiosError } from "axios";
 import { getCookie } from "cookies-next";
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import Image from "next/image";
@@ -12,8 +13,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import * as Yup from 'yup';
-import { handleLogin } from '../../utils/auth';
-import { AxiosError } from "axios";
+import { fetchUserData, handleLogin } from '../../utils/auth';
 
 
 
@@ -32,9 +32,35 @@ export default function SignIn() {
 
 
   useEffect(() => {
-    if (isAuthenticated || getCookie('token'))
-      router.push('/profile');
-  }, [isAuthenticated, router])
+
+    let accessToken = getCookie('token');
+
+    const tokenVerification = async (token?: string | null | undefined) => {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/users/verify-token`, {}, {
+        headers: {
+          Authorization: `${token}`,
+        },
+      })
+        .then(() => {
+          if (accessToken) {
+            fetchUserData(accessToken).then((data) => {
+              dispatch(login({ user: data, token: accessToken }));
+              console.log("data: ", data);
+              if (data?.twoFactor && !localStorage.getItem('2fa'))
+                router.push('/verification');
+              if (!data?.profile?.avatar)
+                router.push('/onboarding');
+            })
+          }
+          router.push('/profile');
+        })
+        .catch(() => {
+          console.log("do nothing",);
+        });
+    };
+
+    tokenVerification(accessToken);
+  }, [])
 
 
 

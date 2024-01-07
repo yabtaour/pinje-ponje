@@ -50,6 +50,7 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
 
   const handleLogoutClick = () => {
     router.push('/');
+    localStorage.removeItem('2fa');
     localStorage.removeItem('access_token');
     localStorage.removeItem('auth');
     deleteCookie('token');

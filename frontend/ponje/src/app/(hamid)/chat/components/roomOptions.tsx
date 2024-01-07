@@ -139,6 +139,7 @@ export function CreateRoom({ onOpenChange, setAction }: { onOpenChange: () => vo
         }).then((res) => {
             const fetchNewMessages = async () => {
                 const rooms = await socketManager.getConversations();
+                console.log("rooms: ", rooms);
                 dispatch(setRooms(rooms));
             };
             fetchNewMessages();

@@ -167,7 +167,7 @@ export default function Chat() {
                       </p>
                     </div>
                   ) : (
-                    <ScrollShadow hideScrollBar className="overflow-x-hidden h-[96vh]">
+                    <ScrollShadow hideScrollBar className="overflow-x-hidden h-[80vh]">
                       <div className="flex justify-center sticky top-0">
                         <div className="lg:w-full md:2/3 relative z-10 bg-[#1B1A2D] sm:w-full w-full hover:bg-[#252341] flex justify-center">
                           <Button onPress={onOpen}>

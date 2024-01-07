@@ -3,10 +3,10 @@
 import Auth42Button, { AuthGoogleButton } from "@/app/components/buttons";
 import { login } from "@/app/globalRedux/features/authSlice";
 import { useAppSelector } from "@/app/globalRedux/store";
-import { handleSignup } from "@/app/utils/auth";
+import { fetchUserData, handleSignup } from "@/app/utils/auth";
 import { useToast } from "@chakra-ui/react";
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/outline';
-import { AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
 import { getCookie } from "cookies-next";
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import Image from "next/image";
@@ -32,9 +32,36 @@ export default function SignUp() {
 
 
     useEffect(() => {
-        if (isAithenticated || getCookie('token'))
-            router.push('/profile');
-    }, [isAithenticated, router])
+
+        let accessToken = getCookie('token');
+
+        const tokenVerification = async (token?: string | null | undefined) => {
+
+            await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/users/verify-token`, {}, {
+                headers: {
+                    Authorization: `${token}`,
+                },
+            })
+                .then(() => {
+                    if (accessToken) {
+                        fetchUserData(accessToken).then((data) => {
+                            dispatch(login({ user: data, token: accessToken }));
+                            console.log("data: ", data);
+                            if (data?.twoFactor && !localStorage.getItem('2fa'))
+                                router.push('/verification');
+                            if (!data?.profile?.avatar)
+                                router.push('/onboarding');
+                        })
+                    }
+                    router.push('/profile');
+                })
+                .catch(() => {
+                    console.log("do nothing",);
+                });
+        };
+
+        tokenVerification(accessToken);
+    }, [])
 
 
     const togglePasswordVisibility = () => {

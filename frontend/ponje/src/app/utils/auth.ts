@@ -16,6 +16,21 @@ export const getToken = () => {
   return null;
 };
 
+export const tokenVerification = async (token?: string | null | undefined) => {
+  await axios
+    .post(`${process.env.NEXT_PUBLIC_API_URL}/users/verify-token`, {
+      headers: {
+        Authorization: `${token}`,
+      },
+    })
+    .then((res) => {
+      return true;
+    })
+    .catch((err) => {
+      return false;
+    });
+};
+
 export const fetchUserData = async (token: string) => {
   try {
     const response = await axios.get("/users/me", {

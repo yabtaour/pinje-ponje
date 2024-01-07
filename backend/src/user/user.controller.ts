@@ -12,12 +12,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { JWTGuard } from '../auth/guards/jwt.guard';
-import { resretPasswordDto, updateUserDto } from './dto/update-user.dto';
-import { blockAndUnblockUserDto } from './dto/blockAndUnblock-user.dto';
-import { FriendsActionsDto } from './dto/FriendsActions-user.dto';
-import { UserService } from './user.service';
 import { PaginationLimitDto } from 'src/chat/dto/pagination-dto';
+import { JWTGuard } from '../auth/guards/jwt.guard';
+import { FriendsActionsDto } from './dto/FriendsActions-user.dto';
+import { blockAndUnblockUserDto } from './dto/blockAndUnblock-user.dto';
+import { resretPasswordDto, updateUserDto } from './dto/update-user.dto';
+import { UserService } from './user.service';
 import {
   SwaggerAccept,
   SwaggerBlock,
@@ -51,6 +51,11 @@ export class UserController {
     delete user.password;
     delete user.twoFactorSecret;
     return user;
+  }
+
+  @Post('verify-token')
+  async VerifyToken() {
+    return { status: 'ok' };
   }
 
   @Get('QRCode')

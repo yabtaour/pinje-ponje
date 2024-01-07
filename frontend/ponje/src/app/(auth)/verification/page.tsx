@@ -2,12 +2,12 @@
 import { setVerified } from '@/app/globalRedux/features/authSlice';
 import axios from '@/app/utils/axios';
 import { useToast } from '@chakra-ui/react';
+import { AxiosError } from "axios";
 import { getCookie } from "cookies-next";
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { AxiosError } from "axios";
 
 
 
