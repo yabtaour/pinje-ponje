@@ -355,7 +355,7 @@ const HanldeRoleOptions = ({ member }: { member: any }) => {
     else {
         return (
             <DropdownMenu variant="flat" aria-label="Dropdown menu with shortcut">
-                <DropdownItem key="Play" > <Play member={member} /> </DropdownItem>
+                <DropdownItem key="Play" > <Play member={member.user} /> </DropdownItem>
             </DropdownMenu>
         )
     }
