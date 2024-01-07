@@ -325,6 +325,45 @@ export class UserService {
     }
   }
 
+
+  async GetRankedList(
+    @Param('id', ParseIntPipe) id: number,
+    params: PaginationLimitDto,
+    search: string,
+  ) {
+    try {
+      const users = await this.prisma.user.findMany({
+        where: {
+          AND: [
+            {
+              OR: search
+                ? [{ username: { contains: search, mode: 'insensitive' } }]
+                : {},
+            },
+          ],
+        },
+        include: {
+          profile: true,
+        },
+        ...params,
+      });
+      if (!users)
+        throw new HttpException('Users not found', HttpStatus.NOT_FOUND);
+      // Remove sensitive information using map and object destructuring
+      const sanitizedUsers = users.map(
+        ({ password, twoFactorSecret, ...user }) => user,
+      );
+      return sanitizedUsers;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
   async FindUserByID(
     @Param('user_id', ParseIntPipe) user_id: number,
     searchid: number,
