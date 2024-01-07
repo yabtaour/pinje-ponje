@@ -106,7 +106,7 @@ export default function ChatInput() {
     };
 
     return (
-        <div className="bg-[#151424] w-[80%] flex justify-center absolute p-10" style={{ bottom: 0, color: '#817EC4', opacity: activeConversation?.state === 'MUTED' ? 0.5 : 1 }}>
+        <div className="bg-[#151424] w-[80%] flex justify-center absolute p-4" style={{ bottom: 0, color: '#817EC4', opacity: activeConversation?.state === 'MUTED' ? 0.5 : 1 }}>
             <Input
                 type="text"
                 placeholder={activeConversation?.state === 'MUTED' ? 'You are muted' : 'Type a message'}

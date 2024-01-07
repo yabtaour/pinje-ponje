@@ -267,7 +267,7 @@ export default function RoomOptions({ isOpen, onOpenChange }: { isOpen: boolean,
                 <ModalContent>
                     {
                         action === 'create' ? (<CreateRoom onOpenChange={onOpenChange} setAction={setAction} />) : action === 'join' ? (<JoinRooms onOpenChange={onOpenChange} setAction={setAction} />) : (
-                            <div className="flex flex-col items-center justify-center w-[50vw] bg-[#222039] py-8 rounded-xl">
+                            <div className="flex flex-col items-center justify-center w-[60vw] bg-[#222039] py-8 rounded-xl">
                                 <h1 className="text-cyan-500 text-xl md:text-2xl"> Pick an action </h1>
                                 <div className="flex md:flex-row flex-col items-center mt-4">
                                     <Button onClick={() => { setAction('create'); }} >
@@ -288,10 +288,10 @@ export default function RoomOptions({ isOpen, onOpenChange }: { isOpen: boolean,
                                         </Card>
                                     </Button>
                                     <Button onClick={() => { setAction('join'); }} >
-                                        <Card className="hover:bg-slate-400/10 m-10 rounded-lg h-full">
+                                        <Card className="hover:bg-slate-400/10 m-10 flex-wrap flex rounded-lg h-full">
                                             <CardHeader className="pb-0 pt-2 px-4 flex-col justify-center items-center text-center">
-                                                <p className="text-tiny uppercase font-bold text-white text-base md:text-lg">Join the rooms</p>
-                                                <h4 className="font-bold text-large text-gray-400 text-sm md:text-base">Join Other Rooms</h4>
+                                                <p className="text-tiny uppercase font-bold text-white text-sm md:text-base">Join the rooms</p>
+                                                <h4 className="font-bold text-large text-gray-400 text-xs md:text-sm">Join Other Rooms</h4>
                                             </CardHeader>
                                             <CardBody className="overflow-visible py-2 flex items-center justify-center">
                                                 <Image
