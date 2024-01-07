@@ -8,6 +8,7 @@ import { useDispatch } from "react-redux";
 import { setNewNotification } from "../globalRedux/features/authSlice";
 import { User } from "../types/user";
 import { getToken } from "../utils/auth";
+import { AxiosError } from "axios";
 
 
 interface Notification {
@@ -138,9 +139,10 @@ export default function Notification({ user }: { user: User | null | undefined }
                 treated: false,
               } as Notification;
             } catch (error) {
+              const err = error as AxiosError;
               toast({
                 title: 'Error',
-                description: "Error while getting user by id",
+                description: `Error while getting user by id : ${err}`,
                 status: 'error',
                 duration: 9000,
                 isClosable: true,
@@ -302,9 +304,10 @@ export const NotificationComponent = ({ id, name, type, avatar, createdAt, setNo
         }
       }
       catch (error) {
+        const err = error as AxiosError;
         toast({
           title: 'Error',
-          description: "friend accept error",
+          description: `friend accept error : ${err}`,
           status: 'error',
           duration: 9000,
           isClosable: true,
@@ -341,9 +344,10 @@ export const NotificationComponent = ({ id, name, type, avatar, createdAt, setNo
         }, 2000);
       }
       catch (error) {
+        const err = error as AxiosError;
         toast({
           title: 'Error',
-          description: "game accept error",
+          description: `game accept error : ${err}`,
           status: 'error',
           duration: 9000,
           isClosable: true,
@@ -371,9 +375,10 @@ export const NotificationComponent = ({ id, name, type, avatar, createdAt, setNo
           changeReadStatus(notifId);
         }
       } catch (error) {
+        const err = error as AxiosError;
         toast({
           title: 'Error',
-          description: "friend reject error",
+          description: `friend reject error : ${err}`,
           status: 'error',
           duration: 9000,
           isClosable: true,
@@ -396,9 +401,10 @@ export const NotificationComponent = ({ id, name, type, avatar, createdAt, setNo
           changeReadStatus(notifId);
         }
       } catch (error) {
+        const err = error as AxiosError;
         toast({
           title: 'Error',
-          description: "game request reject error",
+          description: `game request reject error : ${err}`,
           status: 'error',
           duration: 9000,
           isClosable: true,

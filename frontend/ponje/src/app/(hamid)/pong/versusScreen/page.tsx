@@ -405,20 +405,19 @@ export default function VersusScreen() {
                         Body.setPosition(ceiling, { x: 0, y: 0 });
                         setTimeout(() => {
                             updateScore(gameId);
-                        }, 1)
+                        }, 2);
                     } else if (ballReachedRightThreshold()) {
-                        // Body.setPosition(ball, { x: worldWidth, y: ball.position.y });
-                        Body.setPosition(ball, { x: worldWidth / 2, y: worldHeight / 2 });
+                        console.log("mchat mn lisr !! ")
+                        Body.setPosition(ball, { x: worldWidth / 2, y: worldHeight / 2 });            
                         Body.setPosition(floor, { x: 0, y: worldHeight });
                         Body.setPosition(ceiling, { x: 0, y: 0 });
-                        await socketManager.sendTestingSendBallUpdate({
+                        socketManager.sendTestingSendBallUpdate({
                             gameId: gameId,
                             position: { x: worldWidth + 1, y: ball.position.y },
                             velocity: ball.velocity,
                             edge: "paddle",
                             worldWidth: worldWidth
                         });
-                        // Body.setPosition(ball, { x: worldWidth / 2, y: worldHeight / 2 });
                     }
                     updatePaddlesgame(gameId);
                 }
