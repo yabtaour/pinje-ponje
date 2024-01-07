@@ -77,17 +77,12 @@ export class ProfilesService {
     }
   }
 
-  async uploadAvatar(user_id: number, file: any) {
+  async uploadAvatar(user_id: number, avatarBase64: string) {
     try {
-      if (!file || !file.path || !file.filename)
-        throw new HttpException('File not found', HttpStatus.NOT_FOUND);
-
-      const path = '/avatars/' + file.filename;
-      console.log(path, file);
       const profile = await this.prisma.profile.update({
         where: { userid: user_id },
         data: {
-          avatar: path,
+          avatar: avatarBase64,
         },
       });
       return profile;
