@@ -13,8 +13,8 @@ services:
     #   - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     depends_on:
       - backend
-    volumes:
-      - avatars:/app/public/avatars
+    # volumes:
+    #   - avatars:/app/public/avatars
     networks:
       - frontend
       - backend
@@ -47,8 +47,8 @@ services:
     depends_on:
       - postgres
       - adminer
-    volumes:
-      - avatars:/app/uploads/Avatars
+    # volumes:
+    #   - avatars:/app/uploads/Avatars
     networks:
       - backend
       - frontend
@@ -72,8 +72,8 @@ volumes:
   postgres_db_data:
     name: postgres_db_data
 
-  avatars:
-    name: avatars
+  # avatars:
+  #   name: avatars
 
   backend_volume:
     name: backend_volume
