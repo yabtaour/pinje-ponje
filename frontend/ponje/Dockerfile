@@ -15,9 +15,11 @@ RUN npm install && npm install --dev
 
 COPY . .
 
-EXPOSE 3000
+EXPOSE 3001
 
-ENTRYPOINT ["/sbin/tini", "--", "npm", "run", "dev"]
+RUN npm run build
+
+ENTRYPOINT ["/sbin/tini", "--", "npm", "run", "start"]
 
 
 # CMD ["tail", "-f", "/dev/null"]

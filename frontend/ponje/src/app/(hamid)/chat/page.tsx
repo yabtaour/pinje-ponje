@@ -22,7 +22,7 @@ const sent = <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w
     <path fill="#fff" d="M5.808 16.923q-.213 0-.357-.144q-.143-.144-.143-.357q0-.212.143-.356q.144-.143.357-.143h5.788l-7.55-7.55q-.14-.14-.153-.349t.152-.36q.139-.139.354-.139q.214 0 .355.14L12 14.905l5.046-5.045q-.12-.283-.179-.52q-.06-.238-.06-.439q0-.766.53-1.295t1.294-.53q.765 0 1.298.53q.533.528.533 1.294t-.531 1.298q-.53.533-1.299.533q-.165 0-.377-.047q-.213-.047-.47-.16l-5.381 5.4h5.788q.213 0 .357.143t.143.357q0 .213-.143.356q-.144.143-.357.143H5.808Z" />
 </svg>
 
-export function Mymessage({ message }: any) {
+function Mymessage({ message }: any) {
     return (
         <div className="flex flex-row justify-end">
 
@@ -61,7 +61,7 @@ export function Mymessage({ message }: any) {
 
 
 
-export function OtherMessage({ message }: any) {
+function OtherMessage({ message }: any) {
     const router = useRouter();
     const color = uniqolor(message?.user?.username);
     const activeConversationId = useAppSelector(state => state?.chatReducer?.activeConversationId);
@@ -91,7 +91,7 @@ export function OtherMessage({ message }: any) {
 
 
 
-export function InformationMessage({ message }: any) {
+function InformationMessage({ message }: any) {
     return (
         <>
             {

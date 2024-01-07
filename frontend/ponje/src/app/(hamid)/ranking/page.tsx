@@ -20,7 +20,7 @@ const columns = [
   { name: "Profile", uid: "profile" },
 
 ]
-export const Podium = ({ users }: { users: DisplayedInfo[] }) => {
+const Podium = ({ users }: { users: DisplayedInfo[] }) => {
   const rankedUsers = users;
   const updatedUsers = rankedUsers.slice();
   updatedUsers.splice(1, 0, updatedUsers.splice(0, 1)[0]);
@@ -89,7 +89,7 @@ export type DisplayedInfo = {
 
 
 
-export const Leaderboard = ({ users }: { users: DisplayedInfo[] }) => {
+const Leaderboard = ({ users }: { users: DisplayedInfo[] }) => {
   const [page, setPage] = React.useState(1);
   const [isLoading, setLoading] = useState(true);
 

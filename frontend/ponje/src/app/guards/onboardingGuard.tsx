@@ -19,8 +19,8 @@ const OnboardingGuard: React.FC<OnboardingGuardProps> = ({ children }) => {
     console.log("user : ", user);
 
     useEffect(() => {
-        if (!user?.profile?.username || !user?.profile?.avatar) {
-            console.log("user?.profile?.username : ", user?.profile?.username);
+        if (!user?.username || !user?.profile?.avatar) {
+            console.log("user?.profile?.username : ", user?.username);
             console.log("user?.profile?.avatar : ", user?.profile?.avatar);
             router.replace("/onboarding");
         }
