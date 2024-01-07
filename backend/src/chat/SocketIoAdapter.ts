@@ -38,7 +38,6 @@ export class SocketIOAdapter extends IoAdapter {
 
     return server;
     } catch (error) {
-      console.log(error);
       throw error;
     }
   }

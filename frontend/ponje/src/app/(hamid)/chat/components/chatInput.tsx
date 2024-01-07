@@ -64,7 +64,6 @@ export default function ChatInput() {
             try {
                 socketManager.waitForConnection(async () => {
                     const newMessage = await socketManager.sendMessage(value, activeConversation?.room?.id);
-                    console.log("newMessage", newMessage);
                     // const foundIndex = activeConversation?.room?.messages.findIndex((message: any) => message.id === messageId);
                     dispatch(replaceMessage(newMessage))
                 });

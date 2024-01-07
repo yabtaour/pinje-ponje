@@ -21,7 +21,6 @@ const SearchPage = () => {
   const router = useRouter();
   const toast = useToast();
   const fetchUsers = async (url: string) => {
-    console.log(url);
     try {
       const token = getToken()
       const response = await axios.get(url, {

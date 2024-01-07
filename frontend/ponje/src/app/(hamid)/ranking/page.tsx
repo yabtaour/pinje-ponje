@@ -289,7 +289,6 @@ export default function RankPage() {
 
 
 
-  console.log("users: ", users);
   return (
     <div className=''>
       {

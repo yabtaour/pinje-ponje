@@ -137,7 +137,7 @@ export default function Profile() {
             }
         };
         fetchData();
-        console.log(newNotification);
+        // console.log(newNotification);
     }, [ newNotification]);
 
 

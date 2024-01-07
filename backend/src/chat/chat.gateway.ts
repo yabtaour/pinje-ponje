@@ -128,7 +128,6 @@ export class ChatGateway
   @SubscribeMessage('getRooms')
   async handleGetRooms(client: AuthWithWs, payload: any) {
     try {
-      console.log('The User ID Requesting Rooms : ', client.id);
       const rooms = await this.chatService.getRoomsByUserId(
         parseInt(client.id),
         client.handshake.query,
@@ -153,7 +152,6 @@ export class ChatGateway
   async handleGetRoom(client: AuthWithWs, payload: any) {
     try {
       const room = await this.chatService.getRoomByid(payload.id);
-      console.log('room : ', room);
       this.server.to(String(payload.id)).emit('roomDetails', room);
     } catch (exception: any) {
       throw new WsException(exception);
@@ -323,7 +321,6 @@ export class ChatGateway
         parseInt(payload.id),
         payload,
       );
-      console.log('message : ', message);
       if (message) this.server.to(String(payload.id)).emit('message', message);
     } catch (exception: any) {
       throw new WsException(exception);
@@ -359,10 +356,7 @@ export class ChatGateway
   //? add the remove friend  , and invite to room
   @OnEvent('conversationUpdate')
   notifyNewConversation(payload: any) {
-    console.log('allo');
     const { senderId, receiverId } = payload;
-    console.log('senderId : ', senderId);
-    console.log('receiverId : ', receiverId);
     this.server.to(String(receiverId)).emit('message', { message: 'Accept' });
     this.server.to(String(senderId)).emit('message', { message: 'Accept' });
   }
@@ -370,10 +364,7 @@ export class ChatGateway
 
   @OnEvent('AcceptFriendRequest')
   notifyAcceptFriendRequest(payload: any) {
-    console.log('allo');
     const { senderId, receiverId } = payload;
-    console.log('senderId : ', senderId);
-    console.log('receiverId : ', receiverId);
     this.server.to(String(receiverId)).emit('message', { message: 'Accept' });
     this.server.to(String(senderId)).emit('message', { message: 'Accept' });
   }

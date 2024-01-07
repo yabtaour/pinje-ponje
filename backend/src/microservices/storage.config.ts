@@ -85,7 +85,6 @@ export const storageConfig = {
         '-' +
         randomName +
         extname(file.originalname);
-      console.log('imgName: ', imgName);
       cb(null, imgName);
     },
     onError: (err, next) => {

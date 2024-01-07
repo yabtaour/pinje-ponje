@@ -378,7 +378,6 @@ export function RoomMembers() {
     const [muted, setMuted] = useState(false);
     const router = useRouter();
 
-    console.log("activeConversation: ", activeConversation);
     return (
         <div className='w-full  p-4'>
             <h1 className='text-center text-cyan-300'>{

@@ -174,7 +174,6 @@ export class GameService {
         HttpStatus.BAD_REQUEST,
       );
 
-    console.log(user.id, ' accepted ', data.userId);
     const opponent = await this.prisma.user.findFirst({
       where: {
         id: data.userId,
@@ -262,7 +261,6 @@ export class GameService {
       },
     });
 
-    console.log('sending to : ', player.userId, opponentPlayer.userId);
     await this.gameGateway.server
       .to(String(player.userId))
       .emit('gameFound', { game: game });
@@ -393,7 +391,6 @@ export class GameService {
         status: 'INGAME',
       },
     });
-    console.log('sending to : ', player.userId, opponentPlayer.userId);
     await this.gameGateway.server
       .to(String(player.userId))
       .emit('gameFound', { game: game, id: player.userId });
@@ -403,7 +400,6 @@ export class GameService {
   }
 
   async initializeGame(client: number, payload: any) {
-    console.log('ha mrra');
     const player = await this.prisma.player.findUnique({
       where: {
         userId_gameId: {
@@ -637,30 +633,8 @@ export class GameService {
     }
   }
 
-  // if (currentGames.get(payload.gameId)?.player1.id == client) {
-  // 	if (currentGames.get(payload.gameId)?.player1.reversed == false) {
-  // 		await this.gameGateway.server
-  // 			.to(String(currentGames.get(payload.gameId)?.player1.id))
-  // 			.emit('updateBall', payload.position);
-  // 		await this.gameGateway.server
-  // 			.to(String(currentGames.get(payload.gameId)?.player2.id))
-  // 			.emit('updateBall', {x: -payload.position.x, y: payload.position.y});
-  // 	}
-  // } else if (currentGames.get(payload.gameId)?.player2.id == client) {
-  // 	if (currentGames.get(payload.gameId)?.player2.reversed == false) {
-  // 		await this.gameGateway.server
-  // 			.to(String(currentGames.get(payload.gameId)?.player2.id))
-  // 			.emit('updateBall', payload.position);
-  // 		await this.gameGateway.server
-  // 			.to(String(currentGames.get(payload.gameId)?.player1.id))
-  // 			.emit('updateBall', {x: -payload.position.x, y: payload.position.y});
-  // 	}
-  // } else {
-  // 	throw new WsException("Player Not found");
-  // }
 
   async finishGame(winnerId: number, loserId: number, gameId: number) {
-    console.log(loserId, winnerId, gameId);
     if (currentGames.has(gameId)) {
       currentGames.delete(gameId);
       const winner = await this.prisma.player.update({
@@ -698,7 +672,6 @@ export class GameService {
           id: winnerId,
         },
       });
-      console.log('winner : ', winnerUser.username);
       const newWinnerConsitensy =
         (await winnerUser).consitency + winner.consitency > 100
           ? 100
@@ -727,14 +700,11 @@ export class GameService {
       if (newGamePoints == 0) {
         const ranks = Object.values(Rank);
         const currentIndex = ranks.indexOf((await winnerUser).rank);
-        console.log(ranks, currentIndex, nextRank);
         if (currentIndex === -1 || currentIndex === ranks.length - 1) {
           nextRank = (await winnerUser).rank;
         }
         nextRank = ranks[currentIndex + 1];
       }
-      console.log('old rank : ', (await winnerUser).rank);
-      console.log('new rank : ', nextRank);
 
       await this.prisma.user.update({
         where: {
@@ -759,10 +729,7 @@ export class GameService {
           status: 'ONLINE',
         },
       });
-      console.log('loser : ', loserId, ' winner : ', winnerId);
 
-      console.log(currentGames);
-      console.log(gameId);
       this.gameGateway.initializeClients.splice(
         this.gameGateway.initializeClients.findIndex((element) => {
           element == winnerId;
@@ -817,7 +784,6 @@ export class GameService {
   }
 
   async updateScore(userId: number, gameId: number) {
-    console.log('score update', gameId, userId);
 
     if (currentGames.has(gameId)) {
       if (userId === currentGames.get(gameId).player1.id) {
@@ -862,7 +828,6 @@ export class GameService {
     const game = currentGames.get(gameId);
     const winnerId =
       client == game.player1.id ? game.player2.id : game.player1.id;
-    console.log('the loser is, client');
     this.finishGame(winnerId, client, gameId);
   }
 }

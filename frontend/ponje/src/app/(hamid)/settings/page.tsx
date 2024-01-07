@@ -162,7 +162,6 @@ export default function UserSettings() {
                         Authorization: token,
                     },
                 });
-                console.log("updated bio", bioResponse.data);
             }
             return { success: true, message: "Update successful" };
         } catch (error) {
@@ -214,7 +213,6 @@ export default function UserSettings() {
                     };
 
                     dispatch(UpdateUser(updatedUser));
-                    console.log("updatedUser : ", updatedUser);
                     setShowSuccessBadge(true);
                     setTimeout(() => setShowSuccessBadge(false), 5000);
                 } catch (error) {

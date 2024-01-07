@@ -219,8 +219,6 @@ export function Invite({ friend, room }: { friend: any, room: any }) {
 
     const inviteFriend = () => {
 
-        console.log("friend: ", friend);
-        console.log("room: ", room);
 
         axios
             .post(`/chatapi/rooms/${room?.room?.id}/invite`, { id: friend.id }, {

@@ -84,7 +84,6 @@ export class ProfilesService {
       const binaryData = Buffer.from(avatarBase64, 'base64');
       const sizeInBytes = binaryData.length;
 
-      console.log(allowedSizeInBytes, sizeInBytes)
       if (sizeInBytes > allowedSizeInBytes)
         throw new HttpException("file size is large", HttpStatus.BAD_REQUEST)
       const profile = await this.prisma.profile.update({

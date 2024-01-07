@@ -124,6 +124,7 @@ export function CreateRoom({ onOpenChange, setAction }: { onOpenChange: () => vo
     const validationSchema = Yup.object({
         name: Yup.string().required('Name is required').max(20, 'Name must be less than 20 characters'),
         type: Yup.string().required('Room Type is required'),
+        password: Yup.string().max(20, 'Password must be less than 20 characters').required('Password is required'),
     });
 
     const handleSubmit = (values: any) => {
@@ -146,7 +147,7 @@ export function CreateRoom({ onOpenChange, setAction }: { onOpenChange: () => vo
         }).catch((err) => {
             toast({
                 title: "Error.",
-                description: "Counldn't create a room.",
+                description: `Couldn't create a room. : ${err.message}`,
                 status: "error",
                 duration: 3000,
                 isClosable: true,

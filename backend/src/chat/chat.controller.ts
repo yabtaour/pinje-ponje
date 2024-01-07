@@ -54,7 +54,6 @@ export class ChatController {
     @Query() query: PaginationLimitDto,
   ) {
     const user = await this.userService.getCurrentUser(request);
-    console.log(user.id);
     const rooms = await this.chatService.getRoomsByUserId(user.id, query);
     this.chatgateway.server.to(String(user.id)).emit('listOfRooms', rooms);
     return rooms;
@@ -66,10 +65,8 @@ export class ChatController {
     @Query() query: PaginationLimitDto,
   ) {
     const user = await this.userService.getCurrentUser(request);
-    console.log(user.id);
     const rooms = await this.chatService.getUnjoinedRooms(user.id, query);
     // this.chatgateway.server.to(String(user.id)).emit('listOfRooms', rooms);
-    console.log(rooms);
     return rooms;
   }
 
@@ -248,7 +245,6 @@ export class ChatController {
       .to(String(payload.id))
       .emit('roomBroadcast', updatedMember);
 
-    console.log(updatedMember);
     return user;
   }
 

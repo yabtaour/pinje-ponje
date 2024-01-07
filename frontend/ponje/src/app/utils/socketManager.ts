@@ -304,29 +304,6 @@ class SocketManager {
     });
   }
 
-  // public sendBallPosition(payload: {gameId: number, position: {x: number, y: number}}): Promise<any> {
-  //   return new Promise(async (resolve, reject) => {
-  //     if (this.gameSocket && this.gameSocket.connected) {
-  //       console.log("send ball update")
-  //       this.gameSocket?.emit("updateBallPosition", payload);
-  //       resolve("done");
-  //     } else {
-  //       reject("Socket is not connected");
-  //     }
-  //   });
-  // }
-
-  // public onBallUpdate(callback: (data: any) => void): void {
-  //   if (this.gameSocket && this.gameSocket.connected) {
-  //     this.gameSocket?.off("updateBall");
-  //     this.gameSocket?.on("updateBall", (data: any) => {
-  //       console.log("received ball update : ", data);
-  //       callback(data);
-  //     });
-  //   } else {
-  //     console.error("Socket is not connected");
-  //   }
-  // }
 
   public sendGameEnd(payload: { gameId: number; enemy: number }) {
     return new Promise((resolve, reject) => {

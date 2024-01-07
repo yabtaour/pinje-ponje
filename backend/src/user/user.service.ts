@@ -719,7 +719,7 @@ export class UserService {
           },
         },
       });
-      console.log(listofFriends);
+      // console.log(listofFriends);
       if (!listofFriends) return listofFriends;
 
       const sanitizedFriends = listofFriends.map(({ friend }) => {

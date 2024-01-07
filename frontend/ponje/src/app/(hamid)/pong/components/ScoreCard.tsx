@@ -10,13 +10,16 @@ export default function ScoreCard({ playerOne, playerTwo, myScore, enemyScore }:
             <div className="flex items-center">
                 {playerOne && (
                     <>
-                        <Image
-                            src={playerOne?.profile?.avatar ?? "/placeholderuser.jpeg"}
-                            alt="User Avatar"
-                            width={18}
-                            height={18}
-                            className="w-full mask mask-squircle h-full object-cover rounded-full mr-2 lg:w-16 lg:h-16"
-                        />
+                        <div className="avatar">
+                            <div className="w-16 lg:w-24 md:w-32 rounded-xl">
+                                <Image
+                                    src={playerOne?.profile?.avatar ?? "/placeholderuser.jpeg"}
+                                    alt="User Avatar"
+                                    width={18}
+                                    height={18}
+                                />
+                            </div>
+                        </div>
                         <div className="flex flex-row">
                             <p className="text-sm md:text-lg font-bold mr-3">{playerOne.username}</p>
                             <div className="badge badge-neutral text-white bg-[#77DFF8]">you</div>
@@ -38,13 +41,24 @@ export default function ScoreCard({ playerOne, playerTwo, myScore, enemyScore }:
                             <div className="badge badge-neutral text-white bg-[#fb4848]">enemy</div>
                             <p className="text-lg md:text-lg font-bold ml-3 ">{playerTwo.username}</p>
                         </div>
-                        <Image
+                        <div className="avatar">
+                            <div className="w-16 lg:w-24 md:w-32 rounded-xl">
+                                <Image
+                                    src={playerTwo?.profile?.avatar ?? "/placeholderuser.jpeg"}
+                                    alt="User Avatar"
+                                    width={18}
+                                    height={18}
+                                />
+                            </div>
+                        </div>
+                        {/* <Image
                             src={playerTwo?.profile?.avatar ?? "/placeholderuser.jpeg"}
                             alt="User Avatar"
                             width={18}
                             height={18}
-                            className="w-full mask mask-squircle h-full object-cover rounded-full ml-2 lg:w-16 lg:h-16"
-                        />
+                            className="object-cover rounded-full ml-2 lg:w-16 lg:h-16"
+                            layout="responsive"
+                        /> */}
                     </>
                 )}
             </div>

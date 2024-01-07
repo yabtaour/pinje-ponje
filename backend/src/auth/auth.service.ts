@@ -17,8 +17,6 @@ export class AuthService {
     ) {}
 
     async isTwiFactorCodeValid(user: any, twofactorcode: string){
-      console.log('Entered Code:', twofactorcode);
-      console.log('User Secret:', user.twoFactorSecret);
       try {
 
 
@@ -26,7 +24,6 @@ export class AuthService {
           token: twofactorcode,
           secret: user.twoFactorSecret,
         });
-        console.log('Verification Result:', result);
         return result;
       } catch (error) {
         console.error('Verification Error:', error);

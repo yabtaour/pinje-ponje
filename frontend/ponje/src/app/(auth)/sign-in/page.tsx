@@ -47,7 +47,6 @@ export default function SignIn() {
             fetchUserData(accessToken).then((data) => {
               dispatch(login({ user: data, token: accessToken }));
               setSession(accessToken);
-              console.log("data: ", data);
               if (data?.twoFactor && !localStorage.getItem('2fa'))
                 router.push('/verification');
               if (!data?.profile?.avatar)
