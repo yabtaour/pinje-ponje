@@ -8,24 +8,19 @@ import {
   Patch,
   Post,
   Req,
-  UploadedFile,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JWTGuard } from '../auth/guards/jwt.guard';
-import { storageConfig } from '../microservices/storage.config';
 import { UserService } from '../user/user.service';
-import { ProfilesService } from './profiles.service';
 import { updateProfileDto } from './dto/update-profile.dto';
 import {
   SwaggerDeleteAvatar,
   SwaggerFindProfileById,
   SwaggerGetAvatar,
   SwaggerUpdateProfile,
-  SwaggerUploadAvatar,
 } from './profile.swagger';
+import { ProfilesService } from './profiles.service';
 
 @Controller('profiles')
 @ApiTags('Profiles')
@@ -52,7 +47,10 @@ export class ProfilesController {
   }
 
   @Post('avatar')
-  async uploadAvatar(@Body('avatarBase64') avatarBase64 : string ,@Req() req: any) {
+  async uploadAvatar(
+    @Body('avatarBase64') avatarBase64: string,
+    @Req() req: any,
+  ) {
     const user = await this.userServices.getCurrentUser(req);
     return await this.profilesService.uploadAvatar(user.id, avatarBase64);
   }
