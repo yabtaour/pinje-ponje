@@ -38,9 +38,11 @@ export default function Performance({ user }: { user: User | null | undefined })
   const countWinsAndLosses = (matchHistory: any) => {
     let wins = 0;
     let losses = 0;
-
     for (const match of matchHistory) {
-      if (match.players[0].status === "WINNER") {
+      const opponent = match?.players[0].user.username === user?.username
+      ? match?.players[0]
+      : match?.players[1];
+      if (opponent.status === "WINNER") {
         wins++;
       } else {
         losses++;
