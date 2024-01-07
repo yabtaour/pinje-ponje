@@ -11,11 +11,13 @@ import { useEffect, useRef, useState } from 'react';
 import GameResult from "../components/GameResult";
 import PlayerCard, { PlayerSkeleton } from "../components/PlayerCard";
 import ScoreCard from "../components/ScoreCard";
+import { getCookie } from "cookies-next";
 
 
 
 
-const socketManager = SocketManager.getInstance();
+const token = getCookie('token')
+const socketManager = SocketManager.getInstance(`${process.env.NEXT_PUBLIC_API_URL}`, token);
 
 const Engine = Matter.Engine;
 const Render = Matter.Render;
