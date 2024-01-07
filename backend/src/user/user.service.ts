@@ -717,8 +717,7 @@ export class UserService {
         },
       });
       console.log(listofFriends);
-      if (!listofFriends)
-        return listofFriends
+      if (!listofFriends) return listofFriends;
 
       const sanitizedFriends = listofFriends.map(({ friend }) => {
         const { password, twoFactorSecret, twoFactor, ...sanitizedFriend } =
@@ -818,6 +817,8 @@ export class UserService {
         },
       });
 
+      this.eventEmmiter.emit('notification', data?.id?.toString(), "hamid");
+
       return 'Friend request canceled';
     } catch (e) {
       if (
@@ -852,6 +853,11 @@ export class UserService {
           },
         },
       });
+      this.eventEmmiter.emit('conversationUpdate', {
+        senderId: user_id,
+        receiverId: data.id,
+      });
+
       return 'Friend request declined';
     } catch (e) {
       if (

@@ -366,6 +366,17 @@ export class ChatGateway
     this.server.to(String(receiverId)).emit('message', { message: 'Accept' });
     this.server.to(String(senderId)).emit('message', { message: 'Accept' });
   }
+
+
+  @OnEvent('AcceptFriendRequest')
+  notifyAcceptFriendRequest(payload: any) {
+    console.log('allo');
+    const { senderId, receiverId } = payload;
+    console.log('senderId : ', senderId);
+    console.log('receiverId : ', receiverId);
+    this.server.to(String(receiverId)).emit('message', { message: 'Accept' });
+    this.server.to(String(senderId)).emit('message', { message: 'Accept' });
+  }
 }
 
 /**
