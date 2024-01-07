@@ -92,12 +92,12 @@ export default function UserSettings() {
     const validationSchema = Yup.object().shape({
         username: Yup.string().max(20, 'Username must be less than 20 characters'),
         email: Yup.string().email("Invalid email address"),
-        oldpassword: Yup.string(),
-        newpassword: Yup.string().when("oldpassword", {
+        oldpassword: Yup.string().max(20, 'password must be less than 20 characters'),
+        newpassword: Yup.string().max(20, 'password must be less than 20 characters').when("oldpassword", {
             is: (oldpassword: string) => oldpassword && oldpassword.length > 0,
             then: (schema) => schema.required("New Password is required").min(8, 'Password must be at least 8 characters').notOneOf([Yup.ref('oldpassword')], 'old and new password cannot be the same'),
         }),
-        confirmnewpassword: Yup.string().when("newpassword", {
+        confirmnewpassword: Yup.string().max(20, 'password must be less than 20 characters').when("newpassword", {
             is: (newpassword: string) => newpassword && newpassword.length > 0,
             then: (schema) => schema.required("Confirm Password is required").oneOf([Yup.ref('newpassword')], 'Passwords must match'),
         }),

@@ -55,6 +55,7 @@ export default function SignUp() {
         username: Yup.string().max(20, "Username must be 20 characters or less").required("Username is required"),
         email: Yup.string().email("Invalid email address").required("Email is required"),
         password: Yup.string()
+            .max(20, 'password must be less than 20 characters')
             .min(8, "Password must be at least 8 characters long")
             .matches(/[a-z]/, "Password must contain at least one lowercase letter")
             .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
@@ -85,7 +86,7 @@ export default function SignUp() {
             } else {
                 toast({
                     title: 'Error',
-                    description: "Signup Error",
+                    description: `Signup Error : ${err.message}`,
                     status: 'error',
                     duration: 9000,
                     isClosable: true,
@@ -127,7 +128,7 @@ export default function SignUp() {
                                 placeholder="username"
                                 className="text-sm font-light w-80 px-4 py-3 text-white bg-gray-900 border border-solid placeholder-slate-500 border-slate-700 rounded"
                             />
-                            <ErrorMessage name="email" component="div" className="text-red-500 text-sm" />
+                            <ErrorMessage name="username" component="div" className="text-red-500 text-sm" />
                         </div>
                         <div className="flex flex-col relative mb-8 mt-[3rem]">
                             <div className="absolute top-[-2rem] text-slate-200 text-sm mb-8">Email</div>

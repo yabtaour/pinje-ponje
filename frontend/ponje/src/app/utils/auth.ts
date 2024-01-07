@@ -109,5 +109,7 @@ export const handleLogin = async (email: string, password: string) => {
   } catch (error) {
     console.log(axios.request);
     console.error(error);
+    const err = error as AxiosError;
+    throw err;
   }
 };
