@@ -3,6 +3,7 @@ import { useToast } from "@chakra-ui/react";
 import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@nextui-org/react';
 import { useEffect, useState } from 'react';
 
+import { useAppSelector } from '@/app/globalRedux/store';
 import { getToken } from '@/app/utils/auth';
 import axios from "@/app/utils/axios";
 
@@ -13,7 +14,7 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
     useState<boolean>(false);
   const [friendshipStatus, setFriendshipStatus] = useState(false);
   const toast = useToast();
-
+  const newNotification = useAppSelector((state) => state.authReducer.value.newNotification);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,15 +26,15 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
           },
         });
 
-        setUserMe(data.data);
+        setUserMe(() => data.data);
         setLoading(false);
       } catch (err) {
         setLoading(false);
       }
     };
-
+    console.log("fetching data", newNotification);
     fetchData();
-  }, [friendshipStatus]);
+  }, [friendshipStatus, newNotification]);
 
   const handleFriendAction = async (
     action: "send" | "accept" | "cancel" | "unfriend" | "decline"

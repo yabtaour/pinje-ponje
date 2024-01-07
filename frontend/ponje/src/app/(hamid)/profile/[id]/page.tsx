@@ -1,17 +1,19 @@
 'use client';
 import Loader from "@/app/components/loader";
+import { useAppSelector } from "@/app/globalRedux/store";
 import { getToken } from "@/app/utils/auth";
 import axios from "@/app/utils/axios";
 import { useToast } from '@chakra-ui/react';
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { User } from '../../../types/user';
 import FriendsList from "../components/FriendsList";
 import MatchHistory from "../components/MatchHistory";
 import Performance from "../components/Performance";
 import PlayerBanner from "../components/PlayerBanner";
 import ProgressBar from "../components/ProgressBar";
 import SkillAnalytics from "../components/SkillAnalytics";
-import { User } from '../../../types/user';
 
 
 
@@ -21,11 +23,48 @@ export default function Profile({ params }: { params: { id: number } }) {
     const [Friends, setFriends] = useState([]);
     const router = useRouter();
     const toast = useToast();
+    const newNotification = useAppSelector((state) => state.authReducer.value.newNotification);
+    const dispatch = useDispatch();
 
     useEffect(() => {
         if (isNaN(params.id)) {
             router.push('/404');
         }
+        const fetchFriends = async (userId: number) => {
+            try {
+
+                const token = getToken();
+
+                if (!token) {
+                    console.error('Access token not found in Cookies');
+                    return;
+                }
+
+                const data = await axios.get(`/users/${userId}/friends`, {
+                    headers: {
+                        Authorization: token,
+                    },
+                });
+                const friends = data.data;
+                setFriends(friends);
+                setLoading(false);
+                console.log(data.data);
+            } catch (err) {
+                toast({
+                    title: 'Error',
+                    description: "error while getting friends",
+                    status: 'error',
+                    duration: 9000,
+                    isClosable: true,
+                    position: "bottom-right",
+                    variant: "solid",
+                });
+                console.error(err);
+                setLoading(false);
+            }
+        };
+
+
 
         const fetchData = async () => {
             try {
@@ -41,7 +80,8 @@ export default function Profile({ params }: { params: { id: number } }) {
                         Authorization: getToken(),
                     },
                 });
-                setUser(data.data);
+                setUser(() => data.data);
+
                 fetchFriends(data.data.id);
                 console.log(data.data);
                 setLoading(false);
@@ -64,41 +104,10 @@ export default function Profile({ params }: { params: { id: number } }) {
             }
         };
         fetchData();
-    }, [params.id]);
+        console.log(newNotification);
+    }, [params.id, dispatch, newNotification]);
 
-    const fetchFriends = async (userId: number) => {
-        try {
 
-            const token = getToken();
-
-            if (!token) {
-                console.error('Access token not found in Cookies');
-                return;
-            }
-
-            const data = await axios.get(`/users/${userId}/friends`, {
-                headers: {
-                    Authorization: token,
-                },
-            });
-            const friends = data.data;
-            setFriends(friends);
-            setLoading(false);
-            console.log(data.data);
-        } catch (err) {
-            toast({
-                title: 'Error',
-                description: "error while getting friends",
-                status: 'error',
-                duration: 9000,
-                isClosable: true,
-                position: "bottom-right",
-                variant: "solid",
-            });
-            console.error(err);
-            setLoading(false);
-        }
-    };
 
     if (loading) {
         return (

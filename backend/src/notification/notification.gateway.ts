@@ -1,21 +1,22 @@
 import {
-	Inject,
-	UseFilters,
-	UsePipes,
-	ValidationPipe,
-	forwardRef,
+  Inject,
+  UseFilters,
+  UsePipes,
+  ValidationPipe,
+  forwardRef,
 } from '@nestjs/common';
 import {
-	OnGatewayConnection,
-	OnGatewayDisconnect,
-	OnGatewayInit,
-	SubscribeMessage,
-	WebSocketGateway,
-	WebSocketServer,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  OnGatewayInit,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
 import { Namespace } from 'socket.io';
 import { GlobalExceptionFilter } from 'src/global-exception.filter';
 import { NotificationService } from './notification.service';
+import { OnEvent } from '@nestjs/event-emitter';
 
 @UsePipes(new ValidationPipe())
 @UseFilters(new GlobalExceptionFilter())
@@ -52,6 +53,7 @@ export class NotificationGateway
     console.log('NotificationGateway Connection');
   }
 
+  @OnEvent('notification', { promisify: true, async: true })
   async sendNotificationToUser(userId: string, notification: any) {
     console.log('NotificationGateway sendNotificationToUser');
     this.server.to(userId).emit('notification', notification);
