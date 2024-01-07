@@ -94,6 +94,17 @@ export class UserController {
     return this.userService.FindAllUsers(user.id, query, search);
   }
 
+  @Get('rankedList')
+  @SwaggerFindAllUsers()
+  async GetRankedList(
+    @Req() request: any,
+    @Query() query: PaginationLimitDto,
+    @Query('search') search?: string,
+  ) {
+    const user = await this.userService.getCurrentUser(request);
+    return this.userService.GetRankedList(user.id, query, search);
+  }
+
   @Get('/blocked-users')
   @SwaggerBlockedList()
   async FindAllBlockedUsers(@Req() request: any) {
