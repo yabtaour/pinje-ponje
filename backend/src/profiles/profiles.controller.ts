@@ -52,12 +52,9 @@ export class ProfilesController {
   }
 
   @Post('avatar')
-  @UseInterceptors(FileInterceptor('file', storageConfig))
-  @SwaggerUploadAvatar()
-  @ApiConsumes('multipart/form-data', 'image/png')
-  async uploadAvatar(@UploadedFile() ima: any, @Req() req: any) {
+  async uploadAvatar(@Body('avatarBase64') avatarBase64 : string ,@Req() req: any) {
     const user = await this.userServices.getCurrentUser(req);
-    return await this.profilesService.uploadAvatar(user.id, ima);
+    return await this.profilesService.uploadAvatar(user.id, avatarBase64);
   }
 
   @Delete('avatar')
