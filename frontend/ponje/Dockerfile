@@ -17,9 +17,9 @@ COPY . .
 
 EXPOSE 3001
 
-RUN npm run build
+# RUN npm run dev
 
-ENTRYPOINT ["/sbin/tini", "--", "npm", "run", "start"]
+ENTRYPOINT ["/sbin/tini", "--", "npm", "run", "dev"]
 
 
 # CMD ["tail", "-f", "/dev/null"]

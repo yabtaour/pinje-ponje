@@ -44,6 +44,7 @@ export class NotificationService {
     let gameId = -1;
     let enemyId = -1;
     currentGames.forEach(async (gameState, key) => {
+      console.log("key : ", key , "gameState : ", gameState )
       if (gameState.player1.id === userId || gameState.player2.id === userId) {
         console.log('Game found');
         if (gameState.player1.id === userId) {

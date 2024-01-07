@@ -389,7 +389,7 @@ export default function VersusScreen() {
                 }
                 Events.on(engine, 'collisionStart', colisionHandler);
 
-                beforeUpdateHnadler = () => {
+                beforeUpdateHnadler = async () => {
                     if (ballReachedLeftThreshold()) {
                         console.log("mchat mn lisr !! ")
                         Body.setPosition(ball, { x: worldWidth / 2, y: worldHeight / 2 });
@@ -407,16 +407,18 @@ export default function VersusScreen() {
                             updateScore(gameId);
                         }, 1)
                     } else if (ballReachedRightThreshold()) {
-                        Body.setPosition(ball, { x: worldWidth, y: ball.position.y });
+                        // Body.setPosition(ball, { x: worldWidth, y: ball.position.y });
+                        Body.setPosition(ball, { x: worldWidth / 2, y: worldHeight / 2 });
                         Body.setPosition(floor, { x: 0, y: worldHeight });
                         Body.setPosition(ceiling, { x: 0, y: 0 });
-                        socketManager.sendTestingSendBallUpdate({
+                        await socketManager.sendTestingSendBallUpdate({
                             gameId: gameId,
-                            position: { x: worldWidth, y: ball.position.y },
+                            position: { x: worldWidth + 1, y: ball.position.y },
                             velocity: ball.velocity,
                             edge: "paddle",
                             worldWidth: worldWidth
-                        });                   
+                        });
+                        // Body.setPosition(ball, { x: worldWidth / 2, y: worldHeight / 2 });
                     }
                     updatePaddlesgame(gameId);
                 }
@@ -514,7 +516,7 @@ export default function VersusScreen() {
             window.removeEventListener('keyup', handleKeyUp);
             Events.off(engine, 'beforeUpdate', beforeUpdateHnadler);
             Events.off(engine, 'collisionStart', colisionHandler);
-            window.removeEventListener('beforeunload', handleBeforeUnload);
+            // window.removeEventListener('beforeunload', handleBeforeUnload);
 
             setTimeout(() => {
                 window.location.href = '/pong';

@@ -42,15 +42,18 @@ export class GameGateway
     this.initializeClients = [];
   }
 
-  afterInit(server: Server) {
+  async afterInit(server: Server) {
     console.log('GameGateway initialized');
   }
 
   @SubscribeMessage('initialize')
-  initializeGame(
+  async initializeGame(
     client: any,
     payload: { gameId: number; ballVel: number; playerPos: number },
   ) {
+    console.log(payload);
+    console.log("Initialize array : ", this.intializeArray);
+    console.log("initialize clients : ", this.initializeClients);
     if (
       !payload ||
       !payload.gameId ||
@@ -62,6 +65,9 @@ export class GameGateway
     ) {
       throw new WsException('Bad request');
     }
+    console.log(payload);
+    console.log("Initialize array : ", this.intializeArray);
+    console.log("initialize clients : ", this.initializeClients);
     if (currentGames.has(payload.gameId)) {
       throw new WsException('Game already initiated');
     }
@@ -76,17 +82,19 @@ export class GameGateway
       return element === payload.gameId;
     });
     if (firstIndex != -1) {
-      this.gameService.initializeGame(parseInt(client.id), payload);
+      await this.gameService.initializeGame(parseInt(client.id), payload);
     } else {
       this.intializeArray.push(payload.gameId);
     }
+    console.log("Initialize array : ", this.intializeArray);
+    console.log("initialize clients : ", this.initializeClients);
   }
 
   @SubscribeMessage('updatePlayerPosition')
-  updatePlayerPosition(
+  async updatePlayerPosition(
     client: any,
     payload: { gameId: number; direction: string },
-  ): void {
+  ) {
     if (
       !payload ||
       !payload.gameId ||
@@ -97,21 +105,21 @@ export class GameGateway
       console.log('payload is not valid !', payload);
       throw new WsException('invalid payload 1');
     }
-    this.gameService.updatePlayerPosition(parseInt(client.id), payload);
+    await this.gameService.updatePlayerPosition(parseInt(client.id), payload);
   }
 
   @SubscribeMessage('updateScore')
-  updateScore(client: any, payload: { gameId: number }): void {
+  async updateScore(client: any, payload: { gameId: number }) {
     if (!payload || !payload.gameId || typeof payload.gameId != 'number') {
       console.log('payload is not valid !', payload);
       throw new WsException('invalid payload 2');
     }
     console.log('update score : ', payload, client.id);
-    this.gameService.updateScore(parseInt(client.id), payload.gameId);
+    await this.gameService.updateScore(parseInt(client.id), payload.gameId);
   }
 
   @SubscribeMessage('updateBallPosition')
-  updateBall(
+  async updateBall(
     client: any,
     payload: {
       gameId: number;
@@ -131,11 +139,11 @@ export class GameGateway
     ) {
       throw new WsException('invalid payload 3');
     }
-    this.gameService.updateBallPosition(parseInt(client.id), payload);
+    await this.gameService.updateBallPosition(parseInt(client.id), payload);
   }
 
   @SubscribeMessage('testingBallUpdate')
-  testingBallUpdate(
+  async testingBallUpdate(
     client: any,
     payload: {
       gameId: number;
@@ -155,11 +163,11 @@ export class GameGateway
     ) {
       throw new WsException('invalid payload 4');
     }
-    this.gameService.testingBallUpdate(parseInt(client.id), payload);
+    await this.gameService.testingBallUpdate(parseInt(client.id), payload);
   }
 
   @SubscribeMessage('finishGame')
-  finishGame(client: any, payload: { gameId: number; enemy: number }) {
+  async finishGame(client: any, payload: { gameId: number; enemy: number }) {
     console.log('hadi : ', payload);
     if (
       !payload ||
