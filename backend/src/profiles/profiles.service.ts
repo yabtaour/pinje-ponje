@@ -79,6 +79,14 @@ export class ProfilesService {
 
   async uploadAvatar(user_id: number, avatarBase64: string) {
     try {
+
+      const allowedSizeInBytes = 1024 * 1024; // 1 MB
+      const binaryData = Buffer.from(avatarBase64, 'base64');
+      const sizeInBytes = binaryData.length;
+
+      console.log(allowedSizeInBytes, sizeInBytes)
+      if (sizeInBytes > allowedSizeInBytes)
+        throw new HttpException("file size is large", HttpStatus.BAD_REQUEST)
       const profile = await this.prisma.profile.update({
         where: { userid: user_id },
         data: {
