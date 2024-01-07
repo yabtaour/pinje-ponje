@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { HashLoader } from 'react-spinners';
+import { AxiosError } from 'axios';
 import { CustomUser } from './customUser';
 import * as Yup from 'yup';
 import { Ban, ChangeRole, Invite, Kick, Leave, Mute, Play } from './actions';
@@ -243,10 +244,11 @@ export function InviteFriends() {
                 setLoading(false);
                 setFriends(res.data);
             } catch (err) {
+                const error = err as AxiosError;
                 console.log(err);
                 toast({
                     title: "Error.",
-                    description: "Error while fetching friends",
+                    description: `Error while fetching friends : ${error.message}`,
                     status: "error",
                     duration: 3000,
                     isClosable: true,

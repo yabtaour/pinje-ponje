@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { UpdateUser } from '../globalRedux/features/authSlice';
 import { useAppSelector } from '../globalRedux/store';
 import { getToken } from '../utils/auth';
+import { AxiosError } from 'axios';
 import axios from '../utils/axios';
 
 
@@ -44,9 +45,10 @@ export default function UploadAvatar() {
             dispatch(UpdateUser(updatedUser));
 
         } catch (error) {
+            const err = error as AxiosError;
             toast({
                 title: 'Error',
-                description: "error in uploading avatar",
+                description: `error in uploading avatar : ${err.message}`,
                 status: 'error',
                 duration: 9000,
                 isClosable: true,

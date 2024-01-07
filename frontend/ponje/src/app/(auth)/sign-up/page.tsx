@@ -86,7 +86,7 @@ export default function SignUp() {
             } else {
                 toast({
                     title: 'Error',
-                    description: "Signup Error",
+                    description: `Signup Error : ${err.message}`,
                     status: 'error',
                     duration: 9000,
                     isClosable: true,

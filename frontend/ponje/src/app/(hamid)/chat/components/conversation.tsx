@@ -188,7 +188,7 @@ export default function Conversation({ collapsed }: any) {
     return (
         <div className="overflow-x-hidden">
             <div className="md:flex w-full justify-between flex-wrap">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap">
                     <h1 className="text-white text-3xl hidden md:block ml-4 mr-[135px]">Inbox</h1>
                     <Button onPress={onOpen} className="hover:bg-blue-300/10 text-white font-bold py-1 px-2 rounded-lg">
                         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="white" strokeWidth="1">

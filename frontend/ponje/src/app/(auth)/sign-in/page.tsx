@@ -75,6 +75,8 @@ export default function SignIn() {
     }
     catch (error) {
       const err = error as AxiosError;
+      console.log("error: ", error);
+      // console.log("error: ", err);
       //check if error code is 404
       if (err?.response?.status === 404) {
         toast({
@@ -88,16 +90,19 @@ export default function SignIn() {
           colorScheme: "red",
         });
       }
-      toast({
-        title: 'Error',
-        description: "error handling signin",
-        status: 'error',
-        duration: 9000,
-        isClosable: true,
-        position: "bottom-right",
-        variant: "solid",
-        colorScheme: "red",
-      });
+      else {
+        toast({
+          title: 'Error',
+          description: `Error  signin: ${err.message}`,
+          status: 'error',
+          duration: 9000,
+          isClosable: true,
+          position: "bottom-right",
+          variant: "solid",
+          colorScheme: "red",
+        });
+
+      }
     }
   };
 
