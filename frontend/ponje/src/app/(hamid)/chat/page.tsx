@@ -148,86 +148,77 @@ export default function Chat() {
     }
 
     return (
-        <div className="bg-[#151424] h-full overflow-x-hidden  p-2 ">
-            <div>
-                <>
-                    <>
-                        {
-                            activeConversation === undefined ? (
-                                <div className="flex  flex-col items-center align-middle justify-center h-[90vh]">
-                                    <Image src="/empty_chat.svg"
-                                        alt="hero"
-                                        className="w-96	h-96 rounded-full"
-                                        width={150}
-                                        height={150}
-                                    />
-             
-                                    <p className='text-[#c6c4c499] pb-10  text-center text-sm md:text-lg'>Chat with fellow members in real-time, exchanging thoughts and ideas effortlessly. <br />
-                                        Engage in conversations, make connections, and be a part of our interactive community!
-                                    </p>
-                                </div>
-                            ) : (
-                                <ScrollShadow hideScrollBar className="overflow-x-hidden h-[96vh]">
-                                    <Image
-                                src="/chat_bg.png"
-                                alt="Background Image"
-                                layout="fill"
-                                objectFit="cover"
-                                quality={100}
-                                className="bg-cover opacity-30 bg-fixed max-w-screen bg-center bg-no-repeat relative -z-50 mb-8 md:h-[350px]"
-                            />
-                                    <div className=" flex justify-center   sticky top-0">
-                                        <div className="lg:w-full md:2/3 relative z-10 bg-[#1B1A2D] sm:w-full w-full  hover:bg-[#252341] flex justify-center ">
-                                            <Button onPress={onOpen} >
-                                                <User
-                                                    className="text-white my-2 p-4"
-                                                    name={activeConversation?.room?.roomType !== "DM" ? activeConversation?.room?.name : member?.user.username}
-                                                    avatarProps={
-                                                        activeConversation?.room?.roomType !== "DM"
-                                                            ?
-                                                            { src: "/gc_icon.png" }
-                                                            :
-                                                            { src: member?.user?.profile?.avatar ?? "/defaultAvatar.png" }
-                                                    }
-                                                />
-                                            </Button>
-                                            <RoomOptions isOpen={isOpen} onOpenChange={onOpenChange} />
-                                        </div>
-                                    </div>
-                                    {
-                                        (messages ?? []).map((message: any, index: number) => (
-                                            <React.Fragment key={index}>
-                                                {message?.state === "INFORMATION" ? (
-                                                    <InformationMessage key={message.id} message={message} />
-                                                ) : (
-                                                    message?.user?.id === me?.id ? (
-                                                        <Mymessage key={message.id} message={message} />
-                                                    ) : (
-                                                        <OtherMessage key={message.id} message={message} />
-                                                    )
-                                                )}
-                                            </React.Fragment>
-                                        ))
-                                    }
-                                    <div ref={messagesEndRef} />
-                                </ScrollShadow>
-                            )
-                        }
-                    </>
-
-                </>
+        <div className={`h-full overflow-x-hidden p-2 ${activeConversation === undefined ? 'bg-[#151424]' : 'bg-[url("/chat_bg.png")] bg-cover bg-center bg-no-repeat '}`}>
+          <div>
+            <>
+              <>
                 {
-                    activeConversation === undefined ? (
-                        <></>
-                    ) : (
-                        <div className="w-2/3">
-                            <ChatInput />
+                  activeConversation === undefined ? (
+                    <div className="flex flex-col items-center align-middle justify-center h-[90vh]">
+                      <Image src="/empty_chat.svg"
+                        alt="hero"
+                        className="w-96 h-96 rounded-full"
+                        width={150}
+                        height={150}
+                      />
+      
+                      <p className='text-[#c6c4c499] pb-10 text-center text-sm md:text-lg'>Chat with fellow members in real-time, exchanging thoughts and ideas effortlessly. <br />
+                        Engage in conversations, make connections, and be a part of our interactive community!
+                      </p>
+                    </div>
+                  ) : (
+                    <ScrollShadow hideScrollBar className="overflow-x-hidden h-[96vh]">
+                      <div className="flex justify-center sticky top-0">
+                        <div className="lg:w-full md:2/3 relative z-10 bg-[#1B1A2D] sm:w-full w-full hover:bg-[#252341] flex justify-center">
+                          <Button onPress={onOpen}>
+                            <User
+                              className="text-white my-2 p-4"
+                              name={activeConversation?.room?.roomType !== "DM" ? activeConversation?.room?.name : member?.user.username}
+                              avatarProps={
+                                activeConversation?.room?.roomType !== "DM"
+                                  ? { src: "/gc_icon.png" }
+                                  : { src: member?.user?.profile?.avatar ?? "/defaultAvatar.png" }
+                              }
+                            />
+                          </Button>
+                          <RoomOptions isOpen={isOpen} onOpenChange={onOpenChange} />
                         </div>
-                    )
+                      </div>
+                      {
+                        (messages ?? []).map((message: any, index: number) => (
+                          <React.Fragment key={index}>
+                            {message?.state === "INFORMATION" ? (
+                              <InformationMessage key={message.id} message={message} />
+                            ) : (
+                              message?.user?.id === me?.id ? (
+                                <Mymessage key={message.id} message={message} />
+                              ) : (
+                                <OtherMessage key={message.id} message={message} />
+                              )
+                            )}
+                          </React.Fragment>
+                        ))
+                      }
+                      <div ref={messagesEndRef} />
+                    </ScrollShadow>
+                  )
                 }
-            </div>
+              </>
+            </>
+            {
+              activeConversation === undefined ? (
+                <></>
+              ) : (
+                <div className="w-2/3">
+                  <ChatInput />
+                </div>
+              )
+            }
+          </div>
         </div>
-    )
+      )
+      
+
 }
 
 

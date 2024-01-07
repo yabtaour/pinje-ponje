@@ -54,7 +54,7 @@ export default function PlayerBanner({ user }: { user: User | null | undefined }
                             alt="user image"
                             width={50}
                             height={50}
-                            className="w-[50px] h-[50px] md:w-[100px] md:h-[100px] mx-auto m-10 rounded mb-4"
+                            className="w-[50px] h-[50px] md:w-[100px] md:h-[100px] mx-auto m-10 border-2 border-[#77DFF8] rounded-full mb-4"
 
                         />
                     ) : (
@@ -63,7 +63,7 @@ export default function PlayerBanner({ user }: { user: User | null | undefined }
                             alt="user image"
                             width={50}
                             height={50}
-                            className="w-[50px] h-[50px] md:w-[100px] md:h-[100px] mx-auto m-10  rounded-full mb-4"
+                            className="w-[50px] h-[50px] md:w-[100px] md:h-[100px] mx-auto m-10  border-2 border-[#77DFF8] rounded-full mb-4"
                         />
                     )
                 }

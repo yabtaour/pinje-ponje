@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { HashLoader } from 'react-spinners';
+import { CustomUser } from './customUser';
 import * as Yup from 'yup';
 import { Ban, ChangeRole, Invite, Kick, Leave, Mute, Play } from './actions';
 const socketManager = SocketManager.getInstance(`${process.env.NEXT_PUBLIC_API_URL}`, getCookie('token'));
@@ -165,7 +166,7 @@ export function RoomSettings({ room, onOpenChange }: { room: any, onOpenChange: 
                             </Formik>
                         </div>
 
-                        <div className="divider lg:divider-horizontal"></div> 
+                        <div className="divider lg:divider-horizontal"></div>
                         <div className='text-white w-1/2 '>
                             <RoomMembers />
                             <Leave room={activeConversation} closeModal={onOpenChange} />
@@ -292,13 +293,18 @@ export function InviteFriends() {
 
                     filteredFriends.map((friend, index) => (
                         <div key={index} className="flex m-2 flex-row  hover:bg-[#252341] border border-gray-900 rounded-full px-3 justify-around">
-                            <User
+                            {/* <User
                                 className="text-white my-2"
                                 name={friend?.username}
-                                description={friend?.status}
+                                description="something"
                                 avatarProps={{
                                     src: friend.profile?.avatar ?? "/defaultAvatar.png"
                                 }}
+                            /> */}
+                            <CustomUser
+                                username={friend?.email}
+                                description="something"
+                                avatarSrc={friend.profile?.avatar}
                             />
                             <Invite friend={friend} room={activeConversation} />
                         </div>
@@ -401,24 +407,31 @@ export function RoomMembers() {
                             ) : (
                                 <div className='w-full '>
                                     {activeConversation?.room?.members?.map((member, index) => (
-                                        <div key={index} className='flex justify-around border rounded-xl border-[#46427a] '>
+                                        <div key={index} className='flex justify-around border rounded-xl mb-4 border-[#46427a] '>
                                             <div key={index} className='flex justify-between  w-full rounded-full '>
 
 
-                                                <button key={index} className='flex justify-between  w-full rounded-full hover:bg-[#252341] ' onClick={() => {
+                                                <button key={index} className='flex justify-between  w-full rounded-xl hover:bg-[#252341] ' onClick={() => {
                                                     router.push(`/profile/${member?.user?.id}`)
 
                                                 }}>
-                                                    <User
+                                                    {/* <User
                                                         key={index}
                                                         className="text-white my-3 px-4"
                                                         name={member?.user?.username}
+                                                        description={member?.user?.status}
                                                         avatarProps={
                                                             {
 
                                                                 src: member?.user?.profile?.avatar ?? "/defaultAvatar.png"
                                                             }
                                                         }
+                                                    /> */}
+                                                    <CustomUser
+                                                        username={member?.user?.username}
+                                                        description="khltk"
+                                                        // description={member?.user?.status}
+                                                        avatarSrc={member?.user?.profile?.avatar ?? "/defaultAvatar.png"}
                                                     />
                                                     {/* role  */}
                                                 </button>

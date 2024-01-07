@@ -191,7 +191,7 @@ export default function Conversation({ collapsed }: any) {
                 <div className="flex items-center justify-between">
                     <h1 className="text-white text-3xl hidden md:block ml-4 mr-[135px]">Inbox</h1>
                     <Button onPress={onOpen} className="hover:bg-blue-300/10 text-white font-bold py-1 px-2 rounded-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="white" stroke-width="1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="white" strokeWidth="1">
                             <path d="M24 10h-10v-10h-4v10h-10v4h10v10h4v-10h10z" />
                         </svg>
                     </Button>
@@ -249,25 +249,29 @@ export default function Conversation({ collapsed }: any) {
                                     />
                                 )}
                                 <div className="flex justify-end align-start flex-col">
-                                    <h2 className=" p-0">
+                                    <h2 className="p-0">
                                         {conversation?.room?.roomType !== "DM" ? (
-                                            <p className=" px-2 text-sm font-semibold text-[#77DFF8]">
+                                            <p className="px-2 text-sm font-semibold text-[#77DFF8]">
                                                 {collapsed ? "" : conversation?.room?.name}
                                             </p>
                                         ) : (
-                                            <p className="text-white px-2 text-left text-sm font-semibold">
+                                            <p className="px-2 text-sm font-semibold text-[#77DFF8]">
                                                 {collapsed ? "" : conversation?.room?.members?.find((member: any) => member?.userId !== me?.id)?.user?.username}
                                             </p>
                                         )}
                                     </h2>
-                                    <p className={`text-xs mt-1.5 mr-[75px] font-light ${!conversation?.read ? 'text-[#3574FF]' : 'text-gray-400'}`}>
-                                        {collapsed ? "" : (
-                                            conversation?.room?.messages?.slice(-1)[0]?.content?.length > 15
-                                                ? conversation?.room?.messages?.slice(-1)[0]?.content.slice(0, 15) + "..."
-                                                : conversation?.room?.messages?.slice(-1)[0]?.content
-                                        )}
-                                    </p>
+                                    <div className="text-xs mt-1.5">
+                                        <p className={`font-light ${!conversation?.read ? 'text-[#3574FF] left-0' : 'text-gray-400 mr-22'}`}>
+                                            {collapsed ? "" : (
+                                                conversation?.room?.messages?.slice(-1)[0]?.content?.length > 15
+                                                    ? conversation?.room?.messages?.slice(-1)[0]?.content.slice(0, 15) + "..."
+                                                    : conversation?.room?.messages?.slice(-1)[0]?.content
+                                            )}
+                                        </p>
+                                    </div>
                                 </div>
+
+
                             </div>
                             <div className="text-gray-400 text-xs ml-70 font-light">
                                 {collapsed ? "" : (
