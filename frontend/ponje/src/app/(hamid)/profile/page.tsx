@@ -5,14 +5,14 @@ import axios from "@/app/utils/axios";
 import { useToast } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useAppSelector } from '../../globalRedux/store';
+import { User } from '../../types/user';
 import FriendsList from "./components/FriendsList";
 import MatchHistory from "./components/MatchHistory";
 import Performance from "./components/Performance";
 import PlayerBanner from "./components/PlayerBanner";
 import ProgressBar from "./components/ProgressBar";
 import SkillAnalytics from "./components/SkillAnalytics";
-import { User } from '../../types/user';
-import { useAppSelector } from '@/app/globalRedux/store';
 
 
 
@@ -22,82 +22,79 @@ export default function Profile() {
     const [Friends, setFriends] = useState([]);
     const router = useRouter();
     const toast = useToast();
+    const newNotification = useAppSelector((state) => state?.authReducer?.value?.newNotification);
 
-    const fetchData = async () => {
-        try {
-            const token = getToken();
-            if (!token) {
-                console.error('Access token not found in Cookies');
-                return;
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const token = getToken();
+                if (!token) {
+                    console.error('Access token not found in Cookies');
+                    return;
+                }
+                const data = await axios.get(`/users/me`, {
+                    headers: {
+                        authorization: token,
+                    },
+                });
+                setUser(data.data);
+                setLoading(false);
+                if (data?.data?.twoFactor && !localStorage.getItem('2fa'))
+                    router.push('/verification');
+
+                if (!data?.data?.profile?.avatar)
+                    router.push('/onboarding');
+
+            } catch (err) {
+                console.error(err);
+                setLoading(false);
             }
-            const data = await axios.get(`/users/me`, {
-                headers: {
-                    authorization: token,
-                },
-            });
-            setUser(data.data);
-            setLoading(false);
-            if (data?.data?.twoFactor && !localStorage.getItem('2fa'))
-                router.push('/verification');
-
-            if (!data?.data?.profile?.avatar) 
-                router.push('/onboarding');
-
-        } catch (err) {
-            console.error(err);
-            setLoading(false);
-        }
-    };
-
-
-    useEffect(() => {
+        };
         fetchData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [newNotification]);
 
     useEffect(() => {
+        const fetchFriends = async () => {
+            try {
+                let me = null;
+                const token = getToken();
+                if (token !== null)
+                    me = await fetchUserData(token)
+
+
+                if (!token) {
+                    console.error('Access token not found in Cookies');
+                    return;
+                }
+
+                if (me) {
+                    const res = await axios.get(`/users/${me?.id}/friends`);
+                    const friends = res.data;
+                    setFriends(friends);
+                    setLoading(false);
+                    console.log(res.data);
+                }
+            } catch (err) {
+                toast({
+                    title: 'Error',
+                    description: "error while getting current friends",
+                    status: 'error',
+                    duration: 9000,
+                    isClosable: true,
+                    position: "bottom-right",
+                    variant: "solid",
+                    colorScheme: "red",
+                });
+                console.error(err);
+                setLoading(false);
+            }
+        };
         if (user) {
             fetchFriends();
         }
+
     }, []);
-    // const me = useAppSelector(state => state?.authReducer?.value?.user);
 
-    const fetchFriends = async () => {
-        try {
-            let me  = null;
-            const token = getToken();
-                if (token !== null)
-                     me  = await fetchUserData(token)
-
-
-            if (!token) {
-                console.error('Access token not found in Cookies');
-                return;
-            }
-
-            if (me)
-            {
-                const res = await axios.get(`/users/${me?.id}/friends`);
-                const friends = res.data;
-                setFriends(friends);
-                setLoading(false);
-                console.log(res.data);
-            }
-        } catch (err) {
-            toast({
-                title: 'Error',
-                description: "error while getting current friends",
-                status: 'error',
-                duration: 9000,
-                isClosable: true,
-                position: "bottom-right",
-                variant: "solid",
-                colorScheme: "red",
-            });
-            console.error(err);
-            setLoading(false);
-        }
-    };
 
     if (loading) {
 

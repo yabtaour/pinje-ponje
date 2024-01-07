@@ -3,11 +3,15 @@ import {
   HttpStatus,
   Inject,
   Injectable,
-  forwardRef,
+  forwardRef
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { NotificationGateway } from './notification.gateway';
+
+import { Status } from '@prisma/client';
+import { currentGames } from 'src/game/game.gateway';
+import { GameService } from 'src/game/game.service';
 
 @Injectable()
 export class NotificationService {
@@ -15,7 +19,47 @@ export class NotificationService {
     @Inject(forwardRef(() => NotificationGateway))
     private notificationGateway: NotificationGateway,
     private readonly prismaService: PrismaService,
+    @Inject(forwardRef(() => GameService))
+    private gameService: GameService,
   ) {}
+
+  async getGameIdUsingCurrentGames(userId: number) {
+    console.log('NotificationService getGameIdUsingCurrentGames');
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    await this.prismaService.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        status: 'OFFLINE',
+      },
+    });
+    let gameId = -1;
+    let enemyId = -1;
+    currentGames.forEach(async (gameState, key) => {
+      if (gameState.player1.id === userId || gameState.player2.id === userId) {
+        console.log('Game found');
+        if (gameState.player1.id === userId) {
+          enemyId = gameState.player2.id;
+          gameId = key;
+        } else if (gameState.player2.id === userId) {
+          enemyId = gameState.player1.id;
+          gameId = key;
+        }
+        console.log('Game found');
+        await this.gameService.finishGame(enemyId, userId, gameId);
+      }
+    });
+
+    return gameId;
+  }
 
   async create(createNotificationDto: CreateNotificationDto) {
     const notification = await this.prismaService.notification.create({
@@ -126,5 +170,26 @@ export class NotificationService {
     });
 
     return notification;
+  }
+
+  async updateUserStatus(userId: number, status: Status) {
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    await this.prismaService.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        status: status,
+      },
+    });
+    console.log('changed status to online ');
+    return user;
   }
 }

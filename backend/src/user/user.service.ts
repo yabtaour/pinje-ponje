@@ -325,6 +325,45 @@ export class UserService {
     }
   }
 
+
+  async GetRankedList(
+    @Param('id', ParseIntPipe) id: number,
+    params: PaginationLimitDto,
+    search: string,
+  ) {
+    try {
+      const users = await this.prisma.user.findMany({
+        where: {
+          AND: [
+            {
+              OR: search
+                ? [{ username: { contains: search, mode: 'insensitive' } }]
+                : {},
+            },
+          ],
+        },
+        include: {
+          profile: true,
+        },
+        ...params,
+      });
+      if (!users)
+        throw new HttpException('Users not found', HttpStatus.NOT_FOUND);
+      // Remove sensitive information using map and object destructuring
+      const sanitizedUsers = users.map(
+        ({ password, twoFactorSecret, ...user }) => user,
+      );
+      return sanitizedUsers;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
   async FindUserByID(
     @Param('user_id', ParseIntPipe) user_id: number,
     searchid: number,
@@ -678,8 +717,7 @@ export class UserService {
         },
       });
       console.log(listofFriends);
-      if (!listofFriends)
-        return listofFriends
+      if (!listofFriends) return listofFriends;
 
       const sanitizedFriends = listofFriends.map(({ friend }) => {
         const { password, twoFactorSecret, twoFactor, ...sanitizedFriend } =
@@ -779,6 +817,8 @@ export class UserService {
         },
       });
 
+      this.eventEmmiter.emit('notification', data?.id?.toString(), "hamid");
+
       return 'Friend request canceled';
     } catch (e) {
       if (
@@ -813,6 +853,11 @@ export class UserService {
           },
         },
       });
+      this.eventEmmiter.emit('conversationUpdate', {
+        senderId: user_id,
+        receiverId: data.id,
+      });
+
       return 'Friend request declined';
     } catch (e) {
       if (

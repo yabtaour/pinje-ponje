@@ -1,14 +1,18 @@
-import { Module } from '@nestjs/common';
-import { GameController } from './game.controller';
-import { GameService } from './game.service';
-import { UserModule } from '../user/user.module';
-import { GameGateway } from './game.gateway';
+import { Module, forwardRef } from '@nestjs/common';
 import { AuthModule } from 'src/auth/auth.module';
 import { NotificationModule } from 'src/notification/notification.module';
+import { UserModule } from '../user/user.module';
+import { GameController } from './game.controller';
+import { GameGateway } from './game.gateway';
+import { GameService } from './game.service';
 
 @Module({
   controllers: [GameController],
-  imports: [UserModule, AuthModule, NotificationModule],
+  imports: [
+    forwardRef(() => UserModule),
+    forwardRef(() => AuthModule),
+    forwardRef(() => NotificationModule),
+  ],
   providers: [GameService, GameGateway],
   exports: [GameService, GameGateway],
 })

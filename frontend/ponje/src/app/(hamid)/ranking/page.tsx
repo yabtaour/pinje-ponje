@@ -252,7 +252,7 @@ export default function RankPage() {
       try {
 
         const token = getToken();
-        const res = await axios.get('/users', {
+        const res = await axios.get('/users/rankedList', {
           headers: {
             Authorization: token
           }
