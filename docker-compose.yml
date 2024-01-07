@@ -14,7 +14,7 @@ services:
     depends_on:
       - backend
     volumes:
-      - avatars:/app/public/avatars
+      - ${MAIN_UPLOADS_PATH}:/app/public/avatars
     networks:
       - frontend
       - backend
@@ -48,7 +48,7 @@ services:
       - postgres
       - adminer
     volumes:
-      - avatars:/app/uploads/Avatars
+      - ${MAIN_UPLOADS_PATH}:/app/uploads/Avatars
     networks:
       - backend
       - frontend
@@ -71,9 +71,6 @@ networks:
 volumes:
   postgres_db_data:
     name: postgres_db_data
-
-  avatars:
-    name: avatars
 
   backend_volume:
     name: backend_volume
