@@ -36,7 +36,7 @@ export function RoomSettings({ room, onOpenChange }: { room: any, onOpenChange: 
     const toast = useToast();
     const initialValues = {
         name: activeConversation?.room.name,
-        password: activeConversation?.room.password,
+        password: "",
         roomType: activeConversation?.room.roomType
     };
 

@@ -165,9 +165,10 @@ export default function UserSettings() {
             }
             return { success: true, message: "Update successful" };
         } catch (error) {
+            const err = error as AxiosError;
             toast({
                 title: 'Error',
-                description: "error while updating user",
+                description: `error while updating user data : ${err.message}`,
                 status: 'error',
                 duration: 9000,
                 isClosable: true,
@@ -176,7 +177,6 @@ export default function UserSettings() {
                 colorScheme: "red",
             });
             console.error("Failed to update user:", error);
-            const err = error as AxiosError;
             if (err.response?.status === 409) {
                 const conflictError = {
                     success: false,
