@@ -395,7 +395,7 @@ export default function VersusScreen() {
                     options: {
                         width: worldWidth,
                         height: worldHeight,
-                        wireframes: true,
+                        wireframes: false,
                         background: 'transparent',
                     },
                 });
@@ -571,7 +571,7 @@ export default function VersusScreen() {
     const handleMapClick = (map: string) => {
         console.log("MAP CLICKED : ", map, selectedMap);
         if (!selectedMap && map) {
-            setSelectedMap(map);
+            setSelectedMap((map) => map);
         }
     };
 
