@@ -81,8 +81,15 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
     <Navbar maxWidth="full" className="bg-[#151424] border-b-[#1A3070]">
       <NavbarContent className="flex justify-between items-center">
         <NavbarItem className="lg:block md:block hidden">
-          <Image src="/Logo.png" alt="PONG Logo" width={90} height={90} />
+          <Image
+            src="/Logo.png"
+            alt="PONG Logo"
+            width={90}
+            height={90}
+            style={{ width: "auto", height: "auto" }}
+          />
         </NavbarItem>
+
         <button className="lg:hidden md:hidden" onClick={onToggleSidebar}>
           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="16" viewBox="0 0 48 36" fill="none">
             <path d="M3 2.5H45" stroke="#77DFF8" strokeWidth="5" strokeLinecap="round" />

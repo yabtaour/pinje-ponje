@@ -75,8 +75,8 @@ export function JoinRooms({ onOpenChange, setAction }: { onOpenChange: () => voi
     }
 
     return (
-        <div className="flex flex-col items-center  rounded-lg justify-center bg-[#222039] text-cyan-500 py-8">
-            <h1 className="m-5">Rooms you can join</h1>
+        <div className="flex flex-col items-center w-1/2 rounded-lg justify-center bg-[#222039] text-cyan-500 py-8">
+            <h1 className="m-5 text-lg md:text-xl">Rooms you can join</h1>
             <ScrollShadow hideScrollBar className="flex items-center flex-col justify-start w-full h-[50vh]">
                 {!isLoading && rooms.length === 0 ? (
                     <div className='text-gray-500 flex flex-col items-center'>
@@ -94,14 +94,15 @@ export function JoinRooms({ onOpenChange, setAction }: { onOpenChange: () => voi
                     </div>
                 ) : (
                     rooms.map((room, index) => (
-                        <div key={index} className="flex justify-between hover:border-gray-300 border w-[50%] border-gray-800 m-2 px-5 rounded-full">
+                        <div key={index} className="p-3 flex justify-between flex-wrap hover:border-gray-300 border w-[70%] md:w-[80%] border-gray-800 m-2 px-5 rounded-xl">
                             <User
-                                className="text-white my-2"
+                                className="text-white text-sm md:text-md"
                                 name={room.name}
-                                avatarProps={{ src: "/groups.svg" }}
+                                avatarProps={{ src: "/gc_icon.png", className: "w-8 h-8 md:w-12 md:h-12" }}
                             />
                             <Join room={room} removeRoom={removeRoom} />
                         </div>
+
                     ))
                 )}
             </ScrollShadow>
@@ -251,65 +252,65 @@ export default function RoomOptions({ isOpen, onOpenChange }: { isOpen: boolean,
 
     return (
         <div className="flex flex-col items-center justify-center mb-20">
-        <Modal
-            className="max-w-4xl max-h-5xl flex flex-col items-center justify-center"
-            backdrop='blur'
-            isOpen={isOpen}
-            onOpenChange={handleOnOpenChange}
-            radius="lg"
-            classNames={{
-                closeButton: 'hidden',
-                base: "w-screen",
-                backdrop: "bg-gray-900/50",
-            }}
-        >
-            <ModalContent>
-                {
-                    action === 'create' ? (<CreateRoom onOpenChange={onOpenChange} setAction={setAction} />) : action === 'join' ? (<JoinRooms onOpenChange={onOpenChange} setAction={setAction} />) : (
-                        <div className="flex flex-col items-center justify-center w-[50vw] bg-[#222039] py-8 rounded-xl">
-                        <h1 className="text-cyan-500 text-xl md:text-2xl"> Pick an action </h1>
-                        <div className="flex md:flex-row flex-col items-center mt-4">
-                          <Button onClick={() => { setAction('create'); }} >
-                            <Card className="hover:bg-slate-400/10 m-10 rounded-lg h-full">
-                              <CardHeader className="pb-0 pt-2 px-4 flex-col justify-center items-center text-center">
-                                <p className="text-tiny uppercase font-bold text-white text-base md:text-lg">Create a Room</p>
-                                <h4 className="font-bold text-large text-gray-400 text-sm md:text-base">Create Your own Room</h4>
-                              </CardHeader>
-                              <CardBody className="overflow-visible py-2 flex items-center justify-center">
-                                <Image
-                                  alt="Card background"
-                                  className="object-cover rounded-xl w-16 md:w-28"
-                                  src="/create_room.png"
-                                  width={100}
-                                  height={100}
-                                />
-                              </CardBody>
-                            </Card>
-                          </Button>
-                          <Button onClick={() => { setAction('join'); }} >
-                            <Card className="hover:bg-slate-400/10 m-10 rounded-lg h-full">
-                              <CardHeader className="pb-0 pt-2 px-4 flex-col justify-center items-center text-center">
-                                <p className="text-tiny uppercase font-bold text-white text-base md:text-lg">Join the rooms</p>
-                                <h4 className="font-bold text-large text-gray-400 text-sm md:text-base">Join Other Rooms</h4>
-                              </CardHeader>
-                              <CardBody className="overflow-visible py-2 flex items-center justify-center">
-                                <Image
-                                  alt="Card background"
-                                  className="object-cover rounded-xl w-16 md:w-28"
-                                  src="/join_room.png"
-                                  width={100}
-                                  height={100}
-                                />
-                              </CardBody>
-                            </Card>
-                          </Button>
-                        </div>
-                      </div>)
-                      
-                }
+            <Modal
+                className="max-w-4xl max-h-5xl flex flex-col items-center justify-center"
+                backdrop='blur'
+                isOpen={isOpen}
+                onOpenChange={handleOnOpenChange}
+                radius="lg"
+                classNames={{
+                    closeButton: 'hidden',
+                    base: "w-screen",
+                    backdrop: "bg-gray-900/50",
+                }}
+            >
+                <ModalContent>
+                    {
+                        action === 'create' ? (<CreateRoom onOpenChange={onOpenChange} setAction={setAction} />) : action === 'join' ? (<JoinRooms onOpenChange={onOpenChange} setAction={setAction} />) : (
+                            <div className="flex flex-col items-center justify-center w-[50vw] bg-[#222039] py-8 rounded-xl">
+                                <h1 className="text-cyan-500 text-xl md:text-2xl"> Pick an action </h1>
+                                <div className="flex md:flex-row flex-col items-center mt-4">
+                                    <Button onClick={() => { setAction('create'); }} >
+                                        <Card className="hover:bg-slate-400/10 m-10 rounded-lg h-full">
+                                            <CardHeader className="pb-0 pt-2 px-4 flex-col justify-center items-center text-center">
+                                                <p className="text-tiny uppercase font-bold text-white text-base md:text-lg">Create a Room</p>
+                                                <h4 className="font-bold text-large text-gray-400 text-sm md:text-base">Create Your own Room</h4>
+                                            </CardHeader>
+                                            <CardBody className="overflow-visible py-2 flex items-center justify-center">
+                                                <Image
+                                                    alt="Card background"
+                                                    className="object-cover rounded-xl w-16 md:w-28"
+                                                    src="/create_room.png"
+                                                    width={100}
+                                                    height={100}
+                                                />
+                                            </CardBody>
+                                        </Card>
+                                    </Button>
+                                    <Button onClick={() => { setAction('join'); }} >
+                                        <Card className="hover:bg-slate-400/10 m-10 rounded-lg h-full">
+                                            <CardHeader className="pb-0 pt-2 px-4 flex-col justify-center items-center text-center">
+                                                <p className="text-tiny uppercase font-bold text-white text-base md:text-lg">Join the rooms</p>
+                                                <h4 className="font-bold text-large text-gray-400 text-sm md:text-base">Join Other Rooms</h4>
+                                            </CardHeader>
+                                            <CardBody className="overflow-visible py-2 flex items-center justify-center">
+                                                <Image
+                                                    alt="Card background"
+                                                    className="object-cover rounded-xl w-16 md:w-28"
+                                                    src="/join_room.png"
+                                                    width={100}
+                                                    height={100}
+                                                />
+                                            </CardBody>
+                                        </Card>
+                                    </Button>
+                                </div>
+                            </div>)
 
-            </ModalContent>
-        </Modal>
+                    }
+
+                </ModalContent>
+            </Modal>
         </div>
     );
 }

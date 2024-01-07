@@ -9,6 +9,7 @@ import { getCookie } from "cookies-next";
 import { miyagi } from 'ldrs';
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
+import { AxiosError } from "axios";
 
 
 if (typeof window !== 'undefined') {
@@ -69,9 +70,10 @@ export default function ChatInput() {
 
 
             } catch (error) {
+                const err = error as AxiosError;
                 toast({
                     title: 'Error',
-                    description: "Error sending message",
+                    description: `Error sending message : ${err.message}`,
                     status: 'error',
                     duration: 9000,
                     isClosable: true,

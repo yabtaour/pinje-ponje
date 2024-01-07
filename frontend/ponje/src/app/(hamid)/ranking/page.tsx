@@ -159,7 +159,7 @@ export const Leaderboard = ({ users }: { users: DisplayedInfo[] }) => {
 
 
   return (
-    <div className="p-0 m-0 w-full lg:w-2/3 flex " >
+    <div className="p-0 m-0 w-full lg:w-2/3 flex items-center" >
       {
         isLoading && users.length === 0 ? (
           <div className='min-h-screen'>
