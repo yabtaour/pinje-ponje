@@ -17,10 +17,10 @@ import ScoreCard from "../components/ScoreCard";
 
 const socketManager = SocketManager.getInstance();
 
-export const Engine = Matter.Engine;
-export const Render = Matter.Render;
-export const World = Matter.World;
-export const Bodies = Matter.Bodies;
+const Engine = Matter.Engine;
+const Render = Matter.Render;
+const World = Matter.World;
+const Bodies = Matter.Bodies;
 
 let engine: Matter.Engine;
 let render: Matter.Render;
@@ -72,7 +72,7 @@ let isScoreSent = false;
 
 
 //-----------------utils----------------//
-export function createBodies() {
+function createBodies() {
     const balldiam = Math.min(canvaWidth, canvaHeight) * 0.1;
 
     ball = Bodies.circle(worldWidth / 2, worldHeight / 2, balldiam, {
@@ -103,7 +103,7 @@ export function createBodies() {
     return [rightPaddle, leftPaddle, ball, floor, ceiling];
 }
 
-export async function updatePaddlesgame(gameId: number) {
+async function updatePaddlesgame(gameId: number) {
     if (!isPaddlePosSent && keys['ArrowUp'] && leftPaddle.position.y - 100 / 2 > 10) {
         await socketManager.sendPaddlePosition({ gameId: gameId, direction: 'up' });
         isPaddlePosSent = true;
@@ -114,7 +114,7 @@ export async function updatePaddlesgame(gameId: number) {
     }
 }
 
-export async function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matter.Body) {
+async function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matter.Body) {
     if (bodyA == ball || bodyB == ball) {
         let otherBody = bodyA === ball ? bodyB : bodyA;
         if (otherBody === floor || otherBody === ceiling) {
@@ -126,7 +126,7 @@ export async function handleColision(pair: any, bodyA: Matter.Body, bodyB: Matte
     }
 }
 
-export async function updateScore(gameId: number) {
+async function updateScore(gameId: number) {
     if (!isScoreSent) {
         await socketManager.sendScoreUpdate({ gameId: gameId });
         isScoreSent = true;
