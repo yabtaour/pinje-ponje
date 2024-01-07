@@ -35,7 +35,7 @@ const Podium = ({ users }: { users: DisplayedInfo[] }) => {
                 <div className=" flex justify-center">
                   <div className="relative mb-[-3rem]">
                     <div className="avatar">
-                      <div className="w-16 lg:w-24 md:w-32 rounded-full">
+                      <div className="w-16 lg:w-24 md:w-32 rounded-full relative">
                         <Image
                           src={user?.avatar ?? '/placeholderuser.jpeg'}
                           alt="user image"
