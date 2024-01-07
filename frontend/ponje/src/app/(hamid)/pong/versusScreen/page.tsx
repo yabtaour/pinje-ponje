@@ -24,7 +24,7 @@ export const Bodies = Matter.Bodies;
 
 let engine: Matter.Engine;
 let render: Matter.Render;
-let world: Matter.World;
+// let world: Matter.World;
 let ball: Matter.Body;
 let floor: Matter.Body;
 let ceiling: Matter.Body;
@@ -39,7 +39,7 @@ let handleKeyUp: any;
 let handleKeyDown: any;
 let beforeUpdateHnadler: any;
 let colisionHandler: any;
-let handleBeforeUnload: any;
+// let handleBeforeUnload: any;
 
 let intervalId: NodeJS.Timeout | null = null;
 
@@ -175,28 +175,6 @@ export default function VersusScreen() {
                     Authorization: token,
                 },
             }).then((res) => {
-                // setEnemyPlayer(DEFAULT_VALUES.enemyPlayer);
-                // setPlayerFound(DEFAULT_VALUES.playerFound);
-                // setSelectedMap(DEFAULT_VALUES.selectedMap);
-                // setGameStarted(DEFAULT_VALUES.gameStarted);
-                // setMyScore(DEFAULT_VALUES.myScore);
-                // setEnemyScore(DEFAULT_VALUES.enemyScore);
-                // setStartGame(DEFAULT_VALUES.startGame);
-                // setGameId(DEFAULT_VALUES.gameId);
-                // currentGameId = 0;
-                // currentUserId = 0;
-                // ballX = 4;
-                // ballY = 4;
-                // isPaddlePosSent = false;
-                // isBallSent = false;
-                // isScoreSent = false;
-                // window.removeEventListener('keydown', handleKeyDown);
-                // window.removeEventListener('keyup', handleKeyUp);
-                // window.removeEventListener('unload', handleBeforeUnload);
-                // Events.off(engine, 'beforeUpdate', beforeUpdateHnadler);
-                // Events.off(engine, 'collisionStart', colisionHandler);
-                // setUser(DEFAULT_VALUES.user);
-                // router.push('/profile');
                 router.push('/pong');
             }).catch((err) => {
                 toast({
@@ -372,6 +350,7 @@ export default function VersusScreen() {
             socketManager.waitForConnection(async () => {
                 socketManager.onScoreUpdate((data) => {
                     const { player, newScore } = data;
+                    console.log("SCORE UPDATED", player, newScore);
                     Body.setVelocity(ball, {
                         x: ballX,
                         y: ballY,
@@ -381,15 +360,6 @@ export default function VersusScreen() {
                     Body.setPosition(rightPaddle, { x: worldWidth - 20, y: worldHeight / 2 });
                     Body.setPosition(floor, { x: 0, y: worldHeight });
                     Body.setPosition(ceiling, { x: 0, y: 0 });
-                    // window.removeEventListener('keydown', handleKeyDown);
-                    // window.removeEventListener('keyup', handleKeyUp);
-                    // Events.off(engine, 'beforeUpdate', beforeUpdateHnadler);
-                    // Events.off(engine, 'collisionStart', colisionHandler);
-
-                    // window.addEventListener('keydown', handleKeyDown);
-                    // window.addEventListener('keyup', handleKeyUp);
-                    // Events.on(engine, 'beforeUpdate', beforeUpdateHnadler);
-                    // Events.on(engine, 'collisionStart', colisionHandler);
                     if (player == currentUserId) {
                         setEnemyScore(newScore);
                     }
@@ -425,7 +395,7 @@ export default function VersusScreen() {
                     options: {
                         width: worldWidth,
                         height: worldHeight,
-                        wireframes: true,
+                        wireframes: false,
                         background: 'transparent',
                     },
                 });
@@ -461,48 +431,23 @@ export default function VersusScreen() {
                         })
                         Body.setPosition(floor, { x: 0, y: worldHeight });
                         Body.setPosition(ceiling, { x: 0, y: 0 });
-                        updateScore(gameId);
+                        setTimeout(() => {
+                            updateScore(gameId);
+                        }, 1);
                     } else if (ballReachedRightThreshold()) {
-                        Body.setPosition(ball, { x: worldWidth, y: ball.position.y });
+                        // Body.setPosition(ball, { x: worldWidth, y: ball.position.y });
+                        console.log("mchat mn lisr !! ")
+                        Body.setPosition(ball, { x: worldWidth / 2, y: worldHeight / 2 });            
                         Body.setPosition(floor, { x: 0, y: worldHeight });
                         Body.setPosition(ceiling, { x: 0, y: 0 });
                         socketManager.sendTestingSendBallUpdate({
                             gameId: gameId,
-                            position: { x: worldWidth, y: ball.position.y },
+                            position: { x: worldWidth + 1, y: ball.position.y },
                             velocity: ball.velocity,
                             edge: "paddle",
                             worldWidth: worldWidth
                         });
-                        // Body.setPosition(ball, { x: , y: ball.position.y });
-                        // Body.setPosition(ball, { x: worldWidth / 2, y: worldHeight / 2 });
-                        // Body.setPosition(leftPaddle, { x: 20, y: worldHeight / 2 });
-                        // Body.setPosition(rightPaddle, { x: worldWidth - 20, y: worldHeight / 2 });
-                        // Body.setPosition(floor, { x: 0, y: worldHeight });
-                        // Body.setPosition(ceiling, { x: 0, y: 0 });
-                        // Body.setVelocity(ball, {
-                        //     x: 0,
-                        //     y: 0
-                        // })
-                        // Body.setPosition(floor, { x: 0, y: worldHeight });
-                        // Body.setPosition(ceiling, { x: 0, y: 0 });                    
                     }
-                    // else {
-                    //     if (ballX > 0) {
-                    //         if (intervalId) {
-                    //             clearInterval(intervalId);
-                    //         }
-                    //         intervalId = setInterval(() => {
-                    //             console.log(Date());
-                    //             socketManager.sendTestingSendBallUpdate({
-                    //                 gameId: gameId,
-                    //                 position: ball.position,
-                    //                 velocity: ball.velocity,
-                    //                 edge: "paddle",
-                    //                 worldWidth: worldWidth
-                    //             });
-                    //         }, 5000);
-                    //     }
-                    // }
                     updatePaddlesgame(gameId);
                 }
                 Events.on(engine, 'beforeUpdate', beforeUpdateHnadler);
@@ -545,7 +490,6 @@ export default function VersusScreen() {
                         Events.off(engine, 'collisionStart', colisionHandler);
                         setGameEnded(true);
                         setGameResult(data);
-                        // router.push('/pong');
                     })
                 })
             }
@@ -572,49 +516,6 @@ export default function VersusScreen() {
         window.addEventListener('keyup', handleKeyDown);
     }, [myScore, enemyScore])
 
-
-    // useEffect(() => {
-    //     handleBeforeUnload = async () => {
-    //         if (socketManager) {
-    //             socketManager.waitForConnection(async () => {
-    //                 try {
-
-    //                     setUser(DEFAULT_VALUES.user);
-    //                     setEnemyPlayer(DEFAULT_VALUES.enemyPlayer);
-    //                     setPlayerFound(DEFAULT_VALUES.playerFound);
-    //                     setSelectedMap(DEFAULT_VALUES.selectedMap);
-    //                     setGameStarted(DEFAULT_VALUES.gameStarted);
-    //                     setMyScore(DEFAULT_VALUES.myScore);
-    //                     setEnemyScore(DEFAULT_VALUES.enemyScore);
-    //                     setStartGame(DEFAULT_VALUES.startGame);
-    //                     setGameId(DEFAULT_VALUES.gameId);
-    //                     currentGameId = 0;
-    //                     currentUserId = 0;
-    //                     ballX = 4;
-    //                     ballY = 4;
-    //                     isPaddlePosSent = false;
-    //                     isBallSent = false;
-    //                     isScoreSent = false;
-    //                     window.removeEventListener('keydown', handleKeyDown);
-    //                     window.removeEventListener('keyup', handleKeyUp);
-    //                     window.removeEventListener('unload', handleBeforeUnload);
-    //                     Events.off(engine, 'beforeUpdate', beforeUpdateHnadler);
-    //                     Events.off(engine, 'collisionStart', colisionHandler);
-    //                     // await socketManager.sendGameEnd({ gameId: gameId, enemy: enemyPlayer?.userId });
-    //                     router.push('/pong');
-    //                     // window.location.reload();
-    //                     console.log("BEFORE UNLOAD");
-    //                 } catch (error) {
-    //                     console.log("Error in send game end ", error);
-    //                 }
-    //             })
-    //         }
-    //     }
-    //     window.addEventListener('unload', handleBeforeUnload);
-    // }, []);
-
-
-
     const unloadFlag = useRef(false);
 
     const handleBeforeUnload = async (event: any) => {
@@ -622,7 +523,6 @@ export default function VersusScreen() {
 
             console.log("BEFORE UNLOAD");
             unloadFlag.current = true;
-
             setUser(DEFAULT_VALUES.user);
             setEnemyPlayer(DEFAULT_VALUES.enemyPlayer);
             setPlayerFound(DEFAULT_VALUES.playerFound);
@@ -641,10 +541,8 @@ export default function VersusScreen() {
             isScoreSent = false;
             window.removeEventListener('keydown', handleKeyDown);
             window.removeEventListener('keyup', handleKeyUp);
-            // window.removeEventListener('unload', handleBeforeUnload);
             Events.off(engine, 'beforeUpdate', beforeUpdateHnadler);
             Events.off(engine, 'collisionStart', colisionHandler);
-
             window.removeEventListener('beforeunload', handleBeforeUnload);
 
             setTimeout(() => {
@@ -673,7 +571,7 @@ export default function VersusScreen() {
     const handleMapClick = (map: string) => {
         console.log("MAP CLICKED : ", map, selectedMap);
         if (!selectedMap && map) {
-            setSelectedMap(map);
+            setSelectedMap((map) => map);
         }
     };
 
