@@ -29,7 +29,7 @@ export class JWTGuard implements CanActivate {
 		context.switchToHttp().getRequest().user = decodedToken;
 		const user = this.prismaService.user.findUnique({
 			where: {
-				id: decodedToken.sub
+				id: parseInt(decodedToken.sub)
 			}
 		});
 		if (!user)
