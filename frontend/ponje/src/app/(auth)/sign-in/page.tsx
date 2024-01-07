@@ -36,6 +36,7 @@ export default function SignIn() {
     let accessToken = getCookie('token');
 
     const tokenVerification = async (token?: string | null | undefined) => {
+      if (token) {
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/users/verify-token`, {}, {
         headers: {
           Authorization: `${token}`,
@@ -58,6 +59,7 @@ export default function SignIn() {
         .catch(() => {
           console.log("do nothing",);
         });
+      }
     };
 
     tokenVerification(accessToken);
