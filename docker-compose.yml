@@ -18,6 +18,8 @@ services:
     networks:
       - frontend
       - backend
+    restart: always
+
 
   postgres:
     build:
@@ -52,6 +54,8 @@ services:
     networks:
       - backend
       - frontend
+    restart: always
+    
 
   adminer:
     image: adminer
@@ -63,6 +67,8 @@ services:
       - backend
     depends_on:
       - postgres
+    restart: always
+    
 
 networks:
   backend:
