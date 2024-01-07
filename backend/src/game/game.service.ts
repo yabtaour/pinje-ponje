@@ -1,9 +1,9 @@
 import {
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-  forwardRef,
+	HttpException,
+	HttpStatus,
+	Inject,
+	Injectable,
+	forwardRef,
 } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
 import { NotificationType, Rank, Status } from '@prisma/client';
@@ -448,10 +448,10 @@ export class GameService {
     );
     currentGames.set(payload.gameId, gameState);
     this.gameGateway.server
-      .to(String(currentGames.get(payload.gameId).player1.id))
+      .to(String(currentGames.get(payload.gameId)?.player1.id))
       .emit('startGame', { reversed: false });
     this.gameGateway.server
-      .to(String(currentGames.get(payload.gameId).player2.id))
+      .to(String(currentGames.get(payload.gameId)?.player2.id))
       .emit('startGame', { reversed: true });
   }
 
@@ -468,14 +468,14 @@ export class GameService {
     // 	throw new WsException(`No player found`);
     if (currentGames.has(payload.gameId)) {
       await this.gameGateway.server
-        .to(String(currentGames.get(payload.gameId).player1.id))
+        .to(String(currentGames.get(payload.gameId)?.player1.id))
         .emit('updatePaddle', {
           playerId: client,
           direction: payload.direction,
         });
 
       await this.gameGateway.server
-        .to(String(currentGames.get(payload.gameId).player2.id))
+        .to(String(currentGames.get(payload.gameId)?.player2.id))
         .emit('updatePaddle', {
           playerId: client,
           direction: payload.direction,
@@ -494,8 +494,8 @@ export class GameService {
     },
   ) {
     if (currentGames.has(payload.gameId)) {
-      if (currentGames.get(payload.gameId).player1.id == client) {
-        if (currentGames.get(payload.gameId).player1.reversed == false) {
+      if (currentGames.get(payload.gameId)?.player1.id == client) {
+        if (currentGames.get(payload.gameId)?.player1.reversed == false) {
           let velocity = null;
           if (payload.edge == 'floor') {
             velocity = {
@@ -509,7 +509,7 @@ export class GameService {
             };
           }
           await this.gameGateway.server
-            .to(String(currentGames.get(payload.gameId).player1.id))
+            .to(String(currentGames.get(payload.gameId)?.player1.id))
             .emit('updateBall', {
               position: payload.position,
               velocity: velocity,
@@ -536,11 +536,11 @@ export class GameService {
             y: payload.position.y,
           };
           await this.gameGateway.server
-            .to(String(currentGames.get(payload.gameId).player2.id))
+            .to(String(currentGames.get(payload.gameId)?.player2.id))
             .emit('updateBall', { position: position, velocity: velocity });
         }
-      } else if (currentGames.get(payload.gameId).player2.id == client) {
-        if (currentGames.get(payload.gameId).player2.reversed == false) {
+      } else if (currentGames.get(payload.gameId)?.player2.id == client) {
+        if (currentGames.get(payload.gameId)?.player2.reversed == false) {
           let velocity = null;
           if (payload.edge == 'floor') {
             velocity = {
@@ -554,7 +554,7 @@ export class GameService {
             };
           }
           await this.gameGateway.server
-            .to(String(currentGames.get(payload.gameId).player2.id))
+            .to(String(currentGames.get(payload.gameId)?.player2.id))
             .emit('updateBall', {
               position: payload.position,
               velocity: velocity,
@@ -581,7 +581,7 @@ export class GameService {
           // 		}
           // }
           await this.gameGateway.server
-            .to(String(currentGames.get(payload.gameId).player1.id))
+            .to(String(currentGames.get(payload.gameId)?.player1.id))
             .emit('updateBall', { position: position, velocity: velocity });
         }
       } else {
@@ -601,8 +601,8 @@ export class GameService {
     },
   ) {
     if (currentGames.has(payload.gameId)) {
-      if (currentGames.get(payload.gameId).player1.id == client) {
-        if (currentGames.get(payload.gameId).player1.reversed == false) {
+      if (currentGames.get(payload.gameId)?.player1.id == client) {
+        if (currentGames.get(payload.gameId)?.player1.reversed == false) {
           let velocity = null;
           velocity = {
             x: payload.velocity.x * -1,
@@ -613,11 +613,11 @@ export class GameService {
             y: payload.position.y,
           };
           await this.gameGateway.server
-            .to(String(currentGames.get(payload.gameId).player2.id))
+            .to(String(currentGames.get(payload.gameId)?.player2.id))
             .emit('updateBall', { position: position, velocity: velocity });
         }
-      } else if (currentGames.get(payload.gameId).player2.id == client) {
-        if (currentGames.get(payload.gameId).player2.reversed == false) {
+      } else if (currentGames.get(payload.gameId)?.player2.id == client) {
+        if (currentGames.get(payload.gameId)?.player2.reversed == false) {
           let velocity = null;
           velocity = {
             x: payload.velocity.x * -1,
@@ -628,7 +628,7 @@ export class GameService {
             y: payload.position.y,
           };
           await this.gameGateway.server
-            .to(String(currentGames.get(payload.gameId).player1.id))
+            .to(String(currentGames.get(payload.gameId)?.player1.id))
             .emit('updateBall', { position: position, velocity: velocity });
         }
       } else {
@@ -637,22 +637,22 @@ export class GameService {
     }
   }
 
-  // if (currentGames.get(payload.gameId).player1.id == client) {
-  // 	if (currentGames.get(payload.gameId).player1.reversed == false) {
+  // if (currentGames.get(payload.gameId)?.player1.id == client) {
+  // 	if (currentGames.get(payload.gameId)?.player1.reversed == false) {
   // 		await this.gameGateway.server
-  // 			.to(String(currentGames.get(payload.gameId).player1.id))
+  // 			.to(String(currentGames.get(payload.gameId)?.player1.id))
   // 			.emit('updateBall', payload.position);
   // 		await this.gameGateway.server
-  // 			.to(String(currentGames.get(payload.gameId).player2.id))
+  // 			.to(String(currentGames.get(payload.gameId)?.player2.id))
   // 			.emit('updateBall', {x: -payload.position.x, y: payload.position.y});
   // 	}
-  // } else if (currentGames.get(payload.gameId).player2.id == client) {
-  // 	if (currentGames.get(payload.gameId).player2.reversed == false) {
+  // } else if (currentGames.get(payload.gameId)?.player2.id == client) {
+  // 	if (currentGames.get(payload.gameId)?.player2.reversed == false) {
   // 		await this.gameGateway.server
-  // 			.to(String(currentGames.get(payload.gameId).player2.id))
+  // 			.to(String(currentGames.get(payload.gameId)?.player2.id))
   // 			.emit('updateBall', payload.position);
   // 		await this.gameGateway.server
-  // 			.to(String(currentGames.get(payload.gameId).player1.id))
+  // 			.to(String(currentGames.get(payload.gameId)?.player1.id))
   // 			.emit('updateBall', {x: -payload.position.x, y: payload.position.y});
   // 	}
   // } else {
@@ -763,98 +763,43 @@ export class GameService {
 
       console.log(currentGames);
       console.log(gameId);
-      if (this.gameGateway.intializeArray.findIndex((element) => {
-        return element == gameId;
-      }) != -1) {
-        this.gameGateway.intializeArray.splice(
-          this.gameGateway.intializeArray.findIndex((element) => {
-            element == gameId;
-          }),
-          1,
-        );
-      }
-      // this.gameGateway.initializeClients.splice(
-      //   this.gameGateway.initializeClients.findIndex((element) => {
-      //     element == winnerId;
-      //   }),
-      //   1,
-      // );
-      if (this.gameGateway.intializeArray.findIndex((element) => {
-        return element == gameId;
-      }) != -1) {
-        this.gameGateway.intializeArray.splice(
-          this.gameGateway.intializeArray.findIndex((element) => {
-            element == gameId;
-          }),
-          1,
-        );
-      }
+      this.gameGateway.initializeClients.splice(
+        this.gameGateway.initializeClients.findIndex((element) => {
+          element == winnerId;
+        }),
+        1,
+      );
       this.gameGateway.initializeClients.splice(
         this.gameGateway.initializeClients.findIndex((element) => {
           element == loserId;
         }),
         1,
       );
-      if (this.gameGateway.intializeArray.findIndex((element) => {
-        return element == gameId;
-      }) != -1) {
-        this.gameGateway.intializeArray.splice(
-          this.gameGateway.intializeArray.findIndex((element) => {
-            element == gameId;
-          }),
-          1,
-        );
-      }
-      // this.gameGateway.intializeArray.splice(
-      //   this.gameGateway.intializeArray.findIndex((element) => {
-      //     element == gameId;
-      //   }),
-      //   1,
-      // );
+      this.gameGateway.intializeArray.splice(
+        this.gameGateway.intializeArray.findIndex((element) => {
+          element == gameId;
+        }),
+        1,
+      );
       // currentGames.delete(gameId);
-      if (this.gameGateway.intializeArray.findIndex((element) => {
-        return element == gameId;
-      }
-      ) != -1) {
-        this.gameGateway.intializeArray.splice(
-          this.gameGateway.intializeArray.findIndex((element) => {
-            element == gameId;
-          }),
-          1,
-        );
-      }
-      // this.gameGateway.initializeClients.splice(
-      //   this.gameGateway.initializeClients.findIndex((element) => {
-      //     element == winnerId;
-      //   }),
-      //   1,
-      // );
-      if (this.gameGateway.intializeArray.findIndex((element) => {
-        return element == gameId;
-      }) != -1) {
-        this.gameGateway.intializeArray.splice(
-          this.gameGateway.intializeArray.findIndex((element) => {
-            element == gameId;
-          }),
-          1,
-        );
-      }
-      // this.gameGateway.initializeClients.splice(
-      //   this.gameGateway.initializeClients.findIndex((element) => {
-      //     element == loserId;
-      //   }),
-      //   1,
-      // );
-      if (this.gameGateway.intializeArray.findIndex((element) => {
-        return element == gameId;
-      }) != -1) {
-        this.gameGateway.intializeArray.splice(
-          this.gameGateway.intializeArray.findIndex((element) => {
-            element == gameId;
-          }),
-          1,
-        );
-      }
+      this.gameGateway.initializeClients.splice(
+        this.gameGateway.initializeClients.findIndex((element) => {
+          element == winnerId;
+        }),
+        1,
+      );
+      this.gameGateway.initializeClients.splice(
+        this.gameGateway.initializeClients.findIndex((element) => {
+          element == loserId;
+        }),
+        1,
+      );
+      this.gameGateway.intializeArray.splice(
+        this.gameGateway.intializeArray.findIndex((element) => {
+          element == gameId;
+        }),
+        1,
+      );
       currentGames.delete(gameId);
       console.log(
         currentGames,

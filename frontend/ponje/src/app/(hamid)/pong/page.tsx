@@ -22,17 +22,18 @@ export default function Pong() {
   const toast = useToast();
   const [me, setMe] = useState(null) as any;
 
-const handleMMClick = async () => {
-  try {
+  const handleMMClick = () => {
     if (token) {
-      const ret = await fetchUserData(token);
-      setMe(ret);
+      fetchUserData(token).then((ret) => {
+        setMe(ret);
+      }).catch(() => {
+        console.log('error fetching me ');
+      })
     }
-
     if (me?.status === 'INGAME' || me?.status === 'OFFLINE' || me?.status === 'INQUEUE') {
       toast({
         title: 'Error',
-        description: "You are already in a game",
+        description: "you are already in a game",
         status: 'error',
         duration: 9000,
         isClosable: true,
@@ -42,18 +43,13 @@ const handleMMClick = async () => {
       });
       return;
     }
-
     router.push('/pong/versusScreen');
-
     setTimeout(() => {
       if (!gameDataFetched) {
         getGameDataHandler();
       }
-    }, 2000);
-  } catch (error) {
-    console.log('Error fetching user data:', error);
-  }
-};
+    }, 2000)
+  };
 
   const token = getToken();
   const getGameDataHandler = async () => {
