@@ -68,7 +68,7 @@ function OtherMessage({ message }: any) {
     const activeConversation = useAppSelector(state => state?.chatReducer?.rooms?.find((room: any) => room?.id === activeConversationId));
 
     return (
-        <div className="flex p-3 flex-row justify-start relative -z-10">
+        <div className="flex p-3 flex-row justify-start relative">
             <Button onClick={() => {
                 router.push(`/profile/${message?.user?.id}`);
             }}>
@@ -220,7 +220,3 @@ export default function Chat() {
       
 
 }
-
-
-
-

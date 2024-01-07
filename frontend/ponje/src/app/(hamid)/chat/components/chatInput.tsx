@@ -124,7 +124,7 @@ export default function ChatInput() {
                     <>
                         <button
                             onClick={handleOnClick}
-                            className={`bg-[#1B1A2D] rounded-full p-2 hover:bg-[#817EC4] ${activeConversation?.state === 'MUTED' ? 'cursor-not-allowed' : ''}`}
+                            className={`bg-[#1B1A2D] rounded-full p-2 hover:bg-[#817EC4] mr-2 ${activeConversation?.state === 'MUTED' ? 'cursor-not-allowed' : ''}`}
                             disabled={activeConversation?.state === 'MUTED'}
                             style={{ pointerEvents: activeConversation?.state === 'MUTED' ? 'none' : 'auto' }}
                         >
