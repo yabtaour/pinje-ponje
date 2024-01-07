@@ -88,6 +88,8 @@ export class ChatService {
     payload: updateRoomDto,
   ) {
     let { name, password, roomType } = payload;
+    let rounds : number;
+    let HashedPassword : string | undefined;
     if (
       (name !== undefined && name === null) ||
       (password !== undefined && password === null) ||
@@ -104,6 +106,11 @@ export class ChatService {
           'Password must be provided',
           HttpStatus.BAD_REQUEST,
         );
+      }else {
+        rounds = parseInt(process.env.BCRYPT_ROUNDS)
+        HashedPassword = bcrypt.hashSync(password, rounds)
+        password = HashedPassword
+        delete payload.password
       }
     } else {
       password = null;
