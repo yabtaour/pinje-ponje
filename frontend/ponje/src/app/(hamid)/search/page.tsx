@@ -81,7 +81,6 @@ const SearchPage = () => {
       </div>
     );
   }
-  console.log("Data: ", data);
 
   const getRankColor = (rank: string) => {
     switch (rank.toLowerCase()) {

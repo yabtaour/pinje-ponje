@@ -361,7 +361,6 @@ export const NotificationComponent = ({ id, name, type, avatar, createdAt, setNo
 
   const handleReject = async (type: string, id: number, notifId: number) => {
     if (type === "FRIEND_REQUEST") {
-      console.log("friend: ", id);
       try {
         const res = await axios.post('/users/friends/decline', {
           headers: {

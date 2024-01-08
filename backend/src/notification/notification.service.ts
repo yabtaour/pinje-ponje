@@ -24,7 +24,6 @@ export class NotificationService {
   ) {}
 
   async getGameIdUsingCurrentGames(userId: number) {
-    console.log('NotificationService getGameIdUsingCurrentGames');
     const user = await this.prismaService.user.findUnique({
       where: {
         id: userId,
@@ -45,7 +44,6 @@ export class NotificationService {
     let enemyId = -1;
     currentGames.forEach(async (gameState, key) => {
       if (gameState.player1.id === userId || gameState.player2.id === userId) {
-        // console.log('Game found');
         if (gameState.player1.id === userId) {
           enemyId = gameState.player2.id;
           gameId = key;
@@ -53,7 +51,6 @@ export class NotificationService {
           enemyId = gameState.player1.id;
           gameId = key;
         }
-        // console.log('Game found');
         await this.gameService.finishGame(enemyId, userId, gameId);
       }
     });
@@ -189,7 +186,6 @@ export class NotificationService {
         status: status,
       },
     });
-    // console.log('changed status to online ');
     return user;
   }
 }

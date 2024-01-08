@@ -279,7 +279,6 @@ export default function RankPage() {
           variant: "solid",
           colorScheme: "red",
         });
-        console.log(err);
       }
     };
 

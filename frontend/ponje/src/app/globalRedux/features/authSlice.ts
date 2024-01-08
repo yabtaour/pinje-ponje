@@ -56,7 +56,6 @@ export const auth = createSlice({
   initialState,
   reducers: {
     login: (state, action) => {
-      console.log("Login payload:", action.payload);
       if (action.payload.user && action.payload.user.id) {
         const newState = {
           isAuthenticated: true,

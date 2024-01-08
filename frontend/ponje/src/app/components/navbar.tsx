@@ -63,7 +63,16 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
       deleteCookie('token');
       dispatch(logout());
     }).catch(()=> {
-      console.log('hamid machina fiha ');
+      toast({
+        title: 'Error',
+        description: `Logout Error`,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+        position: "bottom-right",
+        variant: "solid",
+        colorScheme: "red",
+      })
     })
   };
 
@@ -77,7 +86,6 @@ export default function NavBar({ onToggleSidebar: onToggleSidebar }: NavBarProps
             Authorization: getToken(),
           },
         });
-        console.log(data.data);
         setUser(data.data);
         setLoading(false);
       } catch (err) {

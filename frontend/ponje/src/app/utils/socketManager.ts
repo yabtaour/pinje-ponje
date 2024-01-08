@@ -45,7 +45,7 @@ class SocketManager {
           token: token,
         },
       });
-      console.log("notificationSocket is connected.", this.notificationSocket);
+     
     }
 
     if (this.mainSocket && !this.statusSocket) {
@@ -54,7 +54,7 @@ class SocketManager {
           token: token,
         },
       });
-      console.log("statusSocket is connected.", this.statusSocket);
+  
     }
     this.mainSocket?.connect();
     this.chatSocket?.connect();
@@ -113,7 +113,6 @@ class SocketManager {
   public connectGameSocket(): void {
     if (this.mainSocket && this.gameSocket && !this.gameSocket.connected) {
       this.gameSocket.connect();
-      console.log("gameSocket connected");
     }
   }
 
@@ -143,20 +142,17 @@ class SocketManager {
 
   public async getNotifications(callback: () => void) {
     if (this.notificationSocket && this.notificationSocket.connected) {
-      console.log("Socket is connected.", this.notificationSocket);
-      console.log("Connected to notification namespace");
+
       this.notificationSocket?.off("notification");
       this.notificationSocket?.on("notification", (notifications: any) => {
-        console.log("Notifications:", notifications);
+
         callback();
       });
-    } else {
-      console.log("Socket is not connected yet.");
-    }
+    } 
   }
 
   public async getConversations(): Promise<any[]> {
-    console.log("getConversations");
+   
     return new Promise((resolve, reject) => {
       if (this.chatSocket && this.chatSocket.connected) {
         this.chatSocket?.emit("getRooms", (rooms: any) => {
@@ -175,9 +171,7 @@ class SocketManager {
       this.chatSocket?.on("roomBroadcast", (updatedMember: any) => {
         callback(updatedMember);
       });
-    } else {
-      console.log("Socket is not connected yet.");
-    }
+    } 
   }
 
   public joinRoom(roomId: number): Promise<any> {
@@ -219,12 +213,9 @@ class SocketManager {
   public makeConversationRead(roomId: number): Promise<any> {
     return new Promise((resolve, reject) => {
       if (this.chatSocket && this.chatSocket.connected) {
-        console.log("Socket is connected.", this.chatSocket);
-        console.log("Connected to chat namespace");
         this.chatSocket?.emit("readMessages", { roomId });
         resolve("done");
       } else {
-        console.log("Socket is not connected yet.");
         reject("Socket is not connected");
       }
     });
@@ -232,40 +223,20 @@ class SocketManager {
 
   public getNewMessages(callback: () => void) {
     if (this.chatSocket && this.chatSocket.connected) {
-      console.log("Socket is connected.", this.chatSocket);
       this.chatSocket?.off("message");
       this.chatSocket?.on("message", () => {
         callback();
       });
     } else {
-      console.log("Socket is not connected yet.");
     }
   }
 
-  // public onNewGame(): Promise<any> {
-  //   return new Promise(async (resolve, reject) => {
-  //     if (this.gameSocket && this.gameSocket.connected) {
-  //       const gameFoundListener = (data: any) => {
-  //         if (data) {
-  //           console.log("new game found : ", data);
-  //           resolve(data);
-  //         }
-  //         data = null;
-  //         // this.gameSocket?.off("gameFound", gameFoundListener);
-  //       };
-  //       this.gameSocket?.on("gameFound", gameFoundListener);
-  //     } else {
-  //       console.log("Socket is not connected yet.");
-  //       reject("Socket is not connected");
-  //     }
-  //   });
-  // }
+
 
   public onNewGame(callback: (data: any) => void): void {
     if (this.gameSocket && this.gameSocket.connected) {
       this.gameSocket?.off("gameFound");
       this.gameSocket?.on("gameFound", (data: any) => {
-        console.log("new game jat : ", data);
         callback(data);
       });
     } else {
@@ -280,7 +251,6 @@ class SocketManager {
   }): Promise<any> {
     return new Promise((resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
-        console.log("initialize game sent");
         this.gameSocket?.emit("initialize", payload);
         resolve("done");
       } else {
@@ -295,7 +265,6 @@ class SocketManager {
   }): Promise<any> {
     return new Promise(async (resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
-        console.log("update paddle sent");
         this.gameSocket?.emit("updatePlayerPosition", payload);
         resolve("done");
       } else {
@@ -308,11 +277,9 @@ class SocketManager {
   public sendGameEnd(payload: { gameId: number; enemy: number }) {
     return new Promise((resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
-        console.log("sent game end");
         this.gameSocket?.emit("finishGame", payload);
         resolve("done");
       } else {
-        console.log("Socket is not connected yet.");
         reject("Socket is not connected");
       }
     });
@@ -321,7 +288,6 @@ class SocketManager {
   public sendScoreUpdate(payload: { gameId: number }): Promise<any> {
     return new Promise(async (resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
-        console.log("send score update : ", payload);
         this.gameSocket?.emit("updateScore", payload);
         resolve("done");
       } else {
@@ -334,7 +300,6 @@ class SocketManager {
     if (this.gameSocket && this.gameSocket.connected) {
       this.gameSocket?.off("updateScore");
       this.gameSocket?.on("updateScore", (data: any) => {
-        console.log("score update ja : ", data);
         callback(data);
       });
     } else {
@@ -346,7 +311,6 @@ class SocketManager {
     if (this.gameSocket && this.gameSocket.connected) {
       this.gameSocket?.off("gameOver");
       this.gameSocket?.on("gameOver", (data: any) => {
-        console.log("game end jat : ", data);
         callback(data);
       });
     } else {
@@ -358,7 +322,6 @@ class SocketManager {
     if (this.gameSocket && this.gameSocket.connected) {
       this.gameSocket?.off("startGame");
       this.gameSocket?.on("startGame", (data: any) => {
-        console.log("start game jat : ", data);
         callback(data);
       });
     } else {
@@ -370,7 +333,6 @@ class SocketManager {
     if (this.gameSocket && this.gameSocket.connected) {
       this.gameSocket?.off("updatePaddle");
       this.gameSocket?.on("updatePaddle", (data: any) => {
-        console.log("paddle postion jat : ", data);
         callback(data);
       });
     } else {
@@ -382,7 +344,6 @@ class SocketManager {
     if (this.gameSocket && this.gameSocket.connected) {
       this.gameSocket?.off("updateBall");
       this.gameSocket?.on("updateBall", (data: any) => {
-        console.log("ball postion jat : ", data);
         callback(data);
       });
     } else {
@@ -399,7 +360,6 @@ class SocketManager {
   }) {
     return new Promise(async (resolve, reject) => {
       if (this.gameSocket && this.gameSocket.connected) {
-        console.log("me sending ball update");
         this.gameSocket?.emit("testingBallUpdate", payload);
         resolve("done");
       } else {

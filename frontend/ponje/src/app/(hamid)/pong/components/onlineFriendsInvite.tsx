@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { User } from "../../../types/user";
+import { useToast } from "@chakra-ui/react";
 
 
 
@@ -12,6 +13,7 @@ export default function OnlineFriendsInvite({ users }: { users: User[] }) {
 
     const [sentRequests, setSentRequests] = useState<number[]>([]);
     const router = useRouter();
+    const toast = useToast();
 
     const sendGameRequest = async (userid: number) => {
         try {
@@ -26,10 +28,16 @@ export default function OnlineFriendsInvite({ users }: { users: User[] }) {
                     Authorization: accessToken,
                 }
             });
-            console.log(res);
             setSentRequests(prevSentRequests => [...prevSentRequests, userid]);
         } catch (error) {
-            console.log("error", error);
+            toast({
+                title: "An error occurred.",
+                description: "Unable to send game request.",
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+            })
+
         }
     };
 

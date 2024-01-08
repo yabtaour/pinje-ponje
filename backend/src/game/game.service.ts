@@ -768,12 +768,6 @@ export class GameService {
         1,
       );
       currentGames.delete(gameId);
-      console.log(
-        currentGames,
-        this.gameGateway.initializeClients,
-        this.gameGateway.intializeArray,
-      );
-      console.log(this.gameGateway.initializeClients);
       await this.gameGateway.server
         .to(String(winnerId))
         .emit('gameOver', 'win');

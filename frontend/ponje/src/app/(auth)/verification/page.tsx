@@ -20,14 +20,12 @@ export default function VerificationPage() {
     const toast = useToast();
     const verifyCode = async (values: any) => {
         try {
-            console.log('values:', values);
             const res = await axios.post('/auth/2fa', { twofactorcode: values }, {
                 headers: {
                     Authorization: token,
                 },
             });
             if (res.status === 201) {
-                console.log('2fa success');
                 dispatch(setVerified(true));
                 localStorage.setItem('2fa', 'true');
                 router.push('/profile');
@@ -116,7 +114,16 @@ export default function VerificationPage() {
         const trimmedCode = code.replace(/\s/g, "");
         if (trimmedCode.length !== 6 || !/^\d+$/.test(trimmedCode)) {
             console.log("error");
-
+            toast({
+                title: 'Error',
+                description: "should be 6 digits",
+                status: 'error',
+                duration: 9000,
+                isClosable: true,
+                position: "bottom-right",
+                variant: "solid",
+                colorScheme: "red",
+            });
         }
         else {
             verifyCode(trimmedCode);

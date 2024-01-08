@@ -47,7 +47,6 @@ export default function SignUp() {
                         fetchUserData(accessToken).then((data) => {
                             dispatch(login({ user: data, token: accessToken }));
                             setSession(accessToken);
-                            console.log("data: ", data);
                             if (data?.twoFactor && !localStorage.getItem('2fa'))
                                 router.push('/verification');
                             if (!data?.profile?.avatar)
@@ -57,7 +56,16 @@ export default function SignUp() {
                     router.push('/profile');
                 })
                 .catch(() => {
-                    console.log("do nothing",);
+                    toast({
+                        title: 'Error',
+                        description: `Token Verification Error`,
+                        status: 'error',
+                        duration: 3000,
+                        isClosable: true,
+                        position: "bottom-right",
+                        variant: "solid",
+                        colorScheme: "red",
+                      })
                 });
         };
 

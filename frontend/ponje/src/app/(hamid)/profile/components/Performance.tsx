@@ -6,6 +6,7 @@ import { Doughnut } from 'react-chartjs-2';
 import { User } from '@/app/types/user';
 import { getToken } from '@/app/utils/auth';
 import { ArcElement, Chart as ChartJS, Legend, Tooltip } from 'chart.js';
+import { useToast } from "@chakra-ui/react";
 
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -13,7 +14,7 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 
 export default function Performance({ user }: { user: User | null | undefined }) {
-
+  const toast = useToast();
   const [wins, setWins] = useState(0);
   const [losses, setLosses] = useState(0);
 
@@ -28,7 +29,16 @@ export default function Performance({ user }: { user: User | null | undefined })
           setWins(wins);
           setLosses(losses);
         } catch (err) {
-          console.log(err);
+          toast({
+            title: 'Error',
+            description: "error while fetching game history",
+            status: 'error',
+            duration: 3000,
+            isClosable: true,
+            position: "bottom-right",
+            variant: "solid",
+            colorScheme: "red",
+          })
         }
       };
       fetchData();

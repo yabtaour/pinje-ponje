@@ -28,7 +28,6 @@ export class AuthController {
     @UseGuards(AuthGuard('42'))
     async handle42Auth(@Req() request: any, @Res() response: Response) {
         const user = request.user;
-        console.log("Copy This Token: ", request.user.token);
 		response.cookie("token", "Bearer " + request.user.token);
 		if (user.user.twoFactor === true)
 			response.redirect(VERIFICATION);
@@ -46,7 +45,6 @@ export class AuthController {
 		@Res() response: Response
 	 ) {
 		const user = request.user;
-		console.log("Copy This Token: ", request.user.token);
 		response.cookie("token", "Bearer " + request.user.token);
 		if (user.user.twoFactor == true)
 			response.redirect(VERIFICATION);
@@ -72,7 +70,6 @@ export class AuthController {
   	@UseGuards(LocalAuthGuard)
 	async handleLogin(@Body() data: SignInDto, @Req() request: any, @Res() response: Response) {
 		const user = request.user;
-	  	console.log("Copy This Token: ", request.user.token);
 		response.cookie("token", "Bearer " + request.user.token);
 		response.send(user);
 	}

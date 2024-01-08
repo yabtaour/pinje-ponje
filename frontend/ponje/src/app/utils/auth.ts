@@ -40,7 +40,6 @@ export const fetchUserData = async (token: string) => {
     });
     return response.data;
   } catch (error) {
-    console.log(error);
     return null;
   }
 };
@@ -94,7 +93,6 @@ export const handleSignup = async (
     if (err.response && err.response.status === 409) {
       throw new ConflictError("User already exists");
     } else {
-      console.log("Signup error:", error);
       throw error;
     }
   }
@@ -107,23 +105,16 @@ export const handleLogin = async (email: string, password: string) => {
       password,
     });
 
-    console.log(axios.request);
-    console.log(response);
     const { token } = response.data;
     if (response.status === 201) {
       const user = await fetchUserData(token);
-      console.log(user);
       if (user) {
         setCookie("token", `${token}`);
         setSession(token);
         return { token, user };
-      } else {
-        console.log("User is undefined !!");
       }
     }
   } catch (error) {
-    console.log(axios.request);
-    console.error(error);
     const err = error as AxiosError;
     throw err;
   }

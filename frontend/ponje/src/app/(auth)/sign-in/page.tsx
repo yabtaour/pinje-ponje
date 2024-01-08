@@ -56,7 +56,16 @@ export default function SignIn() {
           router.push('/profile');
         })
         .catch(() => {
-          console.log("do nothing",);
+          toast({
+            title: 'Error',
+            description: `Token Verification Error`,
+            status: 'error',
+            duration: 3000,
+            isClosable: true,
+            position: "bottom-right",
+            variant: "solid",
+            colorScheme: "red",
+          })
         });
       }
     };
@@ -103,9 +112,6 @@ export default function SignIn() {
     }
     catch (error) {
       const err = error as AxiosError;
-      console.log("error: ", error);
-      // console.log("error: ", err);
-      //check if error code is 404
       if (err?.response?.status === 404) {
         toast({
           title: 'Error',

@@ -231,18 +231,16 @@ export default function UserSettings() {
                 try {
                     const response = await resetPassword(oldpassword, newpassword, userToken);
                     if (response) {
-                        console.log("response from reset password: ", response);
                         setShowSuccessBadge(true);
 
                     }
                 }
                 catch (error) {
-                    console.log("error from reset password: ", error);
                     toast({
                         title: 'Error',
                         description: "error while updating password",
                         status: 'error',
-                        duration: 9000,
+                        duration: 3000,
                         isClosable: true,
                         position: "bottom-right",
                         variant: "solid",

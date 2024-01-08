@@ -92,7 +92,6 @@ export const chat = createSlice({
     addMessage: (state, action) => {
       const { roomId } = action.payload;
 
-      console.log(action);
       const roomIndex = state.rooms.findIndex(
         (room) => room?.room?.id === roomId
       );
@@ -155,7 +154,6 @@ export const chat = createSlice({
     },
 
     replaceMessage: (state, action) => {
-      console.log("replaceMessage:", action);
       const { roomId, id, content } = action.payload;
       const roomIndex = state.rooms.findIndex(
         (room) => room?.room?.id === roomId
@@ -201,7 +199,6 @@ export const chat = createSlice({
     },
 
     addConversation: (state, action) => {
-      console.log("addConversation:", action.payload);
 
       const updatedRooms = [...state.rooms, action.payload];
 
@@ -257,16 +254,12 @@ export const chat = createSlice({
 
       // }
 
-      console.log("removeMember:", action.payload);
       const { roomId, id } = action.payload;
 
       const roomIndex = state.rooms.findIndex(
         (room) => room?.room?.id === roomId
       );
 
-      console.log("id:", id);
-
-      console.log("removeMember:", roomIndex);
       if (roomIndex !== -1) {
         const updatedRoom = {
           ...state.rooms[roomIndex],

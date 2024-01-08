@@ -96,8 +96,8 @@ function InformationMessage({ message }: any) {
         <>
             {
                 message?.state === "INFORMATION" && message?.content?.includes("ACTIVE") ? (<></>) : (
-                    <div className="flex flex-row justify-center z-40">
-                        <div className="bg-[#252341]/40 rounded-lg p-2 m-2 max-w-[80%] sm:max-w-[60%] md:max-w-[50%] lg:max-w-[40%] z-40">
+                    <div className="flex flex-row justify-center z-20">
+                        <div className="bg-[#252341]/40 rounded-lg p-2 m-2 max-w-[80%] sm:max-w-[60%] md:max-w-[50%] lg:max-w-[40%] z-20">
                             <div className="flex w-full flex-row justify-between items-center">
                                 <svg className="mx-2" width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <g fill="" stroke="white" strokeWidth="2">
@@ -169,7 +169,7 @@ export default function Chat() {
                   ) : (
                     <ScrollShadow hideScrollBar className="overflow-x-hidden h-[80vh]">
                       <div className="flex justify-center sticky top-0">
-                        <div className="lg:w-full md:2/3 relative z-10 bg-[#1B1A2D] sm:w-full w-full hover:bg-[#252341] flex justify-center">
+                        <div className=" md:2/3 relative z-40 bg-[#1B1A2D] w-1/3 hover:bg-[#252341] flex flex-wrap justify-center">
                           <Button onPress={onOpen}>
                             <User
                               className="text-white my-2 p-4"

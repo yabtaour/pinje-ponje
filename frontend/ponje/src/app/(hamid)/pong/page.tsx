@@ -27,7 +27,16 @@ export default function Pong() {
       fetchUserData(token).then((ret) => {
         setMe(ret);
       }).catch(() => {
-        console.log('error fetching me ');
+        toast({
+          title: 'Error',
+          description: "Error fetching user",
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+          position: "bottom-right",
+          variant: "solid",
+          colorScheme: "red",
+        })
       })
     }
     if (me?.status === 'INGAME' || me?.status === 'OFFLINE' || me?.status === 'INQUEUE') {
@@ -60,13 +69,12 @@ export default function Pong() {
     setGameDataFetched(true);
     try {
       const data = await getGameData(token);
-      console.log('GameData:', data);
     } catch (err) {
       toast({
         title: 'Error',
         description: "Game data fetch error",
         status: 'error',
-        duration: 9000,
+        duration: 3000,
         isClosable: true,
         position: "bottom-right",
         variant: "solid",
@@ -89,7 +97,6 @@ export default function Pong() {
             authorization: token,
           },
         });
-        console.log(data.data);
         setUser(data.data);
         setLoading(false);
         const loggedUserId = data.data.id;
@@ -110,38 +117,7 @@ export default function Pong() {
     fetchData();
   }, []);
 
-  // const fetchOnlineFriends = async (userId: number) => {
-  //   try {
-
-  //     const token = getToken();
-  //     if (!token) {
-  //       console.error('Access token not found in Cookies');
-  //       return;
-  //     }
-  //     const data = await axios.get(`/users/${userId}/friends`, {
-  //       headers: {
-  //         Authorization: token,
-  //       },
-  //     });
-  //     const friends = data.data.filter((friend: User) => friend.status === 'ONLINE');
-  //     setOnlineFriends(friends);
-  //     setLoading(false);
-  //     console.log(data.data);
-  //   } catch (err) {
-  //     toast({
-  //       title: 'Error',
-  //       description: "error while gettinge friends",
-  //       status: 'error',
-  //       duration: 9000,
-  //       isClosable: true,
-  //       position: "bottom-right",
-  //       variant: "solid",
-  //     });
-  //     console.error(err);
-  //     setLoading(false);
-  //   }
-  // };
-
+ 
   if (loading) {
 
     return (

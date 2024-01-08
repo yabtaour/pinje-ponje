@@ -65,13 +65,12 @@ export default function UploadAvatar() {
           title: "Error",
           description: `Error in uploading avatar: ${err.message}`,
           status: "error",
-          duration: 9000,
+          duration: 3000,
           isClosable: true,
           position: "bottom-right",
           variant: "solid",
           colorScheme: "red",
         });
-        console.log(error);
       }
     }
   };
@@ -97,7 +96,6 @@ export default function UploadAvatar() {
 
 
   useEffect(() => {
-    console.log('avatar : ', avatar);
   }, [avatar]);
 
 

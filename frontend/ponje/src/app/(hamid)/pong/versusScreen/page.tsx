@@ -201,7 +201,6 @@ export default function VersusScreen() {
 
     useEffect(() => {
         const startGameFoundListener = async () => {
-            // console.log("SETUP GAME FOUND LISTENER");
             if (socketManager) {
                 socketManager.waitForConnection(async () => {
                     try {
@@ -237,7 +236,6 @@ export default function VersusScreen() {
 
     useEffect(() => {
         const startGameListener = async () => {
-            // console.log("SETUP START GAME LISTENER");
             if (socketManager) {
                 socketManager.waitForConnection(async () => {
                     socketManager.onStartGame(async (data) => {
@@ -258,7 +256,6 @@ export default function VersusScreen() {
 
     useEffect(() => {
         const sendGameInitialize = async () => {
-            // console.log("SETUP INITIALIZE SENT");
             if (socketManager) {
                 socketManager.waitForConnection(async () => {
                     try {
@@ -273,7 +270,6 @@ export default function VersusScreen() {
     }, [selectedMap])
 
     useEffect(() => {
-        // console.log("SETUP PADDLE UPDATE LISTENER");
         if (socketManager) {
             socketManager.waitForConnection(async () => {
                 socketManager.onPaddlePosition((data) => {
@@ -302,7 +298,6 @@ export default function VersusScreen() {
     }, [])
 
     useEffect(() => {
-        // console.log("SETUP BALL UPDATE LISTENER");
         if (socketManager) {
             socketManager.waitForConnection(async () => {
                 socketManager.onBallUpdate((data) => {
@@ -426,11 +421,9 @@ export default function VersusScreen() {
 
     useEffect(() => {
         const handleGameEnd = () => {
-            // console.log("SETUP GAME END LISTSNER");
             if (socketManager) {
                 socketManager.waitForConnection(async () => {
                     socketManager.onGameFinished((data) => {
-                        console.log("GAME ENDED !!");
                         setUser(DEFAULT_VALUES.user);
                         setEnemyPlayer(DEFAULT_VALUES.enemyPlayer);
                         setPlayerFound(DEFAULT_VALUES.playerFound);
@@ -484,7 +477,6 @@ export default function VersusScreen() {
     const handleBeforeUnload = async (event: any) => {
         if (socketManager && !unloadFlag.current) {
 
-            // console.log("BEFORE UNLOAD");
             unloadFlag.current = true;
 
             setUser(DEFAULT_VALUES.user);
@@ -522,7 +514,6 @@ export default function VersusScreen() {
         window.addEventListener('beforeunload', beforeUnloadListener);
 
         return () => {
-            // console.log("Cleanup");
             window.removeEventListener('beforeunload', beforeUnloadListener);
         };
     }, []);
@@ -532,7 +523,6 @@ export default function VersusScreen() {
 
 
     const handleMapClick = (map: string) => {
-        // console.log("MAP CLICKED : ", map, selectedMap);
         if (!selectedMap && map) {
             setSelectedMap(map);
         }

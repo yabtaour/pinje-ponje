@@ -47,10 +47,8 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
                 },
             })
                 .then((res) => {
-                    console.log("verifiedToken", res);
                 })
                 .catch((err) => {
-                    console.log("do nothing:", err);
                     router.push('/');
                     localStorage.removeItem('2fa');
                     localStorage.removeItem('access_token');
@@ -66,7 +64,6 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
             fetchUserData(accessToken).then((data) => {
                 dispatch(login({ user: data, token: accessToken }));
                 setSession(accessToken);
-                console.log("data: ", data);
                 if (data?.twoFactor && !localStorage.getItem('2fa'))
                     router.push('/verification');
                 if (!data?.profile?.avatar) {
@@ -76,10 +73,8 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
 
             const socketManager = SocketManager.getInstance(`${process.env.NEXT_PUBLIC_API_URL}`, accessToken);
             socketManager.waitForConnection(async () => {
-                console.log("socketManager: ", socketManager);
                 try {
                     // socketManager.getNewMessages();
-                    console.log("socketManager: ", socketManager);
                     const rooms = await socketManager.getConversations();
                     dispatch(setRooms(rooms));
                 } catch (error) {

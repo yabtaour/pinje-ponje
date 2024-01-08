@@ -108,7 +108,6 @@ const FriendButton = ({ userId }: { userId: number | undefined }) => {
   };
 
   useEffect(() => {
-    // console.log("button clicked\n");
     determineFriendshipButton();
     setFriendshipStatus(false);
   }, [friendshipStatus]);

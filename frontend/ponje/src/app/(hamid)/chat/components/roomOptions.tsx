@@ -37,7 +37,6 @@ export function JoinRooms({ onOpenChange, setAction }: { onOpenChange: () => voi
                 });
                 setRooms(rooms.data);
             } catch (err) {
-                console.log(err);
                 toast({
                     title: "Error.",
                     description: "counldn't fetch rooms.",
@@ -139,7 +138,6 @@ export function CreateRoom({ onOpenChange, setAction }: { onOpenChange: () => vo
         }).then((res) => {
             const fetchNewMessages = async () => {
                 const rooms = await socketManager.getConversations();
-                console.log("rooms: ", rooms);
                 dispatch(setRooms(rooms));
             };
             fetchNewMessages();
@@ -151,7 +149,6 @@ export function CreateRoom({ onOpenChange, setAction }: { onOpenChange: () => vo
                 duration: 3000,
                 isClosable: true,
             });
-            console.log(err);
         })
 
         setAction('');

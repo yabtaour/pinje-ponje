@@ -28,14 +28,12 @@ export function TwoFactorModal({
 
     const verifyCode = async (values: any) => {
         try {
-            console.log('values:', values);
             const res = await axios.post('/auth/2fa', { twofactorcode: values }, {
                 headers: {
                     Authorization: token,
                 },
             });
             if (res.status === 201) {
-                console.log('2fa success');
                 setTwoFactorAuth(true);
                 settwofasuccess(true);
             }
@@ -112,7 +110,6 @@ export function TwoFactorModal({
 
         const trimmedCode = code.replace(/\s/g, "");
         if (trimmedCode.length !== 6 || !/^\d+$/.test(trimmedCode)) {
-            console.log("error");
             toast({
                 title: 'Error',
                 description: "should be 6 digits",

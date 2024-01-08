@@ -37,7 +37,6 @@ export const updateUser = async (userData: UserData, token: string | null) => {
           },
         }
       );
-      console.log("updated bio", bioResponse.data);
     }
     return { success: true, message: "Update successful" };
   } catch (error) {
@@ -62,7 +61,6 @@ export const fetchTwoFactorStatus = async (token: string | null) => {
         Authorization: token,
       },
     });
-    console.log("the value of twofa from db", response.data.twoFactor);
     return response.data.twoFactor;
   } catch (error) {
     console.error("Error fetching 2FA status:", error);
@@ -96,7 +94,6 @@ export const fetchGameHistory = async (id: number, token: string | null) => {
     });
     return res.data;
   } catch (err) {
-    console.log(err);
   }
 };
 

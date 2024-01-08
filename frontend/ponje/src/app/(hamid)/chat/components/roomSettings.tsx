@@ -77,7 +77,6 @@ export function RoomSettings({ room, onOpenChange }: { room: any, onOpenChange: 
                 duration: 5000,
                 isClosable: true,
             })
-            console.log(err);
         })
 
         setAction('');
@@ -251,7 +250,6 @@ export function InviteFriends() {
                 setFriends(res.data);
             } catch (err) {
                 const error = err as AxiosError;
-                console.log(err);
                 toast({
                     title: "Error.",
                     description: `Error while fetching friends : ${error.message}`,

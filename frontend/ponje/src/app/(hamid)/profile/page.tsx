@@ -44,7 +44,6 @@ export default function Profile() {
                 fetchUserData(accessToken).then((data) => {
                   dispatch(login({ user: data, token: accessToken }));
                   setSession(accessToken);
-                  console.log("data: ", data);
                   if (data?.twoFactor && !localStorage.getItem('2fa'))
                     router.push('/verification');
                   if (!data?.profile?.avatar)
@@ -54,7 +53,16 @@ export default function Profile() {
               router.push('/profile');
             })
             .catch(() => {
-              console.log("do nothing",);
+                toast({
+                    title: 'Error',
+                    description: `Token Verification Error`,
+                    status: 'error',
+                    duration: 3000,
+                    isClosable: true,
+                    position: "bottom-right",
+                    variant: "solid",
+                    colorScheme: "red",
+                })
             });
         };
     
@@ -81,13 +89,12 @@ export default function Profile() {
                 const friends = data.data;
                 setFriends(friends);
                 setLoading(false);
-                console.log(data.data);
             } catch (err) {
                 toast({
                     title: 'Error',
                     description: "error while getting friends",
                     status: 'error',
-                    duration: 9000,
+                    duration: 3000,
                     isClosable: true,
                     position: "bottom-right",
                     variant: "solid",
@@ -116,9 +123,7 @@ export default function Profile() {
                 setUser(() => data.data);
 
                 fetchFriends(data.data.id);
-                console.log(data.data);
                 setLoading(false);
-                console.log(data.data);
             } catch (Error: any) {
                 if (Error.isAxiosError && Error.response && Error.response.status === 404) {
                     router.push('/404');
@@ -126,7 +131,7 @@ export default function Profile() {
                     toast({
                         title: 'Error',
                         status: 'error',
-                        duration: 9000,
+                        duration: 3000,
                         isClosable: true,
                         position: "bottom-right",
                         variant: "solid",
@@ -137,7 +142,6 @@ export default function Profile() {
             }
         };
         fetchData();
-        // console.log(newNotification);
     }, [ newNotification]);
 
 

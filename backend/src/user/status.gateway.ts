@@ -26,11 +26,9 @@ export class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     ) {}
 
     afterInit(server: Server) {
-        // console.log('StatusGateway initialized');
     }
 
     handleConnection(client: any, ...args: any[]) {
-        // console.log('StatusGateway connected');
         client.join('status');
         const payload: {
             status: string,
@@ -43,11 +41,9 @@ export class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     }
 
     handleDisconnect(client: any) {
-        // console.log('StatusGateway disconnected');
     }
 
     onDisconnect(client: any) {
-        // console.log('StatusGateway disconnected');
         const payload: {
             status: string,
             user: number,

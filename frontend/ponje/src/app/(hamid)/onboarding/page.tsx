@@ -60,7 +60,6 @@ export default function Onboarding() {
     const handleSubmit = async (values: any) => {
         try {
             const { bio } = values;
-            console.log("bio: ", bio);
             const res = await axios.patch("/profiles", { bio }, {
                 headers: {
                     Authorization: `${AuthState.token}`,
@@ -77,7 +76,6 @@ export default function Onboarding() {
                 duration: 3000,
                 isClosable: true,
             })
-            console.log(error);
         }
     }
 

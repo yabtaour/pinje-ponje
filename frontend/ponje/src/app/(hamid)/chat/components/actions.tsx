@@ -31,11 +31,17 @@ export function Ban({ member }: { member: any }) {
                     authorization: `${getCookie('token')}`
                 }
             }).then((res) => {
-                console.log("res: ", res);
                 dispatch(updateMemberState({ member, newState: "BANNED" }));
             }
             ).catch((err) => {
-                console.log("err: ", err);
+                toast ({
+                    title: "An error occurred.",
+                    description: "Unable to ban.",
+                    status: "error",
+                    duration: 3000,
+                    isClosable: true,
+                })
+
             });
     };
 
@@ -49,11 +55,16 @@ export function Ban({ member }: { member: any }) {
                     authorization: `${getCookie('token')}`
                 }
             }).then((res) => {
-                console.log("res: ", res);
                 dispatch(updateMemberState({ member, newState: "ACTIVE" }));
             }
             ).catch((err) => {
-                console.log("err: ", err);
+                toast ({
+                    title: "An error occurred.",
+                    description: "Unable to unban.",
+                    status: "error",
+                    duration: 3000,
+                    isClosable: true,
+                })
             });
     };
 
@@ -103,11 +114,16 @@ export function Mute({ member }: { member: any }) {
                     authorization: `${getCookie('token')}`
                 }
             }).then((res) => {
-                console.log("res: ", res);
                 dispatch(updateMemberState({ member, newState: "MUTED" }));
             }
             ).catch((err) => {
-                console.log("err: ", err);
+                toast ({
+                    title: "An error occurred.",
+                    description: "Unable to mute.",
+                    status: "error",
+                    duration: 3000,
+                    isClosable: true,
+                })
             });
     };
 
@@ -122,12 +138,16 @@ export function Mute({ member }: { member: any }) {
                     authorization: `${getCookie('token')}`
                 }
             }).then((res) => {
-                console.log("res: ", res);
-
                 dispatch(updateMemberState({ member, newState: "ACTIVE" }));
             }
             ).catch((err) => {
-                console.log("err: ", err);
+                toast ({
+                    title: "An error occurred.",
+                    description: "Unable to unmute.",
+                    status: "error",
+                    duration: 3000,
+                    isClosable: true,
+                })
             });
 
 
@@ -168,7 +188,6 @@ export function Play({ member }: { member: any }) {
 
 
     const handlePlay = () => {
-        console.log("member: ", member);
         router.push('/pong/versusScreen');
         axios
             .post(`/game/invite`, {
@@ -180,7 +199,6 @@ export function Play({ member }: { member: any }) {
                     }
                 })
             .then((res) => {
-                console.log("res: ", res);
                 toast({
                     title: "Invitation sent.",
                     description: "Invitation sent.",
@@ -216,7 +234,7 @@ export function Play({ member }: { member: any }) {
 export function Invite({ friend, room }: { friend: any, room: any }) {
 
     const dispatch = useDispatch()
-
+    const toast = useToast()
     const inviteFriend = () => {
 
 
@@ -227,14 +245,17 @@ export function Invite({ friend, room }: { friend: any, room: any }) {
                 }
             })
             .then((res) => {
-                console.log("res: ", res);
                 dispatch(addMember(res.data));
-
-
-
 
             })
             .catch((err) => {
+                toast({
+                    title: "An error occurred.",
+                    description: "Unable to invite.",
+                    status: "error",
+                    duration: 2000,
+                    isClosable: true,
+                })
             });
     };
 
@@ -361,7 +382,6 @@ export function Kick({ member }: { member: any }) {
 
     const dispatch = useDispatch()
     const rooms = useAppSelector((state) => state.chatReducer.rooms);
-    console.log("room: ", member);
     const KickRoom = () => {
         const toastP = axios
             .post(`/chatapi/kick`,

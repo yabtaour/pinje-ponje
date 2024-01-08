@@ -135,24 +135,28 @@ export default function Conversation({ collapsed }: any) {
                 fetchUserData(token).then((ret) => {
                     setMe(ret);
                 }).catch(() => {
-                    console.log('error fetching me ');
+                    toast({
+                        title: 'Error',
+                        description: "Error fetching me",
+                        status: 'error',
+                        duration: 3000,
+                        isClosable: true,
+                        position: "bottom-right",
+                        variant: "solid",
+                        colorScheme: "red",
+                    })
                 })
             }
         }
 
         const fetchNewMessages = async () => {
             try {
-                console.log('fetching new messages');
                 if (!socketManager.getMainSocket()?.connected) {
-                    console.log('socket not connected');
                     socketManager.getMainSocket()?.connect();
                 }
                 socketManager.waitForConnection(async () => {
-                    console.log('socket connected');
-
                     socketManager.getNewMessages(handleNewMessageAsync);
                     const rooms = await socketManager.getConversations();
-                    console.log('rooms: ', rooms);
                     dispatch(setRooms(rooms));
                 })
             } catch (error) {
@@ -172,7 +176,6 @@ export default function Conversation({ collapsed }: any) {
 
         const handleMemberStateChanges = async () => {
             try {
-                console.log('fetching new messages');
                 socketManager.waitForConnection(async () => {
                     socketManager.listenOnUpdates(handleNewActions);
 

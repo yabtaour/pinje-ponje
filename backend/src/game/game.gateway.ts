@@ -174,11 +174,9 @@ export class GameGateway
 
   async handleConnection(client: any) {
     const sockets = this.server.sockets;
-    console.log(`Client connected: ${client.id}`);
   }
 
   async handleDisconnect(client: any) {
-    console.log(`Client disconnected: ${client.id}`);
   }
 
 }

@@ -88,7 +88,6 @@ export const storageConfig = {
       cb(null, imgName);
     },
     onError: (err, next) => {
-      console.log(err);
       next(err);
     },
   }),
