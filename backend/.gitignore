@@ -1,7 +1,7 @@
 # compiled output
 /dist
 /node_modules
-
+uploads/*
 # Logs
 logs
 *.log
@@ -13,7 +13,7 @@ lerna-debug.log*
 
 
 # 
-prisma/migrations
+# prisma/migrations
 # OS
 .DS_Store
 
@@ -21,7 +21,6 @@ prisma/migrations
 /coverage
 /.nyc_output
 
-backend/prisma/migrations/*
 
 # IDEs and editors
 /.idea

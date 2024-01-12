@@ -1,211 +1,148 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Param,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UserService } from 'src/user/user.service';
+import { updateProfileDto } from './dto/update-profile.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ProfilesService {
-  constructor(readonly prisma: PrismaService ) {}
+  constructor(readonly prisma: PrismaService) {}
 
-  async FindProfileById(id: number) {
-    const profile = await this.prisma.profile.findUnique({
-      where: { id: id },
-    });
-    return profile;
-  }
-
-  async FindAllProfiles() {
-    const user = await this.prisma.profile.findMany({
-      include: {
-        pendingRequest: true,
-        sentRequest: true,
-      },
-    });
-    return user;
-  }
-
-  async AccepteFriendRequest(data: any) {
-    const user = await this.prisma.profile.findUnique({
-      where: { id: data.id },
-      include: { pendingRequest: true },
-    });
-    if (user){
-      const existingRequest = user.pendingRequest.find((element) => element.id === data.senderID);
-      if (!existingRequest) {
-        return "No request with this id";
-      }
-      const updateSender = await this.prisma.profile.update({
-        where: { id: data.id },
-        data: {
-          pendingRequest: {
-            disconnect: { id: data.senderID }
-          },
-          Friends: {
-            push : data.senderID
-          }
-        },
-      });
-      const senderProfile = await this.prisma.profile.findUnique({
-        where: { id: data.senderID },
-      });
-      if (senderProfile) {
-        const updatesenderProfile = await this.prisma.profile.update({
-          where: { id: data.senderID },
-          data: {
-            sentRequest: {
-              disconnect: { id: data.id }
+  async FindProfileById(user_id: number, searchid: number) {
+    try {
+      const profile = await this.prisma.user.findMany({
+        where: {
+          AND: [
+            {
+              id: searchid as number,
             },
-            Friends: {
-              push : data.id
-            }
-          },
-        });
-      }
-    }
-  }
-
-  async SentFriendsInvitation(data: any) {
-    
-    const newFriendProfile = await this.prisma.profile.findUnique({
-      where: { id: data.newFriendID },
-    });
-    
-    if (!newFriendProfile) {
-      return "No profile with this id";
-    }
-    const sender = await this.prisma.profile.update({
-      where: { id: data.senderID },
-      data: {
-        sentRequest: {
-          connect: { id: data.newFriendID }
-        }
-      },
-    });
-    return sender;
-  }
-
-  async DeclineFriendRequest(data: any) {
-    const newFriendProfile = await this.prisma.profile.findUnique({
-      where: { id: data.newFriendID },
-    });
-    if (!newFriendProfile) {
-      return "No profile with this id";
-    }
-    const sender = await this.prisma.profile.update({
-      where: { id: data.senderID },
-      data: {
-        sentRequest: {
-          disconnect: { id: data.newFriendID }
-        }
-      },
-    });
-    return sender;
-  }
-
-  async RemoveFriend(data: any) {
-    const newFriendProfile = await this.prisma.profile.findUnique({
-      where: { id: data.id },
-    });
-    if (!newFriendProfile) {
-      return "No profile with this id";
-    }
-    const sender = await this.prisma.profile.update({
-      where: { id: data.friendID },
-      data: {
-        Friends: {
-          set: newFriendProfile.Friends.filter((element) => element !== data.id)
-        }
-      },
-    });
-    const newFriend = await this.prisma.profile.update({
-      where: { id: data.id },
-      data: {
-        Friends: {
-          set: newFriendProfile.Friends.filter((element) => element !== data.friendID)
-        }
-      },
-    });
-    return sender;
-  }
-
-
-  // Working FLAG_HERE
-  async BlockFriend(data: any) {
-    const blockedUser = await this.prisma.profile.findUnique({
-        where : { id: data.blockedId},
-    });
-    if (!blockedUser)
-      return "User Not Found"
-    const userProfile = await this.prisma.profile.update({
-      where: { id: data.id},
-      data: {
-          blocking: {
-            connect: { id: data.blockedId }
-          },
-      },
-    });
-    // return this.user.FindUserByID(data.id);
-
-  }
-
-  async UnBlockFriend(data: any) {
-    const blockedUser = await this.prisma.profile.findUnique({
-      where : { id: data.blockedID}
-    })
-    if (!blockedUser)
-    return "User Not Found"
-    const userProfile = await this.prisma.profile.update({
-      where: { id: data.id},
-      data: {
-        blocking: {
-          disconnect: { id: data.blockedId }
-        }
-      }
-    })
-  }
-  
-  // unbloack user
-  async FindAllBlockedUsers(id: number) {
-    const user = await this.prisma.profile.findUnique({
-      where: { id: id },
-      select: {
-        blocking: true,
-      },
-    });
-    
-    if (!user) {
-      return "No profile with this id";
-    }
-    return user;
-  }
-  
-
-  async FindAllFriends(id: number) {
-    const user = await this.prisma.profile.findUnique({
-      where: { id: id },
-      select: {
-        Friends: true,
-      },
-    });
-
-    if (!user) {
-      return "No profile with this id";
-    }
-    const friends = await this.prisma.profile.findMany({
-      where: {
-        id: {
-          in: user.Friends,
+            {
+              NOT: {
+                OR: [
+                  {
+                    blockedBy: {
+                      some: { blockerId: user_id, blockedId: searchid },
+                    },
+                  },
+                  {
+                    blocking: {
+                      some: { blockerId: searchid, blockedId: user_id },
+                    },
+                  },
+                ],
+              },
+            },
+          ],
         },
-      },
-    });
-    return friends;
+        select: {
+          profile: true,
+        },
+      });
+      if (profile.length === 0)
+        throw new HttpException('Profile not found', HttpStatus.NOT_FOUND);
+      return profile[0];
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
   }
 
-  async RemoveProfiles(id: number) {
-    const user = await this.prisma.profile.delete({
-      where: { id: id },
-    });
-    return user;
+  async getAvatar(user_id: number) {
+    try {
+      const avatar = await this.prisma.profile.findUnique({
+        where: { userid: user_id },
+        select: {
+          avatar: true,
+        },
+      });
+      if (!avatar)
+        throw new HttpException('Profile not found', HttpStatus.NOT_FOUND);
+      return avatar;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
   }
 
+  async uploadAvatar(user_id: number, avatarBase64: string) {
+    try {
+
+      const allowedSizeInBytes = 1024 * 1024; // 1 MB
+      const binaryData = Buffer.from(avatarBase64, 'base64');
+      const sizeInBytes = binaryData.length;
+
+      if (sizeInBytes > allowedSizeInBytes)
+        throw new HttpException("file size is large", HttpStatus.BAD_REQUEST)
+      const profile = await this.prisma.profile.update({
+        where: { userid: user_id },
+        data: {
+          avatar: avatarBase64,
+        },
+      });
+      return profile;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
+  async deleteAvatar(user_id: number) {
+    try {
+      const profile = await this.prisma.profile.update({
+        where: { userid: user_id },
+        data: {
+          avatar: null,
+        },
+      });
+      return profile;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
+  async updateProfile(
+    @Param('user_id', ParseIntPipe) user_id: number,
+    data: updateProfileDto,
+  ) {
+    try {
+      const profile = await this.prisma.profile.update({
+        where: { userid: user_id },
+        data: {
+          ...data,
+        },
+      });
+      if (!profile)
+        throw new HttpException('Profile not found', HttpStatus.NOT_FOUND);
+      return profile;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
 }
-

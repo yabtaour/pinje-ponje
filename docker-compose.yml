@@ -1,14 +1,90 @@
-# this is the docker-compose.yml file for the backend service
+version: "3.8"
+
 services:
-  db:
-    container_name: ppdatabase
-    image: postgres:latest
+  frontend:
+    build:
+      context: ${FRONT_DIR_PATH}
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    container_name: frontend_container
     env_file: .env
+    # environment:
+    #   - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+    depends_on:
+      - backend
+    # volumes:
+    #   - avatars:/app/public/avatars
+    networks:
+      - frontend
+      - backend
+    restart: always
+
+
+  postgres:
+    build:
+      context: ${DB_DUMP_DIR}
+      dockerfile: Dockerfile
+    image: postgres_image
+    container_name: postgres_container
     ports:
-      - '5432:5432'
+      - "5432:5432"
+    env_file:
+      - .env
+    networks:
+      - backend
+    volumes:
+      - postgres_db_data:/var/lib/postgresql/data
+    restart: always
+
+  backend:
+    build:
+      context: ${BACK_DIR_PATH}
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    image: backend_image
+    container_name: backend_container
+    env_file: .env
+    depends_on:
+      - postgres
+      - adminer
+    # volumes:
+    #   - avatars:/app/uploads/Avatars
+    networks:
+      - backend
+      - frontend
+    restart: always
+    
+
   adminer:
-    container_name: adminer
     image: adminer
+    container_name: adminer_container
+    restart: always
     ports:
-      - '8080:8080'
-# end of backend service.
+      - 8080:8080
+    networks:
+      - backend
+    depends_on:
+      - postgres
+    restart: always
+    
+
+networks:
+  backend:
+  frontend:
+
+volumes:
+  postgres_db_data:
+    name: postgres_db_data
+
+  # avatars:
+  #   name: avatars
+
+  backend_volume:
+    name: backend_volume
+    driver: local
+    driver_opts:
+      o: bind
+      device: ${BACK_DIR_PATH:-/tmp/back_vol}
+      type: none

@@ -1,23 +1,36 @@
 /** @type {import('tailwindcss').Config} */
+const { nextui } = require("@nextui-org/react");
 module.exports = {
+  daisyui: {
+    themes: [
+      {
+        mytheme: {
+          primary: "#4E40F4",
+          danger: "#F87171",
+          secondary: "#77DFF8",
+        },
+      },
+    ],
+  },
+  plugins: [require("daisyui")],
   content: [
-    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    colors: {
-      "logincColor" : "#4A40BF",
-      "mainText" : "#77DFF8",
-      "mainp" : "#ADAABA"
-    },
-    extend: {
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-conic':
-          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+    theme: {
+      extend: {
+        colors: {
+          loginColor: "#4A40BF",
+          mainText: "#77DFF8",
+          mainp: "#ADAABA",
+          verificationBackground: "#1B1A2D",
+        },
       },
     },
+    darkMode: "class",
+    plugins: [nextui()],
   },
-  plugins: [],
-}
+};

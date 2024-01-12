@@ -1,32 +1,31 @@
-import { ExecutionContext, Injectable } from "@nestjs/common";
-import { CanActivate } from "@nestjs/common";
-// import { JwtService } from "@nestjs/jwt";
-import { AuthGuard } from "@nestjs/passport";
-import { Observable } from "rxjs";
+import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { JwtAuthService } from "../jwt.service";
-import { decode } from "punycode";
+import { PrismaService } from "src/prisma/prisma.service";
+import { config } from 'dotenv';
+
+config()
+
+const VERIFICATION = process.env.VERIFICATION;
 
 @Injectable()
 export class JWTGuard implements CanActivate {
-    constructor (private readonly jwtService: JwtAuthService) {}
+    constructor (
+			private readonly jwtService: JwtAuthService,
+			private readonly prismaService: PrismaService
+		) {}
 
-    async canActivate(context: ExecutionContext) {
-        const request = context.switchToHttp().getRequest();
-        const headers = request.headers;
-        const token = headers.authorization;
-        if (!token) {
-			console.log("No token detected");
-            return Promise.resolve(false);
-        }
-				try {
-					const decodedToken = await this.jwtService.verifyToken(token, context);
-					// decodedToken.then
-					context.switchToHttp().getRequest().new_user = decodedToken;
-
-					return decodedToken;
-					// return await this.jwtService.verifyToken(token);
-				} catch (error) {
-					return false;
-				}
+	async canActivate(context: ExecutionContext) {
+    const request = context.switchToHttp().getRequest();
+    const headers = request.headers;
+    const token = headers.authorization;
+    if (!token)
+			throw new HttpException("Token not found", HttpStatus.UNAUTHORIZED);
+		const decodedToken = await this.jwtService.verifyToken(token, context);
+		if (!decodedToken || !decodedToken.sub)
+		{
+			throw new HttpException("Invalid token", HttpStatus.UNAUTHORIZED);
 		}
+		context.switchToHttp().getRequest().user = decodedToken;
+		return true;
+	}
 }

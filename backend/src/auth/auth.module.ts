@@ -1,16 +1,18 @@
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { AuthController } from './auth.controller';
-import { FortyTwoStrategy } from './42.strategy';
+import { config } from 'dotenv';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { ProfilesService } from 'src/profiles/profiles.service';
 import { UserModule } from 'src/user/user.module';
 import { UserService } from 'src/user/user.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { FortyTwoStrategy } from './42.strategy';
+import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { JwtModule, JwtService } from '@nestjs/jwt';
 import { JwtAuthService } from './jwt.service';
-import { config } from 'dotenv';
-import { profile } from 'console';
-import { ProfilesService } from 'src/profiles/profiles.service';
+import { LocalStrategy } from './local.strategy';
+import { GoogleStrategy } from './google.strategy';
+import {NotificationModule } from '../notification/notification.module'
 
 config()
 
@@ -18,14 +20,19 @@ const secret = process.env.JWT_SECRET;
 
 @Module({
   imports: [
-    PassportModule.register({ defaultStrategy: '42'}),
-    UserModule,
+		UserModule,
+		PassportModule,
     JwtModule.register({
       secret: secret,
-      signOptions: {expiresIn: '60s'},
+      signOptions: {expiresIn: '30d'},
     }),
+		NotificationModule,
   ],
   controllers: [AuthController],
-  providers: [JwtAuthService ,PrismaService ,FortyTwoStrategy, UserService, AuthService, ProfilesService],
+  exports: [JwtAuthService, AuthService, PrismaService],
+  providers: [JwtAuthService, AuthService, PrismaService,
+							FortyTwoStrategy, LocalStrategy, GoogleStrategy, UserService,
+							ProfilesService],  
 })
 export class AuthModule {}
+

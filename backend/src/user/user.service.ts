@@ -1,287 +1,1016 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { ProfilesService } from 'src/profiles/profiles.service';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Param,
+  ParseIntPipe,
+} from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ChatRole, NotificationType, Prisma, RoomType } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
+import { config } from 'dotenv';
+import { authenticator } from 'otplib';
+import { toDataURL } from 'qrcode';
+import { SignUpDto } from 'src/auth/dto/signUp.dto';
+import { PaginationLimitDto } from 'src/chat/dto/pagination-dto';
+import { NotificationService } from 'src/notification/notification.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { FriendsActionsDto } from './dto/FriendsActions-user.dto';
+import { blockAndUnblockUserDto } from './dto/blockAndUnblock-user.dto';
+import { CreateUserDtoIntra } from './dto/create-user.dto';
+import { updateUserDto } from './dto/update-user.dto';
+import { clearConfigCache } from 'prettier';
 
-    // need Protection for this route
-    // need to check if the user is already exist
-    // need to check if the profile is already exist
-    // need to check if the email is already exist
-    // friendshipes need to be protected from blocked and pending users
+config();
 
 
-    // to do:
-    // ulpoading avatar's
-    // guards and middlewares
 @Injectable()
 export class UserService {
-  constructor(readonly prisma: PrismaService, readonly profile: ProfilesService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService,
+    private readonly eventEmmiter: EventEmitter2,
+  ) {}
 
-
-
-  async CreateUser(reqData: any) {
-    // const userFind = await this.prisma.user.findUnique({
-    //   where: { id: reqData.id },
-    // });
-    // if (userFind) {
-    //   return "User already exist";
-    // }
+  async resetPassword(user: any, old: string, newPass: string) {
     try {
-
-      const user = await this.prisma.user.create({
+      const isMatch = bcrypt.compareSync(old, user.password);
+      if (!isMatch)
+        throw new HttpException(
+          'Old password is incorrect',
+          HttpStatus.BAD_REQUEST,
+        );
+      const rounds = parseInt(process.env.BCRYPT_ROUNDS);
+      const HashedPassword = bcrypt.hashSync(newPass, rounds);
+      const updatedUser = await this.prisma.user.update({
+        where: {
+          id: user.id,
+        },
         data: {
-          // id : reqData.id,
-          intraid: reqData.intraid,
-          Hashpassword: reqData.Hashpassword,
-          email: reqData.email,
-          profile: {
-            create: {
-              // id: reqData.profile.id,
-              username: reqData.profile.username,
-              avatar: reqData.profile.avatar,
-              login: reqData.profile.login,
-            },
-          }
-        }
-      })
-      return user;
-    } catch (error) {
-      console.log(error);
-      return "Error: User Already Exist";
+          password: HashedPassword,
+        },
+      });
+      return updatedUser;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
     }
   }
 
-  // async FindProfileById(id: number) {
-  //   const profile = await this.prisma.profile.findUnique({
-  //     where: { id : id} ,
-  //   });
-  //   return profile;
-  // }
-
-  // async FindAllProfiles() {
-  //   const user = await this.prisma.profile.findMany({
-  //     include: {
-  //       pendingRequest: true,
-  //       sentRequest: true,
-  //     },
-  //   });
-  //   return user;
-  // }
-
-  async FindAllUsers() {
-    const user = await this.prisma.user.findMany({
-      include: {
-        profile: true,
-      },
-    });
-    return user;
+  async CreateUserIntra(reqData: CreateUserDtoIntra) {
+    try {
+      const userExist = await this.prisma.user.findFirst({
+        where: {
+          OR: [
+            {
+              email: reqData.email,
+            },
+            {
+              intraid: reqData.intraid,
+            },
+            {
+              username: reqData.username,
+            },
+          ],
+        },
+      });
+      if (userExist)
+        throw new HttpException('User already exist', HttpStatus.CONFLICT);
+      const user = await this.prisma.user.create({
+        data: {
+          intraid: reqData.intraid,
+          email: reqData.email,
+          username: reqData.username,
+          profile: {
+            create: {},
+          },
+        },
+      });
+      if (!user)
+        throw new HttpException(
+          'User creation failed: Unprocessable Entity',
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      return user;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
   }
 
-  // async AccepteFriendRequest(data: any) {
-  //   const user = await this.prisma.profile.findUnique({
-  //     where: { id: data.id },
-  //     include: { pendingRequest: true },
-  //   });
-  //   if (user){
-  //     const existingRequest = user.pendingRequest.find((element) => element.id === data.senderID);
-  //     if (!existingRequest) {
-  //       return "No request with this id";
-  //     }
-  //     const updateSender = await this.prisma.profile.update({
-  //       where: { id: data.id },
-  //       data: {
-  //         pendingRequest: {
-  //           disconnect: { id: data.senderID }
-  //         },
-  //         Friends: {
-  //           push : data.senderID
-  //         }
-  //       },
-  //     });
-  //     const senderProfile = await this.prisma.profile.findUnique({
-  //       where: { id: data.senderID },
-  //     });
-  //     if (senderProfile) {
-  //       const updatesenderProfile = await this.prisma.profile.update({
-  //         where: { id: data.senderID },
-  //         data: {
-  //           sentRequest: {
-  //             disconnect: { id: data.id }
-  //           },
-  //           Friends: {
-  //             push : data.id
-  //           }
-  //         },
-  //       });
-  //     }
-  //   }
-  // }
-
-  // async SentFriendsInvitation(data: any) {
-    
-  //   const newFriendProfile = await this.prisma.profile.findUnique({
-  //     where: { id: data.newFriendID },
-  //   });
-    
-  //   if (!newFriendProfile) {
-  //     return "No profile with this id";
-  //   }
-  //   const sender = await this.prisma.profile.update({
-  //     where: { id: data.senderID },
-  //     data: {
-  //       sentRequest: {
-  //         connect: { id: data.newFriendID }
-  //       }
-  //     },
-  //   });
-  //   return sender;
-  // }
-
-  // async DeclineFriendRequest(data: any) {
-  //   const newFriendProfile = await this.prisma.profile.findUnique({
-  //     where: { id: data.newFriendID },
-  //   });
-  //   if (!newFriendProfile) {
-  //     return "No profile with this id";
-  //   }
-  //   const sender = await this.prisma.profile.update({
-  //     where: { id: data.senderID },
-  //     data: {
-  //       sentRequest: {
-  //         disconnect: { id: data.newFriendID }
-  //       }
-  //     },
-  //   });
-  //   return sender;
-  // }
-
-  // async RemoveFriend(data: any) {
-  //   const newFriendProfile = await this.prisma.profile.findUnique({
-  //     where: { id: data.id },
-  //   });
-  //   if (!newFriendProfile) {
-  //     return "No profile with this id";
-  //   }
-  //   const sender = await this.prisma.profile.update({
-  //     where: { id: data.friendID },
-  //     data: {
-  //       Friends: {
-  //         set: newFriendProfile.Friends.filter((element) => element !== data.id)
-  //       }
-  //     },
-  //   });
-  //   const newFriend = await this.prisma.profile.update({
-  //     where: { id: data.id },
-  //     data: {
-  //       Friends: {
-  //         set: newFriendProfile.Friends.filter((element) => element !== data.friendID)
-  //       }
-  //     },
-  //   });
-  //   return sender;
-  // }
-
-
-  // // Working FLAG_HERE
-  // async BlockFriend(data: any) {
-  //   const blockedUser = await this.prisma.profile.findUnique({
-  //       where : { id: data.blockedId},
-  //   });
-  //   if (!blockedUser)
-  //     return "User Not Found"
-  //   const userProfile = await this.prisma.profile.update({
-  //     where: { id: data.id},
-  //     data: {
-  //         blocking: {
-  //           connect: { id: data.blockedId }
-  //         },
-  //     },
-  //   });
-  //   return this.FindUserByID(data.id);
-  // }
-
-  // async UnBlockFriend(data: any) {
-  //   const blockedUser = await this.prisma.profile.findUnique({
-  //     where : { id: data.blockedID}
-  //   })
-  //   if (!blockedUser)
-  //   return "User Not Found"
-  //   const userProfile = await this.prisma.profile.update({
-  //     where: { id: data.id},
-  //     data: {
-  //       blocking: {
-  //         disconnect: { id: data.blockedId }
-  //       }
-  //     }
-  //   })
-  // }
-  
-  // // unbloack user
-  // async FindAllBlockedUsers(id: number) {
-  //   const user = await this.prisma.profile.findUnique({
-  //     where: { id: id },
-  //     select: {
-  //       blocking: true,
-  //     },
-  //   });
-    
-  //   if (!user) {
-  //     return "No profile with this id";
-  //   }
-  //   return user;
-  // }
-  
-
-  // async FindAllFriends(id: number) {
-  //   const user = await this.prisma.profile.findUnique({
-  //     where: { id: id },
-  //     select: {
-  //       Friends: true,
-  //     },
-  //   });
-
-  //   if (!user) {
-  //     return "No profile with this id";
-  //   }
-  //   const friends = await this.prisma.profile.findMany({
-  //     where: {
-  //       id: {
-  //         in: user.Friends,
-  //       },
-  //     },
-  //   });
-  //   return friends;
-  // }
-
-
-  async FindUserByID(id: number) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: id },
-      include: {
-        profile: {
-          include: {
-            sentRequest: true,
-            pendingRequest: true,
-            blocking: true,
+  async CreateUserGoogle(data: any) {
+    try {
+      const userExist = await this.prisma.user.findFirst({
+        where: {
+          OR: [
+            {
+              googleId: data.googleId,
+            },
+            {
+              email: data.email,
+            },
+            {
+              username: data.username,
+            },
+          ],
+        },
+      });
+      if (userExist)
+        throw new HttpException('User already exist', HttpStatus.CONFLICT);
+      const user = await this.prisma.user.create({
+        data: {
+          googleId: data.googleId,
+          email: data.email,
+          username: data.username,
+          profile: {
+            create: {},
           },
+        },
+      });
+      if (!user)
+        throw new HttpException(
+          'User creation failed: Unprocessable Entity',
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      return user;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
+  async UpdateUser(user_id: number, data: updateUserDto) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id: user_id,
+        },
+      });
+
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      if (data.username && data.username !== user.username) {
+        const existingUserWithUsername = await this.prisma.user.findUnique({
+          where: {
+            username: data.username,
+          },
+        });
+
+        if (existingUserWithUsername) {
+          throw new HttpException(
+            'Username already exists',
+            HttpStatus.BAD_REQUEST,
+          );
         }
-      },
-    }); 
-    return user;
+      }
+
+      if (data.email && data.email !== user.email) {
+        const existingUserWithEmail = await this.prisma.user.findUnique({
+          where: {
+            email: data.email,
+          },
+        });
+
+        if (existingUserWithEmail) {
+          throw new HttpException(
+            'Email already exists',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+
+      let secret = null;
+      if (data.twoFactor && data.twoFactor == true) {
+
+        secret = authenticator.generateSecret() 
+        // const otpauth = authenticator.keyuri(user.email, 'pinje-ponge', secret);
+        // const generatedQR = await toDataURL(otpauth);
+      } else {
+        secret = null;
+      }
+
+      const updatedUser = await this.prisma.user.update({
+        where: {
+          id: user_id,
+        },
+        data: {
+          ...data,
+          twoFactorSecret: secret,
+        },
+      });
+
+      return updatedUser;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
+  async CreateUserLocal(data: SignUpDto) {
+    try {
+      const userExist = await this.prisma.user.findFirst({
+        where: {
+          OR: [
+            {
+              email: data.email,
+            },
+            {
+              username: data.username,
+            },
+          ],
+        },
+      });
+      if (userExist)
+        throw new HttpException('User already exist', HttpStatus.CONFLICT);
+      const rounds = await parseInt(process.env.BCRYPT_ROUNDS);
+      const HashedPassword = await bcrypt.hashSync(data.password, rounds);
+      const user = await this.prisma.user.create({
+        data: {
+          password: HashedPassword,
+          email: data.email,
+          username: data.username,
+          profile: {
+            create: {},
+          },
+        },
+      });
+      if (!user) {
+        throw new HttpException(
+          'User creation failed: Unprocessable Entity',
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
+      return user;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
+  async FindAllUsers(
+    @Param('id', ParseIntPipe) id: number,
+    params: PaginationLimitDto,
+    search: string,
+  ) {
+    try {
+      const users = await this.prisma.user.findMany({
+        where: {
+          AND: [
+            {
+              OR: search
+                ? [{ username: { contains: search, mode: 'insensitive' } }]
+                : {},
+            },
+            {
+              NOT: {
+                OR: [
+                  {
+                    blockedBy: {
+                      some: {
+                        blockerId: id,
+                      },
+                    },
+                  },
+                  {
+                    blocking: {
+                      some: {
+                        blockedId: id,
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        include: {
+          profile: true,
+        },
+        ...params,
+      });
+      if (!users)
+        throw new HttpException('Users not found', HttpStatus.NOT_FOUND);
+      // Remove sensitive information using map and object destructuring
+      const sanitizedUsers = users.map(
+        ({ password, twoFactorSecret, ...user }) => user,
+      );
+      return sanitizedUsers;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
+
+  async GetRankedList(
+    @Param('id', ParseIntPipe) id: number,
+    params: PaginationLimitDto,
+    search: string,
+  ) {
+    try {
+      const users = await this.prisma.user.findMany({
+        where: {
+          AND: [
+            {
+              OR: search
+                ? [{ username: { contains: search, mode: 'insensitive' } }]
+                : {},
+            },
+          ],
+        },
+        include: {
+          profile: true,
+        },
+        ...params,
+      });
+      if (!users)
+        throw new HttpException('Users not found', HttpStatus.NOT_FOUND);
+      // Remove sensitive information using map and object destructuring
+      const sanitizedUsers = users.map(
+        ({ password, twoFactorSecret, ...user }) => user,
+      );
+      return sanitizedUsers;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
+  async FindUserByID(
+    @Param('user_id', ParseIntPipe) user_id: number,
+    searchid: number,
+  ) {
+    try {
+      const user = await this.prisma.user.findFirst({
+        where: {
+          AND: [
+            {
+              id: searchid,
+            },
+            {
+              NOT: {
+                OR: [
+                  {
+                    blockedBy: {
+                      some: { blockerId: user_id, blockedId: searchid },
+                    },
+                  },
+                  {
+                    blocking: {
+                      some: { blockerId: searchid, blockedId: user_id },
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        include: {
+          profile: true,
+        },
+      });
+      if (user == null) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+      delete user.password;
+      delete user.twoFactorSecret;
+      delete user.twoFactor;
+      return user;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
   }
 
   async FindUserByIntraId(id: number) {
-    const user = await this.prisma.user.findUnique({
-      where: {intraid: id},
-    });
-    return user;
+    try {
+      const user = await this.prisma.user.findFirst({
+        where: { intraid: id },
+      });
+      return user;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
+  async FindUserByGoogleId(id: string) {
+    try {
+      const user = await this.prisma.user.findFirst({
+        where: { googleId: id },
+      });
+      return user;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
+  async FindUserByEmail(email: string) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          email: email,
+        },
+      });
+      if (!user)
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      return user;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
   }
 
   async RemoveUsers(id: number) {
-    this.profile.RemoveProfiles(id);
-    const user = await this.prisma.user.delete({
-      where: { id: id },
-    });
-    return user;
+    try {
+      const userExist = await this.prisma.user.findUnique({
+        where: {
+          id: id,
+        },
+      });
+      if (!userExist)
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      const user = await this.prisma.user.delete({
+        where: { id: id },
+        include: {
+          profile: true,
+        },
+      });
+      if (!user)
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      return user;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
+  async getQRCode(id: number) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id: id,
+        },
+      });
+      if (!user)
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      if (user.twoFactor == false) {
+        throw new HttpException(
+          'Two factor is not enabled',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      const secret = user.twoFactorSecret;
+      const otpauth = authenticator.keyuri(user.email, 'pinje-ponge', secret);
+      const generatedQR = await toDataURL(otpauth);
+      return generatedQR;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
+  async getCurrentUser(request: any) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id: parseInt(request.user.sub),
+        },
+        include: {
+          friendOf: true,
+          blocking: true,
+          pendingRequest: true,
+          sentRequest: true,
+          profile: true,
+        },
+      });
+      if (!user)
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      return user;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
+  async FindAllBlockedUsers(user_id: number) {
+    try {
+      const blockedList = await this.prisma.userBlocking.findMany({
+        where: { blockerId: user_id },
+        include: {
+          blocked: {
+            select: {
+              id: true,
+              username: true,
+              profile: true,
+            },
+          },
+        },
+      });
+
+      return blockedList;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
+  async BlockUser(user_id: number, data: blockAndUnblockUserDto) {
+    try {
+      const blockedUser = await this.prisma.user.findUnique({
+        where: { id: data.id },
+      });
+      if (!blockedUser)
+        // if blocked user not found
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+
+      if (blockedUser.id == user_id)
+        // if want to block himself
+        throw new HttpException(
+          "You can't block yourself",
+          HttpStatus.BAD_REQUEST,
+        );
+
+      const ifAlready = await this.prisma.userBlocking.findUnique({
+        where: {
+          blockerId_blockedId: {
+            blockerId: user_id,
+            blockedId: data.id,
+          },
+        },
+      });
+      if (ifAlready)
+        // if already blocked
+        throw new HttpException('User already blocked', HttpStatus.BAD_REQUEST);
+
+      await this.prisma.userBlocking.create({
+        data: {
+          blockerId: user_id,
+          blockedId: data.id,
+        },
+      });
+
+      const ifFriends = await this.prisma.friendship.findFirst({
+        where: {
+          OR: [
+            {
+              userId: user_id,
+              friendId: data.id,
+            },
+            {
+              userId: data.id,
+              friendId: user_id,
+            },
+          ],
+        },
+      });
+      if (ifFriends) {
+        await this.prisma.friendship.deleteMany({
+          where: {
+            OR: [
+              {
+                userId: user_id,
+                friendId: data.id,
+              },
+              {
+                userId: data.id,
+                friendId: user_id,
+              },
+            ],
+          },
+        });
+        const deleteDm = await this.prisma.chatRoom.deleteMany({
+          where: {
+            dm_token: ifFriends.dm_token,
+          },
+        });
+      }
+      return 'You have blocked this user';
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
+  async UnBlockFriend(user_id: number, data: blockAndUnblockUserDto) {
+    try {
+      const blockedUser = await this.prisma.user.findUnique({
+        where: { id: data.id },
+      });
+      if (!blockedUser)
+        // if blocked user not found
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+
+      const ifAlready = await this.prisma.userBlocking.findUnique({
+        where: {
+          blockerId_blockedId: {
+            blockerId: user_id,
+            blockedId: data.id,
+          },
+        },
+      });
+      if (!ifAlready)
+        // if user not blocked
+        throw new HttpException('User not blocked', HttpStatus.BAD_REQUEST);
+
+      const user = await this.prisma.userBlocking.delete({
+        where: {
+          blockerId_blockedId: {
+            blockerId: user_id,
+            blockedId: data.id,
+          },
+        },
+      });
+
+      return 'You have unblocked this user';
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
+  async FindAllFriends(
+    _currentUser: number,
+    @Param('user_id', ParseIntPipe) user_id: number,
+    params: PaginationLimitDto,
+  ) {
+    try {
+      const listofFriends = await this.prisma.friendship.findMany({
+        where: {
+          userId: user_id,
+        },
+        select: {
+          friend: {
+            include: {
+              profile: true,
+            },
+          },
+        },
+      });
+      if (!listofFriends) return listofFriends;
+
+      const sanitizedFriends = listofFriends.map(({ friend }) => {
+        const { password, twoFactorSecret, twoFactor, ...sanitizedFriend } =
+          friend;
+        return sanitizedFriend;
+      });
+      return sanitizedFriends;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
+  async Unfriend(
+    @Param('user_id', ParseIntPipe) user_id: number,
+    data: any,
+  ): Promise<any> {
+    try {
+      const getFriendship = await this.prisma.friendship.findFirst({
+        where: {
+          OR: [
+            {
+              userId: user_id,
+              friendId: data.id,
+            },
+            {
+              userId: data.id,
+              friendId: user_id,
+            },
+          ],
+        },
+      });
+      if (getFriendship == null)
+        throw new HttpException('No user with this id', HttpStatus.NOT_FOUND);
+
+      const deleteFriend = await this.prisma.friendship.deleteMany({
+        where: {
+          OR: [
+            {
+              userId: user_id as number,
+              friendId: data.id,
+            },
+            {
+              userId: data.id,
+              friendId: user_id as number,
+            },
+          ],
+        },
+      });
+
+      const deleteDm = await this.prisma.chatRoom.deleteMany({
+        where: {
+          dm_token: getFriendship.dm_token,
+        },
+      });
+
+      this.eventEmmiter.emit('conversationUpdate', {
+        senderId: user_id,
+        receiverId: data.id,
+      });
+
+      return 'Friendship deleted';
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
+  async CancelFriendRequest(user_id: number, data: FriendsActionsDto) {
+    try {
+      const getFriendRequest = await this.prisma.friendRequest.findUnique({
+        where: {
+          senderId_receiverId: {
+            senderId: user_id,
+            receiverId: data.id,
+          },
+        },
+      });
+
+      if (getFriendRequest == null)
+        throw new HttpException('No user with this id', HttpStatus.NOT_FOUND);
+
+      const req_receiver = await this.prisma.friendRequest.delete({
+        where: {
+          senderId_receiverId: {
+            senderId: user_id,
+            receiverId: data.id,
+          },
+        },
+      });
+
+      this.eventEmmiter.emit('notification', data?.id?.toString(), "hamid");
+
+      return 'Friend request canceled';
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
+  async DeclineFriendRequest(user_id: number, data: FriendsActionsDto) {
+    try {
+      const getFriendRequest = await this.prisma.friendRequest.findUnique({
+        where: {
+          senderId_receiverId: {
+            senderId: data.id,
+            receiverId: user_id,
+          },
+        },
+      });
+      if (getFriendRequest == null)
+        throw new HttpException(
+          'No request with this id',
+          HttpStatus.NOT_FOUND,
+        );
+      await this.prisma.friendRequest.delete({
+        where: {
+          senderId_receiverId: {
+            senderId: data.id,
+            receiverId: user_id,
+          },
+        },
+      });
+      this.eventEmmiter.emit('conversationUpdate', {
+        senderId: user_id,
+        receiverId: data.id,
+      });
+
+      return 'Friend request declined';
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
+  async AcceptFriendRequest(
+    @Param('user_id', ParseIntPipe) user_id: number,
+    data: FriendsActionsDto,
+  ) {
+    try {
+      const getFriendRequest = await this.prisma.friendRequest.findUnique({
+        where: {
+          senderId_receiverId: {
+            senderId: data.id,
+            receiverId: user_id,
+          },
+        },
+      });
+      if (getFriendRequest == null)
+        throw new HttpException(
+          'No request with this id',
+          HttpStatus.NOT_FOUND,
+        );
+      const token = randomBytes(32).toString('hex');
+      await this.prisma.friendship.createMany({
+        data: [
+          {
+            userId: user_id,
+            friendId: data.id,
+            dm_token: token,
+          },
+          {
+            userId: data.id,
+            friendId: user_id,
+            dm_token: token,
+          },
+        ],
+      });
+
+      await this.prisma.friendRequest.delete({
+        where: {
+          senderId_receiverId: {
+            senderId: data.id,
+            receiverId: user_id,
+          },
+        },
+      });
+
+      await this.prisma.chatRoom.create({
+        data: {
+          name: '',
+          roomType: RoomType.DM,
+          dm_token: token,
+          members: {
+            create: [
+              {
+                user: { connect: { id: data.id } },
+                role: ChatRole.MEMBER,
+                dm_token: token,
+              },
+              {
+                user: { connect: { id: user_id } },
+                role: ChatRole.MEMBER,
+                dm_token: token,
+              },
+            ],
+          },
+        },
+      });
+
+      this.notificationService.create({
+        senderId: user_id,
+        receiverId: data.id,
+        type: NotificationType.FRIEND_REQUEST_ACCEPTED,
+      });
+
+      this.eventEmmiter.emit('conversationUpdate', {
+        senderId: user_id,
+        receiverId: data.id,
+      });
+      return 'Friend request accepted';
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
+  }
+
+  async SentFriendRequest(user_id: number, data: FriendsActionsDto) {
+    try {
+      const newFriendProfile = await this.prisma.user.findUnique({
+        where: {
+          id: data.id,
+        },
+      });
+      if (!newFriendProfile || newFriendProfile.id === user_id)
+        throw new HttpException(
+          'No profile with this id',
+          HttpStatus.NOT_FOUND,
+        );
+      const ifexist = await this.prisma.friendRequest.findFirst({
+        where: {
+          OR: [
+            {
+              senderId: user_id,
+              receiverId: data.id,
+            },
+            {
+              senderId: data.id,
+              receiverId: user_id,
+            },
+          ],
+        },
+      });
+      if (ifexist == null) {
+        const createRequest = await this.prisma.friendRequest.upsert({
+          where: {
+            senderId_receiverId: {
+              senderId: user_id,
+              receiverId: data.id,
+            },
+          },
+          update: {},
+          create: {
+            senderId: user_id,
+            receiverId: data.id,
+          },
+        });
+        this.notificationService.create({
+          senderId: user_id,
+          receiverId: data.id,
+          type: NotificationType.FRIEND_REQUEST,
+        });
+        return 'Friend Request sent successfully';
+      } else return 'Friend Request already sent';
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientUnknownRequestError ||
+        e instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        throw e;
+      } else throw e;
+    }
   }
 }

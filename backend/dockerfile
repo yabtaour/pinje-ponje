@@ -1,0 +1,26 @@
+FROM debian:buster
+
+RUN apt-get update && apt-get upgrade
+
+RUN apt-get install build-essential python3 make g++ curl -y
+
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - &&\
+    apt-get install -y nodejs
+RUN node --version
+
+RUN npm --version
+
+# RUN apk add --no-cache \
+#     python3 \
+#     make \
+#     g++
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install && npm install --dev
+COPY . .
+
+RUN chmod 777 ./run.sh
+
+ENTRYPOINT ["sh", "run.sh"]
